@@ -6,7 +6,6 @@ import {
   Repeat2,
   Trophy,
   HeartPulse,
-  Smile,
   Briefcase,
   Wallet,
   Notebook,
