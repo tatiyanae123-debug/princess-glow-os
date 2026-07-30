@@ -1,26 +1,26 @@
 import { AppShell } from '@/components/app-shell';
-import { sectionContent } from '@/lib/sections';
+import { SectionPage } from '@/components/section-page';
+import { Card } from '@/components/ui/card';
+
+const wellness = [
+  { title: 'Sleep', detail: 'Protect your evening wind-down and stay consistent.' },
+  { title: 'Movement', detail: 'A light walk can restore energy without pressure.' },
+  { title: 'Breath', detail: 'Take a few minutes to soften the nervous system.' },
+];
 
 export default function WellnessPage() {
   return (
     <AppShell>
-      <div className="space-y-6">
-        <section className="rounded-[28px] border border-slate-200/70 bg-white/80 p-6 shadow-sm">
-          <p className="text-sm uppercase tracking-[0.3em] text-rose-500">{sectionContent.wellness.title}</p>
-          <h2 className="mt-2 text-3xl font-semibold text-slate-900">{sectionContent.wellness.blurb}</h2>
-          <p className="mt-3 text-slate-600">Rest, hospitality, and gentle care are part of the plan.</p>
-        </section>
-        <section className="rounded-[28px] border border-slate-200/70 bg-white/80 p-6 shadow-sm">
-          <div className="grid gap-3 md:grid-cols-3">
-            {['Sleep', 'Movement', 'Breath'].map((item) => (
-              <div key={item} className="rounded-2xl bg-slate-50 p-4">
-                <p className="font-semibold text-slate-900">{item}</p>
-                <p className="mt-2 text-sm text-slate-600">Treat it as essential, not optional.</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
+      <SectionPage eyebrow="Wellness" title="Energy that feels supported" description="Let wellness be practical, restorative, and deeply personal.">
+        <Card className="grid gap-3 md:grid-cols-3">
+          {wellness.map((item) => (
+            <div key={item.title} className="rounded-[20px] border border-slate-200/70 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60">
+              <p className="font-medium text-slate-900 dark:text-slate-100">{item.title}</p>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{item.detail}</p>
+            </div>
+          ))}
+        </Card>
+      </SectionPage>
     </AppShell>
   );
 }

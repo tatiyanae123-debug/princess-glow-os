@@ -1,26 +1,26 @@
 import { AppShell } from '@/components/app-shell';
-import { sectionContent, settingsItems } from '@/lib/sections';
+import { SectionPage } from '@/components/section-page';
+import { Card } from '@/components/ui/card';
+
+const settings = [
+  { title: 'Theme', value: 'Editorial warm' },
+  { title: 'Notifications', value: 'Gentle' },
+  { title: 'Focus mode', value: 'Enabled' },
+];
 
 export default function SettingsPage() {
   return (
     <AppShell>
-      <div className="space-y-6">
-        <section className="rounded-[28px] border border-slate-200/70 bg-white/80 p-6 shadow-sm">
-          <p className="text-sm uppercase tracking-[0.3em] text-rose-500">{sectionContent.settings.title}</p>
-          <h2 className="mt-2 text-3xl font-semibold text-slate-900">{sectionContent.settings.blurb}</h2>
-          <p className="mt-3 text-slate-600">Tune the environment so the system feels supportive and calm.</p>
-        </section>
-        <section className="rounded-[28px] border border-slate-200/70 bg-white/80 p-6 shadow-sm">
-          <div className="space-y-3">
-            {settingsItems.map((item) => (
-              <div key={item.title} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                <span className="font-medium text-slate-900">{item.title}</span>
-                <span className="text-sm text-slate-600">{item.value}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
+      <SectionPage eyebrow="Settings" title="A space that supports you" description="Fine-tune the environment so the system feels calm, quiet, and personal.">
+        <Card className="space-y-3">
+          {settings.map((item) => (
+            <div key={item.title} className="flex items-center justify-between rounded-[20px] border border-slate-200/70 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-800/60">
+              <span className="font-medium text-slate-900 dark:text-slate-100">{item.title}</span>
+              <span className="text-sm text-slate-600 dark:text-slate-300">{item.value}</span>
+            </div>
+          ))}
+        </Card>
+      </SectionPage>
     </AppShell>
   );
 }

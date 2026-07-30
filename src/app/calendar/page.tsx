@@ -1,32 +1,27 @@
 import { AppShell } from '@/components/app-shell';
-import { sectionContent } from '@/lib/sections';
+import { SectionPage } from '@/components/section-page';
+import { Card } from '@/components/ui/card';
+
+const events = [
+  { title: 'Morning planning', time: '08:30', detail: 'Map the day with calm intention.' },
+  { title: 'Lunch walk', time: '12:30', detail: 'Get outside and reset.' },
+  { title: 'Evening reset', time: '20:00', detail: 'Prep tomorrow before you unplug.' },
+];
 
 export default function CalendarPage() {
   return (
     <AppShell>
-      <div className="space-y-6">
-        <section className="rounded-[28px] border border-slate-200/70 bg-white/80 p-6 shadow-sm">
-          <p className="text-sm uppercase tracking-[0.3em] text-rose-500">{sectionContent.calendar.title}</p>
-          <h2 className="mt-2 text-3xl font-semibold text-slate-900">{sectionContent.calendar.blurb}</h2>
-          <p className="mt-3 text-slate-600">A calm weekly view with space for rest, focus, and connection.</p>
-        </section>
-        <section className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-[28px] border border-slate-200/70 bg-slate-900 p-6 text-white">
-            <p className="text-sm uppercase tracking-[0.3em] text-slate-400">This week</p>
-            <div className="mt-4 space-y-3">
-              {['Monday planning', 'Wednesday deep work', 'Friday dinner plans'].map((item) => (
-                <div key={item} className="rounded-2xl border border-white/10 bg-white/10 p-3 text-sm">
-                  {item}
-                </div>
-              ))}
+      <SectionPage eyebrow="Calendar" title="A beautifully paced week" description="Keep your commitments visible without letting the schedule feel crowded.">
+        <Card className="grid gap-3 md:grid-cols-3">
+          {events.map((event) => (
+            <div key={event.title} className="rounded-[20px] border border-slate-200/70 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60">
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{event.title}</p>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{event.time}</p>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{event.detail}</p>
             </div>
-          </div>
-          <div className="rounded-[28px] border border-slate-200/70 bg-white/80 p-6 shadow-sm">
-            <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Flow note</p>
-            <p className="mt-3 text-slate-600">Block your week around what matters most, then leave margin for delight.</p>
-          </div>
-        </section>
-      </div>
+          ))}
+        </Card>
+      </SectionPage>
     </AppShell>
   );
 }

@@ -1,25 +1,26 @@
 import { AppShell } from '@/components/app-shell';
-import { sectionContent } from '@/lib/sections';
+import { SectionPage } from '@/components/section-page';
+import { Card } from '@/components/ui/card';
+
+const beautyNotes = [
+  { title: 'Skincare', detail: 'Cleanse, hydrate, and protect your barrier first.' },
+  { title: 'Hair', detail: 'Choose one soft, polished style for tomorrow.' },
+  { title: 'Wardrobe', detail: 'Keep one elegant outfit ready for the week ahead.' },
+];
 
 export default function BeautyPage() {
   return (
     <AppShell>
-      <div className="space-y-6">
-        <section className="rounded-[28px] border border-slate-200/70 bg-white/80 p-6 shadow-sm">
-          <p className="text-sm uppercase tracking-[0.3em] text-rose-500">{sectionContent.beauty.title}</p>
-          <h2 className="mt-2 text-3xl font-semibold text-slate-900">{sectionContent.beauty.blurb}</h2>
-          <p className="mt-3 text-slate-600">A self-care rhythm that supports your glow without making life feel heavy.</p>
-        </section>
-        <section className="rounded-[28px] border border-slate-200/70 bg-white/80 p-6 shadow-sm">
-          <div className="space-y-3">
-            {['Skincare', 'Hair', 'Wardrobe'].map((item) => (
-              <div key={item} className="rounded-2xl bg-rose-50 px-4 py-3 text-slate-700">
-                {item}
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
+      <SectionPage eyebrow="Beauty" title="Care that feels luxurious" description="Treat beauty as an intentional ritual rather than an afterthought.">
+        <Card className="space-y-3">
+          {beautyNotes.map((note) => (
+            <div key={note.title} className="rounded-[20px] border border-slate-200/70 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-800/60">
+              <p className="font-medium text-slate-900 dark:text-slate-100">{note.title}</p>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{note.detail}</p>
+            </div>
+          ))}
+        </Card>
+      </SectionPage>
     </AppShell>
   );
 }

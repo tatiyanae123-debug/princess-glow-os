@@ -1,24 +1,25 @@
 import { AppShell } from '@/components/app-shell';
-import { sectionContent } from '@/lib/sections';
+import { SectionPage } from '@/components/section-page';
+import { Card } from '@/components/ui/card';
+
+const goals = [
+  { title: 'Create a signature offer', detail: 'Define one offer that feels clear and memorable.' },
+  { title: 'Travel more intentionally', detail: 'Reserve one chapter of the year for rest and discovery.' },
+];
 
 export default function GoalsPage() {
   return (
     <AppShell>
-      <div className="space-y-6">
-        <section className="rounded-[28px] border border-slate-200/70 bg-white/80 p-6 shadow-sm">
-          <p className="text-sm uppercase tracking-[0.3em] text-rose-500">{sectionContent.goals.title}</p>
-          <h2 className="mt-2 text-3xl font-semibold text-slate-900">{sectionContent.goals.blurb}</h2>
-          <p className="mt-3 text-slate-600">Keep your larger vision visible and supported by small daily steps.</p>
-        </section>
-        <section className="grid gap-4 md:grid-cols-2">
-          {['Create a signature offer', 'Travel more intentionally'].map((goal) => (
-            <div key={goal} className="rounded-[28px] border border-slate-200/70 bg-slate-50 p-5">
-              <p className="font-semibold text-slate-900">{goal}</p>
-              <p className="mt-2 text-sm text-slate-600">Choose one action that moves it forward this week.</p>
+      <SectionPage eyebrow="Goals" title="Ambition that feels grounded" description="Let your goals stay visible and aligned with your daily life.">
+        <Card className="grid gap-3 md:grid-cols-2">
+          {goals.map((goal) => (
+            <div key={goal.title} className="rounded-[20px] border border-slate-200/70 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60">
+              <p className="font-medium text-slate-900 dark:text-slate-100">{goal.title}</p>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{goal.detail}</p>
             </div>
           ))}
-        </section>
-      </div>
+        </Card>
+      </SectionPage>
     </AppShell>
   );
 }
