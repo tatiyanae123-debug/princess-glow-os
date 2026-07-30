@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowDown, ArrowUp, CalendarDays, FolderKanban, ListChecks, Sparkles } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import type { DashboardWidgetId, LivingDashboardData } from '@/lib/dashboard/living-dashboard';
-import { DEFAULT_WIDGET_ORDER } from '@/lib/dashboard/living-dashboard';
+import type { DashboardWidgetId, LivingDashboardData } from '@/lib/dashboard/types';
+import { DEFAULT_WIDGET_ORDER } from '@/lib/dashboard/types';
 
 const WIDGET_STORAGE_KEY = 'living-dashboard-widget-order-v1';
 

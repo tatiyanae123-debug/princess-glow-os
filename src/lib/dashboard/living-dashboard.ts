@@ -1,9 +1,10 @@
-import type { Routine, Task, WorkSchedule, CalendarEvent } from '@/lib/types';
+import type { Task } from '@/lib/types';
 import { getTasksByUser } from '@/lib/data/tasks';
 import { getRoutinesByUser } from '@/lib/data/routines';
 import { getGoalsByUser } from '@/lib/data/goals';
 import { getWorkSchedulesByUser } from '@/lib/data/work-schedules';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
+import type { LivingDashboardData } from '@/lib/dashboard/types';
 
 const priorityRank: Record<Task['priority'], number> = {
   urgent: 0,
@@ -19,59 +20,6 @@ const weeklyThemes = [
   { title: 'Balance Week', note: 'Keep effort sustainable and your schedule breathable.' },
   { title: 'Refinement Week', note: 'Tighten routines and improve your system gently.' },
 ] as const;
-
-export type DashboardWidgetId =
-  | 'today-overview'
-  | 'daily-focus'
-  | 'top-priority'
-  | 'routine-summary'
-  | 'schedule-summary'
-  | 'project-status';
-
-export const DEFAULT_WIDGET_ORDER: DashboardWidgetId[] = [
-  'today-overview',
-  'daily-focus',
-  'top-priority',
-  'routine-summary',
-  'schedule-summary',
-  'project-status',
-];
-
-export type LivingDashboardData = {
-  greeting: {
-    label: string;
-    title: string;
-    message: string;
-  };
-  weekTheme: {
-    title: string;
-    note: string;
-  };
-  todayOverview: {
-    tasksDueToday: number;
-    eventsToday: number;
-    activeRoutines: number;
-    activeGoals: number;
-  };
-  dailyFocus: {
-    title: string;
-    note: string;
-    priority: string;
-  } | null;
-  topPriorityTasks: Pick<Task, 'id' | 'title' | 'description' | 'priority' | 'dueDate' | 'status'>[];
-  routinesForNow: Pick<Routine, 'id' | 'name' | 'description' | 'timeOfDay'>[];
-  todaySchedule: {
-    workSlots: Pick<WorkSchedule, 'id' | 'title' | 'startTime' | 'endTime' | 'dayOfWeek'>[];
-    events: Pick<CalendarEvent, 'id' | 'title' | 'startAt' | 'endAt' | 'location' | 'allDay'>[];
-  };
-  projectStatus: {
-    goalsInProgress: number;
-    goalsAchieved: number;
-    averageGoalProgress: number;
-    activeTaskCount: number;
-    completedTaskCount: number;
-  };
-};
 
 function formatWeekTheme(date: Date) {
   const weekNumber = Math.ceil((date.getDate() + new Date(date.getFullYear(), date.getMonth(), 1).getDay()) / 7);
