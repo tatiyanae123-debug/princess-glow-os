@@ -64,20 +64,35 @@ function buildReply(input: string) {
 export function AiAssistantPanel() {
   const [messages, setMessages] = useState<Message[]>(starterMessages);
   const [input, setInput] = useState('');
+  const [isThinking, setIsThinking] = useState(false);
 
   const suggestions = ['Plan my evening', 'Turn this note into tasks', 'Suggest a beauty routine', 'Review my week'];
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const trimmed = input.trim();
+  function sendPrompt(prompt: string) {
+    const trimmed = prompt.trim();
 
     if (!trimmed) {
       return;
     }
 
     const userMessage: Message = { role: 'user', text: trimmed };
-    setMessages((current) => [...current, userMessage, buildReply(trimmed)]);
+    setMessages((current) => [...current, userMessage]);
     setInput('');
+    setIsThinking(true);
+
+    window.setTimeout(() => {
+      setMessages((current) => [...current, buildReply(trimmed)]);
+      setIsThinking(false);
+    }, 550);
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    sendPrompt(input);
+  }
+
+  function handleSuggestionClick(suggestion: string) {
+    sendPrompt(suggestion);
   }
 
   return (
@@ -107,7 +122,12 @@ export function AiAssistantPanel() {
 
         <div className="flex flex-wrap gap-2">
           {suggestions.map((suggestion) => (
-            <button key={suggestion} className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+            <button
+              key={suggestion}
+              type="button"
+              onClick={() => handleSuggestionClick(suggestion)}
+              className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+            >
               {suggestion}
             </button>
           ))}
@@ -132,6 +152,11 @@ export function AiAssistantPanel() {
               {message.meta ? <p className="mt-2 text-xs uppercase tracking-[0.28em] text-slate-400">{message.meta}</p> : null}
             </div>
           ))}
+          {isThinking ? (
+            <div className="rounded-[20px] bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:bg-slate-800/70 dark:text-slate-200">
+              <p>Thinking of a calm next step…</p>
+            </div>
+          ) : null}
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row">
