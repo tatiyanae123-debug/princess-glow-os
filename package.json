@@ -9,13 +9,18 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.0",
+    "drizzle-kit": "^0.31.10",
+    "drizzle-orm": "^0.45.2",
     "lucide-react": "^0.475.0",
     "next": "15.3.3",
+    "next-auth": "^5.0.0-beta.25",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "tailwind-merge": "^2.4.1"
+    "tailwind-merge": "^2.4.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^22.10.1",
