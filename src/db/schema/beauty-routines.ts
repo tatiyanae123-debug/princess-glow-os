@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, pgEnum, index, integer } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean, index, integer } from 'drizzle-orm/pg-core';
 import { users } from './auth';
 import { timeOfDayEnum } from './routines';
 
