@@ -14,8 +14,8 @@ type Message = {
 const starterMessages: Message[] = [
   {
     role: 'assistant',
-    text: 'I can help you plan the day, turn notes into tasks, suggest rituals, and keep your life feeling calm and intentional.',
-    meta: 'Daily briefing ready',
+    text: 'This concierge is an interface preview. It can demonstrate planning flows with local mock logic, but it does not yet connect to a real AI provider or private accounts.',
+    meta: 'Preview only',
   },
 ];
 
@@ -25,32 +25,32 @@ function buildReply(input: string) {
   if (prompt.includes('plan') || prompt.includes('schedule')) {
     return {
       role: 'assistant' as const,
-      text: 'I’ve protected your highest-focus block and shifted lighter tasks to the end of the day. Your evening remains open for rest and preparation.',
-      meta: 'Planning support',
+      text: 'Preview mode: I would protect your highest-focus block and shift lighter tasks to the end of the day. When a real planner exists, this interface can turn that logic into saved plan changes.',
+      meta: 'Planning preview',
     };
   }
 
   if (prompt.includes('task') || prompt.includes('todo')) {
     return {
       role: 'assistant' as const,
-      text: 'I pulled three important actions from your note and turned them into next steps. The most valuable move is to finish the top-priority task before lunch.',
-      meta: 'Task extraction',
+      text: 'Preview mode: I can suggest three likely next steps from a note, but this session still uses local demo logic rather than a saved task system.',
+      meta: 'Task preview',
     };
   }
 
   if (prompt.includes('beauty') || prompt.includes('routine')) {
     return {
       role: 'assistant' as const,
-      text: 'Your beauty routine is already aligned with your energy. I recommend a short reset, one polished outfit, and a little extra rest tonight.',
-      meta: 'Routine guidance',
+      text: 'Preview mode: I can suggest a lighter beauty routine based on the current mock context, without claiming live product or health intelligence.',
+      meta: 'Routine preview',
     };
   }
 
   if (prompt.includes('budget') || prompt.includes('money')) {
     return {
       role: 'assistant' as const,
-      text: 'Your spending is staying within a healthy range. I’d keep discretionary purchases light this week and review subscriptions before the weekend.',
-      meta: 'Finance note',
+      text: 'Preview mode: I can frame a gentle finance observation from structured placeholder data, but this is not connected to real accounts.',
+      meta: 'Finance preview',
     };
   }
 
@@ -104,19 +104,19 @@ export function AiAssistantPanel() {
           </div>
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Glow AI</p>
-            <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">Your quiet executive assistant</p>
+            <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">Your quiet executive assistant preview</p>
           </div>
         </div>
 
         <div className="rounded-[22px] border border-slate-200/70 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/70">
           <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
             <Sparkles size={16} className="text-amber-500" />
-            <span>Daily briefing</span>
+            <span>AI concierge preview</span>
           </div>
           <ul className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
-            <li className="flex items-start gap-2"><CheckCircle2 size={16} className="mt-0.5 text-emerald-500" /> Protect your morning focus block.</li>
-            <li className="flex items-start gap-2"><CheckCircle2 size={16} className="mt-0.5 text-emerald-500" /> Move one beauty task into the afternoon.</li>
-            <li className="flex items-start gap-2"><CheckCircle2 size={16} className="mt-0.5 text-emerald-500" /> Leave room for a slow evening reset.</li>
+            <li className="flex items-start gap-2"><CheckCircle2 size={16} className="mt-0.5 text-emerald-500" /> Demonstrate natural-language planning without claiming production AI.</li>
+            <li className="flex items-start gap-2"><CheckCircle2 size={16} className="mt-0.5 text-emerald-500" /> Keep future service boundaries clear for real scheduling and memory features.</li>
+            <li className="flex items-start gap-2"><CheckCircle2 size={16} className="mt-0.5 text-emerald-500" /> Use supportive wording grounded in the current mock dashboard context.</li>
           </ul>
         </div>
 
@@ -138,7 +138,7 @@ export function AiAssistantPanel() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Ask Glow</p>
-            <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">Natural language support</p>
+            <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">Natural-language planning preview</p>
           </div>
           <div className="rounded-full bg-rose-50 p-2 text-rose-500 dark:bg-rose-500/10 dark:text-rose-300">
             <CalendarDays size={16} />
