@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: dark;
-}
-
 body {
   @apply min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,244,232,0.95),_rgba(245,226,208,0.95)_40%,_rgba(255,255,255,1)_100%)] text-slate-800 antialiased;
 }

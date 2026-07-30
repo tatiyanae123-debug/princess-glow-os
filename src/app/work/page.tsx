@@ -1,24 +1,25 @@
 import { AppShell } from '@/components/app-shell';
-import { sectionContent } from '@/lib/sections';
+import { SectionPage } from '@/components/section-page';
+import { Card } from '@/components/ui/card';
+
+const workItems = [
+  { title: 'Shape the next launch', detail: 'Keep work honest and achievable.' },
+  { title: 'Reply to priority messages', detail: 'Respond with clarity and warmth.' },
+];
 
 export default function WorkPage() {
   return (
     <AppShell>
-      <div className="space-y-6">
-        <section className="rounded-[28px] border border-slate-200/70 bg-white/80 p-6 shadow-sm">
-          <p className="text-sm uppercase tracking-[0.3em] text-rose-500">{sectionContent.work.title}</p>
-          <h2 className="mt-2 text-3xl font-semibold text-slate-900">{sectionContent.work.blurb}</h2>
-          <p className="mt-3 text-slate-600">Create momentum with clarity, structure, and enough softness to sustain it.</p>
-        </section>
-        <section className="grid gap-4 md:grid-cols-2">
-          {['Shape the next launch', 'Reply to priority messages'].map((item) => (
-            <div key={item} className="rounded-[28px] border border-slate-200/70 bg-slate-50 p-5">
-              <p className="font-semibold text-slate-900">{item}</p>
-              <p className="mt-2 text-sm text-slate-600">Keep work honest and achievable.</p>
+      <SectionPage eyebrow="Work" title="Make your workday feel structured and light" description="Create momentum with clarity, structure, and enough softness to sustain it.">
+        <Card className="grid gap-3 md:grid-cols-2">
+          {workItems.map((item) => (
+            <div key={item.title} className="rounded-[20px] border border-slate-200/70 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60">
+              <p className="font-semibold text-slate-900 dark:text-slate-100">{item.title}</p>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{item.detail}</p>
             </div>
           ))}
-        </section>
-      </div>
+        </Card>
+      </SectionPage>
     </AppShell>
   );
 }
