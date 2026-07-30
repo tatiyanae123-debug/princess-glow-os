@@ -6,6 +6,7 @@ import { TaskCard } from '@/components/ui/task-card';
 import { HabitCard } from '@/components/ui/habit-card';
 import { CalendarCard } from '@/components/ui/calendar-card';
 import { QuickActionCard } from '@/components/ui/quick-action-card';
+import { AiAssistantPanel } from '@/components/ui/ai-assistant';
 import { dashboardTasks, habits, quickActions } from '@/lib/navigation';
 import { Droplets, CloudSun, Sparkles, ArrowRight, Plus, CheckSquare } from 'lucide-react';
 
@@ -60,6 +61,7 @@ export default function DashboardPage() {
 
         <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
           <div className="space-y-4">
+            <AiAssistantPanel />
             <Card className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
