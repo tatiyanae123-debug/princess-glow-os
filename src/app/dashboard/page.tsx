@@ -1,5 +1,5 @@
 import { AppShell } from '@/components/app-shell';
-import { LivingDashboard } from '@/components/dashboard/living-dashboard';
+import { DashboardWithCustomization } from '@/components/dashboard/dashboard-with-customization';
 import type { LivingDashboardData } from '@/lib/dashboard/types';
 
 const MOCK_USER_ID = 'placeholder-user-id';
@@ -44,7 +44,7 @@ export default async function DashboardPage() {
   if (!process.env.DATABASE_URL) {
     return (
       <AppShell>
-        <LivingDashboard data={getFallbackData()} error="DATABASE_URL is not configured." />
+        <DashboardWithCustomization data={getFallbackData()} error="DATABASE_URL is not configured." />
       </AppShell>
     );
   }
@@ -54,7 +54,7 @@ export default async function DashboardPage() {
     const data = await getLivingDashboardData(MOCK_USER_ID);
     return (
       <AppShell>
-        <LivingDashboard data={data} />
+        <DashboardWithCustomization data={data} />
       </AppShell>
     );
   } catch (error) {
@@ -62,7 +62,7 @@ export default async function DashboardPage() {
 
     return (
       <AppShell>
-        <LivingDashboard data={getFallbackData()} error={message} />
+        <DashboardWithCustomization data={getFallbackData()} error={message} />
       </AppShell>
     );
   }

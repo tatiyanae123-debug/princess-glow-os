@@ -2,12 +2,32 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowDown, ArrowUp, CalendarDays, FolderKanban, ListChecks, Sparkles } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { DashboardWidgetId, LivingDashboardData } from '@/lib/dashboard/types';
 import { DEFAULT_WIDGET_ORDER } from '@/lib/dashboard/types';
+import type { AccentColor, WidgetSize } from '@/lib/visual/types';
+import { useCustomization } from './customization-context';
 
 const WIDGET_STORAGE_KEY = 'living-dashboard-widget-order-v1';
+
+// ── Widget visual helpers ─────────────────────────────────────────────────────
+
+const ACCENT_BORDER: Record<AccentColor, string> = {
+  default: '',
+  rose: 'border-l-4 border-rose-400 pl-3',
+  violet: 'border-l-4 border-violet-400 pl-3',
+  sky: 'border-l-4 border-sky-400 pl-3',
+  emerald: 'border-l-4 border-emerald-400 pl-3',
+  amber: 'border-l-4 border-amber-400 pl-3',
+};
+
+const SIZE_CLASS: Record<WidgetSize, string> = {
+  compact: 'text-sm [&_h2]:text-xl [&_.text-2xl]:text-lg [&_.text-xl]:text-base',
+  default: '',
+  expanded: 'shadow-lg ring-1 ring-slate-200/70 dark:ring-slate-700/70',
+};
 
 type WidgetDescriptor = {
   id: DashboardWidgetId;
@@ -261,6 +281,10 @@ export function LivingDashboard({ data, error }: { data: LivingDashboardData; er
 
   const widgetsById = useMemo(() => new Map(widgets.map((widget) => [widget.id, widget])), [widgets]);
 
+  // Visual customisation from context (optional — falls back gracefully if not provided)
+  const customCtx = useCustomization();
+  const visualWidgetPrefs = customCtx?.prefs.widgets;
+
   return (
     <div className="space-y-6">
       <Card className="space-y-4 bg-[linear-gradient(135deg,_rgba(255,245,247,1),_rgba(255,255,255,0.95))] dark:bg-[linear-gradient(135deg,_rgba(15,23,42,1),_rgba(30,41,59,0.95))]">
@@ -291,8 +315,17 @@ export function LivingDashboard({ data, error }: { data: LivingDashboardData; er
           {widgetOrder.map((widgetId, index) => {
             const widget = widgetsById.get(widgetId);
             if (!widget) return null;
+
+            // Apply visual preferences if available
+            const vPref = visualWidgetPrefs?.[widgetId];
+            const isVisible = vPref?.visible !== false;
+            if (!isVisible) return null;
+
+            const accentBorder = ACCENT_BORDER[vPref?.accentColor ?? 'default'];
+            const sizeClass = SIZE_CLASS[vPref?.size ?? 'default'];
+
             return (
-              <section key={widgetId} className="space-y-2">
+              <section key={widgetId} className={cn('space-y-2 rounded-xl transition-all', accentBorder, sizeClass)}>
                 <div className="flex items-center justify-between">
                   <p className="text-xs uppercase tracking-[0.25em] text-slate-500 dark:text-slate-400">{widget.label}</p>
                   <div className="flex items-center gap-1">

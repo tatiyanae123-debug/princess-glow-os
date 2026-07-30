@@ -2,8 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── CSS design tokens (overridden at runtime by theme packs) ── */
 :root {
   color-scheme: dark;
+
+  --glow-accent: 351 85% 67%;
+  --glow-accent-soft: 351 100% 95%;
+  --glow-accent-text: 351 85% 45%;
+  --glow-gradient: linear-gradient(135deg, #fff5f7 0%, #fdf2f8 100%);
+  --glow-surface: rgba(255, 255, 255, 0.9);
 }
 
 body {
@@ -12,4 +19,23 @@ body {
 
 * {
   @apply box-border;
+}
+
+/* Respect user-set reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Dashboard customization data-attribute: disable transitions while editing */
+[data-reduced-motion='true'] *,
+[data-reduced-motion='true'] *::before,
+[data-reduced-motion='true'] *::after {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
 }
