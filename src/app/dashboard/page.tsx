@@ -1,6 +1,7 @@
 import { AppShell } from '@/components/app-shell';
 import { LivingDashboard } from '@/components/dashboard/living-dashboard';
 import { getLivingDashboardData } from '@/lib/dashboard/living-dashboard';
+import type { LivingDashboardData } from '@/lib/dashboard/living-dashboard';
 
 const MOCK_USER_ID = 'placeholder-user-id';
 
@@ -15,7 +16,7 @@ export default async function DashboardPage() {
       </AppShell>
     );
   } catch (error) {
-    const fallbackData = {
+    const fallbackData: LivingDashboardData = {
       greeting: {
         label: 'Welcome',
         title: 'Your living dashboard is ready.',
@@ -45,7 +46,7 @@ export default async function DashboardPage() {
         activeTaskCount: 0,
         completedTaskCount: 0,
       },
-    } as const;
+    };
 
     const message = error instanceof Error ? error.message : 'Unknown error';
 

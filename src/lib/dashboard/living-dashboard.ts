@@ -1,4 +1,4 @@
-import type { Goal, Routine, Task, WorkSchedule, CalendarEvent } from '@/lib/types';
+import type { Routine, Task, WorkSchedule, CalendarEvent } from '@/lib/types';
 import { getTasksByUser } from '@/lib/data/tasks';
 import { getRoutinesByUser } from '@/lib/data/routines';
 import { getGoalsByUser } from '@/lib/data/goals';
