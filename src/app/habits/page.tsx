@@ -1,22 +1,36 @@
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
 import { SectionPage } from '@/components/section-page';
 import { HabitCard } from '@/components/ui/habit-card';
+import { getHabitsByUser } from '@/lib/data/habits';
 
-const habits = [
-  { name: 'Hydration', progress: 82, streak: 14, note: 'Two more glasses to complete the day.' },
-  { name: 'Movement', progress: 64, streak: 8, note: 'A walk would feel especially good before dinner.' },
-  { name: 'Journal', progress: 70, streak: 11, note: 'A few honest lines keep the mind clear.' },
-];
+export const dynamic = 'force-dynamic';
 
-export default function HabitsPage() {
+export default async function HabitsPage() {
+  const session = await auth();
+  if (!session?.user?.id) redirect('/sign-in');
+
+  const habits = await getHabitsByUser(session.user.id);
+
   return (
     <AppShell>
       <SectionPage eyebrow="Habits" title="Tiny rituals that compound" description="The smallest daily actions create the strongest sense of care and consistency.">
-        <div className="grid gap-4 md:grid-cols-3">
-          {habits.map((habit) => (
-            <HabitCard key={habit.name} {...habit} />
-          ))}
-        </div>
+        {habits.length === 0 ? (
+          <p className="py-4 text-center text-sm text-slate-400 dark:text-slate-500">No habits yet. Add your first habit to start tracking.</p>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-3">
+            {habits.map((habit) => (
+              <HabitCard
+                key={habit.id}
+                name={habit.name}
+                progress={0}
+                streak={0}
+                note={habit.description ?? `${habit.frequency} · target ${habit.targetCount}×`}
+              />
+            ))}
+          </div>
+        )}
       </SectionPage>
     </AppShell>
   );

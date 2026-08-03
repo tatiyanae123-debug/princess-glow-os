@@ -1,8 +1,8 @@
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
 import { LivingDashboard } from '@/components/dashboard/living-dashboard';
 import type { LivingDashboardData } from '@/lib/dashboard/types';
-
-const MOCK_USER_ID = 'placeholder-user-id';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,6 +41,10 @@ function getFallbackData(): LivingDashboardData {
 }
 
 export default async function DashboardPage() {
+  const session = await auth();
+  if (!session?.user?.id) redirect('/sign-in');
+  const userId = session.user.id;
+
   if (!process.env.DATABASE_URL) {
     return (
       <AppShell>
@@ -51,7 +55,7 @@ export default async function DashboardPage() {
 
   try {
     const { getLivingDashboardData } = await import('@/lib/dashboard/living-dashboard');
-    const data = await getLivingDashboardData(MOCK_USER_ID);
+    const data = await getLivingDashboardData(userId);
     return (
       <AppShell>
         <LivingDashboard data={data} />

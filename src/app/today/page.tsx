@@ -1,7 +1,50 @@
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { beautyRoutine, featuredPillars, quickNotes, todayHighlights, wellnessTracks } from '@/lib/sections';
+import { getTasksByUser } from '@/lib/data/tasks';
+import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
+import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
+import { getNotesByUser } from '@/lib/data/notes';
 
-export default function TodayPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function TodayPage() {
+  const session = await auth();
+  if (!session?.user?.id) redirect('/sign-in');
+  const userId = session.user.id;
+
+  const [tasks, wellnessEntries, beautyRoutines, notes] = await Promise.all([
+    getTasksByUser(userId),
+    getWellnessEntriesByUser(userId),
+    getBeautyRoutinesByUser(userId),
+    getNotesByUser(userId),
+  ]);
+
+  const today = new Date();
+  const todayTasks = tasks
+    .filter((t) => t.status !== 'done' && t.status !== 'cancelled' && t.dueDate && t.dueDate.toDateString() === today.toDateString())
+    .slice(0, 3);
+  const topTasks = tasks.filter((t) => t.status !== 'done' && t.status !== 'cancelled').slice(0, 3);
+  const highlights = todayTasks.length > 0 ? todayTasks : topTasks;
+
+  const latestWellness = wellnessEntries[0] ?? null;
+  const wellnessTracks = [
+    { title: 'Mood', value: latestWellness?.mood ? String(latestWellness.mood) : '–' },
+    { title: 'Energy', value: latestWellness?.energy ? String(latestWellness.energy) : '–' },
+    { title: 'Sleep', value: latestWellness?.sleepHours != null ? `${latestWellness.sleepHours}h` : '–' },
+  ];
+
+  const beautySteps = beautyRoutines.filter((r) => r.timeOfDay === 'morning').slice(0, 4);
+  const pinnedNotes = notes.filter((n) => n.pinned).slice(0, 6);
+  const recentNotes = notes.slice(0, 6);
+  const quickNotes = (pinnedNotes.length > 0 ? pinnedNotes : recentNotes).map((n) => n.title);
+
+  const featuredPillars = [
+    { title: 'Glow', description: 'A refined morning rhythm' },
+    { title: 'Flow', description: 'Work that feels lighter' },
+    { title: 'Restore', description: 'Care that holds you' },
+  ];
+
   return (
     <AppShell>
       <div className="space-y-6">
@@ -15,8 +58,8 @@ export default function TodayPage() {
               </p>
             </div>
             <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-              <p className="font-semibold">Today’s focus</p>
-              <p className="mt-1">Finish one meaningful thing before noon.</p>
+              <p className="font-semibold">Today&apos;s focus</p>
+              <p className="mt-1">{highlights[0]?.title ?? 'Choose one meaningful thing to finish today.'}</p>
             </div>
           </div>
         </section>
@@ -25,12 +68,16 @@ export default function TodayPage() {
           <div className="rounded-[28px] border border-slate-200/70 bg-slate-900 p-6 text-white shadow-sm">
             <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Highlights</p>
             <div className="mt-4 space-y-3">
-              {todayHighlights.map((item) => (
-                <div key={item.title} className="rounded-2xl border border-white/10 bg-white/10 p-4">
-                  <p className="font-semibold">{item.title}</p>
-                  <p className="mt-1 text-sm text-slate-300">{item.detail}</p>
-                </div>
-              ))}
+              {highlights.length === 0 ? (
+                <p className="rounded-2xl border border-white/10 bg-white/10 p-4 text-sm text-slate-300">All caught up – add tasks to see your highlights here.</p>
+              ) : (
+                highlights.map((task) => (
+                  <div key={task.id} className="rounded-2xl border border-white/10 bg-white/10 p-4">
+                    <p className="font-semibold">{task.title}</p>
+                    {task.description && <p className="mt-1 text-sm text-slate-300">{task.description}</p>}
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -54,31 +101,42 @@ export default function TodayPage() {
               {wellnessTracks.map((track) => (
                 <div key={track.title} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <p className="text-sm text-slate-500">{track.title}</p>
-                  <p className="mt-2 text-lg font-semibold text-slate-900">{track.value}</p>
+                  <p className="mt-2 text-lg font-semibold capitalize text-slate-900">{track.value}</p>
                 </div>
               ))}
             </div>
+            {!latestWellness && (
+              <p className="mt-3 text-xs text-slate-400">Log a wellness entry to see your snapshot here.</p>
+            )}
           </div>
 
           <div className="rounded-[28px] border border-slate-200/70 bg-white/80 p-6 shadow-sm">
             <p className="text-sm uppercase tracking-[0.3em] text-emerald-600">Beauty ritual</p>
-            <ul className="mt-4 space-y-3 text-sm text-slate-600">
-              {beautyRoutine.map((step) => (
-                <li key={step} className="rounded-2xl bg-rose-50 px-4 py-3">{step}</li>
-              ))}
-            </ul>
+            {beautySteps.length === 0 ? (
+              <p className="mt-4 text-sm text-slate-400">No morning beauty steps yet. Add your ritual in the Beauty section.</p>
+            ) : (
+              <ul className="mt-4 space-y-3 text-sm text-slate-600">
+                {beautySteps.map((step) => (
+                  <li key={step.id} className="rounded-2xl bg-rose-50 px-4 py-3">{step.name}</li>
+                ))}
+              </ul>
+            )}
           </div>
         </section>
 
         <section className="rounded-[28px] border border-slate-200/70 bg-white/80 p-6 shadow-sm">
           <p className="text-sm uppercase tracking-[0.3em] text-sky-600">Notes to keep close</p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            {quickNotes.map((note) => (
-              <span key={note} className="rounded-full bg-slate-100 px-4 py-2 text-sm text-slate-700">
-                {note}
-              </span>
-            ))}
-          </div>
+          {quickNotes.length === 0 ? (
+            <p className="mt-4 text-sm text-slate-400">Add notes to see them here.</p>
+          ) : (
+            <div className="mt-4 flex flex-wrap gap-3">
+              {quickNotes.map((note) => (
+                <span key={note} className="rounded-full bg-slate-100 px-4 py-2 text-sm text-slate-700">
+                  {note}
+                </span>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </AppShell>
