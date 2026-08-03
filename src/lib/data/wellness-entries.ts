@@ -3,6 +3,9 @@ import { wellnessEntries } from '@/db/schema/wellness-entries';
 import { eq, and, desc } from 'drizzle-orm';
 import type { CreateWellnessEntryInput, UpdateWellnessEntryInput } from '@/lib/validations/wellness-entries';
 
+// Note: wellness uses hard delete (deleteWellnessEntry calls DELETE, not soft-archive)
+// because the wellness_entries table has no `archived` column.
+
 export async function getWellnessEntriesByUser(userId: string) {
   return db
     .select()
