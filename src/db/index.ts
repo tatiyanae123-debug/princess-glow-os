@@ -3,7 +3,7 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import * as schema from './schema';
 import * as relations from './relations';
 
-const sql = neon(process.env.DATABASE_URL!);
+const sql = neon(process.env.DATABASE_URL ?? 'postgresql://user:pass@placeholder.neon.tech/db');
 export const db = drizzle(sql, { schema: { ...schema, ...relations } });
 
 export type DB = typeof db;

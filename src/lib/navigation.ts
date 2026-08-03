@@ -34,26 +34,3 @@ export const navItems: NavItem[] = [
   { label: 'Settings', href: '/settings', icon: SettingsIcon, description: 'Tune your environment' },
 ];
 
-export const dashboardTasks = [
-  { title: 'Finish vendor comparison', note: 'Share the shortlist before lunch.', priority: 'High', time: '09:30' },
-  { title: 'Prep beauty kit', note: 'Pack SPF and serum for tonight.', priority: 'Medium', time: '18:00' },
-  { title: 'Review weekly budget', note: 'Check subscriptions and adjust spending.', priority: 'Low', time: '20:30' },
-] as const;
-
-export const upcomingEvents = [
-  { title: 'Dermatology consult', time: '14:00', location: 'West Avenue Clinic' },
-  { title: 'Dinner with friends', time: '19:30', location: 'Golden Hour' },
-  { title: 'Creative block', time: '21:00', location: 'Studio desk' },
-] as const;
-
-export const habits = [
-  { name: 'Hydration', progress: 82, streak: 14, note: 'Two more glasses to complete the day.' },
-  { name: 'Movement', progress: 64, streak: 8, note: 'A 20-minute walk would feel great.' },
-  { name: 'Skincare', progress: 100, streak: 21, note: 'Routine is already locked in.' },
-] as const;
-
-export const quickActions = [
-  { title: 'Start ritual', description: 'Begin your morning reset', icon: Sparkles },
-  { title: 'Capture note', description: 'Add a fleeting idea', icon: NotebookText },
-  { title: 'Review finances', description: 'Check this week’s balance', icon: Wallet },
-] as const;
