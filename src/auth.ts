@@ -1,25 +1,31 @@
 import NextAuth from 'next-auth';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
-import GitHub from 'next-auth/providers/github';
 import Google from 'next-auth/providers/google';
 import { db } from '@/db';
 import { users, accounts, sessions, verificationTokens } from '@/db/schema/auth';
 
-const missingVars: string[] = [];
-if (!process.env.PRINCESS_GOOGLE_CLIENT_ID) missingVars.push('PRINCESS_GOOGLE_CLIENT_ID');
-if (!process.env.PRINCESS_GOOGLE_CLIENT_SECRET) missingVars.push('PRINCESS_GOOGLE_CLIENT_SECRET');
-if (missingVars.length > 0) {
-  throw new Error(
-    `Missing required environment variable(s): ${missingVars.join(', ')}. ` +
-      'Set them before starting the application.',
-  );
+// Warn (do not throw) so Auth.js can return a proper /api/auth/error response
+// rather than crashing the module with an unhandled exception.
+if (!process.env.AUTH_SECRET) {
+  console.warn('[auth] WARNING: AUTH_SECRET is not set. Auth.js will reject all sessions.');
+}
+if (!process.env.PRINCESS_GOOGLE_CLIENT_ID) {
+  console.warn('[auth] WARNING: PRINCESS_GOOGLE_CLIENT_ID is not set. Google sign-in will fail.');
+}
+if (!process.env.PRINCESS_GOOGLE_CLIENT_SECRET) {
+  console.warn('[auth] WARNING: PRINCESS_GOOGLE_CLIENT_SECRET is not set. Google sign-in will fail.');
+}
+if (!process.env.DATABASE_URL) {
+  console.warn('[auth] WARNING: DATABASE_URL is not set. Database operations will fail.');
 }
 
-console.log(
-  'Google OAuth config:',
-  'PRINCESS_GOOGLE_CLIENT_ID present =', !!process.env.PRINCESS_GOOGLE_CLIENT_ID,
-  '| PRINCESS_GOOGLE_CLIENT_SECRET present =', !!process.env.PRINCESS_GOOGLE_CLIENT_SECRET,
-);
+// Safe diagnostic – never prints the actual values of secrets.
+console.log('[auth] config check:', {
+  AUTH_SECRET: !!process.env.AUTH_SECRET,
+  PRINCESS_GOOGLE_CLIENT_ID: !!process.env.PRINCESS_GOOGLE_CLIENT_ID,
+  PRINCESS_GOOGLE_CLIENT_SECRET: !!process.env.PRINCESS_GOOGLE_CLIENT_SECRET,
+  DATABASE_URL: !!process.env.DATABASE_URL,
+});
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: DrizzleAdapter(db, {
@@ -29,14 +35,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     verificationTokensTable: verificationTokens,
   }),
   providers: [
-    GitHub,
     Google({
-      clientId: process.env.PRINCESS_GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.PRINCESS_GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.PRINCESS_GOOGLE_CLIENT_ID ?? '',
+      clientSecret: process.env.PRINCESS_GOOGLE_CLIENT_SECRET ?? '',
     }),
   ],
   pages: {
     signIn: '/sign-in',
+  },
+  logger: {
+    error(error) {
+      // Log the error type and message only – never log tokens, cookies, or credentials.
+      console.error('[auth] error:', error instanceof Error ? error.message : String(error));
+    },
+    warn(code) {
+      console.warn('[auth] warning:', code);
+    },
+    debug(message) {
+      if (process.env.AUTH_DEBUG === 'true') {
+        // Omit metadata entirely – it may contain tokens or session data.
+        console.debug('[auth] debug:', message);
+      }
+    },
   },
   callbacks: {
     authorized({ auth: session, request: { nextUrl } }) {
