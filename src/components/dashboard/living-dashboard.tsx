@@ -188,6 +188,52 @@ export function LivingDashboard({ data, error }: { data: LivingDashboardData; er
         ),
       },
       {
+        id: 'habit-summary',
+        label: 'Habit summary',
+        render: () => (
+          <Card>
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: 'var(--glow-accent)' }}>
+                Habit summary
+              </p>
+              <span className="text-xs" style={{ color: 'var(--glow-text-muted)' }}>
+                {data.habitSummary.completedToday}/{data.habitSummary.totalHabits} today
+              </span>
+            </div>
+            {data.habitSummary.habits.length > 0 ? (
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {data.habitSummary.habits.map((habit) => (
+                  <div
+                    key={habit.id}
+                    className="flex items-center justify-between gap-2 rounded-2xl p-3"
+                    style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)' }}
+                  >
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: habit.color ?? 'var(--glow-accent)' }} />
+                      <p className="truncate text-sm" style={{ color: 'var(--glow-text)' }}>{habit.name}</p>
+                    </div>
+                    <span
+                      className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium"
+                      style={
+                        habit.completedToday
+                          ? { background: 'rgb(16 185 129 / 0.12)', color: 'rgb(5 150 105)' }
+                          : { background: 'var(--glow-accent-soft)', color: 'var(--glow-accent)' }
+                      }
+                    >
+                      {habit.completedToday ? 'Done' : 'Pending'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
+                No habits yet. Add one to start building your streak.
+              </p>
+            )}
+          </Card>
+        ),
+      },
+      {
         id: 'routine-summary',
         label: 'Routine summary',
         render: () => (
@@ -216,6 +262,76 @@ export function LivingDashboard({ data, error }: { data: LivingDashboardData; er
             ) : (
               <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
                 No routines for this time window yet.
+              </p>
+            )}
+          </Card>
+        ),
+      },
+      {
+        id: 'beauty-today',
+        label: 'Beauty today',
+        render: () => (
+          <Card>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] mb-3" style={{ color: 'var(--glow-accent)' }}>
+              Beauty today
+            </p>
+            {data.beautyToday.length > 0 ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {data.beautyToday.map((step) => (
+                  <div
+                    key={step.id}
+                    className="rounded-2xl p-4"
+                    style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)' }}
+                  >
+                    <p className="font-semibold" style={{ color: 'var(--glow-text)' }}>{step.name}</p>
+                    {step.products && step.products.length > 0 && (
+                      <p className="mt-1 text-sm" style={{ color: 'var(--glow-text-muted)' }}>{step.products.join(', ')}</p>
+                    )}
+                    <p className="mt-2 text-xs uppercase tracking-[0.15em] capitalize" style={{ color: 'var(--glow-accent)' }}>
+                      {step.timeOfDay}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
+                No beauty steps scheduled for this part of the day.
+              </p>
+            )}
+          </Card>
+        ),
+      },
+      {
+        id: 'wellness-today',
+        label: 'Wellness today',
+        render: () => (
+          <Card>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] mb-3" style={{ color: 'var(--glow-accent)' }}>
+              Wellness today
+            </p>
+            {data.wellnessToday.loggedToday && data.wellnessToday.entry ? (
+              <div className="grid gap-3 sm:grid-cols-3">
+                {[
+                  { label: 'Mood', value: data.wellnessToday.entry.mood ?? '–' },
+                  { label: 'Energy', value: data.wellnessToday.entry.energy ?? '–' },
+                  {
+                    label: 'Sleep',
+                    value: data.wellnessToday.entry.sleepHours != null ? `${data.wellnessToday.entry.sleepHours}h` : '–',
+                  },
+                ].map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="rounded-2xl p-4"
+                    style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)' }}
+                  >
+                    <p className="text-xs uppercase tracking-[0.2em]" style={{ color: 'var(--glow-text-muted)' }}>{stat.label}</p>
+                    <p className="mt-2 text-lg font-semibold capitalize" style={{ color: 'var(--glow-text)' }}>{stat.value}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
+                No check-in logged today yet. Take a minute to log how you&rsquo;re feeling.
               </p>
             )}
           </Card>
@@ -263,6 +379,52 @@ export function LivingDashboard({ data, error }: { data: LivingDashboardData; er
                 </div>
               ))}
             </div>
+          </Card>
+        ),
+      },
+      {
+        id: 'notes-summary',
+        label: 'Notes summary',
+        render: () => (
+          <Card>
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: 'var(--glow-accent)' }}>
+                Notes summary
+              </p>
+              <span className="text-xs" style={{ color: 'var(--glow-text-muted)' }}>
+                {data.notesSummary.pinnedCount} pinned
+              </span>
+            </div>
+            {data.notesSummary.recentNotes.length > 0 ? (
+              <div className="space-y-2">
+                {data.notesSummary.recentNotes.map((note) => (
+                  <div
+                    key={note.id}
+                    className="rounded-2xl p-4"
+                    style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)' }}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="truncate font-medium" style={{ color: 'var(--glow-text)' }}>{note.title}</p>
+                      {note.pinned && (
+                        <span
+                          className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium"
+                          style={{ background: 'var(--glow-accent-soft)', color: 'var(--glow-accent)' }}
+                        >
+                          Pinned
+                        </span>
+                      )}
+                    </div>
+                    {note.content && (
+                      <p className="mt-1 truncate text-sm" style={{ color: 'var(--glow-text-muted)' }}>{note.content}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
+                No notes yet. Capture your first idea.
+              </p>
+            )}
           </Card>
         ),
       },

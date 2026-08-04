@@ -61,6 +61,15 @@ export async function createHabitLog(userId: string, data: CreateHabitLogInput) 
   return log;
 }
 
+// Used by the Living Dashboard to show today's completion state across all
+// habits in a single query, instead of one getHabitLogsByHabit call per habit.
+export async function getHabitLogsForUserByDate(userId: string, date: string) {
+  return db
+    .select()
+    .from(habitLogs)
+    .where(and(eq(habitLogs.userId, userId), eq(habitLogs.loggedDate, date)));
+}
+
 export async function deleteHabitLog(id: string, userId: string) {
   const [log] = await db
     .delete(habitLogs)

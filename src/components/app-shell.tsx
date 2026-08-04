@@ -3,6 +3,7 @@
 import { Sidebar } from '@/components/ui/sidebar';
 import { TopNav } from '@/components/ui/top-nav';
 import { GlowProvider } from '@/lib/context/glow-provider';
+import { QuickAdd } from '@/components/quick-add/quick-add';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -30,6 +31,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </div>
+      <QuickAdd />
     </GlowProvider>
   );
 }
