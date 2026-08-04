@@ -4,33 +4,30 @@ import Google from 'next-auth/providers/google';
 import { db } from '@/db';
 import { users, accounts, sessions, verificationTokens } from '@/db/schema/auth';
 
-const missingVars: string[] = [];
-if (!process.env.AUTH_SECRET) missingVars.push('AUTH_SECRET');
-if (!process.env.DATABASE_URL) missingVars.push('DATABASE_URL');
-if (!process.env.PRINCESS_GOOGLE_CLIENT_ID) missingVars.push('PRINCESS_GOOGLE_CLIENT_ID');
-if (!process.env.PRINCESS_GOOGLE_CLIENT_SECRET) missingVars.push('PRINCESS_GOOGLE_CLIENT_SECRET');
-if (missingVars.length > 0) {
-  throw new Error(
-    `Missing required environment variable(s): ${missingVars.join(', ')}. ` +
-      'Set them before starting the application.',
-  );
+function ensureAuthEnv() {
+  const missingVars: string[] = [];
+  if (!process.env.AUTH_SECRET) missingVars.push('AUTH_SECRET');
+  if (!process.env.DATABASE_URL) missingVars.push('DATABASE_URL');
+  if (!process.env.PRINCESS_GOOGLE_CLIENT_ID) missingVars.push('PRINCESS_GOOGLE_CLIENT_ID');
+  if (!process.env.PRINCESS_GOOGLE_CLIENT_SECRET) missingVars.push('PRINCESS_GOOGLE_CLIENT_SECRET');
+  if (missingVars.length > 0) {
+    throw new Error(
+      `Missing required environment variable(s): ${missingVars.join(', ')}. ` +
+        'Set them before starting the application.',
+    );
+  }
 }
 
-console.log(
-  'Auth config:',
-  'AUTH_SECRET present =', !!process.env.AUTH_SECRET,
-  '| DATABASE_URL present =', !!process.env.DATABASE_URL,
-  '| PRINCESS_GOOGLE_CLIENT_ID present =', !!process.env.PRINCESS_GOOGLE_CLIENT_ID,
-  '| PRINCESS_GOOGLE_CLIENT_SECRET present =', !!process.env.PRINCESS_GOOGLE_CLIENT_SECRET,
-);
-
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: DrizzleAdapter(db, {
+  adapter: (() => {
+    ensureAuthEnv();
+    return DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
     sessionsTable: sessions,
     verificationTokensTable: verificationTokens,
-  }),
+    });
+  })(),
   providers: [
     Google({
       clientId: process.env.PRINCESS_GOOGLE_CLIENT_ID!,

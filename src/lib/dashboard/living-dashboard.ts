@@ -140,7 +140,7 @@ export async function getLivingDashboardData(userId: string): Promise<LivingDash
   ]);
 
   const habitLogs = await Promise.all(habits.map((habit) => getHabitLogsByHabit(habit.id, userId)));
-  const routineSteps = await Promise.all(routines.map((routine) => getStepsByRoutine(routine.id, userId)));
+  await Promise.all(routines.map((routine) => getStepsByRoutine(routine.id, userId)));
 
   const activeTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'cancelled');
   const completedTasks = tasks.filter((task) => task.status === 'done');
@@ -187,10 +187,10 @@ export async function getLivingDashboardData(userId: string): Promise<LivingDash
 
   const habitSummaries: DashboardHabitSummary[] = habits.map((habit, index) => {
     const logs = habitLogs[index] ?? [];
-    const completedToday = logs.filter((log) => log.loggedDate.toDateString() === todayStart.toDateString()).reduce((sum, log) => sum + log.count, 0);
-    const uniqueDates = [...new Set(logs.map((log) => log.loggedDate.toISOString()))].sort().reverse();
+    const completedToday = logs.filter((log) => log.loggedDate === todayStart.toISOString().slice(0, 10)).reduce((sum, log) => sum + log.count, 0);
+    const uniqueDates = [...new Set(logs.map((log) => log.loggedDate))].sort().reverse();
     let streak = 0;
-    let cursor = new Date(todayStart);
+    const cursor = new Date(todayStart);
     for (const isoDate of uniqueDates) {
       const date = new Date(isoDate);
       if (date.toDateString() === cursor.toDateString()) {
@@ -302,7 +302,7 @@ export async function getLivingDashboardData(userId: string): Promise<LivingDash
     ? `Start with ${overdueTasks[0].title}, then move into ${timeState.routineMatch === 'afternoon' ? 'your midday reset' : `${timeState.routineMatch} routines`} to regain control.`
     : topPriorityTasks[0]
     ? `Protect ${topPriorityTasks[0].title} first, then let your schedule and rituals cascade around it.`
-    : 'Your dashboard is calm right now—use this space to define today's most meaningful win.';
+    : 'Your dashboard is calm right now—use this space to define today’s most meaningful win.';
 
   return {
     greeting: {
@@ -314,7 +314,7 @@ export async function getLivingDashboardData(userId: string): Promise<LivingDash
     hero: {
       title: 'Personal Life Operating System',
       subtitle: 'A premium Living Command Center that brings your schedule, routines, wellness, money, and goals into one view.',
-      primaryFocus: topPriorityTasks[0]?.title ?? 'Set today's top priority',
+      primaryFocus: topPriorityTasks[0]?.title ?? 'Set today’s top priority',
       secondaryFocus: todaysAppointments[0]?.title ?? todaysEvents[0]?.title ?? 'No immediate event pressure',
     },
     commandCenter: {

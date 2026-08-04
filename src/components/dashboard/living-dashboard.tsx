@@ -7,7 +7,6 @@ import {
   Brain,
   CalendarDays,
   CheckCircle2,
-  Clock3,
   Dumbbell,
   Droplets,
   FolderKanban,
@@ -47,9 +46,6 @@ function formatTime(date: Date | null) {
   return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
-function formatWorkTime(timeValue: string) {
-  return timeValue.slice(0, 5);
-}
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
