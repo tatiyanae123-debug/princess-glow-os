@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowDown, ArrowUp, CalendarDays, FolderKanban, ListChecks, Sparkles } from 'lucide-react';
+import { ArrowDown, ArrowUp, CalendarDays, FolderKanban, ListChecks, Sparkles, User } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { CustomizableVisual } from '@/components/ui/customizable-visual';
 import type { DashboardWidgetId, LivingDashboardData } from '@/lib/dashboard/types';
 import { DEFAULT_WIDGET_ORDER } from '@/lib/dashboard/types';
+import { useGlow } from '@/lib/context/glow-provider';
 
 const WIDGET_STORAGE_KEY = 'living-dashboard-widget-order-v1';
 
@@ -38,18 +40,14 @@ function isValidWidgetOrder(value: unknown): value is DashboardWidgetId[] {
 export function LivingDashboard({ data, error }: { data: LivingDashboardData; error?: string }) {
   const [widgetOrder, setWidgetOrder] = useState<DashboardWidgetId[]>(DEFAULT_WIDGET_ORDER);
   const [isPreferencesLoading, setIsPreferencesLoading] = useState(true);
+  const { isCustomizing, markChanged, updateVisual, getVisualSrc, getVisualPosition, createObjectUrl } = useGlow();
 
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(WIDGET_STORAGE_KEY);
-      if (!raw) {
-        setIsPreferencesLoading(false);
-        return;
-      }
+      if (!raw) { setIsPreferencesLoading(false); return; }
       const parsed = JSON.parse(raw);
-      if (isValidWidgetOrder(parsed)) {
-        setWidgetOrder(parsed);
-      }
+      if (isValidWidgetOrder(parsed)) setWidgetOrder(parsed);
     } catch {
       window.localStorage.removeItem(WIDGET_STORAGE_KEY);
     } finally {
@@ -63,7 +61,6 @@ export function LivingDashboard({ data, error }: { data: LivingDashboardData; er
       if (currentIndex === -1) return current;
       const swapIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
       if (swapIndex < 0 || swapIndex >= current.length) return current;
-
       const next = [...current];
       const target = next[swapIndex];
       next[swapIndex] = widgetId;
@@ -79,28 +76,34 @@ export function LivingDashboard({ data, error }: { data: LivingDashboardData; er
         id: 'today-overview',
         label: 'Today overview',
         render: () => (
-          <Card className="space-y-4">
-            <div className="flex items-center gap-2 text-rose-500">
-              <Sparkles size={16} />
-              <p className="text-sm font-semibold uppercase tracking-[0.3em]">Today overview</p>
+          <Card>
+            <div className="flex items-center gap-2 mb-4" style={{ color: 'var(--glow-accent)' }}>
+              <Sparkles size={15} />
+              <p className="text-xs font-semibold uppercase tracking-[0.3em]">Today overview</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Tasks due</p>
-                <p className="mt-2 text-2xl font-semibold">{data.todayOverview.tasksDueToday}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Events</p>
-                <p className="mt-2 text-2xl font-semibold">{data.todayOverview.eventsToday}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Routines now</p>
-                <p className="mt-2 text-2xl font-semibold">{data.todayOverview.activeRoutines}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Goals active</p>
-                <p className="mt-2 text-2xl font-semibold">{data.todayOverview.activeGoals}</p>
-              </div>
+              {[
+                { label: 'Tasks due', value: data.todayOverview.tasksDueToday },
+                { label: 'Events', value: data.todayOverview.eventsToday },
+                { label: 'Routines now', value: data.todayOverview.activeRoutines },
+                { label: 'Goals active', value: data.todayOverview.activeGoals },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="rounded-2xl p-4 transition-all duration-200 hover:opacity-90"
+                  style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)' }}
+                >
+                  <p className="text-xs uppercase tracking-[0.2em]" style={{ color: 'var(--glow-text-muted)' }}>
+                    {stat.label}
+                  </p>
+                  <p
+                    className="mt-2 text-2xl font-semibold"
+                    style={{ fontFamily: 'var(--glow-font-display)', color: 'var(--glow-text)' }}
+                  >
+                    {stat.value}
+                  </p>
+                </div>
+              ))}
             </div>
           </Card>
         ),
@@ -109,20 +112,34 @@ export function LivingDashboard({ data, error }: { data: LivingDashboardData; er
         id: 'daily-focus',
         label: 'Daily focus',
         render: () => (
-          <Card className="space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-rose-500">Daily focus</p>
+          <Card>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] mb-3" style={{ color: 'var(--glow-accent)' }}>
+              Daily focus
+            </p>
             {data.dailyFocus ? (
               <>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{data.dailyFocus.title}</h2>
-                  <span className="rounded-full bg-rose-50 px-3 py-1 text-sm text-rose-700 dark:bg-rose-500/20 dark:text-rose-200">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <h2
+                    className="text-2xl font-semibold"
+                    style={{ fontFamily: 'var(--glow-font-display)', color: 'var(--glow-text)' }}
+                  >
+                    {data.dailyFocus.title}
+                  </h2>
+                  <span
+                    className="rounded-full px-3 py-1 text-xs font-medium"
+                    style={{ background: 'var(--glow-accent-soft)', color: 'var(--glow-accent)' }}
+                  >
                     {formatPriority(data.dailyFocus.priority)}
                   </span>
                 </div>
-                <p className="text-sm leading-7 text-slate-600 dark:text-slate-300">{data.dailyFocus.note}</p>
+                <p className="mt-2 text-sm leading-7" style={{ color: 'var(--glow-text-muted)' }}>
+                  {data.dailyFocus.note}
+                </p>
               </>
             ) : (
-              <p className="text-sm text-slate-500 dark:text-slate-400">No focus task yet. Add a task to anchor your day.</p>
+              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
+                No focus task yet. Add a task to anchor your day.
+              </p>
             )}
           </Card>
         ),
@@ -131,28 +148,41 @@ export function LivingDashboard({ data, error }: { data: LivingDashboardData; er
         id: 'top-priority',
         label: 'Top priority',
         render: () => (
-          <Card className="space-y-3">
-            <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
-              <ListChecks size={16} />
-              <p className="text-sm font-semibold uppercase tracking-[0.3em]">Top priority</p>
+          <Card>
+            <div className="flex items-center gap-2 mb-3" style={{ color: 'var(--glow-text-muted)' }}>
+              <ListChecks size={15} />
+              <p className="text-xs font-semibold uppercase tracking-[0.3em]">Top priority</p>
             </div>
             {data.topPriorityTasks.length > 0 ? (
               <div className="space-y-3">
                 {data.topPriorityTasks.map((task) => (
-                  <div key={task.id} className="rounded-2xl border border-slate-200/70 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60">
+                  <div
+                    key={task.id}
+                    className="rounded-2xl p-4 transition-all duration-200 hover:shadow-sm"
+                    style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)' }}
+                  >
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="font-semibold text-slate-900 dark:text-slate-100">{task.title}</p>
-                      <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-100">
+                      <p className="font-semibold" style={{ color: 'var(--glow-text)' }}>{task.title}</p>
+                      <span
+                        className="rounded-full px-3 py-0.5 text-xs font-medium"
+                        style={{ background: 'var(--glow-accent-soft)', color: 'var(--glow-accent)' }}
+                      >
                         {formatPriority(task.priority)}
                       </span>
                     </div>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{task.description ?? 'No notes added.'}</p>
-                    <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">Due: {task.dueDate ? task.dueDate.toLocaleDateString('en') : 'No due date'}</p>
+                    <p className="mt-1 text-sm" style={{ color: 'var(--glow-text-muted)' }}>
+                      {task.description ?? 'No notes added.'}
+                    </p>
+                    <p className="mt-2 text-xs" style={{ color: 'var(--glow-text-muted)' }}>
+                      Due: {task.dueDate ? task.dueDate.toLocaleDateString('en') : 'No due date'}
+                    </p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-slate-500 dark:text-slate-400">No active priorities. Your list is clear.</p>
+              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
+                No active priorities. Your list is clear.
+              </p>
             )}
           </Card>
         ),
@@ -161,20 +191,32 @@ export function LivingDashboard({ data, error }: { data: LivingDashboardData; er
         id: 'routine-summary',
         label: 'Routine summary',
         render: () => (
-          <Card className="space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-600">Routine summary</p>
+          <Card>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] mb-3" style={{ color: 'var(--glow-accent)' }}>
+              Routine summary
+            </p>
             {data.routinesForNow.length > 0 ? (
               <div className="space-y-3">
                 {data.routinesForNow.map((routine) => (
-                  <div key={routine.id} className="rounded-2xl bg-emerald-50/70 p-4 dark:bg-emerald-500/10">
-                    <p className="font-semibold text-slate-900 dark:text-slate-100">{routine.name}</p>
-                    <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{routine.description ?? 'No details yet.'}</p>
-                    <p className="mt-2 text-xs uppercase tracking-[0.15em] text-emerald-700 dark:text-emerald-300">{formatPriority(routine.timeOfDay)}</p>
+                  <div
+                    key={routine.id}
+                    className="rounded-2xl p-4"
+                    style={{ background: 'var(--glow-accent-soft)', border: '1px solid var(--glow-border)' }}
+                  >
+                    <p className="font-semibold" style={{ color: 'var(--glow-text)' }}>{routine.name}</p>
+                    <p className="mt-1 text-sm" style={{ color: 'var(--glow-text-muted)' }}>
+                      {routine.description ?? 'No details yet.'}
+                    </p>
+                    <p className="mt-2 text-xs uppercase tracking-[0.15em]" style={{ color: 'var(--glow-accent)' }}>
+                      {formatPriority(routine.timeOfDay)}
+                    </p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-slate-500 dark:text-slate-400">No routines for this time window yet.</p>
+              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
+                No routines for this time window yet.
+              </p>
             )}
           </Card>
         ),
@@ -183,40 +225,43 @@ export function LivingDashboard({ data, error }: { data: LivingDashboardData; er
         id: 'schedule-summary',
         label: 'Schedule summary',
         render: () => (
-          <Card className="space-y-4">
-            <div className="flex items-center gap-2 text-sky-600">
-              <CalendarDays size={16} />
-              <p className="text-sm font-semibold uppercase tracking-[0.3em]">Schedule summary</p>
+          <Card>
+            <div className="flex items-center gap-2 mb-4" style={{ color: 'var(--glow-text-muted)' }}>
+              <CalendarDays size={15} />
+              <p className="text-xs font-semibold uppercase tracking-[0.3em]">Schedule summary</p>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
-              <div className="rounded-2xl border border-slate-200/70 p-4 dark:border-slate-800">
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Work schedule</p>
-                {data.todaySchedule.workSlots.length > 0 ? (
-                  <ul className="mt-2 space-y-2 text-sm text-slate-600 dark:text-slate-300">
-                    {data.todaySchedule.workSlots.map((slot) => (
-                      <li key={slot.id}>
-                        {slot.title} · {formatWorkTime(slot.startTime)}–{formatWorkTime(slot.endTime)}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">No work schedule set for today.</p>
-                )}
-              </div>
-              <div className="rounded-2xl border border-slate-200/70 p-4 dark:border-slate-800">
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Calendar events</p>
-                {data.todaySchedule.events.length > 0 ? (
-                  <ul className="mt-2 space-y-2 text-sm text-slate-600 dark:text-slate-300">
-                    {data.todaySchedule.events.map((event) => (
-                      <li key={event.id}>
-                        {event.title} · {event.allDay ? 'All day' : formatTime(event.startAt)}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">No calendar events scheduled today.</p>
-                )}
-              </div>
+              {[
+                {
+                  title: 'Work schedule',
+                  items: data.todaySchedule.workSlots.map((s) => `${s.title} · ${formatWorkTime(s.startTime)}–${formatWorkTime(s.endTime)}`),
+                  empty: 'No work schedule set for today.',
+                },
+                {
+                  title: 'Calendar events',
+                  items: data.todaySchedule.events.map((e) => `${e.title} · ${e.allDay ? 'All day' : formatTime(e.startAt)}`),
+                  empty: 'No calendar events scheduled today.',
+                },
+              ].map((col) => (
+                <div
+                  key={col.title}
+                  className="rounded-2xl p-4"
+                  style={{ border: '1px solid var(--glow-border)' }}
+                >
+                  <p className="text-sm font-semibold mb-2" style={{ color: 'var(--glow-text)' }}>{col.title}</p>
+                  {col.items.length > 0 ? (
+                    <ul className="space-y-1.5">
+                      {col.items.map((item) => (
+                        <li key={item} className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>{col.empty}</p>
+                  )}
+                </div>
+              ))}
             </div>
           </Card>
         ),
@@ -225,66 +270,159 @@ export function LivingDashboard({ data, error }: { data: LivingDashboardData; er
         id: 'project-status',
         label: 'Project status',
         render: () => (
-          <Card className="space-y-3">
-            <div className="flex items-center gap-2 text-amber-600">
-              <FolderKanban size={16} />
-              <p className="text-sm font-semibold uppercase tracking-[0.3em]">Project status</p>
+          <Card>
+            <div className="flex items-center gap-2 mb-4" style={{ color: 'var(--glow-accent)' }}>
+              <FolderKanban size={15} />
+              <p className="text-xs font-semibold uppercase tracking-[0.3em]">Project status</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
-                <p className="text-xs text-slate-500 dark:text-slate-400">Goals in progress</p>
-                <p className="mt-2 text-xl font-semibold">{data.projectStatus.goalsInProgress}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
-                <p className="text-xs text-slate-500 dark:text-slate-400">Goals achieved</p>
-                <p className="mt-2 text-xl font-semibold">{data.projectStatus.goalsAchieved}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
-                <p className="text-xs text-slate-500 dark:text-slate-400">Average progress</p>
-                <p className="mt-2 text-xl font-semibold">{data.projectStatus.averageGoalProgress}%</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
-                <p className="text-xs text-slate-500 dark:text-slate-400">Active tasks</p>
-                <p className="mt-2 text-xl font-semibold">{data.projectStatus.activeTaskCount}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
-                <p className="text-xs text-slate-500 dark:text-slate-400">Completed tasks</p>
-                <p className="mt-2 text-xl font-semibold">{data.projectStatus.completedTaskCount}</p>
-              </div>
+              {[
+                { label: 'Goals in progress', value: data.projectStatus.goalsInProgress },
+                { label: 'Goals achieved',    value: data.projectStatus.goalsAchieved },
+                { label: 'Average progress',  value: `${data.projectStatus.averageGoalProgress}%` },
+                { label: 'Active tasks',      value: data.projectStatus.activeTaskCount },
+                { label: 'Completed tasks',   value: data.projectStatus.completedTaskCount },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="rounded-2xl p-4"
+                  style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)' }}
+                >
+                  <p className="text-xs" style={{ color: 'var(--glow-text-muted)' }}>{stat.label}</p>
+                  <p
+                    className="mt-2 text-xl font-semibold"
+                    style={{ fontFamily: 'var(--glow-font-display)', color: 'var(--glow-text)' }}
+                  >
+                    {stat.value}
+                  </p>
+                </div>
+              ))}
             </div>
           </Card>
         ),
       },
     ],
-    [data],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data]
   );
 
   const widgetsById = useMemo(() => new Map(widgets.map((widget) => [widget.id, widget])), [widgets]);
 
+  const heroSrc = getVisualSrc('hero');
+  const profileSrc = getVisualSrc('profile');
+  const heroPosition = getVisualPosition('hero');
+  const profilePosition = getVisualPosition('profile');
+
   return (
-    <div className="space-y-6">
-      <Card className="space-y-4 bg-[linear-gradient(135deg,_rgba(255,245,247,1),_rgba(255,255,255,0.95))] dark:bg-[linear-gradient(135deg,_rgba(15,23,42,1),_rgba(30,41,59,0.95))]">
-        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-rose-500">{data.greeting.label}</p>
-            <h1 className="mt-2 text-3xl font-semibold text-slate-900 dark:text-slate-100 sm:text-4xl">{data.greeting.title}</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">{data.greeting.message}</p>
+    <div className="space-y-5 animate-fade-in">
+      {/* Hero card */}
+      <Card className="overflow-hidden !p-0">
+        <div className="relative">
+          {/* Hero visual */}
+          <div className="relative h-40 sm:h-52">
+            <CustomizableVisual
+              id="hero"
+              src={heroSrc}
+              alt="Dashboard hero image"
+              aspectRatio="wide"
+              mode={heroSrc ? 'photo' : 'none'}
+              position={heroPosition}
+              editable={isCustomizing}
+              className="absolute inset-0 h-full w-full rounded-none"
+              fallbackIcon={<Sparkles size={40} />}
+              onChange={(v) => {
+                updateVisual({ visualId: 'hero', mode: v.mode, imageUrl: v.imageUrl, position: v.position });
+                markChanged();
+              }}
+              onFileUpload={createObjectUrl}
+            />
+            {/* Gradient overlay */}
+            <div
+              className="absolute inset-0"
+              style={{ background: 'linear-gradient(to bottom, transparent 30%, var(--glow-surface) 100%)' }}
+            />
           </div>
-          <div className="rounded-2xl border border-rose-200/80 bg-white/70 px-4 py-3 text-sm dark:border-rose-500/40 dark:bg-slate-900/60">
-            <p className="font-semibold text-rose-700 dark:text-rose-300">{data.weekTheme.title}</p>
-            <p className="mt-1 text-slate-600 dark:text-slate-300">{data.weekTheme.note}</p>
+
+          {/* Profile + greeting */}
+          <div className="flex flex-col gap-4 p-5 pt-0 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex items-end gap-4 -mt-8">
+              {/* Profile photo */}
+              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full ring-4 ring-[var(--glow-surface)]">
+                <CustomizableVisual
+                  id="profile"
+                  src={profileSrc}
+                  alt="Your profile photo"
+                  aspectRatio="square"
+                  mode={profileSrc ? 'photo' : 'none'}
+                  position={profilePosition}
+                  editable={isCustomizing}
+                  fallbackIcon={<User size={24} />}
+                  onChange={(v) => {
+                    updateVisual({ visualId: 'profile', mode: v.mode, imageUrl: v.imageUrl, position: v.position });
+                    markChanged();
+                  }}
+                  onFileUpload={createObjectUrl}
+                />
+              </div>
+              <div className="mb-1">
+                <p
+                  className="text-xs font-semibold uppercase tracking-[0.35em]"
+                  style={{ color: 'var(--glow-accent)' }}
+                >
+                  {data.greeting.label}
+                </p>
+                <h1
+                  className="mt-1 text-2xl font-semibold sm:text-3xl"
+                  style={{ fontFamily: 'var(--glow-font-display)', color: 'var(--glow-text)' }}
+                >
+                  {data.greeting.title}
+                </h1>
+              </div>
+            </div>
+
+            {/* Week theme */}
+            <div
+              className="shrink-0 rounded-2xl px-4 py-3 text-sm max-w-xs"
+              style={{
+                border: '1px solid var(--glow-border)',
+                background: 'var(--glow-accent-soft)',
+              }}
+            >
+              <p className="font-semibold" style={{ color: 'var(--glow-accent)' }}>{data.weekTheme.title}</p>
+              <p className="mt-1 text-xs leading-5" style={{ color: 'var(--glow-text-muted)' }}>
+                {data.weekTheme.note}
+              </p>
+            </div>
+          </div>
+
+          {/* Greeting message */}
+          <div className="px-5 pb-5">
+            <p className="max-w-2xl text-sm leading-7" style={{ color: 'var(--glow-text-muted)' }}>
+              {data.greeting.message}
+            </p>
           </div>
         </div>
-        {error ? (
-          <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
-            We could not fully load live dashboard data. Showing fallback-friendly results. ({error})
+
+        {error && (
+          <div
+            className="mx-5 mb-5 rounded-2xl border p-3 text-sm"
+            style={{
+              background: 'var(--glow-accent-soft)',
+              borderColor: 'var(--glow-border)',
+              color: 'var(--glow-text-muted)',
+            }}
+          >
+            Dashboard data partially unavailable. ({error})
           </div>
-        ) : null}
+        )}
       </Card>
 
+      {/* Widgets */}
       {isPreferencesLoading ? (
         <Card>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Loading your dashboard preferences…</p>
+          <p className="text-sm animate-pulse" style={{ color: 'var(--glow-text-muted)' }}>
+            Loading your dashboard…
+          </p>
         </Card>
       ) : (
         <div className="space-y-4">
@@ -292,29 +430,31 @@ export function LivingDashboard({ data, error }: { data: LivingDashboardData; er
             const widget = widgetsById.get(widgetId);
             if (!widget) return null;
             return (
-              <section key={widgetId} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs uppercase tracking-[0.25em] text-slate-500 dark:text-slate-400">{widget.label}</p>
-                  <div className="flex items-center gap-1">
+              <section key={widgetId} className="space-y-1.5 animate-fade-in" style={{ animationDelay: `${index * 40}ms` }}>
+                <div className="flex items-center justify-between px-1">
+                  <p className="text-[10px] uppercase tracking-[0.25em]" style={{ color: 'var(--glow-text-muted)' }}>
+                    {widget.label}
+                  </p>
+                  <div className="flex items-center gap-0.5">
                     <Button
                       type="button"
                       variant="ghost"
-                      className="h-8 w-8 rounded-full p-0"
+                      className="h-7 w-7 rounded-full p-0 text-xs"
                       onClick={() => moveWidget(widgetId, 'up')}
                       disabled={index === 0}
                       aria-label={`Move ${widget.label} up`}
                     >
-                      <ArrowUp size={14} />
+                      <ArrowUp size={12} />
                     </Button>
                     <Button
                       type="button"
                       variant="ghost"
-                      className="h-8 w-8 rounded-full p-0"
+                      className="h-7 w-7 rounded-full p-0 text-xs"
                       onClick={() => moveWidget(widgetId, 'down')}
                       disabled={index === widgetOrder.length - 1}
                       aria-label={`Move ${widget.label} down`}
                     >
-                      <ArrowDown size={14} />
+                      <ArrowDown size={12} />
                     </Button>
                   </div>
                 </div>

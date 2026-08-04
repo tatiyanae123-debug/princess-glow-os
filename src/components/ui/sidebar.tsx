@@ -1,79 +1,105 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sparkles, MoonStar, SunMedium } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { navItems } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
+import { useGlow } from '@/lib/context/glow-provider';
+import { THEMES } from '@/lib/themes';
 
 export function Sidebar() {
   const pathname = usePathname();
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
-
-  useEffect(() => {
-    const storedTheme = window.localStorage.getItem('theme');
-    if (storedTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-      setTheme('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      setTheme('light');
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const nextTheme = theme === 'light' ? 'dark' : 'light';
-    document.documentElement.classList.toggle('dark', nextTheme === 'dark');
-    window.localStorage.setItem('theme', nextTheme);
-    setTheme(nextTheme);
-  };
+  const { themeId, setTheme, isCustomizing } = useGlow();
 
   return (
-    <aside className="flex h-full w-full flex-col justify-between rounded-[30px] border border-slate-200/80 bg-slate-950/95 p-5 text-slate-100 shadow-[0_25px_80px_rgba(15,23,42,0.22)] dark:border-slate-800 dark:bg-slate-950">
+    <aside
+      className="flex h-full w-full flex-col justify-between p-5 lg:min-h-[calc(100vh-3rem)] animate-slide-right"
+      style={{
+        background: 'var(--glow-sidebar)',
+        borderRadius: 'var(--glow-radius)',
+        boxShadow: 'var(--glow-shadow)',
+      }}
+    >
+      {/* Brand */}
       <div>
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-400/20 text-rose-300">
+        <div className="flex items-center gap-3 pb-6">
+          <div
+            className="flex h-11 w-11 items-center justify-center rounded-2xl"
+            style={{ background: 'var(--glow-accent-soft)', color: 'var(--glow-accent)' }}
+          >
             <Sparkles size={20} />
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-[0.35em] text-slate-400">Princess Glow</p>
-            <h2 className="text-lg font-semibold">Life OS</h2>
+            <p className="text-[10px] uppercase tracking-[0.35em] opacity-50 text-white">Princess Glow</p>
+            <h2
+              className="text-lg font-semibold text-white"
+              style={{ fontFamily: 'var(--glow-font-display)' }}
+            >
+              Life OS
+            </h2>
           </div>
         </div>
 
-        <nav className="mt-8 space-y-1.5">
+        {/* Navigation */}
+        <nav className="space-y-0.5">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const active = pathname === item.href;
+            const active = pathname === item.href || pathname.startsWith(item.href + '/');
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center justify-between rounded-2xl px-3 py-3 text-sm transition',
-                  active ? 'bg-white/15 text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                  'group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition-all duration-200',
+                  active
+                    ? 'text-white font-medium'
+                    : 'text-white/50 hover:text-white/80 hover:bg-white/5'
                 )}
+                style={active ? { background: 'var(--glow-accent-soft)', color: 'var(--glow-accent)' } : {}}
               >
-                <span className="flex items-center gap-3">
-                  <Icon size={16} />
-                  {item.label}
-                </span>
+                <Icon
+                  size={15}
+                  className="shrink-0 transition-transform duration-200 group-hover:scale-110"
+                />
+                <span className="truncate">{item.label}</span>
+                {active && (
+                  <span
+                    className="ml-auto h-1.5 w-1.5 rounded-full shrink-0"
+                    style={{ background: 'var(--glow-accent)' }}
+                  />
+                )}
               </Link>
             );
           })}
         </nav>
       </div>
 
-      <button
-        onClick={toggleTheme}
-        className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/10 px-3 py-3 text-sm text-slate-200"
-      >
-        <span className="flex items-center gap-3">
-          {theme === 'light' ? <SunMedium size={16} /> : <MoonStar size={16} />}
-          {theme === 'light' ? 'Light mode' : 'Dark mode'}
-        </span>
-      </button>
+      {/* Theme selector */}
+      <div className="mt-6 space-y-2">
+        <p className="text-[10px] uppercase tracking-[0.3em] text-white/30 px-1">Visual theme</p>
+        <div className="grid grid-cols-4 gap-1.5">
+          {THEMES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              title={t.name}
+              onClick={() => setTheme(t.id)}
+              disabled={isCustomizing}
+              className={cn(
+                'h-7 w-full rounded-xl border transition-all duration-200 hover:scale-105 focus-visible:outline focus-visible:outline-2',
+                themeId === t.id ? 'ring-2 ring-white/60' : 'opacity-60 hover:opacity-100'
+              )}
+              style={{ background: t.tokens.accent, borderColor: 'transparent' }}
+              aria-label={`Switch to ${t.name} theme`}
+              aria-pressed={themeId === t.id}
+            />
+          ))}
+        </div>
+        <p className="text-[11px] text-white/30 px-1">
+          {THEMES.find((t) => t.id === themeId)?.name}
+        </p>
+      </div>
     </aside>
   );
 }

@@ -1,15 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Glow OS Design Tokens ──────────────────────────────────────────────── */
 :root {
+  /* Modern Princess (default) */
+  --glow-bg:            #fdf8f5;
+  --glow-sidebar:       #0f0a0d;
+  --glow-surface:       rgba(255,255,255,0.90);
+  --glow-surface-muted: rgba(250,245,242,0.80);
+  --glow-border:        rgba(210,185,175,0.40);
+  --glow-text:          #1a1014;
+  --glow-text-muted:    #7a6570;
+  --glow-accent:        #c9956a;
+  --glow-accent-soft:   rgba(201,149,106,0.12);
+  --glow-shadow:        0 20px 60px rgba(60,20,40,0.08);
+  --glow-radius:        24px;
+  --glow-font-display:  'Playfair Display', Georgia, serif;
+  --glow-font-body:     'Inter', system-ui, sans-serif;
+
+  color-scheme: light;
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+* { @apply box-border; }
+
+html { font-family: var(--glow-font-body); }
+
+body {
+  background-color: var(--glow-bg);
+  color: var(--glow-text);
+  @apply min-h-screen antialiased;
+  font-family: var(--glow-font-body);
+}
+
+/* ─── Theme: Minimal Cream ───────────────────────────────────────────────── */
+[data-theme="minimal-cream"] {
+  --glow-bg:            #fafaf8;
+  --glow-sidebar:       #1c1c1a;
+  --glow-surface:       rgba(255,255,255,0.95);
+  --glow-surface-muted: rgba(248,248,246,0.80);
+  --glow-border:        rgba(200,200,195,0.40);
+  --glow-text:          #1a1a18;
+  --glow-text-muted:    #717170;
+  --glow-accent:        #8c7c6a;
+  --glow-accent-soft:   rgba(140,124,106,0.10);
+  --glow-shadow:        0 20px 60px rgba(0,0,0,0.05);
+}
+
+/* ─── Theme: Luxury Noir ─────────────────────────────────────────────────── */
+[data-theme="luxury-noir"] {
+  --glow-bg:            #0a0a0c;
+  --glow-sidebar:       #050507;
+  --glow-surface:       rgba(18,18,22,0.90);
+  --glow-surface-muted: rgba(14,14,18,0.80);
+  --glow-border:        rgba(255,215,150,0.12);
+  --glow-text:          #f0ead8;
+  --glow-text-muted:    #7a7060;
+  --glow-accent:        #d4a85a;
+  --glow-accent-soft:   rgba(212,168,90,0.12);
+  --glow-shadow:        0 20px 60px rgba(0,0,0,0.40);
   color-scheme: dark;
 }
 
-body {
-  @apply min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,244,232,0.95),_rgba(245,226,208,0.95)_40%,_rgba(255,255,255,1)_100%)] text-slate-800 antialiased;
+/* ─── Theme: Soft Nature ─────────────────────────────────────────────────── */
+[data-theme="soft-nature"] {
+  --glow-bg:            #f4f0eb;
+  --glow-sidebar:       #1a1f18;
+  --glow-surface:       rgba(255,253,248,0.90);
+  --glow-surface-muted: rgba(240,238,232,0.80);
+  --glow-border:        rgba(160,180,140,0.30);
+  --glow-text:          #1a1f18;
+  --glow-text-muted:    #6a7060;
+  --glow-accent:        #7a9a5a;
+  --glow-accent-soft:   rgba(122,154,90,0.12);
+  --glow-shadow:        0 20px 60px rgba(30,40,20,0.07);
 }
 
-* {
-  @apply box-border;
+/* ─── Theme: Blush Editorial ─────────────────────────────────────────────── */
+[data-theme="blush-editorial"] {
+  --glow-bg:            #fdf0f0;
+  --glow-sidebar:       #1a0f12;
+  --glow-surface:       rgba(255,250,250,0.92);
+  --glow-surface-muted: rgba(252,240,242,0.80);
+  --glow-border:        rgba(220,170,170,0.35);
+  --glow-text:          #1a0f12;
+  --glow-text-muted:    #7a5560;
+  --glow-accent:        #c46070;
+  --glow-accent-soft:   rgba(196,96,112,0.10);
+  --glow-shadow:        0 20px 60px rgba(80,20,30,0.07);
+}
+
+/* ─── Theme: Dark Mode ───────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --glow-bg:            #0d0d12;
+  --glow-sidebar:       #070709;
+  --glow-surface:       rgba(20,20,28,0.92);
+  --glow-surface-muted: rgba(16,16,24,0.80);
+  --glow-border:        rgba(255,255,255,0.08);
+  --glow-text:          #e8e4dc;
+  --glow-text-muted:    #706c68;
+  --glow-accent:        #b89a6a;
+  --glow-accent-soft:   rgba(184,154,106,0.12);
+  --glow-shadow:        0 20px 60px rgba(0,0,0,0.45);
+  color-scheme: dark;
+}
+
+/* ─── Theme: Seasonal ────────────────────────────────────────────────────── */
+[data-theme="seasonal"] {
+  --glow-bg:            #f7f0e8;
+  --glow-sidebar:       #12100e;
+  --glow-surface:       rgba(255,252,246,0.90);
+  --glow-surface-muted: rgba(245,238,225,0.80);
+  --glow-border:        rgba(200,160,110,0.35);
+  --glow-text:          #1a150e;
+  --glow-text-muted:    #7a6a50;
+  --glow-accent:        #c47a3a;
+  --glow-accent-soft:   rgba(196,122,58,0.12);
+  --glow-shadow:        0 20px 60px rgba(60,30,10,0.08);
+}
+
+/* ─── Theme: Low Stimulation ─────────────────────────────────────────────── */
+[data-theme="low-stimulation"] {
+  --glow-bg:            #f5f4f2;
+  --glow-sidebar:       #18181a;
+  --glow-surface:       rgba(252,251,249,0.95);
+  --glow-surface-muted: rgba(245,244,242,0.85);
+  --glow-border:        rgba(190,188,184,0.35);
+  --glow-text:          #282828;
+  --glow-text-muted:    #787876;
+  --glow-accent:        #8a8880;
+  --glow-accent-soft:   rgba(138,136,128,0.10);
+  --glow-shadow:        0 12px 40px rgba(0,0,0,0.04);
+}
+
+/* ─── Scrollbar polish ───────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--glow-border); border-radius: 99px; }
+
+/* ─── Reduced motion ─────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
