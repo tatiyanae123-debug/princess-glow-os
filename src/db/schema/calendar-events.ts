@@ -16,6 +16,14 @@ export const calendarEvents = pgTable(
     allDay: boolean('all_day').notNull().default(false),
     color: text('color').default('#f43f5e'),
     archived: boolean('archived').notNull().default(false),
+    // Master Importer provenance (nullable — only set on imported rows)
+    source: text('source'),
+    sourceVersion: text('source_version'),
+    importBatchId: text('import_batch_id'),
+    editable: boolean('editable').notNull().default(true),
+    // Recurrence for imported calendar templates (e.g. weekly rituals).
+    // Native one-off Glow OS events leave this null.
+    recurrenceDaysOfWeek: text('recurrence_days_of_week').array(),
     createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { mode: 'date' }).notNull().defaultNow(),
   },

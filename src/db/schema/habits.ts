@@ -17,6 +17,11 @@ export const habits = pgTable(
     icon: text('icon'),
     targetCount: integer('target_count').notNull().default(1),
     archived: boolean('archived').notNull().default(false),
+    // Master Importer provenance (nullable — only set on imported rows)
+    source: text('source'),
+    sourceVersion: text('source_version'),
+    importBatchId: text('import_batch_id'),
+    editable: boolean('editable').notNull().default(true),
     createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { mode: 'date' }).notNull().defaultNow(),
   },
