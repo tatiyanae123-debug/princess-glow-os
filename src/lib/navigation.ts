@@ -7,6 +7,7 @@ import {
   LayoutGrid,
   Link2,
   NotebookText,
+  PanelsTopLeft,
   Settings as SettingsIcon,
   Sparkles,
   Target,
@@ -23,6 +24,7 @@ export type NavItem = {
 
 export const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutGrid, description: 'Plan the day with elegance' },
+  { label: 'Planning', href: '/planning', icon: PanelsTopLeft, description: 'See your week, quarter, and year' },
   { label: 'Calendar', href: '/calendar', icon: CalendarDays, description: 'Shape the week' },
   { label: 'Tasks', href: '/tasks', icon: CheckSquare, description: 'Focus on what matters' },
   { label: 'Habits', href: '/habits', icon: Activity, description: 'Build steady rituals' },
