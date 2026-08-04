@@ -10,6 +10,7 @@ import {
   Settings as SettingsIcon,
   Sparkles,
   Target,
+  UploadCloud,
   Wallet,
   type LucideIcon,
 } from 'lucide-react';
@@ -33,5 +34,6 @@ export const navItems: NavItem[] = [
   { label: 'Home', href: '/home', icon: HomeIcon, description: 'Care for your space' },
   { label: 'Notes', href: '/notes', icon: NotebookText, description: 'Capture ideas beautifully' },
   { label: 'Connections', href: '/connections', icon: Link2, description: 'Connect your digital world' },
+  { label: 'Import', href: '/import', icon: UploadCloud, description: 'Bring in the Glow OS master system' },
   { label: 'Settings', href: '/settings', icon: SettingsIcon, description: 'Tune your environment' },
 ];

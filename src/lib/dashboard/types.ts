@@ -1,4 +1,6 @@
 import type { Routine, Task, WorkSchedule, CalendarEvent, Habit, Note, BeautyRoutine, WellnessEntry } from '@/lib/types';
+import type { NormalizedGoogleEvent } from '@/lib/google/calendar-client';
+import type { NormalizedGmailMessage } from '@/lib/google/gmail-client';
 
 export type DashboardWidgetId =
   | 'today-overview'
@@ -10,20 +12,30 @@ export type DashboardWidgetId =
   | 'habit-summary'
   | 'notes-summary'
   | 'beauty-today'
-  | 'wellness-today';
+  | 'wellness-today'
+  | 'google-calendar'
+  | 'gmail-inbox'
+  | 'workout-of-the-day'
+  | 'import-status';
 
 export const DEFAULT_WIDGET_ORDER: DashboardWidgetId[] = [
   'today-overview',
   'daily-focus',
   'top-priority',
   'habit-summary',
+  'workout-of-the-day',
   'routine-summary',
   'beauty-today',
   'wellness-today',
   'schedule-summary',
+  'google-calendar',
+  'gmail-inbox',
   'notes-summary',
+  'import-status',
   'project-status',
 ];
+
+export type GoogleWidgetStatus = 'connected' | 'not_connected' | 'insufficient_scope' | 'revoked' | 'error';
 
 export type LivingDashboardData = {
   greeting: {
@@ -72,5 +84,23 @@ export type LivingDashboardData = {
   wellnessToday: {
     loggedToday: boolean;
     entry: Pick<WellnessEntry, 'id' | 'mood' | 'energy' | 'sleepHours' | 'waterGlasses'> | null;
+  };
+  googleCalendar: {
+    status: GoogleWidgetStatus;
+    events: NormalizedGoogleEvent[];
+  };
+  gmailInbox: {
+    status: GoogleWidgetStatus;
+    unreadCount: number;
+    messages: Pick<NormalizedGmailMessage, 'id' | 'from' | 'subject' | 'snippet' | 'unread'>[];
+  };
+  workoutOfTheDay: {
+    label: string;
+    focus: string;
+    exercises: string[];
+  };
+  importStatus: {
+    totalConfirmed: number;
+    lastImportAt: Date | null;
   };
 };
