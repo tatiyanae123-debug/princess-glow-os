@@ -37,6 +37,20 @@ function getFallbackData(): LivingDashboardData {
       activeTaskCount: 0,
       completedTaskCount: 0,
     },
+    habitSummary: {
+      totalHabits: 0,
+      completedToday: 0,
+      habits: [],
+    },
+    notesSummary: {
+      pinnedCount: 0,
+      recentNotes: [],
+    },
+    beautyToday: [],
+    wellnessToday: {
+      loggedToday: false,
+      entry: null,
+    },
   };
 }
 

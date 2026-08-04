@@ -4,6 +4,10 @@ import { getRoutinesByUser } from '@/lib/data/routines';
 import { getGoalsByUser } from '@/lib/data/goals';
 import { getWorkSchedulesByUser } from '@/lib/data/work-schedules';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
+import { getHabitsByUser, getHabitLogsForUserByDate } from '@/lib/data/habits';
+import { getNotesByUser } from '@/lib/data/notes';
+import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
+import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
 import type { LivingDashboardData } from '@/lib/dashboard/types';
 
 const priorityRank: Record<Task['priority'], number> = {
@@ -83,14 +87,21 @@ export async function getLivingDashboardData(userId: string): Promise<LivingDash
   const now = new Date();
   const dayOfWeek = weekdayOrder[now.getDay()];
   const timeState = getTimeOfDayState(now);
+  const todayKey = now.toISOString().slice(0, 10);
 
-  const [tasks, routines, goals, workSchedules, events] = await Promise.all([
-    getTasksByUser(userId),
-    getRoutinesByUser(userId),
-    getGoalsByUser(userId),
-    getWorkSchedulesByUser(userId),
-    getCalendarEventsByUser(userId),
-  ]);
+  const [tasks, routines, goals, workSchedules, events, habits, todaysHabitLogs, notes, beautyRoutines, wellnessEntries] =
+    await Promise.all([
+      getTasksByUser(userId),
+      getRoutinesByUser(userId),
+      getGoalsByUser(userId),
+      getWorkSchedulesByUser(userId),
+      getCalendarEventsByUser(userId),
+      getHabitsByUser(userId),
+      getHabitLogsForUserByDate(userId, todayKey),
+      getNotesByUser(userId),
+      getBeautyRoutinesByUser(userId),
+      getWellnessEntriesByUser(userId),
+    ]);
 
   const activeTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'cancelled');
   const topPriorityTasks = sortTasksByPriority(activeTasks).slice(0, 3);
@@ -119,6 +130,55 @@ export async function getLivingDashboardData(userId: string): Promise<LivingDash
   const averageGoalProgress = goals.length
     ? Math.round(goals.reduce((total, goal) => total + goal.progress, 0) / goals.length)
     : 0;
+
+  const loggedHabitIds = new Set(todaysHabitLogs.map((log) => log.habitId));
+  const habitSummary = {
+    totalHabits: habits.length,
+    completedToday: habits.filter((habit) => loggedHabitIds.has(habit.id)).length,
+    habits: habits.slice(0, 6).map((habit) => ({
+      id: habit.id,
+      name: habit.name,
+      color: habit.color,
+      targetCount: habit.targetCount,
+      completedToday: loggedHabitIds.has(habit.id),
+    })),
+  };
+
+  const pinnedNotes = notes.filter((note) => note.pinned);
+  const notesSummary = {
+    pinnedCount: pinnedNotes.length,
+    recentNotes: notes.slice(0, 4).map((note) => ({
+      id: note.id,
+      title: note.title,
+      content: note.content,
+      pinned: note.pinned,
+      updatedAt: note.updatedAt,
+    })),
+  };
+
+  const beautyToday = beautyRoutines
+    .filter((routine) => routine.timeOfDay === timeState.routineMatch || routine.timeOfDay === 'anytime')
+    .slice(0, 4)
+    .map((routine) => ({
+      id: routine.id,
+      name: routine.name,
+      timeOfDay: routine.timeOfDay,
+      products: routine.products,
+    }));
+
+  const todaysWellnessEntry = wellnessEntries.find((entry) => entry.entryDate === todayKey) ?? null;
+  const wellnessToday = {
+    loggedToday: todaysWellnessEntry !== null,
+    entry: todaysWellnessEntry
+      ? {
+          id: todaysWellnessEntry.id,
+          mood: todaysWellnessEntry.mood,
+          energy: todaysWellnessEntry.energy,
+          sleepHours: todaysWellnessEntry.sleepHours,
+          waterGlasses: todaysWellnessEntry.waterGlasses,
+        }
+      : null,
+  };
 
   return {
     greeting: {
@@ -179,5 +239,9 @@ export async function getLivingDashboardData(userId: string): Promise<LivingDash
       activeTaskCount: activeTasks.length,
       completedTaskCount: tasks.filter((task) => task.status === 'done').length,
     },
+    habitSummary,
+    notesSummary,
+    beautyToday,
+    wellnessToday,
   };
 }
