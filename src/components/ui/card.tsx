@@ -4,12 +4,23 @@ import { cn } from '@/lib/utils';
 export function Card({
   className,
   children,
+  style,
 }: {
   className?: string;
   children: ReactNode;
+  style?: React.CSSProperties;
 }) {
   return (
-    <div className={cn('rounded-[24px] border border-slate-200/70 bg-white/90 p-5 shadow-[0_18px_45px_rgba(15,23,42,0.06)] backdrop-blur dark:border-slate-800 dark:bg-slate-900/80', className)}>
+    <div
+      className={cn('p-5 backdrop-blur-sm', className)}
+      style={{
+        borderRadius: 'var(--glow-radius)',
+        border: '1px solid var(--glow-border)',
+        background: 'var(--glow-surface)',
+        boxShadow: 'var(--glow-shadow)',
+        ...style,
+      }}
+    >
       {children}
     </div>
   );
