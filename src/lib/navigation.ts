@@ -5,6 +5,7 @@ import {
   HeartPulse,
   Home as HomeIcon,
   LayoutGrid,
+  Link2,
   NotebookText,
   Settings as SettingsIcon,
   Sparkles,
@@ -31,6 +32,6 @@ export const navItems: NavItem[] = [
   { label: 'Goals', href: '/goals', icon: Target, description: 'Move your ambitions forward' },
   { label: 'Home', href: '/home', icon: HomeIcon, description: 'Care for your space' },
   { label: 'Notes', href: '/notes', icon: NotebookText, description: 'Capture ideas beautifully' },
+  { label: 'Connections', href: '/connections', icon: Link2, description: 'Connect your digital world' },
   { label: 'Settings', href: '/settings', icon: SettingsIcon, description: 'Tune your environment' },
 ];
-
