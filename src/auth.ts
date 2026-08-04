@@ -35,6 +35,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Google({
       clientId: process.env.PRINCESS_GOOGLE_CLIENT_ID!,
       clientSecret: process.env.PRINCESS_GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          access_type: 'offline',
+          prompt: 'consent',
+          scope: [
+            'openid',
+            'email',
+            'profile',
+            'https://www.googleapis.com/auth/calendar.readonly',
+            'https://www.googleapis.com/auth/gmail.readonly',
+          ].join(' '),
+        },
+      },
     }),
   ],
   pages: {
