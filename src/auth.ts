@@ -1,11 +1,12 @@
 import NextAuth from 'next-auth';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
-import GitHub from 'next-auth/providers/github';
 import Google from 'next-auth/providers/google';
 import { db } from '@/db';
 import { users, accounts, sessions, verificationTokens } from '@/db/schema/auth';
 
 const missingVars: string[] = [];
+if (!process.env.AUTH_SECRET) missingVars.push('AUTH_SECRET');
+if (!process.env.DATABASE_URL) missingVars.push('DATABASE_URL');
 if (!process.env.PRINCESS_GOOGLE_CLIENT_ID) missingVars.push('PRINCESS_GOOGLE_CLIENT_ID');
 if (!process.env.PRINCESS_GOOGLE_CLIENT_SECRET) missingVars.push('PRINCESS_GOOGLE_CLIENT_SECRET');
 if (missingVars.length > 0) {
@@ -16,8 +17,10 @@ if (missingVars.length > 0) {
 }
 
 console.log(
-  'Google OAuth config:',
-  'PRINCESS_GOOGLE_CLIENT_ID present =', !!process.env.PRINCESS_GOOGLE_CLIENT_ID,
+  'Auth config:',
+  'AUTH_SECRET present =', !!process.env.AUTH_SECRET,
+  '| DATABASE_URL present =', !!process.env.DATABASE_URL,
+  '| PRINCESS_GOOGLE_CLIENT_ID present =', !!process.env.PRINCESS_GOOGLE_CLIENT_ID,
   '| PRINCESS_GOOGLE_CLIENT_SECRET present =', !!process.env.PRINCESS_GOOGLE_CLIENT_SECRET,
 );
 
@@ -29,7 +32,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     verificationTokensTable: verificationTokens,
   }),
   providers: [
-    GitHub,
     Google({
       clientId: process.env.PRINCESS_GOOGLE_CLIENT_ID!,
       clientSecret: process.env.PRINCESS_GOOGLE_CLIENT_SECRET!,
