@@ -216,7 +216,7 @@ export async function getLivingDashboardData(userId: string): Promise<LivingDash
     status: gmailStatus,
     unreadCount: gmailResult.ok ? gmailResult.unreadCount : 0,
     messages: gmailResult.ok
-      ? gmailResult.messages.slice(0, 5).map((m) => ({ id: m.id, from: m.from, subject: m.subject, snippet: m.snippet, unread: m.unread }))
+      ? gmailResult.messages.slice(0, 5).map((m) => ({ id: m.id, threadId: m.threadId, from: m.from, subject: m.subject, snippet: m.snippet, unread: m.unread }))
       : [],
   };
 

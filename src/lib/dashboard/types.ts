@@ -92,7 +92,7 @@ export type LivingDashboardData = {
   gmailInbox: {
     status: GoogleWidgetStatus;
     unreadCount: number;
-    messages: Pick<NormalizedGmailMessage, 'id' | 'from' | 'subject' | 'snippet' | 'unread'>[];
+    messages: Pick<NormalizedGmailMessage, 'id' | 'threadId' | 'from' | 'subject' | 'snippet' | 'unread'>[];
   };
   workoutOfTheDay: {
     label: string;

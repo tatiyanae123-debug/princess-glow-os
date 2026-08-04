@@ -8,6 +8,7 @@ import { CustomizableVisual } from '@/components/ui/customizable-visual';
 import type { DashboardWidgetId, LivingDashboardData } from '@/lib/dashboard/types';
 import { DEFAULT_WIDGET_ORDER } from '@/lib/dashboard/types';
 import { useGlow } from '@/lib/context/glow-provider';
+import { CreateTaskFromEmailButton } from '@/components/dashboard/create-task-from-email-button';
 
 const WIDGET_STORAGE_KEY = 'living-dashboard-widget-order-v1';
 
@@ -464,6 +465,15 @@ export function LivingDashboard({ data, error }: { data: LivingDashboardData; er
                         {message.unread && <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: 'var(--glow-accent)' }} />}
                       </div>
                       <p className="truncate text-xs" style={{ color: 'var(--glow-text-muted)' }}>{message.from}</p>
+                      <div className="mt-2">
+                        <CreateTaskFromEmailButton
+                          messageId={message.id}
+                          threadId={message.threadId}
+                          subject={message.subject}
+                          from={message.from}
+                          snippet={message.snippet}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>

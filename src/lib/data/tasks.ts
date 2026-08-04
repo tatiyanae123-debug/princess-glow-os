@@ -19,6 +19,16 @@ export async function getTaskById(id: string, userId: string) {
   return task ?? null;
 }
 
+// Used for "Create task from email" duplicate prevention — a Gmail message
+// should never produce two tasks even if the user clicks the button twice.
+export async function getTaskByGmailMessageId(userId: string, messageId: string) {
+  const [task] = await db
+    .select()
+    .from(tasks)
+    .where(and(eq(tasks.userId, userId), eq(tasks.sourceMessageId, messageId)));
+  return task ?? null;
+}
+
 export async function createTask(userId: string, data: CreateTaskInput) {
   const [task] = await db
     .insert(tasks)

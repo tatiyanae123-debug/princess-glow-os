@@ -38,3 +38,25 @@ describe('parseMessageMetadata (Gmail normalization)', () => {
     expect(Object.keys(result)).toEqual(['id', 'threadId', 'from', 'subject', 'date', 'snippet', 'unread']);
   });
 });
+
+describe('Gmail remains read-only', () => {
+  it('the Gmail client module exposes no send/delete/archive/label/forward capability', async () => {
+    const gmailClient = await import('@/lib/google/gmail-client');
+    const exportedNames = Object.keys(gmailClient).map((name) => name.toLowerCase());
+    const forbiddenPatterns = ['send', 'delete', 'archive', 'label', 'forward', 'modify', 'trash'];
+    for (const pattern of forbiddenPatterns) {
+      expect(exportedNames.some((name) => name.includes(pattern))).toBe(false);
+    }
+  });
+
+  it('"Create task from email" only imports read-only Gmail normalization, not the Gmail client itself', async () => {
+    // Regression guard: the create-task module should have no reason to
+    // import the Gmail API client at all — it only receives already-fetched
+    // message fields as plain input, so it can never call Gmail's write
+    // endpoints even indirectly.
+    const source = await import('node:fs/promises').then((fs) =>
+      fs.readFile(new URL('../gmail/create-task.ts', import.meta.url), 'utf-8'),
+    );
+    expect(source).not.toMatch(/gmail-client/);
+  });
+});

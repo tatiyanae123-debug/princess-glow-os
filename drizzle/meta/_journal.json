@@ -15,6 +15,13 @@
       "when": 1785881164182,
       "tag": "0001_phase2_google_and_importer",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785882137425,
+      "tag": "0002_create_task_from_email",
+      "breakpoints": true
     }
   ]
 }
