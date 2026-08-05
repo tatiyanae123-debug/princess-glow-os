@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowDown, ArrowUp, CalendarDays, FolderKanban, ListChecks, Sparkles, User } from 'lucide-react';
+import { ArrowDown, ArrowUp, CalendarDays, FolderKanban, ListChecks, Sparkles, User, Mail, Dumbbell, UploadCloud, Link2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CustomizableVisual } from '@/components/ui/customizable-visual';
 import type { DashboardWidgetId, LivingDashboardData } from '@/lib/dashboard/types';
 import { DEFAULT_WIDGET_ORDER } from '@/lib/dashboard/types';
 import { useGlow } from '@/lib/context/glow-provider';
+import { CreateTaskFromEmailButton } from '@/components/dashboard/create-task-from-email-button';
 
 const WIDGET_STORAGE_KEY = 'living-dashboard-widget-order-v1';
 
@@ -332,6 +333,177 @@ export function LivingDashboard({ data, error }: { data: LivingDashboardData; er
             ) : (
               <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
                 No check-in logged today yet. Take a minute to log how you&rsquo;re feeling.
+              </p>
+            )}
+          </Card>
+        ),
+      },
+      {
+        id: 'workout-of-the-day',
+        label: 'Workout of the day',
+        render: () => (
+          <Card>
+            <div className="mb-3 flex items-center gap-2" style={{ color: 'var(--glow-accent)' }}>
+              <Dumbbell size={15} />
+              <p className="text-xs font-semibold uppercase tracking-[0.3em]">{data.workoutOfTheDay.label}</p>
+            </div>
+            <p className="font-semibold" style={{ color: 'var(--glow-text)' }}>{data.workoutOfTheDay.focus}</p>
+            {data.workoutOfTheDay.exercises.length > 0 ? (
+              <ul className="mt-3 flex flex-wrap gap-1.5">
+                {data.workoutOfTheDay.exercises.map((exercise) => (
+                  <li
+                    key={exercise}
+                    className="rounded-full px-2.5 py-1 text-xs"
+                    style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)', color: 'var(--glow-text-muted)' }}
+                  >
+                    {exercise}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-2 text-sm" style={{ color: 'var(--glow-text-muted)' }}>Full rest day — recovery is part of the split.</p>
+            )}
+          </Card>
+        ),
+      },
+      {
+        id: 'google-calendar',
+        label: 'Google Calendar',
+        render: () => (
+          <Card>
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2" style={{ color: 'var(--glow-accent)' }}>
+                <CalendarDays size={15} />
+                <p className="text-xs font-semibold uppercase tracking-[0.3em]">Google Calendar</p>
+              </div>
+              {data.googleCalendar.status === 'connected' && (
+                <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: 'var(--glow-accent-soft)', color: 'var(--glow-accent)' }}>
+                  Google
+                </span>
+              )}
+            </div>
+            {data.googleCalendar.status === 'not_connected' && (
+              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
+                Not connected. Connect Google Calendar from{' '}
+                <a href="/connections" className="underline" style={{ color: 'var(--glow-accent)' }}>Connections</a> to see upcoming events here.
+              </p>
+            )}
+            {data.googleCalendar.status === 'insufficient_scope' && (
+              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
+                Calendar permission wasn&rsquo;t granted. Reconnect on the Connections page to approve it.
+              </p>
+            )}
+            {data.googleCalendar.status === 'revoked' && (
+              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
+                Google access expired or was revoked. Reconnect on the Connections page.
+              </p>
+            )}
+            {data.googleCalendar.status === 'error' && (
+              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>Couldn&rsquo;t load Google Calendar right now.</p>
+            )}
+            {data.googleCalendar.status === 'connected' && (
+              data.googleCalendar.events.length > 0 ? (
+                <div className="space-y-2">
+                  {data.googleCalendar.events.slice(0, 5).map((event) => (
+                    <div key={event.id} className="flex items-center justify-between rounded-2xl p-3" style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)' }}>
+                      <p className="truncate text-sm" style={{ color: 'var(--glow-text)' }}>{event.title}</p>
+                      <span className="shrink-0 text-xs" style={{ color: 'var(--glow-text-muted)' }}>
+                        {event.allDay ? 'All day' : formatTime(event.startAt)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>Nothing on your Google Calendar in the next two weeks.</p>
+              )
+            )}
+          </Card>
+        ),
+      },
+      {
+        id: 'gmail-inbox',
+        label: 'Gmail inbox',
+        render: () => (
+          <Card>
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2" style={{ color: 'var(--glow-accent)' }}>
+                <Mail size={15} />
+                <p className="text-xs font-semibold uppercase tracking-[0.3em]">Gmail inbox</p>
+              </div>
+              {data.gmailInbox.status === 'connected' && (
+                <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: 'var(--glow-accent-soft)', color: 'var(--glow-accent)' }}>
+                  {data.gmailInbox.unreadCount} unread
+                </span>
+              )}
+            </div>
+            {data.gmailInbox.status === 'not_connected' && (
+              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
+                Not connected. Connect Gmail from{' '}
+                <a href="/connections" className="underline" style={{ color: 'var(--glow-accent)' }}>Connections</a> to see your inbox summary here.
+              </p>
+            )}
+            {data.gmailInbox.status === 'insufficient_scope' && (
+              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
+                Gmail permission wasn&rsquo;t granted. Reconnect on the Connections page to approve it.
+              </p>
+            )}
+            {data.gmailInbox.status === 'revoked' && (
+              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
+                Google access expired or was revoked. Reconnect on the Connections page.
+              </p>
+            )}
+            {data.gmailInbox.status === 'error' && (
+              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>Couldn&rsquo;t load your inbox right now.</p>
+            )}
+            {data.gmailInbox.status === 'connected' && (
+              data.gmailInbox.messages.length > 0 ? (
+                <div className="space-y-2">
+                  {data.gmailInbox.messages.map((message) => (
+                    <div key={message.id} className="rounded-2xl p-3" style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)' }}>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="truncate text-sm font-medium" style={{ color: 'var(--glow-text)' }}>{message.subject}</p>
+                        {message.unread && <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: 'var(--glow-accent)' }} />}
+                      </div>
+                      <p className="truncate text-xs" style={{ color: 'var(--glow-text-muted)' }}>{message.from}</p>
+                      <div className="mt-2">
+                        <CreateTaskFromEmailButton
+                          messageId={message.id}
+                          threadId={message.threadId}
+                          subject={message.subject}
+                          from={message.from}
+                          snippet={message.snippet}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>Inbox is clear.</p>
+              )
+            )}
+          </Card>
+        ),
+      },
+      {
+        id: 'import-status',
+        label: 'Import status',
+        render: () => (
+          <Card>
+            <div className="mb-3 flex items-center gap-2" style={{ color: 'var(--glow-text-muted)' }}>
+              <UploadCloud size={15} />
+              <p className="text-xs font-semibold uppercase tracking-[0.3em]">Import status</p>
+            </div>
+            {data.importStatus.totalConfirmed > 0 ? (
+              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
+                {data.importStatus.totalConfirmed} batch{data.importStatus.totalConfirmed === 1 ? '' : 'es'} imported
+                {data.importStatus.lastImportAt && ` · last on ${data.importStatus.lastImportAt.toLocaleDateString('en')}`}
+              </p>
+            ) : (
+              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
+                No imports yet. Bring in your Glow OS system from{' '}
+                <a href="/import" className="underline" style={{ color: 'var(--glow-accent)' }}>
+                  <span className="inline-flex items-center gap-1"><Link2 size={12} />Import</span>
+                </a>.
               </p>
             )}
           </Card>
