@@ -24,7 +24,16 @@ console.log(
   '| PRINCESS_GOOGLE_CLIENT_SECRET present =', !!process.env.PRINCESS_GOOGLE_CLIENT_SECRET,
 );
 
+function getDeploymentBaseUrl(baseUrl: string) {
+  if (process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+
+  return baseUrl;
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
@@ -65,6 +74,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return Response.redirect(new URL('/sign-in', nextUrl));
       }
       return true;
+    },
+    redirect({ url, baseUrl }) {
+      const deploymentBaseUrl = getDeploymentBaseUrl(baseUrl);
+
+      if (url.startsWith('/')) {
+        return new URL(url, deploymentBaseUrl).toString();
+      }
+
+      try {
+        const target = new URL(url);
+        const productionOrigin = new URL(baseUrl).origin;
+        const deploymentOrigin = new URL(deploymentBaseUrl).origin;
+
+        if (target.origin === productionOrigin || target.origin === deploymentOrigin) {
+          return new URL(`${target.pathname}${target.search}${target.hash}`, deploymentBaseUrl).toString();
+        }
+      } catch {
+        return deploymentBaseUrl;
+      }
+
+      return deploymentBaseUrl;
     },
     session({ session, user }) {
       session.user.id = user.id;
