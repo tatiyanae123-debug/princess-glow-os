@@ -51,6 +51,10 @@ function getFallbackData(): LivingDashboardData {
       loggedToday: false,
       entry: null,
     },
+    googleCalendar: { status: 'error', events: [] },
+    gmailInbox: { status: 'error', unreadCount: 0, messages: [] },
+    workoutOfTheDay: { label: '', focus: '', exercises: [] },
+    importStatus: { totalConfirmed: 0, lastImportAt: null },
   };
 }
 

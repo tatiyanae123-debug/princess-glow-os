@@ -4,27 +4,17 @@ import Google from 'next-auth/providers/google';
 import { db } from '@/db';
 import { users, accounts, sessions, verificationTokens } from '@/db/schema/auth';
 
-const missingVars: string[] = [];
-if (!process.env.AUTH_SECRET) missingVars.push('AUTH_SECRET');
-if (!process.env.DATABASE_URL) missingVars.push('DATABASE_URL');
-if (!process.env.PRINCESS_GOOGLE_CLIENT_ID) missingVars.push('PRINCESS_GOOGLE_CLIENT_ID');
-if (!process.env.PRINCESS_GOOGLE_CLIENT_SECRET) missingVars.push('PRINCESS_GOOGLE_CLIENT_SECRET');
-if (missingVars.length > 0) {
-  throw new Error(
-    `Missing required environment variable(s): ${missingVars.join(', ')}. ` +
-      'Set them before starting the application.',
-  );
+function getDeploymentBaseUrl(baseUrl: string) {
+  if (process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+
+  return baseUrl;
 }
 
-console.log(
-  'Auth config:',
-  'AUTH_SECRET present =', !!process.env.AUTH_SECRET,
-  '| DATABASE_URL present =', !!process.env.DATABASE_URL,
-  '| PRINCESS_GOOGLE_CLIENT_ID present =', !!process.env.PRINCESS_GOOGLE_CLIENT_ID,
-  '| PRINCESS_GOOGLE_CLIENT_SECRET present =', !!process.env.PRINCESS_GOOGLE_CLIENT_SECRET,
-);
-
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
+  secret: process.env.AUTH_SECRET,
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
@@ -33,8 +23,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   }),
   providers: [
     Google({
-      clientId: process.env.PRINCESS_GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.PRINCESS_GOOGLE_CLIENT_SECRET!,
+      // Vercel can omit runtime-only secrets while Next.js is collecting page data
+      // for route handlers. Auth.js reads these values when a request is served,
+      // so keep module evaluation side-effect free and let runtime configuration
+      // supply the real Preview/Production credentials.
+      clientId: process.env.PRINCESS_GOOGLE_CLIENT_ID ?? '',
+      clientSecret: process.env.PRINCESS_GOOGLE_CLIENT_SECRET ?? '',
+      authorization: {
+        params: {
+          access_type: 'offline',
+          prompt: 'consent',
+          scope: [
+            'openid',
+            'email',
+            'profile',
+            'https://www.googleapis.com/auth/calendar.readonly',
+            'https://www.googleapis.com/auth/gmail.readonly',
+          ].join(' '),
+        },
+      },
     }),
   ],
   pages: {
@@ -52,6 +59,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return Response.redirect(new URL('/sign-in', nextUrl));
       }
       return true;
+    },
+    redirect({ url, baseUrl }) {
+      const deploymentBaseUrl = getDeploymentBaseUrl(baseUrl);
+
+      if (url.startsWith('/')) {
+        return new URL(url, deploymentBaseUrl).toString();
+      }
+
+      try {
+        const target = new URL(url);
+        const productionOrigin = new URL(baseUrl).origin;
+        const deploymentOrigin = new URL(deploymentBaseUrl).origin;
+
+        if (target.origin === productionOrigin || target.origin === deploymentOrigin) {
+          return new URL(`${target.pathname}${target.search}${target.hash}`, deploymentBaseUrl).toString();
+        }
+      } catch {
+        return deploymentBaseUrl;
+      }
+
+      return deploymentBaseUrl;
     },
     session({ session, user }) {
       session.user.id = user.id;

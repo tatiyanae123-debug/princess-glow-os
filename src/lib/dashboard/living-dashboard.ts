@@ -8,7 +8,11 @@ import { getHabitsByUser, getHabitLogsForUserByDate } from '@/lib/data/habits';
 import { getNotesByUser } from '@/lib/data/notes';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
 import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
-import type { LivingDashboardData } from '@/lib/dashboard/types';
+import { getUpcomingGoogleEvents } from '@/lib/google/calendar-client';
+import { getRecentInboxMessages } from '@/lib/google/gmail-client';
+import { getImportBatchesByUser } from '@/lib/importer/confirm';
+import { getWorkoutOfTheDay, getWeeklyTheme, type Weekday } from '@/lib/glow-content/library';
+import type { LivingDashboardData, GoogleWidgetStatus } from '@/lib/dashboard/types';
 
 const priorityRank: Record<Task['priority'], number> = {
   urgent: 0,
@@ -18,17 +22,6 @@ const priorityRank: Record<Task['priority'], number> = {
 };
 
 const weekdayOrder = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
-const weeklyThemes = [
-  { title: 'Momentum Week', note: 'Build steady progress with one meaningful win each day.' },
-  { title: 'Clarity Week', note: 'Protect focus and simplify what matters most.' },
-  { title: 'Balance Week', note: 'Keep effort sustainable and your schedule breathable.' },
-  { title: 'Refinement Week', note: 'Tighten routines and improve your system gently.' },
-] as const;
-
-function formatWeekTheme(date: Date) {
-  const weekNumber = Math.ceil((date.getDate() + new Date(date.getFullYear(), date.getMonth(), 1).getDay()) / 7);
-  return weeklyThemes[weekNumber % weeklyThemes.length];
-}
 
 function getTimeOfDayState(date: Date) {
   const hour = date.getHours();
@@ -89,19 +82,35 @@ export async function getLivingDashboardData(userId: string): Promise<LivingDash
   const timeState = getTimeOfDayState(now);
   const todayKey = now.toISOString().slice(0, 10);
 
-  const [tasks, routines, goals, workSchedules, events, habits, todaysHabitLogs, notes, beautyRoutines, wellnessEntries] =
-    await Promise.all([
-      getTasksByUser(userId),
-      getRoutinesByUser(userId),
-      getGoalsByUser(userId),
-      getWorkSchedulesByUser(userId),
-      getCalendarEventsByUser(userId),
-      getHabitsByUser(userId),
-      getHabitLogsForUserByDate(userId, todayKey),
-      getNotesByUser(userId),
-      getBeautyRoutinesByUser(userId),
-      getWellnessEntriesByUser(userId),
-    ]);
+  const [
+    tasks,
+    routines,
+    goals,
+    workSchedules,
+    events,
+    habits,
+    todaysHabitLogs,
+    notes,
+    beautyRoutines,
+    wellnessEntries,
+    googleCalendarResult,
+    gmailResult,
+    importBatches,
+  ] = await Promise.all([
+    getTasksByUser(userId),
+    getRoutinesByUser(userId),
+    getGoalsByUser(userId),
+    getWorkSchedulesByUser(userId),
+    getCalendarEventsByUser(userId),
+    getHabitsByUser(userId),
+    getHabitLogsForUserByDate(userId, todayKey),
+    getNotesByUser(userId),
+    getBeautyRoutinesByUser(userId),
+    getWellnessEntriesByUser(userId),
+    getUpcomingGoogleEvents(userId),
+    getRecentInboxMessages(userId),
+    getImportBatchesByUser(userId),
+  ]);
 
   const activeTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'cancelled');
   const topPriorityTasks = sortTasksByPriority(activeTasks).slice(0, 3);
@@ -180,13 +189,55 @@ export async function getLivingDashboardData(userId: string): Promise<LivingDash
       : null,
   };
 
+  const googleCalendarStatus: GoogleWidgetStatus = googleCalendarResult.ok
+    ? 'connected'
+    : googleCalendarResult.reason === 'not_connected'
+      ? 'not_connected'
+      : googleCalendarResult.reason === 'insufficient_scope'
+        ? 'insufficient_scope'
+        : googleCalendarResult.reason === 'revoked'
+          ? 'revoked'
+          : 'error';
+  const googleCalendar = {
+    status: googleCalendarStatus,
+    events: googleCalendarResult.ok ? googleCalendarResult.events : [],
+  };
+
+  const gmailStatus: GoogleWidgetStatus = gmailResult.ok
+    ? 'connected'
+    : gmailResult.reason === 'not_connected'
+      ? 'not_connected'
+      : gmailResult.reason === 'insufficient_scope'
+        ? 'insufficient_scope'
+        : gmailResult.reason === 'revoked'
+          ? 'revoked'
+          : 'error';
+  const gmailInbox = {
+    status: gmailStatus,
+    unreadCount: gmailResult.ok ? gmailResult.unreadCount : 0,
+    messages: gmailResult.ok
+      ? gmailResult.messages.slice(0, 5).map((m) => ({ id: m.id, threadId: m.threadId, from: m.from, subject: m.subject, snippet: m.snippet, unread: m.unread }))
+      : [],
+  };
+
+  const workout = getWorkoutOfTheDay(dayOfWeek as Weekday);
+  const workoutOfTheDay = { label: workout.label, focus: workout.focus, exercises: workout.exercises };
+
+  const confirmedBatches = importBatches.filter((b) => b.status === 'confirmed');
+  const importStatus = {
+    totalConfirmed: confirmedBatches.length,
+    lastImportAt: confirmedBatches[confirmedBatches.length - 1]?.confirmedAt ?? null,
+  };
+
+  const glowWeeklyTheme = getWeeklyTheme(dayOfWeek as Weekday);
+
   return {
     greeting: {
       label: timeState.label,
       title: timeState.title,
       message: timeState.message,
     },
-    weekTheme: formatWeekTheme(now),
+    weekTheme: { title: glowWeeklyTheme.title, note: glowWeeklyTheme.focus },
     todayOverview: {
       tasksDueToday,
       eventsToday: todaysEvents.length,
@@ -243,5 +294,9 @@ export async function getLivingDashboardData(userId: string): Promise<LivingDash
     notesSummary,
     beautyToday,
     wellnessToday,
+    googleCalendar,
+    gmailInbox,
+    workoutOfTheDay,
+    importStatus,
   };
 }
