@@ -22,6 +22,13 @@
       "when": 1785882137425,
       "tag": "0002_create_task_from_email",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785960000000,
+      "tag": "0003_work_schedule_import_provenance",
+      "breakpoints": true
     }
   ]
 }
