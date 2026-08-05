@@ -12,9 +12,9 @@ function getDeploymentBaseUrl(baseUrl: string) {
   return baseUrl;
 }
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
   trustHost: true,
-  secret: process.env.AUTH_SECRET,
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
@@ -23,10 +23,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   }),
   providers: [
     Google({
-      // Vercel can omit runtime-only secrets while Next.js is collecting page data
-      // for route handlers. Auth.js reads these values when a request is served,
-      // so keep module evaluation side-effect free and let runtime configuration
-      // supply the real Preview/Production credentials.
       clientId: process.env.PRINCESS_GOOGLE_CLIENT_ID ?? '',
       clientSecret: process.env.PRINCESS_GOOGLE_CLIENT_SECRET ?? '',
       authorization: {
@@ -52,12 +48,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const isLoggedIn = !!session?.user;
       const isOnSignIn = nextUrl.pathname === '/sign-in';
       const isApiAuth = nextUrl.pathname.startsWith('/api/auth');
+
       if (isLoggedIn && isOnSignIn) {
         return Response.redirect(new URL('/dashboard', nextUrl));
       }
+
       if (!isLoggedIn && !isOnSignIn && !isApiAuth) {
         return Response.redirect(new URL('/sign-in', nextUrl));
       }
+
       return true;
     },
     redirect({ url, baseUrl }) {
@@ -86,4 +85,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
-});
+}));
