@@ -39,6 +39,8 @@ Set these in Vercel (Project Settings → Environment Variables) for each enviro
 
 No new environment variables were introduced beyond what Phase 1 already required — Phase 2 reuses `PRINCESS_GOOGLE_CLIENT_ID`/`PRINCESS_GOOGLE_CLIENT_SECRET`, which already existed in `.env.example`, and now actually uses them for calendar/Gmail scopes in addition to sign-in.
 
+For Vercel preview deployments, keep `AUTH_URL` and `NEXTAUTH_URL` scoped to Production only. Preview deployments should use the current Vercel deployment host so authentication redirects remain on the preview domain.
+
 ## 3. What changed vs. Phase 1's Google sign-in
 
 Phase 1 only used Google for basic sign-in (`openid email profile`). Phase 2 requests two additional read-only scopes and sets `access_type: 'offline'` + `prompt: 'consent'` so Google issues a **refresh token**, which is required for the app to read Calendar/Gmail data after the user's session token expires.
