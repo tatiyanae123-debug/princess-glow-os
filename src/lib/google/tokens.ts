@@ -138,6 +138,7 @@ export type GoogleConnectionStatus = {
   hasCalendarScope: boolean;
   hasGmailScope: boolean;
   tokenExpiresAt: Date | null;
+  needsReauthorization: boolean;
 };
 
 /**
@@ -147,7 +148,7 @@ export type GoogleConnectionStatus = {
 export async function getGoogleConnectionStatus(userId: string): Promise<GoogleConnectionStatus> {
   const account = await getGoogleAccount(userId);
   if (!account) {
-    return { connected: false, email: null, grantedScopes: [], hasCalendarScope: false, hasGmailScope: false, tokenExpiresAt: null };
+    return { connected: false, email: null, grantedScopes: [], hasCalendarScope: false, hasGmailScope: false, tokenExpiresAt: null, needsReauthorization: false };
   }
   const grantedScopes = account.scope ? account.scope.split(' ') : [];
   return {
@@ -157,6 +158,7 @@ export async function getGoogleConnectionStatus(userId: string): Promise<GoogleC
     hasCalendarScope: grantedScopes.includes(REQUIRED_SCOPES.calendar),
     hasGmailScope: grantedScopes.includes(REQUIRED_SCOPES.gmail),
     tokenExpiresAt: account.expires_at ? new Date(account.expires_at * 1000) : null,
+    needsReauthorization: !account.refresh_token && isExpired(account.expires_at),
   };
 }
 

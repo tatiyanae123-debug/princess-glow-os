@@ -5,6 +5,7 @@ import { getTasksByUser } from '@/lib/data/tasks';
 import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
 import { getNotesByUser } from '@/lib/data/notes';
+import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,11 +14,12 @@ export default async function TodayPage() {
   if (!session?.user?.id) redirect('/sign-in');
   const userId = session.user.id;
 
-  const [tasks, wellnessEntries, beautyRoutines, notes] = await Promise.all([
+  const [tasks, wellnessEntries, beautyRoutines, notes, calendarEvents] = await Promise.all([
     getTasksByUser(userId),
     getWellnessEntriesByUser(userId),
     getBeautyRoutinesByUser(userId),
     getNotesByUser(userId),
+    getCalendarEventsByUser(userId),
   ]);
 
   const today = new Date();
@@ -44,6 +46,7 @@ export default async function TodayPage() {
     { title: 'Flow', description: 'Work that feels lighter' },
     { title: 'Restore', description: 'Care that holds you' },
   ];
+  const todaysEvents = calendarEvents.filter((event) => event.startAt.toDateString() === today.toDateString()).sort((a, b) => a.startAt.getTime() - b.startAt.getTime());
 
   return (
     <AppShell>
@@ -92,6 +95,10 @@ export default async function TodayPage() {
               ))}
             </div>
           </div>
+        </section>
+        <section className="rounded-[28px] border border-slate-200/70 bg-white/80 p-6 shadow-sm">
+          <p className="text-sm uppercase tracking-[0.3em] text-sky-600">Today&rsquo;s schedule</p>
+          {todaysEvents.length === 0 ? <p className="mt-4 text-sm text-slate-400">No synced events today.</p> : <div className="mt-4 space-y-2">{todaysEvents.map((event) => <div key={event.id} className="rounded-2xl bg-slate-50 p-4"><p className="font-semibold text-slate-900">{event.title}</p><p className="text-sm text-slate-500">{event.allDay ? 'All day' : event.startAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}{event.source === 'google_calendar' ? ' · Google Calendar' : ''}</p></div>)}</div>}
         </section>
 
         <section className="grid gap-4 lg:grid-cols-[1fr_0.9fr]">
