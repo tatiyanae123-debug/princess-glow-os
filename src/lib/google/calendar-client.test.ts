@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeEvent } from '@/lib/google/calendar-client';
+import { deduplicateGoogleEvents, normalizeEvent } from '@/lib/google/calendar-client';
 
 describe('normalizeEvent (Calendar normalization)', () => {
   it('normalizes a timed event as not all-day', () => {
@@ -45,5 +45,29 @@ describe('normalizeEvent (Calendar normalization)', () => {
     });
     expect(result?.location).toBe('Home');
     expect(result?.htmlLink).toBe('https://calendar.google.com/event?eid=abc');
+  });
+
+  it('preserves timezone and recurrence identity for recurring events', () => {
+    const result = normalizeEvent({
+      id: 'instance-1', recurringEventId: 'series-1', status: 'tentative',
+      start: { dateTime: '2026-11-01T09:00:00-05:00', timeZone: 'America/New_York' },
+      end: { dateTime: '2026-11-01T10:00:00-05:00', timeZone: 'America/New_York' },
+    }, 'work@example.com');
+    expect(result).toMatchObject({ calendarId: 'work@example.com', recurringEventId: 'series-1', timezone: 'America/New_York', status: 'tentative' });
+    expect(result?.startAt.toISOString()).toBe('2026-11-01T14:00:00.000Z');
+  });
+
+  it('normalizes cancelled instances so sync can archive rather than delete them', () => {
+    const result = normalizeEvent({ id: 'cancelled-1', status: 'cancelled', originalStartTime: { date: '2026-08-20' } }, 'primary');
+    expect(result).toMatchObject({ id: 'cancelled-1', status: 'cancelled', allDay: true });
+  });
+
+  it('prevents duplicate event IDs within the same calendar while preserving IDs across calendars', () => {
+    const first = normalizeEvent({ id: 'shared-id', summary: 'First', start: { date: '2026-08-20' } }, 'calendar-a')!;
+    const updated = normalizeEvent({ id: 'shared-id', summary: 'Updated', start: { date: '2026-08-21' } }, 'calendar-a')!;
+    const otherCalendar = normalizeEvent({ id: 'shared-id', summary: 'Other', start: { date: '2026-08-20' } }, 'calendar-b')!;
+    const result = deduplicateGoogleEvents([first, updated, otherCalendar]);
+    expect(result).toHaveLength(2);
+    expect(result.find((event) => event.calendarId === 'calendar-a')?.title).toBe('Updated');
   });
 });
