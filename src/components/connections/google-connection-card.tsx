@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useServerAction } from '@/lib/hooks/use-server-action';
-import { disconnectGoogleAction, reconnectGoogleAction } from '@/app/actions/connections';
+import { disconnectGoogleAction, reconnectGoogleAction, syncGoogleCalendarAction } from '@/app/actions/connections';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { ConnectionsOverview } from '@/lib/data/connections';
@@ -21,7 +21,9 @@ const SCOPE_LABELS: Record<string, string> = {
 export function GoogleConnectionCard({ overview }: { overview: ConnectionsOverview }) {
   const router = useRouter();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const disconnect = useServerAction(disconnectGoogleAction);
+  const sync = useServerAction(syncGoogleCalendarAction);
 
   function handleDisconnect() {
     disconnect.run(undefined, () => {
@@ -50,7 +52,7 @@ export function GoogleConnectionCard({ overview }: { overview: ConnectionsOvervi
           }
         >
           {overview.connected ? <CheckCircle2 size={13} /> : <XCircle size={13} />}
-          {overview.connected ? 'Connected' : 'Not connected'}
+          {overview.calendarState === 'needs_reauthorization' ? 'Needs reauthorization' : overview.calendarState === 'error' ? 'Error' : overview.connected ? 'Connected' : 'Disconnected'}
         </span>
       </div>
 
@@ -96,6 +98,9 @@ export function GoogleConnectionCard({ overview }: { overview: ConnectionsOvervi
           {disconnect.error && <p className="text-sm text-rose-500">{disconnect.error}</p>}
 
           <div className="flex flex-wrap gap-2">
+            <Button type="button" disabled={sync.isPending || !overview.hasCalendarScope} onClick={() => { setSyncMessage(null); sync.run({ intent: 'sync' }, (result) => { setSyncMessage(`${result.status === 'partial' ? 'Partial sync completed' : 'Sync complete'} · ${result.count} events checked.`); router.refresh(); }); }}>
+              {sync.isPending ? 'Syncing…' : 'Sync Calendar'}
+            </Button>
             <form action={reconnectGoogleAction}>
               <Button type="submit" variant="secondary">Reconnect</Button>
             </form>
@@ -108,6 +113,9 @@ export function GoogleConnectionCard({ overview }: { overview: ConnectionsOvervi
               <ShieldOff size={14} /> Disconnect
             </Button>
           </div>
+          {sync.error && <p className="text-sm text-rose-500">{sync.error === 'revoked' ? 'Authorization expired. Reconnect Google to continue.' : sync.error === 'insufficient_scope' ? 'Calendar permission is missing. Reconnect Google.' : 'Calendar sync failed. Please try again.'}</p>}
+          {syncMessage && <p className="text-sm text-emerald-600">{syncMessage}</p>}
+          {overview.lastSync && <p className="text-xs" style={{ color: 'var(--glow-text-muted)' }}>Last sync: {overview.lastSync.startedAt.toLocaleString()} · {overview.lastSync.status}</p>}
         </>
       ) : (
         <>

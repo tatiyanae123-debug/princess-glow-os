@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Sparkles } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { EventForm } from '@/components/calendar/event-form';
 import { useServerAction } from '@/lib/hooks/use-server-action';
-import { deleteCalendarEventAction } from '@/app/actions/calendar-events';
+import { deleteCalendarEventAction, convertCalendarEventToTaskAction } from '@/app/actions/calendar-events';
 import type { CalendarEvent } from '@/lib/types';
 
 export function EventManager({ initialEvents }: { initialEvents: CalendarEvent[] }) {
@@ -16,6 +16,7 @@ export function EventManager({ initialEvents }: { initialEvents: CalendarEvent[]
   const [dialogEvent, setDialogEvent] = useState<CalendarEvent | 'new' | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<CalendarEvent | null>(null);
   const del = useServerAction((id: string) => deleteCalendarEventAction(id));
+  const convert = useServerAction(convertCalendarEventToTaskAction);
 
   function handleSaved(event: CalendarEvent) {
     setEvents((current) => {
@@ -60,6 +61,8 @@ export function EventManager({ initialEvents }: { initialEvents: CalendarEvent[]
                   {event.title}
                 </p>
                 <div className="flex shrink-0 items-center gap-1">
+                  {event.source === 'google_calendar' && <span className="rounded-full px-2 py-1 text-[10px]" style={{ background: 'var(--glow-accent-soft)', color: 'var(--glow-accent)' }}>Google</span>}
+                  {event.editable && <>
                   <button
                     type="button"
                     onClick={() => setDialogEvent(event)}
@@ -69,6 +72,7 @@ export function EventManager({ initialEvents }: { initialEvents: CalendarEvent[]
                   >
                     <Pencil size={13} />
                   </button>
+                  </>}
                   <button
                     type="button"
                     onClick={() => setDeleteTarget(event)}
@@ -95,6 +99,10 @@ export function EventManager({ initialEvents }: { initialEvents: CalendarEvent[]
                   {event.location}
                 </p>
               )}
+              {event.source === 'google_calendar' && <div className="mt-3 flex flex-wrap gap-2">
+                <Button type="button" variant="secondary" disabled={convert.isPending} onClick={() => convert.run({ eventId: event.id })}>Convert to Task</Button>
+                <Button type="button" variant="ghost" disabled title="Coming in a future AI Concierge phase"><Sparkles size={13} /> Build My Day Around This Schedule</Button>
+              </div>}
             </div>
           ))}
         </Card>
