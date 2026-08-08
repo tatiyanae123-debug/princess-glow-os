@@ -5,8 +5,9 @@ import { db } from '@/db';
 import { users, accounts, sessions, verificationTokens } from '@/db/schema/auth';
 
 function getDeploymentBaseUrl(baseUrl: string) {
-  if (process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
+  if (process.env.VERCEL_ENV === 'preview') {
+    const previewHost = process.env.VERCEL_BRANCH_URL ?? process.env.VERCEL_URL;
+    if (previewHost) return `https://${previewHost}`;
   }
 
   return baseUrl;
@@ -29,6 +30,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
         params: {
           access_type: 'offline',
           prompt: 'consent',
+          include_granted_scopes: 'true',
           scope: [
             'openid',
             'email',
