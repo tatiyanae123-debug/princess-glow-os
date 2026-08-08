@@ -12,3 +12,4 @@ export * from './important-links';
 export * from './appointments';
 export * from './work-schedules';
 export * from './imports';
+export * from './reminder-sync';
