@@ -49,6 +49,7 @@ export const navItems: NavItem[] = [
   { label: 'Timeline', href: '/timeline', icon: CalendarDays, description: 'See your life story over time' },
   { label: 'Briefings', href: '/briefings', icon: NotebookText, description: 'Morning, evening, and weekly reviews' },
   { label: 'Closet', href: '/closet', icon: HomeIcon, description: 'Know what you own and wear' },
+  { label: 'Gmail', href: '/gmail', icon: Link2, description: 'See read-only inbox intelligence' },
   { label: 'World', href: '/world', icon: Globe2, description: 'Enter your Life World' },
   { label: 'Home', href: '/home', icon: HomeIcon, description: 'Care for your space' },
   { label: 'Notes', href: '/notes', icon: NotebookText, description: 'Capture ideas beautifully' },
