@@ -1,5 +1,6 @@
 import {
   Activity,
+  BrainCircuit,
   CalendarDays,
   CheckSquare,
   HeartPulse,
@@ -25,6 +26,7 @@ export type NavItem = {
 
 export const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutGrid, description: 'Plan the day with elegance' },
+  { label: 'Brain', href: '/brain', icon: BrainCircuit, description: 'See what matters next' },
   { label: 'Planning', href: '/planning', icon: PanelsTopLeft, description: 'See your week, quarter, and year' },
   { label: 'Calendar', href: '/calendar', icon: CalendarDays, description: 'Shape the week' },
   { label: 'Tasks', href: '/tasks', icon: CheckSquare, description: 'Focus on what matters' },
