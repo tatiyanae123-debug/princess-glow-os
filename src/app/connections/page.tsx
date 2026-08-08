@@ -4,7 +4,9 @@ import { AppShell } from '@/components/app-shell';
 import { SectionPage } from '@/components/section-page';
 import { Card } from '@/components/ui/card';
 import { GoogleConnectionCard } from '@/components/connections/google-connection-card';
+import { AppleRemindersCard } from '@/components/connections/apple-reminders-card';
 import { getConnectionsOverview } from '@/lib/data/connections';
+import { hasReminderSyncToken } from '@/lib/apple/reminders-sync';
 
 const shortcuts = [
   {
@@ -35,7 +37,10 @@ export default async function ConnectionsPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
 
-  const overview = await getConnectionsOverview(session.user.id);
+  const [overview, reminderToken] = await Promise.all([
+    getConnectionsOverview(session.user.id),
+    hasReminderSyncToken(session.user.id),
+  ]);
 
   return (
     <AppShell>
@@ -46,8 +51,9 @@ export default async function ConnectionsPage() {
       >
         <div className="grid gap-4 lg:grid-cols-2">
           <GoogleConnectionCard overview={overview} />
+          <AppleRemindersCard configured={Boolean(reminderToken)} lastUsedAt={reminderToken?.lastUsedAt ?? null} />
 
-          <Card className="space-y-3">
+          <Card className="space-y-3 lg:col-span-2">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500 dark:text-slate-400">Private shortcuts</p>
               <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
