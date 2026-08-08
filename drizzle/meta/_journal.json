@@ -36,6 +36,13 @@
       "when": 1785980000000,
       "tag": "0004_google_calendar_sync",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786213200000,
+      "tag": "0005_apple_reminders_sync",
+      "breakpoints": true
     }
   ]
 }
