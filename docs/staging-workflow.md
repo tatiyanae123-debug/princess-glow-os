@@ -2,6 +2,13 @@
 
 The `staging` branch is the permanent pre-production integration branch for Glow OS.
 
+## Stable staging URLs
+
+- App: `https://princess-glow-os-git-staging-tatiyana-os.vercel.app`
+- Google OAuth redirect URI: `https://princess-glow-os-git-staging-tatiyana-os.vercel.app/api/auth/callback/google`
+
+Add the staging app origin and redirect URI to the existing Google OAuth client once. Future staging deployments keep the same branch URL, so normal phase testing should not require new Google redirect URIs.
+
 ## Workflow
 
 1. Build each new phase on its own feature branch.
