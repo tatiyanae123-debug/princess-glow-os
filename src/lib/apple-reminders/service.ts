@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { createHash, randomBytes } from 'crypto';
-import { and, desc, eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { appleReminderConnections, appleReminders } from '@/db/schema/intelligence-expansion';
 import type { AppleReminderImport } from '@/lib/validations/apple-reminders';
