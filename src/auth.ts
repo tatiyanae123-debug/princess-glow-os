@@ -4,6 +4,8 @@ import Google from 'next-auth/providers/google';
 import { db } from '@/db';
 import { users, accounts, sessions, verificationTokens } from '@/db/schema/auth';
 
+const PRODUCTION_AUTH_PROXY_URL = 'https://princess-glow-os.vercel.app/api/auth';
+
 function getDeploymentBaseUrl(baseUrl: string) {
   if (process.env.VERCEL_ENV === 'preview') {
     const previewHost = process.env.VERCEL_BRANCH_URL ?? process.env.VERCEL_URL;
@@ -26,6 +28,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
     Google({
       clientId: process.env.PRINCESS_GOOGLE_CLIENT_ID ?? '',
       clientSecret: process.env.PRINCESS_GOOGLE_CLIENT_SECRET ?? '',
+      // Preview deployments use one permanent OAuth callback. Auth.js carries
+      // the originating Preview URL through OAuth state and returns the user
+      // there after Google completes. This prevents every Vercel deployment
+      // from requiring a new Google Cloud redirect URI.
+      redirectProxyUrl: process.env.VERCEL_ENV === 'preview' ? PRODUCTION_AUTH_PROXY_URL : undefined,
       authorization: {
         params: {
           access_type: 'offline',
