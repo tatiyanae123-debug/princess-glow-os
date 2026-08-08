@@ -38,10 +38,10 @@ export async function acceptPlanningSuggestionAction(input: { proposalId: string
   return { data: row };
 }
 
-export async function createLifeMemoryAction(formData: FormData) {
+export async function createLifeMemoryAction(formData: FormData): Promise<void> {
   const userId = await requireUser();
   const title = String(formData.get('title') ?? '').trim();
-  if (!title) return { error: 'Title is required.' };
+  if (!title) return;
   await db.insert(lifeMemories).values({
     userId,
     title: title.slice(0, 300),
@@ -54,10 +54,10 @@ export async function createLifeMemoryAction(formData: FormData) {
   revalidatePath('/memory');
 }
 
-export async function createProjectAction(formData: FormData) {
+export async function createProjectAction(formData: FormData): Promise<void> {
   const userId = await requireUser();
   const title = String(formData.get('title') ?? '').trim();
-  if (!title) return { error: 'Title is required.' };
+  if (!title) return;
   await db.insert(projects).values({
     userId,
     title: title.slice(0, 300),
