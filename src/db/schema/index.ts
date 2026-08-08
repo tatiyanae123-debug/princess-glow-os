@@ -13,3 +13,4 @@ export * from './appointments';
 export * from './work-schedules';
 export * from './imports';
 export * from './intelligence-expansion';
+export * from './completion-v1';
