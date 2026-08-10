@@ -60,15 +60,15 @@ export function QuickAdd() {
     </Dialog>
 
     <Dialog open={activeModule!==null} onClose={close} title={activeModule?MODULE_LABEL[activeModule]:''}>
-      {activeModule==='task'&&<TaskForm onSaved={handleSaved} onCancel={close}/>} 
-      {activeModule==='habit'&&<HabitForm onSaved={handleSaved} onCancel={close}/>} 
-      {activeModule==='routine'&&<RoutineForm onSaved={handleSaved} onCancel={close}/>} 
-      {activeModule==='goal'&&<GoalForm onSaved={handleSaved} onCancel={close}/>} 
-      {activeModule==='event'&&<EventForm onSaved={handleSaved} onCancel={close}/>} 
-      {activeModule==='note'&&<NoteForm onSaved={handleSaved} onCancel={close}/>} 
-      {activeModule==='beauty'&&<BeautyRoutineForm onSaved={handleSaved} onCancel={close}/>} 
-      {activeModule==='wellness'&&<WellnessEntryForm onSaved={handleSaved} onCancel={close}/>} 
-      {activeModule==='finance'&&<FinanceEntryForm onSaved={handleSaved} onCancel={close}/>} 
+      {activeModule==='task'&&<TaskForm onSaved={handleSaved} onCancel={close}/>}
+      {activeModule==='habit'&&<HabitForm onSaved={handleSaved} onCancel={close}/>}
+      {activeModule==='routine'&&<RoutineForm onSaved={handleSaved} onCancel={close}/>}
+      {activeModule==='goal'&&<GoalForm onSaved={handleSaved} onCancel={close}/>}
+      {activeModule==='event'&&<EventForm onSaved={handleSaved} onCancel={close}/>}
+      {activeModule==='note'&&<NoteForm onSaved={handleSaved} onCancel={close}/>}
+      {activeModule==='beauty'&&<BeautyRoutineForm onSaved={handleSaved} onCancel={close}/>}
+      {activeModule==='wellness'&&<WellnessEntryForm onSaved={handleSaved} onCancel={close}/>}
+      {activeModule==='finance'&&<FinanceEntryForm onSaved={handleSaved} onCancel={close}/>}
     </Dialog>
   </>;
 }
