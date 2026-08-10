@@ -8,6 +8,7 @@ import { QuickAdd } from '@/components/quick-add/quick-add';
 import { EditorialRoomBanner } from '@/components/editorial-room-banner';
 import { SystemRoomContext } from '@/components/system-room-context';
 import { SystemExpansionDock } from '@/components/system-expansion-dock';
+import { DeepWorkspaceCanvas } from '@/components/deep-workspace-canvas';
 
 function roomFor(pathname: string) {
   if (pathname.startsWith('/beauty/lab')) return 'beauty-lab';
@@ -57,6 +58,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <main className="glow-editorial-page min-h-[calc(100vh-60px)] px-3 pb-8 pt-2 sm:px-5 lg:px-7 lg:pb-10">
               <EditorialRoomBanner />
               <SystemRoomContext />
+              <DeepWorkspaceCanvas />
               {children}
               <SystemExpansionDock />
             </main>
