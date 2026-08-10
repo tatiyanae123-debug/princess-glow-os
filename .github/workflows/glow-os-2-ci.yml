@@ -1,0 +1,26 @@
+name: Glow OS 2 CI
+
+on:
+  pull_request:
+    branches:
+      - feat/glow-os-completion-sprint
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+        env:
+          AUTH_SECRET: ci-only-placeholder-secret-that-is-long-enough
+          AUTH_TRUST_HOST: "true"
+          DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci
