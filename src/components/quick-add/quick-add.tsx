@@ -25,105 +25,50 @@ import { BeautyRoutineForm } from '@/components/beauty/beauty-routine-form';
 import { WellnessEntryForm } from '@/components/wellness/wellness-entry-form';
 import { FinanceEntryForm } from '@/components/finance/finance-entry-form';
 
-type QuickAddModule =
-  | 'task'
-  | 'habit'
-  | 'routine'
-  | 'goal'
-  | 'event'
-  | 'note'
-  | 'beauty'
-  | 'wellness'
-  | 'finance';
+type QuickAddModule = 'task'|'habit'|'routine'|'goal'|'event'|'note'|'beauty'|'wellness'|'finance';
 
 const MODULES: { id: QuickAddModule; label: string; icon: typeof Plus }[] = [
-  { id: 'task', label: 'New task', icon: ListChecks },
-  { id: 'event', label: 'New event', icon: CalendarPlus },
-  { id: 'habit', label: 'New habit', icon: Repeat },
-  { id: 'routine', label: 'New routine', icon: Sparkles },
-  { id: 'goal', label: 'New goal', icon: Target },
-  { id: 'note', label: 'New note', icon: NotebookPen },
-  { id: 'beauty', label: 'Beauty step', icon: Wand2 },
-  { id: 'wellness', label: 'Wellness check-in', icon: HeartPulse },
-  { id: 'finance', label: 'Finance entry', icon: Wallet },
+  { id:'task', label:'New task', icon:ListChecks },
+  { id:'event', label:'New event', icon:CalendarPlus },
+  { id:'habit', label:'New habit', icon:Repeat },
+  { id:'routine', label:'New ritual', icon:Sparkles },
+  { id:'goal', label:'New goal', icon:Target },
+  { id:'note', label:'Journal note', icon:NotebookPen },
+  { id:'beauty', label:'Beauty step', icon:Wand2 },
+  { id:'wellness', label:'Wellness check-in', icon:HeartPulse },
+  { id:'finance', label:'Finance entry', icon:Wallet },
 ];
 
-const MODULE_LABEL: Record<QuickAddModule, string> = {
-  task: 'Add task',
-  habit: 'Add habit',
-  routine: 'Add routine',
-  goal: 'Add goal',
-  event: 'Add event',
-  note: 'Add note',
-  beauty: 'Add beauty step',
-  wellness: 'Log check-in',
-  finance: 'Add finance entry',
+const MODULE_LABEL: Record<QuickAddModule,string> = {
+  task:'Add task', habit:'Add habit', routine:'Add ritual', goal:'Add goal', event:'Add event', note:'Add note', beauty:'Add beauty step', wellness:'Log check-in', finance:'Add finance entry',
 };
 
 export function QuickAdd() {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [activeModule, setActiveModule] = useState<QuickAddModule | null>(null);
+  const [open,setOpen] = useState(false);
+  const [activeModule,setActiveModule] = useState<QuickAddModule|null>(null);
+  const close=()=>{setOpen(false);setActiveModule(null);};
+  const handleSaved=()=>{close();router.refresh();};
 
-  function close() {
-    setOpen(false);
-    setActiveModule(null);
-  }
+  return <>
+    <button type="button" onClick={()=>setOpen(true)} aria-label="Quick add" className="fixed bottom-5 right-5 z-40 flex items-center gap-1.5 rounded-[6px] border border-[#c88f96]/30 bg-[#d8a2a8] px-3.5 py-2 text-[9px] font-medium text-white shadow-[0_8px_20px_rgba(85,55,51,.12)] transition hover:-translate-y-0.5 hover:bg-[#ca8d95]"><Plus size={12}/>New Entry</button>
 
-  function handleSaved() {
-    close();
-    router.refresh();
-  }
+    <Dialog open={open&&activeModule===null} onClose={close} title="Add to your world" description="Capture it once and place it where it belongs.">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        {MODULES.map(({id,label,icon:Icon})=><button key={id} type="button" onClick={()=>setActiveModule(id)} className="flex flex-col items-center gap-2 rounded-[8px] border border-[#e4d7cf] bg-[#fbf5f0] p-4 text-center text-[9px] font-medium text-[#5f504b] transition hover:bg-[#f5e7e5]"><Icon size={16} className="text-[#ae727a]"/>{label}</button>)}
+      </div>
+    </Dialog>
 
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label="Quick add"
-        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition hover:scale-105"
-        style={{ background: 'var(--glow-accent)', color: '#fff' }}
-      >
-        <Plus size={22} />
-      </button>
-
-      <Dialog
-        open={open && activeModule === null}
-        onClose={close}
-        title="Quick add"
-        description="Add something new without leaving where you are."
-      >
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {MODULES.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setActiveModule(id)}
-              className="flex flex-col items-center gap-2 rounded-2xl border p-4 text-center text-xs font-medium transition hover:opacity-80"
-              style={{ borderColor: 'var(--glow-border)', background: 'var(--glow-surface-muted)', color: 'var(--glow-text)' }}
-            >
-              <Icon size={18} style={{ color: 'var(--glow-accent)' }} />
-              {label}
-            </button>
-          ))}
-        </div>
-      </Dialog>
-
-      <Dialog
-        open={activeModule !== null}
-        onClose={close}
-        title={activeModule ? MODULE_LABEL[activeModule] : ''}
-      >
-        {activeModule === 'task' && <TaskForm onSaved={handleSaved} onCancel={close} />}
-        {activeModule === 'habit' && <HabitForm onSaved={handleSaved} onCancel={close} />}
-        {activeModule === 'routine' && <RoutineForm onSaved={handleSaved} onCancel={close} />}
-        {activeModule === 'goal' && <GoalForm onSaved={handleSaved} onCancel={close} />}
-        {activeModule === 'event' && <EventForm onSaved={handleSaved} onCancel={close} />}
-        {activeModule === 'note' && <NoteForm onSaved={handleSaved} onCancel={close} />}
-        {activeModule === 'beauty' && <BeautyRoutineForm onSaved={handleSaved} onCancel={close} />}
-        {activeModule === 'wellness' && <WellnessEntryForm onSaved={handleSaved} onCancel={close} />}
-        {activeModule === 'finance' && <FinanceEntryForm onSaved={handleSaved} onCancel={close} />}
-      </Dialog>
-    </>
-  );
+    <Dialog open={activeModule!==null} onClose={close} title={activeModule?MODULE_LABEL[activeModule]:''}>
+      {activeModule==='task'&&<TaskForm onSaved={handleSaved} onCancel={close}/>} 
+      {activeModule==='habit'&&<HabitForm onSaved={handleSaved} onCancel={close}/>} 
+      {activeModule==='routine'&&<RoutineForm onSaved={handleSaved} onCancel={close}/>} 
+      {activeModule==='goal'&&<GoalForm onSaved={handleSaved} onCancel={close}/>} 
+      {activeModule==='event'&&<EventForm onSaved={handleSaved} onCancel={close}/>} 
+      {activeModule==='note'&&<NoteForm onSaved={handleSaved} onCancel={close}/>} 
+      {activeModule==='beauty'&&<BeautyRoutineForm onSaved={handleSaved} onCancel={close}/>} 
+      {activeModule==='wellness'&&<WellnessEntryForm onSaved={handleSaved} onCancel={close}/>} 
+      {activeModule==='finance'&&<FinanceEntryForm onSaved={handleSaved} onCancel={close}/>} 
+    </Dialog>
+  </>;
 }
