@@ -2,7 +2,7 @@ name: Glow OS CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, feat/glow-os-completion-sprint]
   workflow_dispatch:
 
 permissions:
