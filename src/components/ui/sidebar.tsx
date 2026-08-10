@@ -2,22 +2,39 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Crown, Menu, X, Heart } from 'lucide-react';
-import { navItems } from '@/lib/navigation';
+import { ChevronDown, Crown, Menu, X, Heart } from 'lucide-react';
+import { navItems, type NavItem } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 import { useGlow } from '@/lib/context/glow-provider';
 import { THEMES } from '@/lib/themes';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
-const preferredOrder = [
-  '/dashboard','/tasks','/calendar','/planning','/habits','/fitness','/wellness','/beauty','/beauty/lab','/hair','/finance','/finance/brain','/goals','/projects','/brain','/concierge','/observations','/memory','/timeline','/briefings','/closet','/gmail','/world','/home','/connections','/notes','/import','/settings',
+const GROUPS: Array<{label:string;paths:string[]}> = [
+  {label:'TODAY',paths:['/dashboard','/today','/tasks','/calendar','/planning','/briefings']},
+  {label:'SELF',paths:['/habits','/fitness','/wellness','/beauty','/beauty/lab','/hair']},
+  {label:'LIFE',paths:['/finance','/finance/brain','/goals','/home','/closet']},
+  {label:'CREATE',paths:['/projects','/notes','/resources']},
+  {label:'INTELLIGENCE',paths:['/brain','/concierge','/observations','/memory','/timeline']},
+  {label:'WORLD',paths:['/world']},
+  {label:'SYSTEM',paths:['/gmail','/connections','/import','/settings']},
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
   const { themeId, setTheme, isCustomizing } = useGlow();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const ordered = [...navItems].sort((a,b)=>{const ai=preferredOrder.indexOf(a.href);const bi=preferredOrder.indexOf(b.href);if(ai===-1&&bi===-1)return 0;if(ai===-1)return 1;if(bi===-1)return -1;return ai-bi;});
+  const [collapsed,setCollapsed]=useState<Record<string,boolean>>({});
+  const byHref=useMemo(()=>new Map(navItems.map(item=>[item.href,item])),[]);
+  const used=new Set(GROUPS.flatMap(group=>group.paths));
+  const fallback=navItems.filter(item=>!used.has(item.href));
+
+  const renderItem=(item:NavItem)=>{
+    const Icon=item.icon;
+    const active=pathname===item.href||pathname.startsWith(item.href+'/');
+    return <Link key={item.href} href={item.href} onClick={()=>setMobileOpen(false)} className={cn('group flex min-h-[32px] items-center gap-2.5 rounded-[9px] px-2.5 py-1.5 text-[10px] transition-all',active?'bg-[#e5c6c5] text-[#4a3334] shadow-[inset_0_0_0_1px_rgba(164,100,108,.07)]':'text-[#5e4f49] hover:bg-white/35 hover:text-[#302622]')}>
+      <Icon size={13} strokeWidth={1.7} className="shrink-0"/><span className="truncate">{item.label}</span>
+    </Link>;
+  };
 
   return (
     <aside className="flex h-full w-full flex-col border-b border-[#dfd0c6] bg-[linear-gradient(180deg,#efe2d8_0%,#f3e9e1_55%,#eee0d6_100%)] px-4 py-4 lg:min-h-screen lg:border-b-0 lg:border-r lg:px-3 lg:py-5">
@@ -39,14 +56,20 @@ export function Sidebar() {
           <p className="mt-0.5 text-[8px] tracking-wide text-[#7c6961]">Modern American Princess</p>
         </div>
 
-        <nav aria-label="Glow OS navigation" className="min-h-0 flex-1 space-y-[2px] overflow-y-auto pr-1">
-          {ordered.map((item)=>{
-            const Icon=item.icon;
-            const active=pathname===item.href||pathname.startsWith(item.href+'/');
-            return <Link key={item.href} href={item.href} onClick={()=>setMobileOpen(false)} className={cn('group flex min-h-[33px] items-center gap-2.5 rounded-[9px] px-2.5 py-1.5 text-[10px] transition-all',active?'bg-[#e5c6c5] text-[#4a3334] shadow-[inset_0_0_0_1px_rgba(164,100,108,.07)]':'text-[#5e4f49] hover:bg-white/35 hover:text-[#302622]')}>
-              <Icon size={13} strokeWidth={1.7} className="shrink-0"/><span className="truncate">{item.label}</span>
-            </Link>;
+        <nav aria-label="Glow OS navigation" className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
+          {GROUPS.map(group=>{
+            const items=group.paths.map(path=>byHref.get(path)).filter(Boolean) as NavItem[];
+            const open=!collapsed[group.label];
+            const groupActive=items.some(item=>pathname===item.href||pathname.startsWith(item.href+'/'));
+            return <div key={group.label}>
+              <button type="button" onClick={()=>setCollapsed(current=>({...current,[group.label]:!current[group.label]}))} className="flex w-full items-center justify-between px-2 py-1 text-left">
+                <span className={cn('text-[7px] font-bold uppercase tracking-[.18em]',groupActive?'text-[#9f6670]':'text-[#9a857c]')}>{group.label}</span>
+                <ChevronDown size={10} className={cn('text-[#a89086] transition',open?'rotate-0':'-rotate-90')}/>
+              </button>
+              {open?<div className="space-y-[1px]">{items.map(renderItem)}</div>:null}
+            </div>;
           })}
+          {fallback.length?<div><p className="px-2 py-1 text-[7px] font-bold uppercase tracking-[.18em] text-[#9a857c]">MORE</p>{fallback.map(renderItem)}</div>:null}
         </nav>
 
         <div className="paper-card mt-4 overflow-hidden p-3 text-left">
