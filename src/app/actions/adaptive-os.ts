@@ -1,11 +1,15 @@
 'use server';
 
 import { auth } from '@/auth';
+import { db } from '@/db';
+import { lifeMemories } from '@/db/schema/intelligence-expansion';
+import { lifeTimelineEvents } from '@/db/schema/completion-v1';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import {
   addInboxItem,
   finishFocusSession,
+  getTodayReview,
   markInboxProcessed,
   setActiveLifeMode,
   startFocusSession,
@@ -83,18 +87,44 @@ export async function finishFocusSessionFormAction(sessionId: string, formData: 
 
 export async function finishDayAction(input: { energy?: number; mood?: string; completedSummary?: string; movedSummary?: string; memoryNote?: string; tomorrowTopThree?: string[] }) {
   const userId = await requireUserId();
-  const dateKey = new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const dateKey = now.toISOString().slice(0, 10);
+  const before = await getTodayReview(userId, dateKey);
   const review = await upsertDayReview(userId, dateKey, input);
+
+  if (input.memoryNote && input.memoryNote !== before?.memoryNote) {
+    const title = `Daily memory · ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    const [memory] = await db.insert(lifeMemories).values({
+      userId,
+      category: 'daily-life',
+      source: 'day_review',
+      title,
+      summary: input.memoryNote,
+      sourceDate: now,
+      relatedArea: 'Today',
+      confidence: 1,
+      privacyLevel: 'private',
+    }).returning();
+    await db.insert(lifeTimelineEvents).values({
+      userId,
+      category: 'memory',
+      title,
+      occurredAt: now,
+      summary: input.memoryNote,
+      relatedEntityType: 'life_memory',
+      relatedEntityId: memory.id,
+    });
+  }
+
   revalidatePath('/today');
+  revalidatePath('/memory');
   revalidatePath('/timeline');
   return { data: review };
 }
 
 export async function finishDayFormAction(formData: FormData) {
   const energyRaw = Number(formData.get('energy') ?? 0);
-  const topThree = [1, 2, 3]
-    .map((index) => String(formData.get(`tomorrow${index}`) ?? '').trim())
-    .filter(Boolean);
+  const topThree = [1, 2, 3].map((index) => String(formData.get(`tomorrow${index}`) ?? '').trim()).filter(Boolean);
   return finishDayAction({
     energy: Number.isFinite(energyRaw) && energyRaw > 0 ? Math.min(10, Math.max(1, energyRaw)) : undefined,
     mood: String(formData.get('mood') ?? '').trim() || undefined,
