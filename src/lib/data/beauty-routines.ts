@@ -4,19 +4,29 @@ import { eq, and, desc } from 'drizzle-orm';
 import type { CreateBeautyRoutineInput, UpdateBeautyRoutineInput } from '@/lib/validations/beauty-routines';
 
 export async function getBeautyRoutinesByUser(userId: string) {
-  return db
-    .select()
-    .from(beautyRoutines)
-    .where(and(eq(beautyRoutines.userId, userId), eq(beautyRoutines.archived, false)))
-    .orderBy(desc(beautyRoutines.stepOrder));
+  try {
+    return await db
+      .select()
+      .from(beautyRoutines)
+      .where(and(eq(beautyRoutines.userId, userId), eq(beautyRoutines.archived, false)))
+      .orderBy(desc(beautyRoutines.stepOrder));
+  } catch (error) {
+    console.error('[Glow OS] beauty routines unavailable', error);
+    return [];
+  }
 }
 
 export async function getBeautyRoutineById(id: string, userId: string) {
-  const [routine] = await db
-    .select()
-    .from(beautyRoutines)
-    .where(and(eq(beautyRoutines.id, id), eq(beautyRoutines.userId, userId)));
-  return routine ?? null;
+  try {
+    const [routine] = await db
+      .select()
+      .from(beautyRoutines)
+      .where(and(eq(beautyRoutines.id, id), eq(beautyRoutines.userId, userId)));
+    return routine ?? null;
+  } catch (error) {
+    console.error('[Glow OS] beauty routine unavailable', error);
+    return null;
+  }
 }
 
 export async function createBeautyRoutine(userId: string, data: CreateBeautyRoutineInput) {
