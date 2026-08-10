@@ -1,26 +1,15 @@
+import { and, asc, eq } from 'drizzle-orm';
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
-import { Card } from '@/components/ui/card';
+import { db } from '@/db';
+import { personalRules } from '@/db/schema/adaptive-os';
+import { systemPreferences } from '@/db/schema/interconnected-os';
+import { ensureAdaptiveDefaults } from '@/lib/intelligence/adaptive-os';
+import { SYSTEM_ROOMS } from '@/lib/intelligence/system-registry';
+import { createPersonalRuleAction, deletePersonalRuleAction, togglePersonalRuleAction, updateSystemPreferenceAction } from '@/app/actions/os-settings';
+import { Crown, Eye, Pin, ShieldCheck, SlidersHorizontal, Sparkles, Trash2 } from 'lucide-react';
 
-const settings = [
-  { title: 'Theme', value: 'Editorial warm' },
-  { title: 'Notifications', value: 'Gentle' },
-  { title: 'Focus mode', value: 'Enabled' },
-];
+export const dynamic='force-dynamic';
 
-export default function SettingsPage() {
-  return (
-    <AppShell>
-      <SectionPage eyebrow="Settings" title="A space that supports you" description="Fine-tune the environment so the system feels calm, quiet, and personal.">
-        <Card className="space-y-3">
-          {settings.map((item) => (
-            <div key={item.title} className="flex items-center justify-between rounded-[20px] border border-slate-200/70 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-800/60">
-              <span className="font-medium text-slate-900 dark:text-slate-100">{item.title}</span>
-              <span className="text-sm text-slate-600 dark:text-slate-300">{item.value}</span>
-            </div>
-          ))}
-        </Card>
-      </SectionPage>
-    </AppShell>
-  );
-}
+export default async function SettingsPage(){const session=await auth();if(!session?.user?.id)redirect('/sign-in');await ensureAdaptiveDefaults(session.user.id);const [rules,prefs]=await Promise.all([db.select().from(personalRules).where(eq(personalRules.userId,session.user.id)).orderBy(asc(personalRules.priority)),db.select().from(systemPreferences).where(eq(systemPreferences.userId,session.user.id))]);const prefMap=new Map(prefs.map(p=>[p.systemKey,p]));const editableRooms=SYSTEM_ROOMS.filter(r=>!['dashboard','today'].includes(r.key)).slice(0,30);return <AppShell><div className="mx-auto max-w-7xl space-y-6"><header><div className="flex items-center gap-2 text-stone-700"><SlidersHorizontal size={17}/><p className="text-[10px] font-bold uppercase tracking-[.2em]">Behavior + Environment</p></div><h1 className="mt-2 text-4xl tracking-[-.04em] text-stone-950" style={{fontFamily:'var(--glow-font-display)'}}>Teach Glow how your life works.</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-stone-500">Rules control behavior. World preferences control presentation. These settings sit above individual routines so the whole OS can respond consistently.</p></header><div className="grid gap-5 xl:grid-cols-[.9fr_1.1fr]"><section className="space-y-4"><div className="rounded-[24px] border border-violet-200 bg-violet-50/55 p-5"><div className="flex items-center gap-2 text-violet-800"><ShieldCheck size={15}/><p className="text-[10px] font-bold uppercase tracking-[.18em]">Personal Rules Engine</p></div><form action={createPersonalRuleAction} className="mt-4 space-y-2"><input name="title" required placeholder="Rule: Never schedule workouts after 8 PM" className="w-full rounded-xl border border-white bg-white/75 px-3 py-2.5 text-sm"/><div className="grid grid-cols-2 gap-2"><select name="ruleType" className="rounded-xl border border-white bg-white/75 px-3 py-2.5 text-xs"><option value="scheduling">Scheduling</option><option value="health">Health</option><option value="beauty">Beauty</option><option value="work">Work</option><option value="energy">Energy</option><option value="finance">Finance</option><option value="general">General</option></select><input name="priority" type="number" min="0" max="100" defaultValue="70" className="rounded-xl border border-white bg-white/75 px-3 py-2.5 text-xs"/></div><input name="condition" placeholder="When should this apply?" className="w-full rounded-xl border border-white bg-white/75 px-3 py-2.5 text-xs"/><input name="effect" placeholder="What should Glow do?" className="w-full rounded-xl border border-white bg-white/75 px-3 py-2.5 text-xs"/><button className="w-full rounded-xl bg-violet-950 py-2.5 text-xs text-white">Add Rule</button></form></div><div className="rounded-[24px] border border-stone-200 bg-white/70 shadow-sm"><div className="border-b border-stone-200 px-5 py-4 text-[10px] font-bold uppercase tracking-[.18em] text-stone-500">Rules Glow obeys</div><div className="divide-y divide-stone-100">{rules.map(rule=><div key={rule.id} className="px-5 py-4"><div className="flex items-start justify-between gap-3"><div><p className="text-sm font-medium text-stone-900">{rule.title}</p><p className="mt-1 text-[9px] uppercase tracking-[.12em] text-violet-600">{rule.ruleType} · priority {rule.priority} · {rule.source}</p></div><div className="flex gap-1"><form action={togglePersonalRuleAction.bind(null,rule.id,!rule.enabled)}><button className={`rounded-lg px-2.5 py-1.5 text-[9px] ${rule.enabled?'bg-emerald-50 text-emerald-700':'bg-stone-100 text-stone-500'}`}>{rule.enabled?'On':'Off'}</button></form>{rule.source==='user'?<form action={deletePersonalRuleAction.bind(null,rule.id)}><button className="rounded-lg bg-rose-50 p-1.5 text-rose-600"><Trash2 size={12}/></button></form>:null}</div></div></div>)}</div></div></section><section className="space-y-4"><div className="rounded-[24px] border border-rose-200 bg-rose-50/55 p-5"><div className="flex items-center gap-2 text-rose-800"><Crown size={15}/><p className="text-[10px] font-bold uppercase tracking-[.18em]">Edit My World</p></div><p className="mt-2 text-sm text-stone-600">Pin important rooms, hide systems you rarely use, rename labels, and choose how much space they deserve. The underlying data stays intact.</p></div><div className="grid gap-3 sm:grid-cols-2">{editableRooms.map(room=>{const pref=prefMap.get(room.key);return <form key={room.key} action={updateSystemPreferenceAction.bind(null,room.key)} className="rounded-[20px] border border-stone-200 bg-white/70 p-4"><div className="flex items-start justify-between gap-3"><div><p className="text-sm font-medium text-stone-900">{pref?.label||room.label}</p><p className="mt-1 text-[9px] text-stone-500">{room.atmosphere}</p></div><Sparkles size={13} className="text-rose-400"/></div><input name="label" defaultValue={pref?.label??''} placeholder="Optional custom label" className="mt-3 w-full rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-2 text-[10px]"/><select name="cardSize" defaultValue={pref?.cardSize??'medium'} className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-2 text-[10px]"><option value="small">Compact</option><option value="medium">Standard</option><option value="large">Large</option></select><div className="mt-3 flex gap-3"><label className="flex items-center gap-1.5 text-[9px] text-stone-600"><input name="pinned" type="checkbox" defaultChecked={pref?.pinned}/><Pin size={10}/>Pin</label><label className="flex items-center gap-1.5 text-[9px] text-stone-600"><input name="hidden" type="checkbox" defaultChecked={pref?.hidden}/><Eye size={10}/>Hide</label></div><button className="mt-3 w-full rounded-lg border border-stone-200 py-2 text-[9px] font-medium text-stone-700">Save room</button></form>})}</div></section></div></div></AppShell>}
