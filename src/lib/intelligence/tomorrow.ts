@@ -3,63 +3,8 @@ import 'server-only';
 import { getTasksByUser } from '@/lib/data/tasks';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
 import { getRoutinesByUser } from '@/lib/data/routines';
-import { getTodayReview } from '@/lib/intelligence/adaptive-os';
+import { getWorkSchedulesByUser } from '@/lib/data/work-schedules';
 
-export type TomorrowPlan = {
-  date: Date;
-  label: string;
-  events: { id: string; title: string; startAt: Date; endAt: Date | null; allDay: boolean; location: string | null }[];
-  topTasks: { id: string; title: string; priority: string; dueDate: Date | null }[];
-  routines: { id: string; name: string; timeOfDay: string }[];
-  prepTonight: string[];
-  topThree: string[];
-  summary: string;
-};
+export type TomorrowBrief={dateLabel:string;topThree:string[];events:{title:string;time:string;location:string|null}[];work:{title:string;time:string}[];routines:string[];wakeTarget:string;prepTonight:string[];summary:string};
 
-export async function buildTomorrowPlan(userId: string, now = new Date()): Promise<TomorrowPlan> {
-  const tomorrow = new Date(now);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(0, 0, 0, 0);
-  const end = new Date(tomorrow);
-  end.setHours(23, 59, 59, 999);
-  const dateKey = now.toISOString().slice(0, 10);
-
-  const [tasks, events, routines, review] = await Promise.all([
-    getTasksByUser(userId),
-    getCalendarEventsByUser(userId),
-    getRoutinesByUser(userId),
-    getTodayReview(userId, dateKey),
-  ]);
-
-  const tomorrowEvents = events.filter((event) => event.startAt >= tomorrow && event.startAt <= end).sort((a, b) => a.startAt.getTime() - b.startAt.getTime());
-  const openTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'cancelled');
-  const dueTomorrow = openTasks.filter((task) => task.dueDate && task.dueDate >= tomorrow && task.dueDate <= end);
-  const urgentUndated = openTasks.filter((task) => !task.dueDate && (task.priority === 'urgent' || task.priority === 'high'));
-  const priorityRank: Record<string, number> = { urgent: 4, high: 3, medium: 2, low: 1 };
-  const topTasks = [...dueTomorrow, ...urgentUndated].filter((task, index, array) => array.findIndex((candidate) => candidate.id === task.id) === index).sort((a, b) => (priorityRank[b.priority] ?? 0) - (priorityRank[a.priority] ?? 0)).slice(0, 6);
-
-  const weekday = tomorrow.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-  const tomorrowRoutines = routines.filter((routine) => !routine.daysOfWeek?.length || routine.daysOfWeek.some((day) => day.toLowerCase() === weekday));
-
-  const prepTonight: string[] = [];
-  if (tomorrowEvents.length) prepTonight.push('Review the first commitment and protect travel/get-ready buffer.');
-  if (tomorrowEvents.some((event) => event.location)) prepTonight.push('Set out anything you need to bring and confirm the location.');
-  if (topTasks.length >= 4) prepTonight.push('Keep tomorrow to the top three; defer lower-value work before the day begins.');
-  if (tomorrowRoutines.some((routine) => routine.name.toLowerCase().includes('hair'))) prepTonight.push('Set out hair products/tools tonight so maintenance starts without friction.');
-  if (tomorrowRoutines.some((routine) => routine.name.toLowerCase().includes('workout') || routine.name.toLowerCase().includes('fitness'))) prepTonight.push('Choose workout clothes and confirm the realistic time window.');
-  if (!prepTonight.length) prepTonight.push('Do a 5-minute reset, charge devices, and leave tomorrow’s first action visible.');
-
-  const topThree = review?.tomorrowTopThree?.length ? review.tomorrowTopThree.slice(0, 3) : topTasks.slice(0, 3).map((task) => task.title);
-  const summary = `Tomorrow has ${tomorrowEvents.length} calendar event${tomorrowEvents.length === 1 ? '' : 's'}, ${topTasks.length} priority task${topTasks.length === 1 ? '' : 's'} worth considering, and ${tomorrowRoutines.length} routine${tomorrowRoutines.length === 1 ? '' : 's'} scheduled.`;
-
-  return {
-    date: tomorrow,
-    label: tomorrow.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
-    events: tomorrowEvents.map((event) => ({ id: event.id, title: event.title, startAt: event.startAt, endAt: event.endAt, allDay: event.allDay, location: event.location })),
-    topTasks: topTasks.map((task) => ({ id: task.id, title: task.title, priority: task.priority, dueDate: task.dueDate })),
-    routines: tomorrowRoutines.map((routine) => ({ id: routine.id, name: routine.name, timeOfDay: routine.timeOfDay })),
-    prepTonight,
-    topThree,
-    summary,
-  };
-}
+export async function buildTomorrowBrief(userId:string,now=new Date()):Promise<TomorrowBrief>{const tomorrow=new Date(now);tomorrow.setDate(tomorrow.getDate()+1);const start=new Date(tomorrow);start.setHours(0,0,0,0);const end=new Date(tomorrow);end.setHours(23,59,59,999);const [tasks,events,routines,work]=await Promise.all([getTasksByUser(userId),getCalendarEventsByUser(userId),getRoutinesByUser(userId),getWorkSchedulesByUser(userId)]);const tomorrowEvents=events.filter(e=>e.startAt>=start&&e.startAt<=end).sort((a,b)=>a.startAt.getTime()-b.startAt.getTime());const candidates=tasks.filter(t=>t.status!=='done'&&t.status!=='cancelled').sort((a,b)=>{const ad=a.dueDate?.getTime()??Infinity;const bd=b.dueDate?.getTime()??Infinity;if(ad!==bd)return ad-bd;const w={urgent:4,high:3,medium:2,low:1};return (w[b.priority]??0)-(w[a.priority]??0)});const dueTomorrow=candidates.filter(t=>t.dueDate&&t.dueDate>=start&&t.dueDate<=end);const topThree=[...dueTomorrow,...candidates.filter(t=>!dueTomorrow.some(d=>d.id===t.id))].slice(0,3).map(t=>t.title);const weekday=tomorrow.toLocaleDateString('en-US',{weekday:'long'}).toLowerCase();const tomorrowRoutines=routines.filter(r=>!r.daysOfWeek?.length||r.daysOfWeek.some(d=>d.toLowerCase()===weekday)).slice(0,6).map(r=>r.name);const dayIndex=tomorrow.getDay();const tomorrowWork=work.filter(w=>w.dayOfWeek===dayIndex).map(w=>({title:w.title,time:`${w.startTime.slice(0,5)}–${w.endTime.slice(0,5)}`}));const firstTimed=tomorrowEvents.find(e=>!e.allDay);let wakeTarget='8:00 AM';if(firstTimed){const wake=new Date(firstTimed.startAt);wake.setHours(wake.getHours()-2);wakeTarget=wake.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});}const prepTonight:string[]=[];if(firstTimed)prepTonight.push(`Prepare for ${firstTimed.title}`);if(tomorrowWork.length)prepTonight.push('Set out what you need for work');if(topThree.length)prepTonight.push(`Make ${topThree[0]} easy to start`);if(tomorrowEvents.some(e=>e.location))prepTonight.push('Check travel time and what to bring');const summary=`Tomorrow has ${tomorrowEvents.length} calendar event${tomorrowEvents.length===1?'':'s'}, ${tomorrowWork.length} work block${tomorrowWork.length===1?'':'s'}, and ${topThree.length} priority action${topThree.length===1?'':'s'}.`;return{dateLabel:tomorrow.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}),topThree,events:tomorrowEvents.map(e=>({title:e.title,time:e.allDay?'All day':e.startAt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}),location:e.location??null})),work:tomorrowWork,routines:tomorrowRoutines,wakeTarget,prepTonight,summary};}
