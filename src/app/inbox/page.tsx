@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
@@ -11,7 +12,10 @@ export const dynamic = 'force-dynamic';
 export default async function InboxPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
-  const items = await getInbox(session.user.id);
+  let items;
+  try { items = await getInbox(session.user.id); } catch {
+    return <AppShell><div className="mx-auto max-w-4xl rounded-[22px] border border-amber-200 bg-amber-50 p-6"><p className="text-sm font-semibold text-stone-900">Glow Inbox is installed and needs one-time intelligence activation.</p><p className="mt-2 text-xs leading-5 text-stone-600">Activate the connected intelligence tables, then this page will classify and route information throughout Glow OS.</p><Link href="/settings/intelligence" className="mt-4 inline-block rounded-xl bg-stone-950 px-4 py-2.5 text-xs text-white">Activate Glow Intelligence →</Link></div></AppShell>;
+  }
   const open = items.filter((item) => item.status === 'unprocessed');
   const processed = items.filter((item) => item.status !== 'unprocessed').slice(0, 12);
 
