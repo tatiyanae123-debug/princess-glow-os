@@ -15,3 +15,4 @@ export * from './imports';
 export * from './intelligence-expansion';
 export * from './completion-v1';
 export * from './health-intelligence';
+export * from './adaptive-os';
