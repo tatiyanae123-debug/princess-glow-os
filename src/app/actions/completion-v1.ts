@@ -38,12 +38,39 @@ function optionalDate(raw: string) {
 }
 
 const shortText = z.string().trim().min(1).max(300);
+const planningLevel = z.enum(['today', 'week', 'quarter', 'year', 'book', 'bucket']);
 
 export async function createPlanningPeriodAction(formData: FormData): Promise<void> {
   const userId = await requireUser();
-  const parsed = z.object({ level: z.enum(['today', 'week', 'quarter', 'year']), title: shortText, focus: z.string().max(2000).optional() }).safeParse({ level: value(formData, 'level'), title: value(formData, 'title'), focus: value(formData, 'focus') || undefined });
+  const parsed = z.object({ level: planningLevel, title: shortText, focus: z.string().max(2000).optional() }).safeParse({ level: value(formData, 'level'), title: value(formData, 'title'), focus: value(formData, 'focus') || undefined });
   if (!parsed.success) return;
-  await db.insert(planningPeriods).values({ userId, ...parsed.data });
+  await db.insert(planningPeriods).values({
+    userId,
+    ...parsed.data,
+    startsAt: optionalDate(value(formData, 'startsAt')),
+    endsAt: optionalDate(value(formData, 'endsAt')),
+  });
+  revalidatePath('/planning');
+}
+
+export async function updatePlanningPeriodAction(id: string, formData: FormData): Promise<void> {
+  const userId = await requireUser();
+  const rawProgress = Number(value(formData, 'progress'));
+  const progress = Number.isFinite(rawProgress) ? Math.max(0, Math.min(100, Math.round(rawProgress))) : 0;
+  await db.update(planningPeriods).set({
+    focus: value(formData, 'focus').slice(0, 2000) || null,
+    reflection: value(formData, 'reflection').slice(0, 3000) || null,
+    progress,
+    startsAt: optionalDate(value(formData, 'startsAt')),
+    endsAt: optionalDate(value(formData, 'endsAt')),
+    updatedAt: new Date(),
+  }).where(and(eq(planningPeriods.id, id), eq(planningPeriods.userId, userId)));
+  revalidatePath('/planning');
+}
+
+export async function archivePlanningPeriodAction(id: string): Promise<void> {
+  const userId = await requireUser();
+  await db.update(planningPeriods).set({ archived: true, updatedAt: new Date() }).where(and(eq(planningPeriods.id, id), eq(planningPeriods.userId, userId)));
   revalidatePath('/planning');
 }
 
@@ -138,8 +165,12 @@ export async function createTimelineEventAction(formData: FormData): Promise<voi
 
 export async function generateBriefingAction(kind: 'morning' | 'evening' | 'weekly') {
   const userId = await requireUser();
-  const context = await buildPersonalContext(userId);
-  const periodKey = kind === 'weekly' ? `${context.generatedAt.getFullYear()}-W${Math.ceil(context.generatedAt.getDate() / 7)}` : context.generatedAt.toISOString().slice(0, 10);
-  await db.insert(briefingSnapshots).values({ userId, kind, periodKey, content: { dailyBrief: context.dailyBrief, focusScore: context.focusScore, unfinishedTasks: context.unfinishedTasks.length, overdueTasks: context.overdueTasks.length, todaysEvents: context.todaysEvents.length, recommendations: context.recommendations.slice(0, 5) } });
+  try {
+    const context = await buildPersonalContext(userId);
+    const periodKey = kind === 'weekly' ? `${context.generatedAt.getFullYear()}-W${Math.ceil(context.generatedAt.getDate() / 7)}` : context.generatedAt.toISOString().slice(0, 10);
+    await db.insert(briefingSnapshots).values({ userId, kind, periodKey, content: { dailyBrief: context.dailyBrief, focusScore: context.focusScore, unfinishedTasks: context.unfinishedTasks.length, overdueTasks: context.overdueTasks.length, todaysEvents: context.todaysEvents.length, recommendations: context.recommendations.slice(0, 5) } });
+  } catch (error) {
+    console.error('[Glow OS] briefing generation unavailable', error);
+  }
   revalidatePath('/briefings');
 }
