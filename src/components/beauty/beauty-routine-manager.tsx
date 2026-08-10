@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Sparkles, Flower2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
@@ -12,114 +12,25 @@ import { deleteBeautyRoutineAction } from '@/app/actions/beauty-routines';
 import type { BeautyRoutine } from '@/lib/types';
 
 export function BeautyRoutineManager({ initialRoutines }: { initialRoutines: BeautyRoutine[] }) {
-  const [routines, setRoutines] = useState<BeautyRoutine[]>(initialRoutines);
-  const [dialogRoutine, setDialogRoutine] = useState<BeautyRoutine | 'new' | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<BeautyRoutine | null>(null);
-  const del = useServerAction((id: string) => deleteBeautyRoutineAction(id));
+  const [routines,setRoutines]=useState<BeautyRoutine[]>(initialRoutines);
+  const [dialogRoutine,setDialogRoutine]=useState<BeautyRoutine|'new'|null>(null);
+  const [deleteTarget,setDeleteTarget]=useState<BeautyRoutine|null>(null);
+  const del=useServerAction((id:string)=>deleteBeautyRoutineAction(id));
+  const handleSaved=(routine:BeautyRoutine)=>{setRoutines((current)=>{const exists=current.some((r)=>r.id===routine.id);return exists?current.map((r)=>(r.id===routine.id?routine:r)):[routine,...current];});setDialogRoutine(null);};
+  const handleDelete=()=>{if(!deleteTarget)return;del.run(deleteTarget.id,()=>{setRoutines((current)=>current.filter((r)=>r.id!==deleteTarget.id));setDeleteTarget(null);});};
 
-  function handleSaved(routine: BeautyRoutine) {
-    setRoutines((current) => {
-      const exists = current.some((r) => r.id === routine.id);
-      return exists ? current.map((r) => (r.id === routine.id ? routine : r)) : [routine, ...current];
-    });
-    setDialogRoutine(null);
-  }
+  const morning=routines.filter((r)=>r.timeOfDay==='morning').length;
+  const evening=routines.filter((r)=>r.timeOfDay==='evening'||r.timeOfDay==='night').length;
 
-  function handleDelete() {
-    if (!deleteTarget) return;
-    del.run(deleteTarget.id, () => {
-      setRoutines((current) => current.filter((r) => r.id !== deleteTarget.id));
-      setDeleteTarget(null);
-    });
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button onClick={() => setDialogRoutine('new')} className="flex items-center gap-1.5">
-          <Plus size={14} /> Add step
-        </Button>
-      </div>
-      <Card className="space-y-3">
-        {routines.length === 0 ? (
-          <p className="py-4 text-center text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-            No beauty routines yet. Add your first ritual step.
-          </p>
-        ) : (
-          routines.map((routine) => (
-            <div
-              key={routine.id}
-              className="rounded-[20px] border px-4 py-3"
-              style={{ borderColor: 'var(--glow-border)', background: 'var(--glow-surface-muted)' }}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="font-medium" style={{ color: 'var(--glow-text)' }}>
-                    {routine.name}
-                  </p>
-                  {routine.notes && (
-                    <p className="mt-1 text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                      {routine.notes}
-                    </p>
-                  )}
-                  {routine.products && routine.products.length > 0 && (
-                    <p className="mt-1 text-xs" style={{ color: 'var(--glow-text-muted)' }}>
-                      {routine.products.join(', ')}
-                    </p>
-                  )}
-                </div>
-                <div className="flex shrink-0 items-center gap-1.5">
-                  <span
-                    className="rounded-full px-2 py-0.5 text-xs capitalize"
-                    style={{ background: 'var(--glow-accent-soft)', color: 'var(--glow-accent)' }}
-                  >
-                    {routine.timeOfDay}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setDialogRoutine(routine)}
-                    aria-label="Edit beauty step"
-                    className="rounded-full p-1.5 transition hover:opacity-70"
-                    style={{ color: 'var(--glow-text-muted)' }}
-                  >
-                    <Pencil size={13} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDeleteTarget(routine)}
-                    aria-label="Delete beauty step"
-                    className="rounded-full p-1.5 transition hover:opacity-70"
-                    style={{ color: 'var(--glow-text-muted)' }}
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </Card>
-
-      <Dialog
-        open={dialogRoutine !== null}
-        onClose={() => setDialogRoutine(null)}
-        title={dialogRoutine === 'new' ? 'Add beauty step' : 'Edit beauty step'}
-      >
-        <BeautyRoutineForm
-          routine={dialogRoutine === 'new' ? null : dialogRoutine}
-          onSaved={handleSaved}
-          onCancel={() => setDialogRoutine(null)}
-        />
-      </Dialog>
-
-      <ConfirmDialog
-        open={deleteTarget !== null}
-        title="Delete this step?"
-        description={deleteTarget ? `"${deleteTarget.name}" will be removed.` : undefined}
-        pending={del.isPending}
-        onCancel={() => setDeleteTarget(null)}
-        onConfirm={handleDelete}
-      />
+  return <div className="space-y-4">
+    <div className="grid gap-3 md:grid-cols-[1.3fr_.7fr]">
+      <Card className="relative min-h-[190px] overflow-hidden bg-[linear-gradient(135deg,#f5e5e3,#ecd8cf)] p-5"><Flower2 size={72} strokeWidth={.7} className="absolute right-4 top-2 text-[#b77c82]/18"/><div className="absolute bottom-0 right-0 h-[68%] w-[38%] bg-[linear-gradient(145deg,#d9b8ad,#f1d5c3)] opacity-80"/><div className="relative max-w-[60%]"><p className="glow-eyebrow">Luxury vanity</p><h2 className="glow-display mt-2 text-[27px] leading-8 text-[#4a3532]">Care that feels like a ritual.</h2><p className="mt-3 text-[9px] leading-4 text-[#7c625d]">Keep the steps simple enough to use and beautiful enough that you want to return to them.</p></div></Card>
+      <Card className="p-5"><p className="glow-display text-[16px] text-[#4a3935]">Routine cabinet</p><div className="mt-4 grid grid-cols-2 gap-3"><div className="rounded-[7px] bg-[#f4e7e3] p-3 text-center"><p className="glow-display text-[22px] text-[#6a4b4d]">{morning}</p><p className="mt-1 text-[7px] uppercase tracking-[.12em] text-[#9d7b79]">Morning</p></div><div className="rounded-[7px] bg-[#eee6e9] p-3 text-center"><p className="glow-display text-[22px] text-[#65515f]">{evening}</p><p className="mt-1 text-[7px] uppercase tracking-[.12em] text-[#907d89]">Evening</p></div></div><Button onClick={()=>setDialogRoutine('new')} className="mt-4 flex items-center gap-1.5"><Plus size={12}/>Add step</Button></Card>
     </div>
-  );
+
+    {routines.length===0?<Card><p className="py-8 text-center text-[9px] text-[#8d7671]">No beauty routines yet. Add your first ritual step.</p></Card>:<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{routines.map((routine,index)=><Card key={routine.id} className="relative overflow-hidden p-0"><div className={`h-24 ${index%3===0?'bg-[linear-gradient(145deg,#e7c1b4,#f3dacb)]':index%3===1?'bg-[linear-gradient(145deg,#efd9d6,#e2c9ca)]':'bg-[linear-gradient(145deg,#f0dfc9,#e6c5bd)]'}`}><Sparkles size={25} className="ml-auto mr-4 pt-4 text-white/70"/></div><div className="p-4"><div className="flex items-start justify-between gap-2"><div className="min-w-0"><p className="text-[7px] uppercase tracking-[.12em] text-[#a0837d]">Step {String(index+1).padStart(2,'0')}</p><p className="glow-display mt-1 text-[16px] text-[#4e3b37]">{routine.name}</p></div><span className="rounded-full bg-[#f3e3e4] px-2 py-1 text-[7px] capitalize text-[#985f68]">{routine.timeOfDay}</span></div>{routine.notes?<p className="mt-2 line-clamp-2 text-[8px] leading-4 text-[#846e67]">{routine.notes}</p>:null}{routine.products&&routine.products.length>0?<p className="mt-2 text-[7px] text-[#9a817a]">{routine.products.join(' · ')}</p>:null}<div className="mt-4 flex justify-end gap-1"><button type="button" onClick={()=>setDialogRoutine(routine)} aria-label="Edit beauty step" className="rounded-full p-1.5 text-[#8e7770] hover:bg-[#f5e8e5]"><Pencil size={11}/></button><button type="button" onClick={()=>setDeleteTarget(routine)} aria-label="Delete beauty step" className="rounded-full p-1.5 text-[#8e7770] hover:bg-[#f5e8e5]"><Trash2 size={11}/></button></div></div></Card>)}</div>}
+
+    <Dialog open={dialogRoutine!==null} onClose={()=>setDialogRoutine(null)} title={dialogRoutine==='new'?'Add beauty step':'Edit beauty step'}><BeautyRoutineForm routine={dialogRoutine==='new'?null:dialogRoutine} onSaved={handleSaved} onCancel={()=>setDialogRoutine(null)}/></Dialog>
+    <ConfirmDialog open={deleteTarget!==null} title="Delete this step?" description={deleteTarget?`"${deleteTarget.name}" will be removed.`:undefined} pending={del.isPending} onCancel={()=>setDeleteTarget(null)} onConfirm={handleDelete}/>
+  </div>;
 }
