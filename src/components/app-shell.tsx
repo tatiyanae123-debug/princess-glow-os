@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/ui/sidebar';
 import { TopNav } from '@/components/ui/top-nav';
 import { GlowProvider } from '@/lib/context/glow-provider';
 import { QuickAdd } from '@/components/quick-add/quick-add';
+import { EditorialRoomBanner } from '@/components/editorial-room-banner';
 
 function roomFor(pathname: string) {
   if (pathname.startsWith('/beauty/lab')) return 'beauty-lab';
@@ -51,7 +52,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="px-3 pt-2 sm:px-5 sm:pt-3 lg:px-7 lg:pt-4">
               <TopNav />
             </div>
-            <main className="min-h-[calc(100vh-60px)] px-3 pb-8 pt-2 sm:px-5 lg:px-7 lg:pb-10">
+            <main className="glow-editorial-page min-h-[calc(100vh-60px)] px-3 pb-8 pt-2 sm:px-5 lg:px-7 lg:pb-10">
+              <EditorialRoomBanner />
               {children}
             </main>
           </div>
