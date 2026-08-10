@@ -1,54 +1,14 @@
+import Link from 'next/link';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
-import { Card } from '@/components/ui/card';
 import { GoogleConnectionCard } from '@/components/connections/google-connection-card';
 import { AppleRemindersCard } from '@/components/connections/apple-reminders-card';
 import { getConnectionsOverview } from '@/lib/data/connections';
 import { getAppleReminderConnection } from '@/lib/apple-reminders/service';
+import { ArrowRight, CalendarDays, Link2, Mail, ShieldCheck, Smartphone, UploadCloud } from 'lucide-react';
 
-const shortcuts = [
-  { name: 'Instagram', description: 'Open Instagram for content planning and publishing.', href: 'https://www.instagram.com/' },
-  { name: 'Peacock', description: 'Open Peacock. Login credentials are never stored in Glow OS.', href: 'https://www.peacocktv.com/' },
-  { name: 'Hulu', description: 'Open Hulu. Login credentials are never stored in Glow OS.', href: 'https://www.hulu.com/' },
-  { name: 'BILH MyChart', description: 'Open the general BILH MyChart sign-in page. Visit-specific links are not stored.', href: 'https://mychart.bilh.org/MyChart-BILH/' },
-];
+const shortcuts=[{name:'Instagram',href:'https://www.instagram.com/',note:'Content planning shortcut'},{name:'Peacock',href:'https://www.peacocktv.com/',note:'Private shortcut only'},{name:'Hulu',href:'https://www.hulu.com/',note:'Private shortcut only'},{name:'BILH MyChart',href:'https://mychart.bilh.org/MyChart-BILH/',note:'Health portal shortcut'}];
+export const dynamic='force-dynamic';
 
-export const dynamic = 'force-dynamic';
-
-export default async function ConnectionsPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/sign-in');
-
-  const [overview, appleConnection] = await Promise.all([
-    getConnectionsOverview(session.user.id),
-    getAppleReminderConnection(session.user.id),
-  ]);
-
-  return (
-    <AppShell>
-      <SectionPage eyebrow="Connections" title="Your private digital world" description="Connect services securely through OAuth and private bridges while keeping passwords outside Glow OS.">
-        <div className="grid gap-4 lg:grid-cols-2">
-          <GoogleConnectionCard overview={overview} />
-          <AppleRemindersCard connection={appleConnection} />
-
-          <Card className="space-y-3 lg:col-span-2">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500 dark:text-slate-400">Private shortcuts</p>
-              <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">Plain links, not live integrations — Glow OS never signs in, reads, or stores anything from these sites.</p>
-            </div>
-            <div className="grid gap-3 md:grid-cols-2">
-              {shortcuts.map((shortcut) => (
-                <a key={shortcut.name} href={shortcut.href} target="_blank" rel="noopener noreferrer" className="block rounded-[18px] border border-slate-200/70 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:shadow-sm dark:border-slate-800 dark:bg-slate-800/60">
-                  <p className="font-medium text-slate-900 dark:text-white">{shortcut.name}</p>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{shortcut.description}</p>
-                </a>
-              ))}
-            </div>
-          </Card>
-        </div>
-      </SectionPage>
-    </AppShell>
-  );
-}
+export default async function ConnectionsPage(){const session=await auth();if(!session?.user?.id)redirect('/sign-in');const [overview,appleConnection]=await Promise.all([getConnectionsOverview(session.user.id),getAppleReminderConnection(session.user.id)]);return <AppShell><div className="mx-auto max-w-7xl space-y-5"><header><div className="flex items-center gap-2 text-sky-700"><Link2 size={17}/><p className="text-[10px] font-bold uppercase tracking-[.2em]">Connection Dock</p></div><h1 className="mt-2 text-4xl tracking-[-.04em] text-stone-950" style={{fontFamily:'var(--glow-font-display)'}}>External data should flow in without taking over.</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-stone-500">Connections manage authorization, sync health, source boundaries and where outside information enters the rest of Glow OS.</p></header><section className="grid gap-4 lg:grid-cols-2"><GoogleConnectionCard overview={overview}/><AppleRemindersCard connection={appleConnection}/></section><section className="grid gap-3 md:grid-cols-4"><div className="rounded-[22px] border border-sky-200 bg-sky-50/65 p-4"><CalendarDays size={17} className="text-sky-600"/><p className="mt-3 text-sm font-medium text-stone-900">Calendar → Today</p><p className="mt-1 text-[9px] leading-4 text-stone-500">Commitments shape available focus time and recommendations.</p></div><div className="rounded-[22px] border border-violet-200 bg-violet-50/65 p-4"><Mail size={17} className="text-violet-600"/><p className="mt-3 text-sm font-medium text-stone-900">Gmail → Actions</p><p className="mt-1 text-[9px] leading-4 text-stone-500">Actionable messages can become Tasks or project context.</p></div><div className="rounded-[22px] border border-rose-200 bg-rose-50/65 p-4"><Smartphone size={17} className="text-rose-600"/><p className="mt-3 text-sm font-medium text-stone-900">Reminders → Brain</p><p className="mt-1 text-[9px] leading-4 text-stone-500">Imported reminders participate in the Now Engine.</p></div><Link href="/intake" className="rounded-[22px] border border-amber-200 bg-amber-50/65 p-4 transition hover:-translate-y-1"><UploadCloud size={17} className="text-amber-600"/><p className="mt-3 text-sm font-medium text-stone-900">Anything → Intake</p><p className="mt-1 text-[9px] leading-4 text-stone-500">Files, images and text enter through Universal Intake.</p></Link></section><section className="rounded-[24px] border border-stone-200 bg-white/70 p-5"><div className="flex items-center gap-2 text-emerald-700"><ShieldCheck size={14}/><p className="text-[9px] font-bold uppercase tracking-[.16em]">Private shortcuts</p></div><p className="mt-2 text-[10px] text-stone-500">These remain plain links. Glow does not sign in, scrape, or store credentials for them.</p><div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{shortcuts.map(item=><a key={item.name} href={item.href} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-stone-50 p-3"><p className="text-xs font-medium text-stone-800">{item.name}</p><p className="mt-1 text-[9px] text-stone-500">{item.note}</p></a>)}</div></section><Link href="/inbox" className="inline-flex items-center gap-2 text-xs text-sky-700">Review everything that entered Glow <ArrowRight size={12}/></Link></div></AppShell>}

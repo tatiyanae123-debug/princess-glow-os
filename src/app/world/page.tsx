@@ -2,40 +2,12 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
+import { SYSTEM_ROOMS } from '@/lib/intelligence/system-registry';
+import { buildCrossSystemSnapshot } from '@/lib/intelligence/cross-system';
+import { ArrowRight, Globe2, Sparkles } from 'lucide-react';
 
-const rooms = [
-  ['Home', '/home', 'Your environment, resets, and household systems.'],
-  ['Mind', '/brain', 'Context, recommendations, memory, and reflection.'],
-  ['Fitness', '/wellness', 'Movement, recovery, and future gym intelligence.'],
-  ['Beauty', '/beauty', 'Beauty routines and future product laboratory.'],
-  ['Learning', '/notes', 'Notes, reading, school, and knowledge.'],
-  ['Finance', '/finance', 'Spending, savings, and future forecasting.'],
-  ['Travel', '/calendar', 'Trips, plans, and future world map.'],
-  ['Saint', '/tasks', 'Care tasks and future Saint room.'],
-  ['Career', '/projects', 'Career moves, applications, and work projects.'],
-  ['Creativity', '/projects', 'Terrain Design, brands, content, and Creative Studio.'],
-] as const;
+export const dynamic='force-dynamic';
+const zoneKeys={Daily:['today','tasks','calendar','planning','habits'],Body:['fitness','wellness','beauty','beauty-lab','hair'],Ambition:['goals','projects','finance','financial-brain'],Mind:['brain','memory','timeline','briefings','notes'],World:['closet','home','connections','gmail','resources','inbox']} as const;
+const tones=['from-rose-100 to-amber-50','from-sky-100 to-emerald-50','from-violet-100 to-rose-50','from-amber-100 to-stone-50','from-stone-200 to-rose-50'];
 
-export const dynamic = 'force-dynamic';
-
-export default async function WorldPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/sign-in');
-  return (
-    <AppShell>
-      <SectionPage eyebrow="Life World" title="Walk through the systems of your life" description="This lightweight room map is the foundation for the future immersive world. No 3D dependencies are loaded yet.">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {rooms.map(([title, href, description]) => (
-            <Link key={title} href={href} className="group rounded-[28px] border border-slate-200 bg-white/80 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md dark:border-slate-800 dark:bg-slate-950/70">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Room</p>
-              <h2 className="mt-3 text-xl font-semibold">{title}</h2>
-              <p className="mt-2 text-sm text-slate-500">{description}</p>
-              <p className="mt-5 text-sm font-medium">Enter room →</p>
-            </Link>
-          ))}
-        </div>
-      </SectionPage>
-    </AppShell>
-  );
-}
+export default async function WorldPage(){const session=await auth();if(!session?.user?.id)redirect('/sign-in');const snapshot=await buildCrossSystemSnapshot(session.user.id,'world');const roomMap=new Map(SYSTEM_ROOMS.map(r=>[r.key,r]));return <AppShell><div className="mx-auto max-w-7xl space-y-6"><section className="relative overflow-hidden rounded-[32px] bg-stone-950 p-7 text-white shadow-[0_28px_80px_rgba(28,22,20,.2)]"><div className="absolute right-0 top-0 h-full w-1/2 bg-[radial-gradient(circle_at_center,rgba(233,178,188,.23),transparent_62%)]"/><div className="relative"><div className="flex items-center gap-2 text-rose-200"><Globe2 size={18}/><p className="text-[10px] font-bold uppercase tracking-[.22em]">Life World</p></div><h1 className="mt-3 max-w-4xl text-5xl leading-tight" style={{fontFamily:'var(--glow-font-display)'}}>Your life is one world, not thirty apps.</h1><p className="mt-3 max-w-3xl text-sm leading-6 text-stone-300">Each room has its own purpose and visual personality, but information can travel between them. This 2D spatial map is the usable foundation for the future immersive/VR layer.</p><div className="mt-5 flex flex-wrap gap-2 text-[9px]"><span className="rounded-full bg-white/10 px-3 py-1.5">{snapshot.openTasks} open tasks</span><span className="rounded-full bg-white/10 px-3 py-1.5">{snapshot.activeProjects} active projects</span><span className="rounded-full bg-white/10 px-3 py-1.5">{snapshot.habitPercent}% habits</span><span className="rounded-full bg-white/10 px-3 py-1.5">${snapshot.monthlyExpenses.toFixed(0)} monthly expenses</span></div></div></section>{Object.entries(zoneKeys).map(([zone,keys],zoneIndex)=><section key={zone}><div className="mb-3 flex items-center gap-2"><Sparkles size={13} className="text-rose-500"/><h2 className="text-[10px] font-bold uppercase tracking-[.2em] text-stone-500">{zone} Wing</h2></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">{keys.map((key,index)=>{const room=roomMap.get(key);if(!room)return null;return <Link key={room.key} href={room.path} className={`group relative min-h-[185px] overflow-hidden rounded-[26px] border border-white/70 bg-gradient-to-br ${tones[(zoneIndex+index)%tones.length]} p-5 shadow-[0_18px_50px_rgba(100,78,62,.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_60px_rgba(100,78,62,.13)]`}><div className="absolute -right-8 -top-8 h-24 w-24 rounded-full border-[12px] border-white/25"/><p className="text-[8px] font-bold uppercase tracking-[.16em] text-stone-500">{room.atmosphere}</p><h3 className="mt-3 text-xl text-stone-950" style={{fontFamily:'var(--glow-font-display)'}}>{room.label}</h3><p className="mt-2 line-clamp-3 text-[9px] leading-4 text-stone-600">{room.purpose}</p><span className="absolute bottom-4 left-5 inline-flex items-center gap-1 text-[9px] font-medium text-stone-700">Enter room <ArrowRight size={10} className="transition group-hover:translate-x-1"/></span></Link>})}</div></section>)}</div></AppShell>}
