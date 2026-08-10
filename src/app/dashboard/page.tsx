@@ -2,6 +2,7 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
 import { LivingDashboard } from '@/components/dashboard/living-dashboard';
+import { MoodBoard } from '@/components/dashboard/mood-board';
 import type { LivingDashboardData } from '@/lib/dashboard/types';
 
 export const dynamic = 'force-dynamic';
@@ -58,6 +59,20 @@ function getFallbackData(): LivingDashboardData {
   };
 }
 
+function DashboardWithMoodBoard({ data, error }: { data: LivingDashboardData; error?: string }) {
+  return (
+    <div className="relative">
+      <div className="mb-4 md:hidden">
+        <MoodBoard />
+      </div>
+      <LivingDashboard data={data} error={error} />
+      <div className="pointer-events-auto absolute right-[18px] top-[58px] z-20 hidden h-[300px] w-[50%] md:block xl:right-[318px] xl:w-[42%]">
+        <MoodBoard />
+      </div>
+    </div>
+  );
+}
+
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
@@ -66,7 +81,7 @@ export default async function DashboardPage() {
   if (!process.env.DATABASE_URL) {
     return (
       <AppShell>
-        <LivingDashboard data={getFallbackData()} error="DATABASE_URL is not configured." />
+        <DashboardWithMoodBoard data={getFallbackData()} error="DATABASE_URL is not configured." />
       </AppShell>
     );
   }
@@ -76,7 +91,7 @@ export default async function DashboardPage() {
     const data = await getLivingDashboardData(userId);
     return (
       <AppShell>
-        <LivingDashboard data={data} />
+        <DashboardWithMoodBoard data={data} />
       </AppShell>
     );
   } catch (error) {
@@ -84,7 +99,7 @@ export default async function DashboardPage() {
 
     return (
       <AppShell>
-        <LivingDashboard data={getFallbackData()} error={message} />
+        <DashboardWithMoodBoard data={getFallbackData()} error={message} />
       </AppShell>
     );
   }
