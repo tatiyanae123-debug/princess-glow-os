@@ -3,50 +3,27 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
 import { buildPersonalContext } from '@/lib/intelligence/context';
+import { BrainCircuit, Sparkles, CalendarDays, CheckCircle2, Crown, ArrowRight } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
+export const dynamic='force-dynamic';
 
-export default async function BrainPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/sign-in');
+export default async function BrainPage(){
+  const session=await auth();if(!session?.user?.id)redirect('/sign-in');
+  let context:Awaited<ReturnType<typeof buildPersonalContext>>|null=null;
+  try{context=await buildPersonalContext(session.user.id);}catch(error){console.error('[Glow OS] Brain context unavailable',error);}
 
-  let context: Awaited<ReturnType<typeof buildPersonalContext>> | null = null;
-  try {
-    context = await buildPersonalContext(session.user.id);
-  } catch (error) {
-    console.error('[Glow OS] Brain context unavailable', error);
-  }
+  if(!context){return <AppShell><section className="paper-card mx-auto max-w-4xl p-6"><p className="glow-eyebrow">Glow Brain</p><h1 className="glow-display mt-2 text-[30px] text-[#493c4a]">Your life, interpreted clearly.</h1><p className="mt-3 text-[10px] leading-5 text-[#796d78]">Glow Brain is available, but one connected data source could not be read right now. Your other rooms still work.</p><div className="mt-5 flex gap-2"><Link href="/dashboard" className="rounded-[6px] bg-[#433841] px-4 py-2 text-[9px] text-white">Command Center</Link><Link href="/connections" className="rounded-[6px] border border-[#ddd2dc] px-4 py-2 text-[9px] text-[#6e626d]">Connections</Link></div></section></AppShell>;}
 
-  if (!context) {
-    return <AppShell><section className="rounded-[28px] border border-slate-200/70 bg-white/80 p-6 shadow-sm"><p className="text-sm font-medium uppercase tracking-[0.3em] text-violet-600">Glow Brain</p><h1 className="mt-2 text-3xl font-semibold text-slate-900">Your life, interpreted clearly.</h1><p className="mt-3 text-slate-600">Glow Brain is available, but one connected data source could not be read right now. Your other sections still work.</p><div className="mt-5 flex flex-wrap gap-3"><Link href="/dashboard" className="rounded-xl bg-slate-900 px-4 py-2 text-sm text-white">Dashboard</Link><Link href="/connections" className="rounded-xl border border-slate-200 px-4 py-2 text-sm">Connections</Link></div></section></AppShell>;
-  }
+  return <AppShell><div className="space-y-4">
+    <section className="relative overflow-hidden rounded-[12px] border border-[#ded2df] bg-[linear-gradient(130deg,#eee7f0,#f7efeb)] p-6 shadow-[0_10px_30px_rgba(72,55,74,.05)]"><BrainCircuit size={76} strokeWidth={.65} className="absolute right-6 top-4 text-[#7e6b83]/16"/><Crown size={25} strokeWidth={1} className="absolute bottom-5 right-16 text-[#b59666]/30"/><p className="glow-eyebrow">Central intelligence</p><h1 className="glow-display mt-2 max-w-3xl text-[31px] leading-9 text-[#493c4a]">Your life, interpreted clearly.</h1><p className="mt-3 max-w-3xl text-[11px] leading-5 text-[#716570]">{context.dailyBrief}</p><p className="mt-4 text-[7px] uppercase tracking-[.12em] text-[#958793]">Updated {context.generatedAt.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})} · {context.todayLabel}</p></section>
 
-  return (
-    <AppShell>
-      <div className="space-y-6">
-        <section className="rounded-[28px] border border-slate-200/70 bg-white/80 p-6 shadow-sm">
-          <p className="text-sm font-medium uppercase tracking-[0.3em] text-violet-600">Glow Brain</p>
-          <h1 className="mt-2 text-3xl font-semibold text-slate-900 sm:text-4xl">Your life, interpreted clearly.</h1>
-          <p className="mt-3 max-w-3xl text-base leading-7 text-slate-600">{context.dailyBrief}</p>
-          <p className="mt-3 text-sm text-slate-400">Updated {context.generatedAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} · {context.todayLabel}</p>
-        </section>
+    <section className="grid gap-3 md:grid-cols-3"><div className="editorial-surface p-4"><p className="text-[8px] text-[#837783]">Focus score</p><p className="glow-display mt-2 text-[28px] text-[#4f4350]">{context.focusScore}</p><p className="mt-1 text-[7px] text-[#998d98]">A snapshot, not a judgment.</p></div><div className="editorial-surface p-4"><p className="text-[8px] text-[#837783]">Unfinished tasks</p><p className="glow-display mt-2 text-[28px] text-[#4f4350]">{context.unfinishedTasks.length}</p><p className="mt-1 text-[7px] text-[#998d98]">{context.overdueTasks.length} overdue</p></div><div className="editorial-surface p-4"><p className="text-[8px] text-[#837783]">Today&apos;s events</p><p className="glow-display mt-2 text-[28px] text-[#4f4350]">{context.todaysEvents.length}</p><p className="mt-1 text-[7px] text-[#998d98]">Calendar-aware context</p></div></section>
 
-        <section className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm"><p className="text-sm text-slate-500">Focus score</p><p className="mt-2 text-4xl font-semibold text-slate-900">{context.focusScore}</p><p className="mt-1 text-xs text-slate-400">A rule-based snapshot, not a judgment.</p></div>
-          <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm"><p className="text-sm text-slate-500">Unfinished tasks</p><p className="mt-2 text-4xl font-semibold text-slate-900">{context.unfinishedTasks.length}</p><p className="mt-1 text-xs text-slate-400">{context.overdueTasks.length} overdue</p></div>
-          <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm"><p className="text-sm text-slate-500">Today’s events</p><p className="mt-2 text-4xl font-semibold text-slate-900">{context.todaysEvents.length}</p><p className="mt-1 text-xs text-slate-400">Calendar-aware context</p></div>
-        </section>
+    <section className="grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
+      <div className="editorial-surface overflow-hidden"><div className="flex items-center gap-2 border-b border-[#e3d9e3] px-5 py-4"><Sparkles size={13} className="text-[#806b85]"/><div><p className="glow-eyebrow">Concierge edit</p><p className="glow-display mt-1 text-[18px] text-[#4d414d]">Next best actions</p></div></div><div className="p-3">{context.recommendations.length===0?<p className="p-5 text-[9px] text-[#8a7e88]">You are clear for now.</p>:context.recommendations.map((item,index)=><Link key={item.id} href={item.href} className={`block rounded-[7px] p-3 ${index===0?'bg-[#efe3ec]':'hover:bg-[#f5eff3]'}`}><div className="flex items-start justify-between gap-3"><div><p className="glow-display text-[14px] text-[#4a3e4a]">{item.title}</p><p className="mt-1 text-[8px] leading-4 text-[#796d78]">{item.reason}</p></div><span className="rounded-full bg-white/55 px-2 py-1 text-[7px] uppercase text-[#837683]">{item.priority}</span></div></Link>)}</div></div>
+      <div className="relative overflow-hidden rounded-[12px] bg-[#403741] p-5 text-white shadow-[0_12px_30px_rgba(50,40,51,.12)]"><CalendarDays size={50} strokeWidth={.8} className="absolute right-4 top-4 text-white/10"/><p className="text-[7px] font-semibold uppercase tracking-[.15em] text-[#cfbecf]">Next event</p>{context.nextEvent?<div className="mt-4"><p className="glow-display text-[20px]">{context.nextEvent.title}</p><p className="mt-2 text-[8px] text-[#d2c8d1]">{context.nextEvent.allDay?'All day':context.nextEvent.startAt.toLocaleString([],{weekday:'short',hour:'numeric',minute:'2-digit'})}</p><Link href="/calendar" className="mt-4 inline-flex items-center gap-1 text-[8px] text-[#f0dce9]">Open Calendar <ArrowRight size={9}/></Link></div>:<p className="mt-4 text-[9px] text-[#d2c8d1]">No upcoming event found.</p>}</div>
+    </section>
 
-        <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm"><p className="text-sm font-semibold uppercase tracking-[0.25em] text-rose-500">Next best actions</p><div className="mt-4 space-y-3">{context.recommendations.length === 0 ? <p className="text-sm text-slate-400">You are clear for now. Add tasks, habits, routines, or calendar events to create recommendations.</p> : context.recommendations.map((item) => <Link key={item.id} href={item.href} className="block rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:bg-slate-100"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold text-slate-900">{item.title}</p><p className="mt-1 text-sm text-slate-600">{item.reason}</p></div><span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-medium uppercase text-slate-500">{item.priority}</span></div></Link>)}</div></div>
-          <div className="rounded-[28px] border border-slate-200 bg-slate-900 p-6 text-white shadow-sm"><p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-400">Next event</p>{context.nextEvent ? <div className="mt-4"><p className="text-xl font-semibold">{context.nextEvent.title}</p><p className="mt-2 text-sm text-slate-300">{context.nextEvent.allDay ? 'All day' : context.nextEvent.startAt.toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })}</p><Link href="/calendar" className="mt-4 inline-block text-sm font-medium text-white underline underline-offset-4">Open Calendar</Link></div> : <p className="mt-4 text-sm text-slate-300">No upcoming event found.</p>}</div>
-        </section>
-
-        <section className="grid gap-4 lg:grid-cols-2">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm"><p className="text-sm font-semibold uppercase tracking-[0.25em] text-emerald-600">Habits today</p><div className="mt-4 space-y-2">{context.habits.length === 0 ? <p className="text-sm text-slate-400">No habits scheduled yet.</p> : context.habits.slice(0, 8).map((habit) => <div key={habit.id} className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm"><span className="text-slate-700">{habit.name}</span><span className={habit.completedToday ? 'text-emerald-600' : 'text-slate-400'}>{habit.completedToday ? 'Done' : 'Not logged'}</span></div>)}</div></div>
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm"><p className="text-sm font-semibold uppercase tracking-[0.25em] text-amber-600">Routines for today</p><div className="mt-4 space-y-2">{context.routinesForToday.length === 0 ? <p className="text-sm text-slate-400">No routines scheduled yet.</p> : context.routinesForToday.slice(0, 8).map((routine) => <div key={routine.id} className="rounded-2xl bg-slate-50 px-4 py-3"><p className="text-sm font-medium text-slate-800">{routine.name}</p><p className="mt-1 text-xs capitalize text-slate-400">{routine.timeOfDay}</p></div>)}</div></div>
-        </section>
-      </div>
-    </AppShell>
-  );
+    <section className="grid gap-4 lg:grid-cols-2"><div className="editorial-surface overflow-hidden"><div className="border-b border-[#e4dce3] px-5 py-4"><p className="glow-eyebrow">Habits today</p></div><div className="p-3">{context.habits.length===0?<p className="p-4 text-[9px] text-[#8a7e88]">No habits scheduled yet.</p>:context.habits.slice(0,8).map((habit)=><div key={habit.id} className="flex items-center justify-between border-b border-[#eee7ed] px-2 py-3 last:border-0"><span className="text-[9px] text-[#655a65]">{habit.name}</span><span className={`flex items-center gap-1 text-[7px] ${habit.completedToday?'text-[#6f866b]':'text-[#9a8e98]'}`}>{habit.completedToday?<CheckCircle2 size={10}/>:null}{habit.completedToday?'Done':'Not logged'}</span></div>)}</div></div><div className="editorial-surface overflow-hidden"><div className="border-b border-[#e4dce3] px-5 py-4"><p className="glow-eyebrow">Routines for today</p></div><div className="p-3">{context.routinesForToday.length===0?<p className="p-4 text-[9px] text-[#8a7e88]">No routines scheduled yet.</p>:context.routinesForToday.slice(0,8).map((routine)=><div key={routine.id} className="border-b border-[#eee7ed] px-2 py-3 last:border-0"><p className="glow-display text-[12px] text-[#554955]">{routine.name}</p><p className="mt-1 text-[7px] capitalize text-[#948793]">{routine.timeOfDay}</p></div>)}</div></div></section>
+  </div></AppShell>;
 }

@@ -5,84 +5,27 @@ import { SectionPage } from '@/components/section-page';
 import { Card } from '@/components/ui/card';
 import { createProjectAction, updateProjectAction } from '@/app/actions/intelligence-expansion';
 import { getProjectsByUser } from '@/lib/data/user-scope';
+import { FolderKanban, Lightbulb, ArrowRight } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
+export const dynamic='force-dynamic';
+const fieldClass='w-full border px-3 py-2.5 text-[9px]';
+function toDateInput(value:Date|null){return value?value.toISOString().slice(0,10):'';}
 
-function toDateInput(value: Date | null) {
-  if (!value) return '';
-  return value.toISOString().slice(0, 10);
-}
+export default async function ProjectsPage(){
+  const session=await auth();if(!session?.user?.id)redirect('/sign-in');
+  const projects=await getProjectsByUser(session.user.id);
+  const active=projects.filter((p)=>p.status==='active').length;
+  const avg=projects.length?Math.round(projects.reduce((sum,p)=>sum+p.progress,0)/projects.length):0;
 
-export default async function ProjectsPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/sign-in');
-  const projects = await getProjectsByUser(session.user.id);
+  return <AppShell><SectionPage eyebrow="Projects + Creative Studio" title="Move every project forward from one place" description="Track status, priority, progress, next action, deadline, notes, milestones, related tasks, and activity using one shared project model.">
+    <div className="space-y-4">
+      <div className="grid gap-3 md:grid-cols-[1.3fr_.7fr]"><Card className="relative overflow-hidden bg-[linear-gradient(145deg,#f0e5da,#e7d8c9)] p-5"><FolderKanban size={58} strokeWidth={.8} className="absolute right-5 top-3 text-[#8d745f]/18"/><p className="glow-eyebrow">Creative studio</p><p className="glow-display mt-2 text-[25px] text-[#493c32]">Every project gets a desk.</p><p className="mt-2 max-w-xl text-[9px] leading-4 text-[#79695d]">Keep context, decisions and the next meaningful action together so projects feel resumable instead of overwhelming.</p></Card><Card className="p-5"><div className="flex justify-between"><div><p className="text-[7px] uppercase tracking-[.12em] text-[#927f70]">Active desks</p><p className="glow-display mt-1 text-[25px] text-[#4d4035]">{active}</p></div><div className="text-right"><p className="text-[7px] uppercase tracking-[.12em] text-[#927f70]">Avg. progress</p><p className="glow-display mt-1 text-[25px] text-[#4d4035]">{avg}%</p></div></div></Card></div>
 
-  return (
-    <AppShell>
-      <SectionPage eyebrow="Projects + Creative Studio" title="Move every project forward from one place" description="Track status, priority, progress, next action, deadline, notes, milestones, related tasks, and activity using one shared project model.">
-        <div className="grid gap-5 lg:grid-cols-[0.72fr_1.28fr]">
-          <Card>
-            <form action={createProjectAction} className="space-y-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Creative Studio</p>
-                <h2 className="mt-2 text-lg font-semibold">New project</h2>
-              </div>
-              <input name="title" required placeholder="Project title" className="w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" />
-              <input name="area" placeholder="Area, e.g. Terrain Design" className="w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" />
-              <select name="priority" defaultValue="medium" className="w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="urgent">Urgent</option></select>
-              <input name="deadline" type="date" className="w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" />
-              <textarea name="nextAction" rows={4} placeholder="Next action" className="w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" />
-              <button type="submit" className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-slate-900">Create project</button>
-            </form>
-          </Card>
+      <div className="grid gap-5 lg:grid-cols-[.68fr_1.32fr]">
+        <Card className="paper-card"><form action={createProjectAction} className="space-y-3"><div className="flex items-center gap-2"><Lightbulb size={14} className="text-[#9a785e]"/><div><p className="glow-eyebrow">New desk</p><h2 className="glow-display mt-1 text-[20px] text-[#493c32]">New project</h2></div></div><input name="title" required placeholder="Project title" className={fieldClass}/><input name="area" placeholder="Area, e.g. Terrain Design" className={fieldClass}/><select name="priority" defaultValue="medium" className={fieldClass}><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="urgent">Urgent</option></select><input name="deadline" type="date" className={fieldClass}/><textarea name="nextAction" rows={4} placeholder="Next action" className={fieldClass}/><button type="submit" className="rounded-[6px] bg-[#40352e] px-4 py-2 text-[9px] text-white">Create project</button></form></Card>
 
-          <Card className="space-y-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Live project manager</p>
-              <h2 className="mt-2 text-lg font-semibold">Active projects</h2>
-            </div>
-            {projects.length === 0 ? <p className="text-sm text-slate-500">No projects yet. Create one when you are ready.</p> : projects.map((project) => (
-              <form key={project.id} action={updateProjectAction.bind(null, project.id)} className="rounded-[22px] border border-slate-200 p-4 dark:border-slate-800">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-semibold">{project.title}</p>
-                    <p className="text-sm text-slate-500">{project.area}</p>
-                  </div>
-                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs dark:bg-slate-800">{project.status}</span>
-                </div>
-
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  <label className="text-xs font-medium text-slate-500">Status
-                    <select name="status" defaultValue={project.status} className="mt-1 w-full rounded-xl border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-800"><option value="active">Active</option><option value="paused">Paused</option><option value="completed">Completed</option><option value="archived">Archived</option></select>
-                  </label>
-                  <label className="text-xs font-medium text-slate-500">Priority
-                    <select name="priority" defaultValue={project.priority} className="mt-1 w-full rounded-xl border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-800"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="urgent">Urgent</option></select>
-                  </label>
-                  <label className="text-xs font-medium text-slate-500">Progress
-                    <input name="progress" type="number" min="0" max="100" defaultValue={project.progress} className="mt-1 w-full rounded-xl border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-800" />
-                  </label>
-                </div>
-
-                <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800"><div className="h-full bg-slate-900 dark:bg-white" style={{ width: `${Math.max(0, Math.min(100, project.progress))}%` }} /></div>
-
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <label className="text-xs font-medium text-slate-500">Deadline
-                    <input name="deadline" type="date" defaultValue={toDateInput(project.deadline)} className="mt-1 w-full rounded-xl border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-800" />
-                  </label>
-                  <label className="text-xs font-medium text-slate-500">Next action
-                    <input name="nextAction" defaultValue={project.nextAction ?? ''} placeholder="What moves this forward?" className="mt-1 w-full rounded-xl border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-800" />
-                  </label>
-                </div>
-                <label className="mt-3 block text-xs font-medium text-slate-500">Notes
-                  <textarea name="notes" rows={3} defaultValue={project.notes ?? ''} placeholder="Context, decisions, links, or ideas" className="mt-1 w-full rounded-xl border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-800" />
-                </label>
-                <button type="submit" className="mt-3 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium dark:border-slate-800">Save project update</button>
-              </form>
-            ))}
-          </Card>
-        </div>
-      </SectionPage>
-    </AppShell>
-  );
+        <div className="space-y-3">{projects.length===0?<Card><p className="p-6 text-center text-[9px] text-[#85766a]">No projects yet. Create one when you are ready.</p></Card>:projects.map((project,index)=><Card key={project.id} className={`relative overflow-hidden p-0 ${index===0?'bg-[linear-gradient(145deg,#f7eee7,#efe3d6)]':''}`}><form action={updateProjectAction.bind(null,project.id)}><div className="grid gap-4 p-4 md:grid-cols-[1fr_auto]"><div><div className="flex flex-wrap items-center gap-2"><p className="glow-display text-[17px] text-[#4a3d33]">{project.title}</p><span className="rounded-full bg-[#eee4d8] px-2 py-1 text-[7px] text-[#7d6755]">{project.status}</span></div><p className="mt-1 text-[8px] text-[#8d796a]">{project.area}</p>{project.nextAction?<p className="mt-3 inline-flex items-center gap-1 rounded-[6px] bg-[#f3e7dc] px-3 py-2 text-[8px] text-[#755b4d]">Next: {project.nextAction}<ArrowRight size={9}/></p>:null}</div><div className="text-right"><p className="glow-display text-[25px] text-[#76604d]">{project.progress}%</p><p className="text-[7px] text-[#998375]">progress</p></div></div><div className="mx-4 h-1.5 rounded-full bg-[#ece2d9]"><div className="h-1.5 rounded-full bg-[#a88d70]" style={{width:`${Math.max(0,Math.min(100,project.progress))}%`}}/></div><details className="mt-4 border-t border-[#e9ddd4]"><summary className="cursor-pointer px-4 py-3 text-[8px] font-medium text-[#7d685c]">Open project desk</summary><div className="grid gap-3 px-4 pb-4 sm:grid-cols-3"><label className="text-[7px] text-[#8c786a]">Status<select name="status" defaultValue={project.status} className={`mt-1 ${fieldClass}`}><option value="active">Active</option><option value="paused">Paused</option><option value="completed">Completed</option><option value="archived">Archived</option></select></label><label className="text-[7px] text-[#8c786a]">Priority<select name="priority" defaultValue={project.priority} className={`mt-1 ${fieldClass}`}><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="urgent">Urgent</option></select></label><label className="text-[7px] text-[#8c786a]">Progress<input name="progress" type="number" min="0" max="100" defaultValue={project.progress} className={`mt-1 ${fieldClass}`}/></label><label className="text-[7px] text-[#8c786a]">Deadline<input name="deadline" type="date" defaultValue={toDateInput(project.deadline)} className={`mt-1 ${fieldClass}`}/></label><label className="text-[7px] text-[#8c786a] sm:col-span-2">Next action<input name="nextAction" defaultValue={project.nextAction??''} placeholder="What moves this forward?" className={`mt-1 ${fieldClass}`}/></label><label className="text-[7px] text-[#8c786a] sm:col-span-3">Notes<textarea name="notes" rows={3} defaultValue={project.notes??''} className={`mt-1 ${fieldClass}`}/></label><button type="submit" className="w-fit rounded-[6px] border border-[#dccfc4] px-3 py-2 text-[8px] text-[#705c50]">Save project update</button></div></details></form></Card>)}</div>
+      </div>
+    </div>
+  </SectionPage></AppShell>;
 }

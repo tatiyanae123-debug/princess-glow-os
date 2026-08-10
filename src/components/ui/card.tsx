@@ -12,11 +12,11 @@ export function Card({
 }) {
   return (
     <div
-      className={cn('p-5 backdrop-blur-sm', className)}
+      className={cn('p-5 backdrop-blur-[2px]', className)}
       style={{
         borderRadius: 'var(--glow-radius)',
         border: '1px solid var(--glow-border)',
-        background: 'var(--glow-surface)',
+        background: 'linear-gradient(145deg,rgba(255,252,249,.86),rgba(249,241,235,.72))',
         boxShadow: 'var(--glow-shadow)',
         ...style,
       }}
