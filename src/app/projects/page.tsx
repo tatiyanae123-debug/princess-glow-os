@@ -1,88 +1,12 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
-import { Card } from '@/components/ui/card';
 import { createProjectAction, updateProjectAction } from '@/app/actions/intelligence-expansion';
 import { getProjectsByUser } from '@/lib/data/user-scope';
+import { calculateProjectHealth } from '@/lib/intelligence/project-health';
+import { Activity, AlertTriangle, ArrowRight, Clock3, FolderKanban, Sparkles, Target } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
+export const dynamic='force-dynamic';
+function toDateInput(value:Date|null){return value?value.toISOString().slice(0,10):''}
 
-function toDateInput(value: Date | null) {
-  if (!value) return '';
-  return value.toISOString().slice(0, 10);
-}
-
-export default async function ProjectsPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/sign-in');
-  const projects = await getProjectsByUser(session.user.id);
-
-  return (
-    <AppShell>
-      <SectionPage eyebrow="Projects + Creative Studio" title="Move every project forward from one place" description="Track status, priority, progress, next action, deadline, notes, milestones, related tasks, and activity using one shared project model.">
-        <div className="grid gap-5 lg:grid-cols-[0.72fr_1.28fr]">
-          <Card>
-            <form action={createProjectAction} className="space-y-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Creative Studio</p>
-                <h2 className="mt-2 text-lg font-semibold">New project</h2>
-              </div>
-              <input name="title" required placeholder="Project title" className="w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" />
-              <input name="area" placeholder="Area, e.g. Terrain Design" className="w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" />
-              <select name="priority" defaultValue="medium" className="w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="urgent">Urgent</option></select>
-              <input name="deadline" type="date" className="w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" />
-              <textarea name="nextAction" rows={4} placeholder="Next action" className="w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" />
-              <button type="submit" className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-slate-900">Create project</button>
-            </form>
-          </Card>
-
-          <Card className="space-y-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Live project manager</p>
-              <h2 className="mt-2 text-lg font-semibold">Active projects</h2>
-            </div>
-            {projects.length === 0 ? <p className="text-sm text-slate-500">No projects yet. Create one when you are ready.</p> : projects.map((project) => (
-              <form key={project.id} action={updateProjectAction.bind(null, project.id)} className="rounded-[22px] border border-slate-200 p-4 dark:border-slate-800">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-semibold">{project.title}</p>
-                    <p className="text-sm text-slate-500">{project.area}</p>
-                  </div>
-                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs dark:bg-slate-800">{project.status}</span>
-                </div>
-
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  <label className="text-xs font-medium text-slate-500">Status
-                    <select name="status" defaultValue={project.status} className="mt-1 w-full rounded-xl border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-800"><option value="active">Active</option><option value="paused">Paused</option><option value="completed">Completed</option><option value="archived">Archived</option></select>
-                  </label>
-                  <label className="text-xs font-medium text-slate-500">Priority
-                    <select name="priority" defaultValue={project.priority} className="mt-1 w-full rounded-xl border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-800"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="urgent">Urgent</option></select>
-                  </label>
-                  <label className="text-xs font-medium text-slate-500">Progress
-                    <input name="progress" type="number" min="0" max="100" defaultValue={project.progress} className="mt-1 w-full rounded-xl border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-800" />
-                  </label>
-                </div>
-
-                <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800"><div className="h-full bg-slate-900 dark:bg-white" style={{ width: `${Math.max(0, Math.min(100, project.progress))}%` }} /></div>
-
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <label className="text-xs font-medium text-slate-500">Deadline
-                    <input name="deadline" type="date" defaultValue={toDateInput(project.deadline)} className="mt-1 w-full rounded-xl border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-800" />
-                  </label>
-                  <label className="text-xs font-medium text-slate-500">Next action
-                    <input name="nextAction" defaultValue={project.nextAction ?? ''} placeholder="What moves this forward?" className="mt-1 w-full rounded-xl border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-800" />
-                  </label>
-                </div>
-                <label className="mt-3 block text-xs font-medium text-slate-500">Notes
-                  <textarea name="notes" rows={3} defaultValue={project.notes ?? ''} placeholder="Context, decisions, links, or ideas" className="mt-1 w-full rounded-xl border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-800" />
-                </label>
-                <button type="submit" className="mt-3 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium dark:border-slate-800">Save project update</button>
-              </form>
-            ))}
-          </Card>
-        </div>
-      </SectionPage>
-    </AppShell>
-  );
-}
+export default async function ProjectsPage(){const session=await auth();if(!session?.user?.id)redirect('/sign-in');const projects=await getProjectsByUser(session.user.id);const active=projects.filter(p=>p.status==='active');const health=active.map(p=>({project:p,health:calculateProjectHealth(p)}));const risk=health.filter(x=>x.health.health==='red').length;const attention=health.filter(x=>x.health.health==='yellow').length;return <AppShell><div className="space-y-5"><header className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end"><div><div className="flex items-center gap-2 text-violet-700"><FolderKanban size={17}/><p className="text-[10px] font-bold uppercase tracking-[.2em]">Creative Studio</p></div><h1 className="mt-2 text-4xl tracking-[-.04em] text-stone-950" style={{fontFamily:'var(--glow-font-display)'}}>Projects should tell you how to resume.</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-stone-500">Every project now carries health, momentum, deadline risk and a next meaningful action instead of relying on progress percentage alone.</p></div><div className="flex gap-2"><div className="rounded-xl bg-emerald-50 px-4 py-3 text-center"><p className="text-xl text-emerald-800">{active.length-risk-attention}</p><p className="text-[8px] uppercase text-emerald-600">Healthy</p></div><div className="rounded-xl bg-amber-50 px-4 py-3 text-center"><p className="text-xl text-amber-800">{attention}</p><p className="text-[8px] uppercase text-amber-600">Watch</p></div><div className="rounded-xl bg-rose-50 px-4 py-3 text-center"><p className="text-xl text-rose-800">{risk}</p><p className="text-[8px] uppercase text-rose-600">At risk</p></div></div></header><div className="grid gap-5 xl:grid-cols-[.62fr_1.38fr]"><form action={createProjectAction} className="h-fit rounded-[24px] border border-violet-200 bg-violet-50/55 p-5"><div className="flex items-center gap-2 text-violet-800"><Sparkles size={14}/><p className="text-[10px] font-bold uppercase tracking-[.18em]">Start a project</p></div><input name="title" required placeholder="Project title" className="mt-4 w-full rounded-xl border border-white bg-white/80 px-3 py-2.5 text-sm"/><input name="area" placeholder="Area, e.g. Terrain Design" className="mt-2 w-full rounded-xl border border-white bg-white/80 px-3 py-2.5 text-xs"/><div className="mt-2 grid grid-cols-2 gap-2"><select name="priority" defaultValue="medium" className="rounded-xl border border-white bg-white/80 px-3 py-2.5 text-xs"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="urgent">Urgent</option></select><input name="deadline" type="date" className="rounded-xl border border-white bg-white/80 px-3 py-2.5 text-xs"/></div><textarea name="nextAction" rows={3} placeholder="Next meaningful action" className="mt-2 w-full rounded-xl border border-white bg-white/80 px-3 py-2.5 text-xs"/><button className="mt-3 w-full rounded-xl bg-violet-950 py-2.5 text-xs text-white">Create Project</button></form><section className="grid gap-4 lg:grid-cols-2">{health.length?health.map(({project,health:h})=><form key={project.id} action={updateProjectAction.bind(null,project.id)} className={`rounded-[24px] border bg-white/75 p-5 shadow-sm ${h.health==='red'?'border-rose-200':h.health==='yellow'?'border-amber-200':'border-emerald-100'}`}><div className="flex items-start justify-between gap-3"><div><p className="text-lg text-stone-950" style={{fontFamily:'var(--glow-font-display)'}}>{project.title}</p><p className="mt-1 text-[9px] uppercase tracking-[.14em] text-stone-400">{project.area}</p></div><span className={`rounded-full px-2.5 py-1 text-[9px] font-bold uppercase ${h.health==='red'?'bg-rose-100 text-rose-700':h.health==='yellow'?'bg-amber-100 text-amber-700':'bg-emerald-100 text-emerald-700'}`}>{h.label}</span></div><div className="mt-4 grid grid-cols-3 gap-2"><div className="rounded-xl bg-stone-50 p-3"><Activity size={12} className="text-violet-500"/><p className="mt-2 text-xs font-medium capitalize text-stone-800">{h.velocity}</p><p className="text-[8px] text-stone-400">Velocity</p></div><div className="rounded-xl bg-stone-50 p-3"><Clock3 size={12} className="text-amber-600"/><p className="mt-2 text-xs font-medium capitalize text-stone-800">{h.deadlineRisk}</p><p className="text-[8px] text-stone-400">Deadline risk</p></div><div className="rounded-xl bg-stone-50 p-3"><Target size={12} className="text-emerald-600"/><p className="mt-2 text-xs font-medium text-stone-800">{project.progress}%</p><p className="text-[8px] text-stone-400">Progress</p></div></div><div className="mt-4 rounded-xl bg-stone-50 p-3"><p className="text-[8px] font-bold uppercase tracking-[.14em] text-stone-400">Why Glow says {h.label}</p><p className="mt-1 text-[10px] leading-4 text-stone-600">{h.reason}</p></div><label className="mt-4 block text-[9px] font-bold uppercase tracking-[.14em] text-violet-600">Next meaningful action<input name="nextAction" defaultValue={project.nextAction??''} placeholder="What moves this forward?" className="mt-1.5 w-full rounded-xl border border-violet-100 bg-violet-50/45 px-3 py-2.5 text-xs normal-case tracking-normal text-stone-800"/></label><div className="mt-3 grid grid-cols-3 gap-2"><select name="status" defaultValue={project.status} className="rounded-xl border border-stone-200 bg-white px-2 py-2 text-[10px]"><option value="active">Active</option><option value="paused">Paused</option><option value="completed">Completed</option><option value="archived">Archived</option></select><input name="progress" type="number" min="0" max="100" defaultValue={project.progress} className="rounded-xl border border-stone-200 px-2 py-2 text-[10px]"/><input name="deadline" type="date" defaultValue={toDateInput(project.deadline)} className="rounded-xl border border-stone-200 px-2 py-2 text-[10px]"/></div><input type="hidden" name="priority" value={project.priority}/><textarea name="notes" rows={2} defaultValue={project.notes??''} placeholder="Notes / decisions / blockers" className="mt-2 w-full rounded-xl border border-stone-200 px-3 py-2 text-[10px]"/><button className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-stone-950 py-2.5 text-[10px] text-white">Save + Resume <ArrowRight size={11}/></button></form>):<div className="col-span-2 rounded-[24px] border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">No active projects yet.</div>}</section></div></div></AppShell>}

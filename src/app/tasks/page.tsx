@@ -1,23 +1,14 @@
+import { eq } from 'drizzle-orm';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
 import { TaskManager } from '@/components/tasks/task-manager';
 import { getTasksByUser } from '@/lib/data/tasks';
+import { db } from '@/db';
+import { taskDependencies } from '@/db/schema/adaptive-os';
+import { createDependencyAction, deleteDependencyAction } from '@/app/actions/dependencies';
+import { ArrowDown, Clock3, Link2, Sparkles, Trash2, Zap } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
+export const dynamic='force-dynamic';
 
-export default async function TasksPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/sign-in');
-
-  const tasks = await getTasksByUser(session.user.id);
-
-  return (
-    <AppShell>
-      <SectionPage eyebrow="Tasks" title="What deserves your attention" description="A calm, focused list that protects your energy and keeps your priorities visible.">
-        <TaskManager initialTasks={tasks} />
-      </SectionPage>
-    </AppShell>
-  );
-}
+export default async function TasksPage(){const session=await auth();if(!session?.user?.id)redirect('/sign-in');const [tasks,deps]=await Promise.all([getTasksByUser(session.user.id),db.select().from(taskDependencies).where(eq(taskDependencies.userId,session.user.id))]);const open=tasks.filter(t=>t.status!=='done'&&t.status!=='cancelled');const taskMap=new Map(tasks.map(t=>[t.id,t]));const blockedIds=new Set(deps.filter(d=>d.dependencyType==='blocks').map(d=>d.successorId));const actionable=open.filter(t=>!blockedIds.has(t.id));return <AppShell><div className="space-y-5"><header className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end"><div><div className="flex items-center gap-2 text-slate-700"><Zap size={17}/><p className="text-[10px] font-bold uppercase tracking-[.2em]">Execution Desk</p></div><h1 className="mt-2 text-4xl tracking-[-.04em] text-stone-950" style={{fontFamily:'var(--glow-font-display)'}}>Do the next meaningful thing.</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-stone-500">Tasks are not just a list anymore. Glow distinguishes actionable work from blocked work and connects execution to Calendar, Projects, Goals and Today.</p></div><div className="grid grid-cols-3 gap-2 text-center"><div className="rounded-xl bg-white/70 px-4 py-3"><p className="text-xl text-stone-900">{open.length}</p><p className="text-[8px] uppercase text-stone-400">Open</p></div><div className="rounded-xl bg-emerald-50 px-4 py-3"><p className="text-xl text-emerald-800">{actionable.length}</p><p className="text-[8px] uppercase text-emerald-600">Ready</p></div><div className="rounded-xl bg-amber-50 px-4 py-3"><p className="text-xl text-amber-800">{blockedIds.size}</p><p className="text-[8px] uppercase text-amber-600">Blocked</p></div></div></header><div className="grid gap-5 xl:grid-cols-[1.5fr_.72fr]"><section className="rounded-[24px] border border-stone-200 bg-white/65 p-4 shadow-sm"><TaskManager initialTasks={tasks}/></section><aside className="space-y-4"><section className="rounded-[24px] border border-amber-200 bg-amber-50/55 p-5"><div className="flex items-center gap-2 text-amber-800"><Link2 size={15}/><p className="text-[10px] font-bold uppercase tracking-[.18em]">Dependency Engine</p></div><p className="mt-2 text-[10px] leading-5 text-stone-600">Tell Glow what must happen first. The Now Engine can then avoid recommending blocked work.</p><form action={createDependencyAction} className="mt-4 space-y-2"><select name="predecessorId" required className="w-full rounded-xl border border-white bg-white/80 px-3 py-2.5 text-xs"><option value="">First task…</option>{open.map(t=><option key={t.id} value={t.id}>{t.title}</option>)}</select><div className="flex items-center justify-center text-amber-600"><ArrowDown size={14}/></div><select name="successorId" required className="w-full rounded-xl border border-white bg-white/80 px-3 py-2.5 text-xs"><option value="">Then task…</option>{open.map(t=><option key={t.id} value={t.id}>{t.title}</option>)}</select><select name="dependencyType" className="w-full rounded-xl border border-white bg-white/80 px-3 py-2.5 text-xs"><option value="blocks">Blocks</option><option value="precedes">Precedes</option><option value="requires">Requires</option></select><button className="w-full rounded-xl bg-stone-950 py-2.5 text-xs text-white">Connect Tasks</button></form></section><section className="rounded-[24px] border border-stone-200 bg-white/70 shadow-sm"><div className="border-b border-stone-200 px-5 py-4 text-[10px] font-bold uppercase tracking-[.18em] text-stone-500">Task Chain</div><div className="divide-y divide-stone-100">{deps.length?deps.map(dep=><div key={dep.id} className="px-4 py-3"><div className="flex items-start gap-2"><div className="min-w-0 flex-1"><p className="truncate text-[10px] font-medium text-stone-800">{taskMap.get(dep.predecessorId)?.title||'Unknown task'}</p><p className="my-1 text-[8px] font-bold uppercase tracking-[.12em] text-amber-600">{dep.dependencyType} ↓</p><p className="truncate text-[10px] font-medium text-stone-800">{taskMap.get(dep.successorId)?.title||'Unknown task'}</p></div><form action={deleteDependencyAction.bind(null,dep.id)}><button className="rounded-lg bg-rose-50 p-1.5 text-rose-500"><Trash2 size={11}/></button></form></div></div>):<p className="p-5 text-xs text-stone-500">No dependencies yet.</p>}</div></section><section className="rounded-[24px] bg-stone-950 p-5 text-white"><div className="flex items-center gap-2"><Sparkles size={14} className="text-rose-200"/><p className="text-[9px] font-bold uppercase tracking-[.16em] text-rose-200">Glow execution rule</p></div><p className="mt-3 text-sm leading-6 text-stone-200">Ready tasks rise. Blocked tasks wait. Long tasks should only appear when the calendar has enough room.</p><div className="mt-3 flex items-center gap-2 text-[9px] text-stone-400"><Clock3 size={11}/>Connected to Today + Calendar</div></section></aside></div></div></AppShell>}
