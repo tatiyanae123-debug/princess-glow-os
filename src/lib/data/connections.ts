@@ -8,7 +8,7 @@ import { getLatestCalendarSync } from '@/lib/google/calendar-sync';
 
 export type ConnectionsOverview = GoogleConnectionStatus & {
   calendarState: 'connected' | 'needs_reauthorization' | 'error' | 'disconnected';
-  lastSync: Awaited<ReturnType<typeof getLatestCalendarSync>>;
+  lastSync: Awaited<ReturnType<typeof getLatestCalendarSync>> | null;
 };
 
 export async function getConnectionsOverview(userId: string): Promise<ConnectionsOverview> {
