@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Crown, Menu, X } from 'lucide-react';
+import { Crown, Menu, X, Heart } from 'lucide-react';
 import { navItems } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 import { useGlow } from '@/lib/context/glow-provider';
@@ -10,104 +10,55 @@ import { THEMES } from '@/lib/themes';
 import { useState } from 'react';
 
 const preferredOrder = [
-  '/dashboard', '/tasks', '/calendar', '/planning', '/habits', '/fitness', '/beauty', '/finance', '/goals',
-  '/projects', '/brain', '/world', '/connections', '/notes', '/settings',
+  '/dashboard','/tasks','/calendar','/planning','/habits','/fitness','/wellness','/beauty','/beauty/lab','/hair','/finance','/finance/brain','/goals','/projects','/brain','/concierge','/observations','/memory','/timeline','/briefings','/closet','/gmail','/world','/home','/connections','/notes','/import','/settings',
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
   const { themeId, setTheme, isCustomizing } = useGlow();
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  const ordered = [...navItems].sort((a, b) => {
-    const ai = preferredOrder.indexOf(a.href);
-    const bi = preferredOrder.indexOf(b.href);
-    if (ai === -1 && bi === -1) return 0;
-    if (ai === -1) return 1;
-    if (bi === -1) return -1;
-    return ai - bi;
-  });
+  const ordered = [...navItems].sort((a,b)=>{const ai=preferredOrder.indexOf(a.href);const bi=preferredOrder.indexOf(b.href);if(ai===-1&&bi===-1)return 0;if(ai===-1)return 1;if(bi===-1)return -1;return ai-bi;});
 
   return (
-    <aside
-      className="flex h-full w-full flex-col border-b p-4 sm:p-5 lg:min-h-screen lg:border-b-0 lg:border-r lg:px-4 lg:py-6"
-      style={{
-        background: 'linear-gradient(180deg, rgba(239,220,207,.98), rgba(246,234,225,.94))',
-        borderColor: 'rgba(120,91,72,.12)',
-      }}
-    >
-      <div className="flex items-center justify-between gap-3 lg:block">
+    <aside className="flex h-full w-full flex-col border-b border-[#dfd0c6] bg-[linear-gradient(180deg,#efe2d8_0%,#f3e9e1_55%,#eee0d6_100%)] px-4 py-4 lg:min-h-screen lg:border-b-0 lg:border-r lg:px-3 lg:py-5">
+      <div className="flex items-center justify-between lg:block lg:text-center">
         <div>
-          <h2 className="text-3xl leading-none tracking-[-0.04em] text-stone-900" style={{ fontFamily: 'var(--glow-font-display)' }}>
-            GLOW OS
-          </h2>
-          <p className="mt-1 text-[9px] font-semibold uppercase tracking-[0.24em] text-stone-600">Princess Command Center</p>
+          <Crown className="mx-auto hidden text-[#b68a53] lg:block" size={20} strokeWidth={1.6}/>
+          <h2 className="glow-display mt-1 text-[27px] leading-none tracking-[-.035em] text-[#302622]">GLOW OS</h2>
+          <p className="mt-1 text-[7px] font-semibold uppercase tracking-[.18em] text-[#79665f]">Princess Command Center</p>
         </div>
-        <button
-          type="button"
-          onClick={() => setMobileOpen((open) => !open)}
-          className="rounded-xl border border-stone-300/60 bg-white/40 p-2 text-stone-700 lg:hidden"
-          aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
-        >
-          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        <button type="button" onClick={()=>setMobileOpen((open)=>!open)} className="rounded-xl border border-[#d8c7bc] bg-white/35 p-2 text-[#6d5951] lg:hidden" aria-label={mobileOpen?'Close navigation':'Open navigation'}>{mobileOpen?<X size={20}/>:<Menu size={20}/>}</button>
       </div>
 
-      <div className={cn('mt-5 min-h-0 flex-1 lg:flex lg:flex-col', mobileOpen ? 'block' : 'hidden lg:flex')}>
-        <div className="mb-5 rounded-[28px] border border-white/50 bg-white/35 p-4 text-center shadow-[0_14px_35px_rgba(117,85,62,.08)]">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-stone-200 to-rose-100 text-2xl font-semibold text-stone-700 shadow-inner">
-            TC
+      <div className={cn('mt-5 min-h-0 flex-1 lg:flex lg:flex-col',mobileOpen?'block':'hidden lg:flex')}>
+        <div className="mb-4 text-center">
+          <div className="mx-auto flex h-[78px] w-[78px] items-center justify-center overflow-hidden rounded-full border-[4px] border-[#ead9ce] bg-[linear-gradient(145deg,#cbb5aa,#806a61)] shadow-[0_8px_20px_rgba(83,61,52,.11)]">
+            <span className="glow-display text-xl text-white/90">TC</span>
           </div>
-          <p className="mt-3 text-lg text-stone-900" style={{ fontFamily: 'var(--glow-font-display)' }}>Tatiyana Curran</p>
-          <p className="text-[10px] tracking-wide text-stone-600">Modern American Princess</p>
-          <Crown className="mx-auto mt-2 text-amber-700/70" size={18} />
+          <p className="glow-display mt-2 text-[16px] text-[#352b27]">Tatiyana Curran</p>
+          <p className="mt-0.5 text-[8px] tracking-wide text-[#7c6961]">Modern American Princess</p>
         </div>
 
-        <nav aria-label="Glow OS navigation" className="min-h-0 space-y-1 overflow-y-auto pr-1">
-          {ordered.map((item) => {
-            const Icon = item.icon;
-            const active = pathname === item.href || pathname.startsWith(item.href + '/');
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  'group flex min-h-10 items-center gap-3 rounded-xl px-3 py-2 text-[13px] transition-all duration-200',
-                  active
-                    ? 'bg-rose-100/75 font-medium text-rose-900 shadow-[inset_0_0_0_1px_rgba(188,108,126,.08)]'
-                    : 'text-stone-700 hover:bg-white/35 hover:text-stone-950',
-                )}
-              >
-                <Icon size={15} className="shrink-0" />
-                <span className="truncate">{item.label}</span>
-              </Link>
-            );
+        <nav aria-label="Glow OS navigation" className="min-h-0 flex-1 space-y-[2px] overflow-y-auto pr-1">
+          {ordered.map((item)=>{
+            const Icon=item.icon;
+            const active=pathname===item.href||pathname.startsWith(item.href+'/');
+            return <Link key={item.href} href={item.href} onClick={()=>setMobileOpen(false)} className={cn('group flex min-h-[33px] items-center gap-2.5 rounded-[9px] px-2.5 py-1.5 text-[10px] transition-all',active?'bg-[#e5c6c5] text-[#4a3334] shadow-[inset_0_0_0_1px_rgba(164,100,108,.07)]':'text-[#5e4f49] hover:bg-white/35 hover:text-[#302622]')}>
+              <Icon size={13} strokeWidth={1.7} className="shrink-0"/><span className="truncate">{item.label}</span>
+            </Link>;
           })}
         </nav>
 
-        <div className="mt-5 rounded-2xl border border-white/50 bg-white/30 p-3">
-          <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-stone-500">Daily affirmation</p>
-          <p className="mt-2 text-sm leading-5 text-stone-800" style={{ fontFamily: 'var(--glow-font-display)' }}>
-            I&apos;m building the life I used to dream about.
-          </p>
+        <div className="paper-card mt-4 overflow-hidden p-3 text-left">
+          <p className="glow-display text-[11px] text-[#4b3d38]">Daily Affirmation</p>
+          <div className="my-2 h-px bg-[#d9c8bd]"/>
+          <p className="text-[9px] leading-4 text-[#65544e]">I&apos;m building the life I used to dream about.</p>
+          <Heart size={12} className="ml-auto mt-2 text-[#b66f79]"/>
+          <div className="mt-3 h-12 rounded-[3px] bg-[radial-gradient(circle_at_20%_70%,#e1b6bc_0_8%,transparent_9%),radial-gradient(circle_at_42%_64%,#d9aaa9_0_8%,transparent_9%),radial-gradient(circle_at_66%_72%,#efc8c8_0_8%,transparent_9%),linear-gradient(180deg,transparent,#e9ddd4)]"/>
         </div>
 
-        <div className="mt-3">
-          <div className="grid grid-cols-4 gap-1.5">
-            {THEMES.slice(0, 4).map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                title={t.name}
-                onClick={() => setTheme(t.id)}
-                disabled={isCustomizing}
-                className={cn('h-5 rounded-full border border-white/60 transition', themeId === t.id ? 'ring-1 ring-stone-600' : 'opacity-65 hover:opacity-100')}
-                style={{ background: t.tokens.accent }}
-                aria-label={`Switch to ${t.name} theme`}
-              />
-            ))}
-          </div>
+        <div className="mt-3 grid grid-cols-7 gap-1">
+          {THEMES.map((t)=><button key={t.id} type="button" title={t.name} onClick={()=>setTheme(t.id)} disabled={isCustomizing} className={cn('h-3 rounded-full border border-white/60 transition',themeId===t.id?'ring-1 ring-[#806b62]':'opacity-60 hover:opacity-100')} style={{background:t.tokens.accent}} aria-label={`Switch to ${t.name} theme`}/>) }
         </div>
       </div>
     </aside>
