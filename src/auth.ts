@@ -18,7 +18,6 @@ function getDeploymentBaseUrl(baseUrl: string) {
 export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
   trustHost: true,
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
-  redirectProxyUrl: process.env.VERCEL_ENV === 'preview' ? PRODUCTION_AUTH_PROXY_URL : undefined,
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
@@ -29,6 +28,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
     Google({
       clientId: process.env.PRINCESS_GOOGLE_CLIENT_ID ?? '',
       clientSecret: process.env.PRINCESS_GOOGLE_CLIENT_SECRET ?? '',
+      redirectProxyUrl: process.env.VERCEL_ENV === 'preview' ? PRODUCTION_AUTH_PROXY_URL : undefined,
       authorization: {
         params: {
           access_type: 'offline',
