@@ -11,6 +11,7 @@ import {
   startFocusSession,
   upsertDayReview,
 } from '@/lib/intelligence/adaptive-os';
+import { routeInboxItem } from '@/lib/intelligence/inbox-routing';
 
 async function requireUserId() {
   const session = await auth();
@@ -39,6 +40,17 @@ export async function addInboxItemAction(rawText: string) {
 export async function addInboxItemFormAction(formData: FormData) {
   const rawText = String(formData.get('rawText') ?? '');
   return addInboxItemAction(rawText);
+}
+
+export async function routeInboxItemAction(itemId: string) {
+  const userId = await requireUserId();
+  const item = await routeInboxItem(userId, itemId);
+  revalidatePath('/inbox');
+  revalidatePath('/today');
+  revalidatePath('/tasks');
+  revalidatePath('/notes');
+  revalidatePath('/goals');
+  return { data: item };
 }
 
 export async function markInboxProcessedAction(itemId: string) {
