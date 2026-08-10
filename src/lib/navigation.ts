@@ -7,6 +7,7 @@ import {
   Globe2,
   HeartPulse,
   Home as HomeIcon,
+  Inbox,
   LayoutGrid,
   LibraryBig,
   Link2,
@@ -17,6 +18,7 @@ import {
   Target,
   UploadCloud,
   Wallet,
+  Zap,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -28,10 +30,13 @@ export type NavItem = {
 };
 
 export const navItems: NavItem[] = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutGrid, description: 'Plan the day with elegance' },
-  { label: 'Brain', href: '/brain', icon: BrainCircuit, description: 'See what matters next' },
+  { label: 'Home', href: '/dashboard', icon: LayoutGrid, description: 'Return to the living command center' },
+  { label: 'Today', href: '/today', icon: Zap, description: 'Let Glow decide what matters now' },
+  { label: 'Glow Brain', href: '/brain', icon: BrainCircuit, description: 'Ask across your whole life' },
+  { label: 'Plan', href: '/planning', icon: PanelsTopLeft, description: 'Connect today, week, quarter, and year' },
+  { label: 'World', href: '/world', icon: Globe2, description: 'Enter your connected Life World' },
+  { label: 'Glow Inbox', href: '/inbox', icon: Inbox, description: 'Capture once and let Glow classify it' },
   { label: 'Concierge', href: '/concierge', icon: BrainCircuit, description: 'Propose changes with approval' },
-  { label: 'Planning', href: '/planning', icon: PanelsTopLeft, description: 'Connect today, week, quarter, and year' },
   { label: 'Calendar', href: '/calendar', icon: CalendarDays, description: 'Shape the week' },
   { label: 'Tasks', href: '/tasks', icon: CheckSquare, description: 'Focus on what matters' },
   { label: 'Habits', href: '/habits', icon: Activity, description: 'Build steady rituals' },
@@ -50,8 +55,7 @@ export const navItems: NavItem[] = [
   { label: 'Briefings', href: '/briefings', icon: NotebookText, description: 'Morning, evening, and weekly reviews' },
   { label: 'Closet', href: '/closet', icon: HomeIcon, description: 'Know what you own and wear' },
   { label: 'Gmail', href: '/gmail', icon: Link2, description: 'See read-only inbox intelligence' },
-  { label: 'World', href: '/world', icon: Globe2, description: 'Enter your Life World' },
-  { label: 'Home', href: '/home', icon: HomeIcon, description: 'Care for your space' },
+  { label: 'Home System', href: '/home', icon: HomeIcon, description: 'Care for your space' },
   { label: 'Notes', href: '/notes', icon: NotebookText, description: 'Capture ideas beautifully' },
   { label: 'Connections', href: '/connections', icon: Link2, description: 'Connect your digital world' },
   { label: 'Import', href: '/import', icon: UploadCloud, description: 'Bring in the Glow OS master system' },
