@@ -11,7 +11,7 @@ import { useMemo, useState } from 'react';
 
 const GROUPS: Array<{label:string;paths:string[]}> = [
   {label:'TODAY',paths:['/dashboard','/today','/tomorrow','/tasks','/calendar','/planning','/briefings']},
-  {label:'SELF',paths:['/habits','/fitness','/wellness','/beauty','/beauty/lab','/hair','/maintenance']},
+  {label:'SELF',paths:['/habits','/fitness','/wellness','/food','/beauty','/beauty/lab','/hair','/maintenance']},
   {label:'LIFE',paths:['/finance','/finance/brain','/goals','/home','/closet']},
   {label:'CREATE',paths:['/projects','/notes','/resources']},
   {label:'INTELLIGENCE',paths:['/brain','/concierge','/observations','/memory','/timeline','/inbox','/intake','/rules']},
