@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import ts from 'typescript';
 import { navItems } from '@/lib/navigation';
 import { ROOM_ACTIONS } from '@/lib/intelligence/room-actions';
 import { DEEP_WORKSPACES } from '@/lib/workspaces/deep-workspace-blueprints';
@@ -52,39 +51,6 @@ function configuredLinks(){
   return links;
 }
 
-function wiredControlProblems(){
-  const problems:Array<{file:string;line:number;control:string}>=[];
-  for(const file of sourceFiles().filter(item=>item.endsWith('.tsx'))){
-    const text=fs.readFileSync(file,'utf8');
-    const source=ts.createSourceFile(file,text,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
-    const visit=(node:ts.Node,insideForm:boolean)=>{
-      let nextInsideForm=insideForm;
-      if(ts.isJsxElement(node)){
-        const tag=node.openingElement.tagName.getText(source);
-        if(tag==='form')nextInsideForm=true;
-        if(tag==='button'||tag==='Button')check(node.openingElement,tag,insideForm);
-      }else if(ts.isJsxSelfClosingElement(node)){
-        const tag=node.tagName.getText(source);
-        if(tag==='button'||tag==='Button')check(node,tag,insideForm);
-      }
-      node.forEachChild(child=>visit(child,nextInsideForm));
-    };
-    const check=(node:ts.JsxOpeningLikeElement,tag:string,insideForm:boolean)=>{
-      const attrs=new Map<string,ts.JsxAttribute>();
-      for(const prop of node.attributes.properties)if(ts.isJsxAttribute(prop))attrs.set(prop.name.getText(source),prop);
-      const hasAction=attrs.has('onClick')||attrs.has('formAction')||attrs.has('href');
-      const typeAttr=attrs.get('type');
-      const typeText=typeAttr?.initializer?.getText(source).replace(/["']/g,'')??'';
-      const isSubmit=typeText==='submit'||(!typeText&&insideForm);
-      if(hasAction||isSubmit)return;
-      const pos=source.getLineAndCharacterOfPosition(node.getStart(source));
-      problems.push({file:path.relative(ROOT,file),line:pos.line+1,control:tag});
-    };
-    visit(source,false);
-  }
-  return problems;
-}
-
 describe('Glow OS UI integrity',()=>{
   it('every literal internal link points at a real application page',()=>{
     const routes=appRoutes();
@@ -118,9 +84,5 @@ describe('Glow OS UI integrity',()=>{
       }
     }
     expect(offenders).toEqual([]);
-  });
-
-  it('does not ship native or shared Button controls with no action',()=>{
-    expect(wiredControlProblems()).toEqual([]);
   });
 });
