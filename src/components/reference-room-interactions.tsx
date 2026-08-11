@@ -14,6 +14,12 @@ export function ReferenceRoomInteractions(){
       const aria=button.getAttribute('aria-label')||'';
       if(aria.startsWith('Change ')||aria.startsWith('Reset ')||aria.startsWith('Upload replacement')) return;
       event.preventDefault();
+      const action=button.getAttribute('data-ref-action')||'vault';
+      if(action.startsWith('quick:')){
+        const name=action.substring(6);
+        document.dispatchEvent(new Event('glow:quick-add-'+name));
+        return;
+      }
       document.dispatchEvent(new Event('glow:vault-open'));
     }
     document.addEventListener('click',handleClick);
