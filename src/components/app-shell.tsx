@@ -9,6 +9,7 @@ import { EditorialRoomBanner } from '@/components/editorial-room-banner';
 import { SystemRoomContext } from '@/components/system-room-context';
 import { SystemExpansionDock } from '@/components/system-expansion-dock';
 import { DeepWorkspaceCanvas } from '@/components/deep-workspace-canvas';
+import { RoomActionConsole } from '@/components/room-action-console';
 
 function roomFor(pathname: string) {
   if (pathname.startsWith('/beauty/lab')) return 'beauty-lab';
@@ -19,6 +20,7 @@ function roomFor(pathname: string) {
   if (pathname.startsWith('/today')) return 'dashboard';
   if (pathname.startsWith('/habits')) return 'habits';
   if (pathname.startsWith('/fitness')) return 'fitness';
+  if (pathname.startsWith('/food')) return 'food';
   if (pathname.startsWith('/beauty')) return 'beauty';
   if (pathname.startsWith('/hair')) return 'hair';
   if (pathname.startsWith('/wellness')) return 'wellness';
@@ -60,6 +62,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <main className="glow-editorial-page min-h-[calc(100vh-60px)] px-3 pb-8 pt-2 sm:px-5 lg:px-7 lg:pb-10">
               <EditorialRoomBanner />
               <SystemRoomContext />
+              <RoomActionConsole />
               <DeepWorkspaceCanvas />
               {children}
               <SystemExpansionDock />
