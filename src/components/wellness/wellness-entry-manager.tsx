@@ -36,12 +36,24 @@ function signedDelta(value: number | null) {
   return `${rounded > 0 ? '+' : ''}${rounded.toFixed(1)}`;
 }
 
+function stressLabel(value: number | null | undefined) {
+  if (value == null) return '–';
+  return ['Calm', 'Light', 'Moderate', 'High', 'Overwhelmed'][Math.max(0, Math.min(4, value - 1))];
+}
+
 function toolkitForLatest(latest: WellnessEntry | null) {
   if (!latest) {
     return {
       title: 'Start with one check-in',
-      detail: 'Log mood, energy, sleep, and hydration. Glow OS needs a few real days before it can surface useful patterns.',
+      detail: 'Log mood, energy, stress, sleep, and hydration. Glow OS needs a few real days before it can surface useful patterns.',
       label: 'Begin baseline',
+    };
+  }
+  if (latest.stressLevel != null && latest.stressLevel >= 4) {
+    return {
+      title: 'High-stress support',
+      detail: 'Stress is elevated in your latest check-in. Reduce optional load, protect the next transition, and choose one grounding action before adding more.',
+      label: 'Stress support',
     };
   }
   if (latest.sleepHours != null && latest.sleepHours < 6.5) {
@@ -97,12 +109,14 @@ export function WellnessEntryManager({ initialEntries }: { initialEntries: Welln
 
     const sleepValues = recent.flatMap((entry) => entry.sleepHours == null ? [] : [entry.sleepHours]);
     const waterValues = recent.flatMap((entry) => entry.waterGlasses == null ? [] : [entry.waterGlasses]);
+    const stressValues = recent.flatMap((entry) => entry.stressLevel == null ? [] : [entry.stressLevel]);
 
     return {
       hydrationMoodDelta,
       sleepEnergyDelta,
       averageSleep: average(sleepValues),
       averageWater: average(waterValues),
+      averageStress: average(stressValues),
       sampleSize: recent.length,
     };
   }, [entries]);
@@ -129,7 +143,7 @@ export function WellnessEntryManager({ initialEntries }: { initialEntries: Welln
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="glow-eyebrow">Daily check-in</p>
-          <p className="mt-1 text-[9px] text-[#758074]">Mood, energy, sleep, and hydration become more useful when Glow can see them together over time.</p>
+          <p className="mt-1 text-[9px] text-[#758074]">Mood, energy, stress, sleep, and hydration become more useful when Glow can see them together over time.</p>
         </div>
         <Button onClick={() => setDialogEntry('new')} className="flex items-center gap-1.5">
           <Plus size={14} /> Log check-in
@@ -137,7 +151,7 @@ export function WellnessEntryManager({ initialEntries }: { initialEntries: Welln
       </div>
 
       {latest ? (
-        <Card className="grid gap-3 md:grid-cols-4">
+        <Card className="grid gap-3 md:grid-cols-5">
           <div className="rounded-[20px] border p-4" style={{ borderColor: 'var(--glow-border)', background: 'var(--glow-surface-muted)' }}>
             <p className="font-medium" style={{ color: 'var(--glow-text)' }}>Mood</p>
             <p className="mt-2 text-lg font-semibold capitalize text-rose-600 dark:text-rose-400">{latest.mood ?? '–'}</p>
@@ -147,6 +161,11 @@ export function WellnessEntryManager({ initialEntries }: { initialEntries: Welln
             <p className="font-medium" style={{ color: 'var(--glow-text)' }}>Energy</p>
             <p className="mt-2 text-lg font-semibold capitalize text-amber-600 dark:text-amber-400">{latest.energy ?? '–'}</p>
             <p className="mt-1 text-xs" style={{ color: 'var(--glow-text-muted)' }}>Current body signal</p>
+          </div>
+          <div className="rounded-[20px] border p-4" style={{ borderColor: 'var(--glow-border)', background: 'var(--glow-surface-muted)' }}>
+            <p className="font-medium" style={{ color: 'var(--glow-text)' }}>Stress</p>
+            <p className="mt-2 text-lg font-semibold text-violet-600 dark:text-violet-400">{stressLabel(latest.stressLevel)}</p>
+            <p className="mt-1 text-xs" style={{ color: 'var(--glow-text-muted)' }}>{latest.stressLevel != null ? `${latest.stressLevel}/5` : 'Latest check-in'}</p>
           </div>
           <div className="rounded-[20px] border p-4" style={{ borderColor: 'var(--glow-border)', background: 'var(--glow-surface-muted)' }}>
             <p className="font-medium" style={{ color: 'var(--glow-text)' }}>Hydration</p>
@@ -202,6 +221,7 @@ export function WellnessEntryManager({ initialEntries }: { initialEntries: Welln
           </div>
           <div className="mt-3 flex flex-wrap gap-2 text-[8px] text-[#7b8778]">
             <span className="rounded-full bg-[#edf1ea] px-3 py-1.5">{insights.sampleSize} recent check-ins</span>
+            <span className="rounded-full bg-[#edf1ea] px-3 py-1.5">Avg stress {insights.averageStress == null ? '—' : `${insights.averageStress.toFixed(1)}/5`}</span>
             <span className="rounded-full bg-[#edf1ea] px-3 py-1.5">Avg sleep {insights.averageSleep == null ? '—' : `${insights.averageSleep.toFixed(1)}h`}</span>
             <span className="rounded-full bg-[#edf1ea] px-3 py-1.5">Avg water {insights.averageWater == null ? '—' : `${insights.averageWater.toFixed(1)} glasses`}</span>
           </div>
@@ -240,6 +260,7 @@ export function WellnessEntryManager({ initialEntries }: { initialEntries: Welln
               <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--glow-text-muted)' }}>
                 {entry.mood && <span className="capitalize">{entry.mood}</span>}
                 {entry.energy && <span className="capitalize">{entry.energy}</span>}
+                {entry.stressLevel != null && <span>{entry.stressLevel}/5 stress</span>}
                 {entry.sleepHours != null && <span>{entry.sleepHours}h sleep</span>}
                 {entry.waterGlasses != null && <span>{entry.waterGlasses} glasses</span>}
                 <button type="button" onClick={() => setDialogEntry(entry)} aria-label="Edit entry" className="rounded-full p-1 transition hover:opacity-70">
