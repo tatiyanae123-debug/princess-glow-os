@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, lte } from 'drizzle-orm';
 import { db } from '@/db';
 import { glowNotices } from '@/db/schema/interconnected-os';
 import { buildCrossSystemSnapshot } from '@/lib/intelligence/cross-system';
@@ -8,6 +8,8 @@ import { buildCrossSystemSnapshot } from '@/lib/intelligence/cross-system';
 export type GlowNoticeFeedback = 'helpful' | 'not_helpful';
 
 export async function ensureGlowNotices(userId:string){
+  const now=new Date();
+  await db.update(glowNotices).set({status:'active',snoozedUntil:null}).where(and(eq(glowNotices.userId,userId),eq(glowNotices.status,'snoozed'),lte(glowNotices.snoozedUntil,now)));
   const snapshot=await buildCrossSystemSnapshot(userId,'observations');
   const existing=await db.select().from(glowNotices).where(and(eq(glowNotices.userId,userId),eq(glowNotices.status,'active')));
   const titles=new Set(existing.map(x=>x.title));
