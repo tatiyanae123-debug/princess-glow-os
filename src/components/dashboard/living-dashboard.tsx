@@ -1,803 +1,198 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { ArrowDown, ArrowUp, CalendarDays, FolderKanban, ListChecks, Sparkles, User, Mail, Dumbbell, UploadCloud, Link2 } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { CustomizableVisual } from '@/components/ui/customizable-visual';
-import type { DashboardWidgetId, LivingDashboardData } from '@/lib/dashboard/types';
-import { DEFAULT_WIDGET_ORDER } from '@/lib/dashboard/types';
-import { useGlow } from '@/lib/context/glow-provider';
-import { CreateTaskFromEmailButton } from '@/components/dashboard/create-task-from-email-button';
+import Link from 'next/link';
+import {
+  ArrowRight,
+  CalendarDays,
+  CheckCircle2,
+  Clock3,
+  Crown,
+  Droplets,
+  Heart,
+  ListChecks,
+  PiggyBank,
+  Sparkles,
+  Star,
+  SunMedium,
+} from 'lucide-react';
+import { MoodBoard } from '@/components/dashboard/mood-board';
+import type { LivingDashboardData } from '@/lib/dashboard/types';
 
-const WIDGET_STORAGE_KEY = 'living-dashboard-widget-order-v1';
-
-type WidgetDescriptor = {
-  id: DashboardWidgetId;
-  label: string;
-  render: () => React.ReactNode;
-};
-
-function formatPriority(priority: string) {
-  return priority.replace('_', ' ').replace(/^\w/, (char) => char.toUpperCase());
+function time(value: Date | null) {
+  if (!value) return 'Any time';
+  return value.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
-function formatTime(date: Date | null) {
-  if (!date) return 'No time set';
-  return date.toLocaleTimeString('en', { hour: 'numeric', minute: '2-digit' });
+function dateLabel(value: Date | null) {
+  if (!value) return '';
+  return value.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function formatWorkTime(timeValue: string) {
-  return timeValue.slice(0, 5);
+function Surface({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  return <section className={`overflow-hidden rounded-[12px] border border-[#eaded6] bg-[#fffaf6]/72 shadow-[0_12px_36px_rgba(91,62,53,.045)] backdrop-blur-[2px] ${className}`}>{children}</section>;
 }
 
-function isValidWidgetOrder(value: unknown): value is DashboardWidgetId[] {
-  if (!Array.isArray(value) || value.length !== DEFAULT_WIDGET_ORDER.length) return false;
-  const valueSet = new Set(value);
-  if (valueSet.size !== DEFAULT_WIDGET_ORDER.length) return false;
-  return DEFAULT_WIDGET_ORDER.every((widgetId) => valueSet.has(widgetId));
+function Heading({ title, href, action = 'View all' }: { title: string; href?: string; action?: string }) {
+  return (
+    <div className="flex items-center justify-between border-b border-[#eee3dc] px-4 py-3">
+      <h2 className="text-[9px] font-semibold uppercase tracking-[.13em] text-[#594a44]">{title}</h2>
+      {href ? <Link href={href} className="text-[8px] text-[#a27b79] hover:text-[#bd727c]">{action}</Link> : null}
+    </div>
+  );
+}
+
+function Stat({ href, icon, label, value, note }: { href: string; icon: React.ReactNode; label: string; value: string; note: string }) {
+  return (
+    <Link href={href} className="group flex min-h-[78px] items-center gap-3 px-4 py-3 transition hover:bg-[#faefed]/70">
+      <div className="shrink-0">{icon}</div>
+      <div className="min-w-0">
+        <p className="text-[7px] font-semibold uppercase tracking-[.13em] text-[#917d75]">{label}</p>
+        <p className="glow-display mt-1 truncate text-[17px] leading-5 text-[#342a27]">{value}</p>
+        <p className="mt-1 truncate text-[8px] text-[#927f77]">{note}</p>
+      </div>
+    </Link>
+  );
 }
 
 export function LivingDashboard({ data, error }: { data: LivingDashboardData; error?: string }) {
-  const [widgetOrder, setWidgetOrder] = useState<DashboardWidgetId[]>(DEFAULT_WIDGET_ORDER);
-  const [isPreferencesLoading, setIsPreferencesLoading] = useState(true);
-  const { isCustomizing, markChanged, updateVisual, getVisualSrc, getVisualPosition, createObjectUrl } = useGlow();
-
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(WIDGET_STORAGE_KEY);
-      if (!raw) { setIsPreferencesLoading(false); return; }
-      const parsed = JSON.parse(raw);
-      if (isValidWidgetOrder(parsed)) setWidgetOrder(parsed);
-    } catch {
-      window.localStorage.removeItem(WIDGET_STORAGE_KEY);
-    } finally {
-      setIsPreferencesLoading(false);
-    }
-  }, []);
-
-  const moveWidget = (widgetId: DashboardWidgetId, direction: 'up' | 'down') => {
-    setWidgetOrder((current) => {
-      const currentIndex = current.indexOf(widgetId);
-      if (currentIndex === -1) return current;
-      const swapIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-      if (swapIndex < 0 || swapIndex >= current.length) return current;
-      const next = [...current];
-      const target = next[swapIndex];
-      next[swapIndex] = widgetId;
-      next[currentIndex] = target;
-      window.localStorage.setItem(WIDGET_STORAGE_KEY, JSON.stringify(next));
-      return next;
-    });
-  };
-
-  const widgets = useMemo<WidgetDescriptor[]>(
-    () => [
-      {
-        id: 'today-overview',
-        label: 'Today overview',
-        render: () => (
-          <Card>
-            <div className="flex items-center gap-2 mb-4" style={{ color: 'var(--glow-accent)' }}>
-              <Sparkles size={15} />
-              <p className="text-xs font-semibold uppercase tracking-[0.3em]">Today overview</p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                { label: 'Tasks due', value: data.todayOverview.tasksDueToday },
-                { label: 'Events', value: data.todayOverview.eventsToday },
-                { label: 'Routines now', value: data.todayOverview.activeRoutines },
-                { label: 'Goals active', value: data.todayOverview.activeGoals },
-              ].map((stat) => (
-                <div
-                  key={stat.label}
-                  className="rounded-2xl p-4 transition-all duration-200 hover:opacity-90"
-                  style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)' }}
-                >
-                  <p className="text-xs uppercase tracking-[0.2em]" style={{ color: 'var(--glow-text-muted)' }}>
-                    {stat.label}
-                  </p>
-                  <p
-                    className="mt-2 text-2xl font-semibold"
-                    style={{ fontFamily: 'var(--glow-font-display)', color: 'var(--glow-text)' }}
-                  >
-                    {stat.value}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </Card>
-        ),
-      },
-      {
-        id: 'daily-focus',
-        label: 'Daily focus',
-        render: () => (
-          <Card>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] mb-3" style={{ color: 'var(--glow-accent)' }}>
-              Daily focus
-            </p>
-            {data.dailyFocus ? (
-              <>
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <h2
-                    className="text-2xl font-semibold"
-                    style={{ fontFamily: 'var(--glow-font-display)', color: 'var(--glow-text)' }}
-                  >
-                    {data.dailyFocus.title}
-                  </h2>
-                  <span
-                    className="rounded-full px-3 py-1 text-xs font-medium"
-                    style={{ background: 'var(--glow-accent-soft)', color: 'var(--glow-accent)' }}
-                  >
-                    {formatPriority(data.dailyFocus.priority)}
-                  </span>
-                </div>
-                <p className="mt-2 text-sm leading-7" style={{ color: 'var(--glow-text-muted)' }}>
-                  {data.dailyFocus.note}
-                </p>
-              </>
-            ) : (
-              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                No focus task yet. Add a task to anchor your day.
-              </p>
-            )}
-          </Card>
-        ),
-      },
-      {
-        id: 'top-priority',
-        label: 'Top priority',
-        render: () => (
-          <Card>
-            <div className="flex items-center gap-2 mb-3" style={{ color: 'var(--glow-text-muted)' }}>
-              <ListChecks size={15} />
-              <p className="text-xs font-semibold uppercase tracking-[0.3em]">Top priority</p>
-            </div>
-            {data.topPriorityTasks.length > 0 ? (
-              <div className="space-y-3">
-                {data.topPriorityTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className="rounded-2xl p-4 transition-all duration-200 hover:shadow-sm"
-                    style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)' }}
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="font-semibold" style={{ color: 'var(--glow-text)' }}>{task.title}</p>
-                      <span
-                        className="rounded-full px-3 py-0.5 text-xs font-medium"
-                        style={{ background: 'var(--glow-accent-soft)', color: 'var(--glow-accent)' }}
-                      >
-                        {formatPriority(task.priority)}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                      {task.description ?? 'No notes added.'}
-                    </p>
-                    <p className="mt-2 text-xs" style={{ color: 'var(--glow-text-muted)' }}>
-                      Due: {task.dueDate ? task.dueDate.toLocaleDateString('en') : 'No due date'}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                No active priorities. Your list is clear.
-              </p>
-            )}
-          </Card>
-        ),
-      },
-      {
-        id: 'habit-summary',
-        label: 'Habit summary',
-        render: () => (
-          <Card>
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: 'var(--glow-accent)' }}>
-                Habit summary
-              </p>
-              <span className="text-xs" style={{ color: 'var(--glow-text-muted)' }}>
-                {data.habitSummary.completedToday}/{data.habitSummary.totalHabits} today
-              </span>
-            </div>
-            {data.habitSummary.habits.length > 0 ? (
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {data.habitSummary.habits.map((habit) => (
-                  <div
-                    key={habit.id}
-                    className="flex items-center justify-between gap-2 rounded-2xl p-3"
-                    style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)' }}
-                  >
-                    <div className="flex min-w-0 items-center gap-2">
-                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: habit.color ?? 'var(--glow-accent)' }} />
-                      <p className="truncate text-sm" style={{ color: 'var(--glow-text)' }}>{habit.name}</p>
-                    </div>
-                    <span
-                      className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium"
-                      style={
-                        habit.completedToday
-                          ? { background: 'rgb(16 185 129 / 0.12)', color: 'rgb(5 150 105)' }
-                          : { background: 'var(--glow-accent-soft)', color: 'var(--glow-accent)' }
-                      }
-                    >
-                      {habit.completedToday ? 'Done' : 'Pending'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                No habits yet. Add one to start building your streak.
-              </p>
-            )}
-          </Card>
-        ),
-      },
-      {
-        id: 'routine-summary',
-        label: 'Routine summary',
-        render: () => (
-          <Card>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] mb-3" style={{ color: 'var(--glow-accent)' }}>
-              Routine summary
-            </p>
-            {data.routinesForNow.length > 0 ? (
-              <div className="space-y-3">
-                {data.routinesForNow.map((routine) => (
-                  <div
-                    key={routine.id}
-                    className="rounded-2xl p-4"
-                    style={{ background: 'var(--glow-accent-soft)', border: '1px solid var(--glow-border)' }}
-                  >
-                    <p className="font-semibold" style={{ color: 'var(--glow-text)' }}>{routine.name}</p>
-                    <p className="mt-1 text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                      {routine.description ?? 'No details yet.'}
-                    </p>
-                    <p className="mt-2 text-xs uppercase tracking-[0.15em]" style={{ color: 'var(--glow-accent)' }}>
-                      {formatPriority(routine.timeOfDay)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                No routines for this time window yet.
-              </p>
-            )}
-          </Card>
-        ),
-      },
-      {
-        id: 'beauty-today',
-        label: 'Beauty today',
-        render: () => (
-          <Card>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] mb-3" style={{ color: 'var(--glow-accent)' }}>
-              Beauty today
-            </p>
-            {data.beautyToday.length > 0 ? (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {data.beautyToday.map((step) => (
-                  <div
-                    key={step.id}
-                    className="rounded-2xl p-4"
-                    style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)' }}
-                  >
-                    <p className="font-semibold" style={{ color: 'var(--glow-text)' }}>{step.name}</p>
-                    {step.products && step.products.length > 0 && (
-                      <p className="mt-1 text-sm" style={{ color: 'var(--glow-text-muted)' }}>{step.products.join(', ')}</p>
-                    )}
-                    <p className="mt-2 text-xs uppercase tracking-[0.15em] capitalize" style={{ color: 'var(--glow-accent)' }}>
-                      {step.timeOfDay}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                No beauty steps scheduled for this part of the day.
-              </p>
-            )}
-          </Card>
-        ),
-      },
-      {
-        id: 'wellness-today',
-        label: 'Wellness today',
-        render: () => (
-          <Card>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] mb-3" style={{ color: 'var(--glow-accent)' }}>
-              Wellness today
-            </p>
-            {data.wellnessToday.loggedToday && data.wellnessToday.entry ? (
-              <div className="grid gap-3 sm:grid-cols-3">
-                {[
-                  { label: 'Mood', value: data.wellnessToday.entry.mood ?? '–' },
-                  { label: 'Energy', value: data.wellnessToday.entry.energy ?? '–' },
-                  {
-                    label: 'Sleep',
-                    value: data.wellnessToday.entry.sleepHours != null ? `${data.wellnessToday.entry.sleepHours}h` : '–',
-                  },
-                ].map((stat) => (
-                  <div
-                    key={stat.label}
-                    className="rounded-2xl p-4"
-                    style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)' }}
-                  >
-                    <p className="text-xs uppercase tracking-[0.2em]" style={{ color: 'var(--glow-text-muted)' }}>{stat.label}</p>
-                    <p className="mt-2 text-lg font-semibold capitalize" style={{ color: 'var(--glow-text)' }}>{stat.value}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                No check-in logged today yet. Take a minute to log how you&rsquo;re feeling.
-              </p>
-            )}
-          </Card>
-        ),
-      },
-      {
-        id: 'workout-of-the-day',
-        label: 'Workout of the day',
-        render: () => (
-          <Card>
-            <div className="mb-3 flex items-center gap-2" style={{ color: 'var(--glow-accent)' }}>
-              <Dumbbell size={15} />
-              <p className="text-xs font-semibold uppercase tracking-[0.3em]">{data.workoutOfTheDay.label}</p>
-            </div>
-            <p className="font-semibold" style={{ color: 'var(--glow-text)' }}>{data.workoutOfTheDay.focus}</p>
-            {data.workoutOfTheDay.exercises.length > 0 ? (
-              <ul className="mt-3 flex flex-wrap gap-1.5">
-                {data.workoutOfTheDay.exercises.map((exercise) => (
-                  <li
-                    key={exercise}
-                    className="rounded-full px-2.5 py-1 text-xs"
-                    style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)', color: 'var(--glow-text-muted)' }}
-                  >
-                    {exercise}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-2 text-sm" style={{ color: 'var(--glow-text-muted)' }}>Full rest day — recovery is part of the split.</p>
-            )}
-          </Card>
-        ),
-      },
-      {
-        id: 'google-calendar',
-        label: 'Google Calendar',
-        render: () => (
-          <Card>
-            <div className="mb-3 flex items-center justify-between">
-              <div className="flex items-center gap-2" style={{ color: 'var(--glow-accent)' }}>
-                <CalendarDays size={15} />
-                <p className="text-xs font-semibold uppercase tracking-[0.3em]">Google Calendar</p>
-              </div>
-              {data.googleCalendar.status === 'connected' && (
-                <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: 'var(--glow-accent-soft)', color: 'var(--glow-accent)' }}>
-                  Google
-                </span>
-              )}
-            </div>
-            {data.googleCalendar.status === 'not_connected' && (
-              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                Not connected. Connect Google Calendar from{' '}
-                <a href="/connections" className="underline" style={{ color: 'var(--glow-accent)' }}>Connections</a> to see upcoming events here.
-              </p>
-            )}
-            {data.googleCalendar.status === 'insufficient_scope' && (
-              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                Calendar permission wasn&rsquo;t granted. Reconnect on the Connections page to approve it.
-              </p>
-            )}
-            {data.googleCalendar.status === 'revoked' && (
-              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                Google access expired or was revoked. Reconnect on the Connections page.
-              </p>
-            )}
-            {data.googleCalendar.status === 'error' && (
-              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>Couldn&rsquo;t load Google Calendar right now.</p>
-            )}
-            {data.googleCalendar.status === 'connected' && (
-              data.googleCalendar.events.length > 0 ? (
-                <div className="space-y-2">
-                  {data.googleCalendar.events.slice(0, 5).map((event) => (
-                    <div key={event.id} className="flex items-center justify-between rounded-2xl p-3" style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)' }}>
-                      <p className="truncate text-sm" style={{ color: 'var(--glow-text)' }}>{event.title}</p>
-                      <span className="shrink-0 text-xs" style={{ color: 'var(--glow-text-muted)' }}>
-                        {event.allDay ? 'All day' : formatTime(event.startAt)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>Nothing on your Google Calendar in the next two weeks.</p>
-              )
-            )}
-          </Card>
-        ),
-      },
-      {
-        id: 'gmail-inbox',
-        label: 'Gmail inbox',
-        render: () => (
-          <Card>
-            <div className="mb-3 flex items-center justify-between">
-              <div className="flex items-center gap-2" style={{ color: 'var(--glow-accent)' }}>
-                <Mail size={15} />
-                <p className="text-xs font-semibold uppercase tracking-[0.3em]">Gmail inbox</p>
-              </div>
-              {data.gmailInbox.status === 'connected' && (
-                <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: 'var(--glow-accent-soft)', color: 'var(--glow-accent)' }}>
-                  {data.gmailInbox.unreadCount} unread
-                </span>
-              )}
-            </div>
-            {data.gmailInbox.status === 'not_connected' && (
-              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                Not connected. Connect Gmail from{' '}
-                <a href="/connections" className="underline" style={{ color: 'var(--glow-accent)' }}>Connections</a> to see your inbox summary here.
-              </p>
-            )}
-            {data.gmailInbox.status === 'insufficient_scope' && (
-              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                Gmail permission wasn&rsquo;t granted. Reconnect on the Connections page to approve it.
-              </p>
-            )}
-            {data.gmailInbox.status === 'revoked' && (
-              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                Google access expired or was revoked. Reconnect on the Connections page.
-              </p>
-            )}
-            {data.gmailInbox.status === 'error' && (
-              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>Couldn&rsquo;t load your inbox right now.</p>
-            )}
-            {data.gmailInbox.status === 'connected' && (
-              data.gmailInbox.messages.length > 0 ? (
-                <div className="space-y-2">
-                  {data.gmailInbox.messages.map((message) => (
-                    <div key={message.id} className="rounded-2xl p-3" style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)' }}>
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="truncate text-sm font-medium" style={{ color: 'var(--glow-text)' }}>{message.subject}</p>
-                        {message.unread && <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: 'var(--glow-accent)' }} />}
-                      </div>
-                      <p className="truncate text-xs" style={{ color: 'var(--glow-text-muted)' }}>{message.from}</p>
-                      <div className="mt-2">
-                        <CreateTaskFromEmailButton
-                          messageId={message.id}
-                          threadId={message.threadId}
-                          subject={message.subject}
-                          from={message.from}
-                          snippet={message.snippet}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>Inbox is clear.</p>
-              )
-            )}
-          </Card>
-        ),
-      },
-      {
-        id: 'import-status',
-        label: 'Import status',
-        render: () => (
-          <Card>
-            <div className="mb-3 flex items-center gap-2" style={{ color: 'var(--glow-text-muted)' }}>
-              <UploadCloud size={15} />
-              <p className="text-xs font-semibold uppercase tracking-[0.3em]">Import status</p>
-            </div>
-            {data.importStatus.totalConfirmed > 0 ? (
-              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                {data.importStatus.totalConfirmed} batch{data.importStatus.totalConfirmed === 1 ? '' : 'es'} imported
-                {data.importStatus.lastImportAt && ` · last on ${data.importStatus.lastImportAt.toLocaleDateString('en')}`}
-              </p>
-            ) : (
-              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                No imports yet. Bring in your Glow OS system from{' '}
-                <a href="/import" className="underline" style={{ color: 'var(--glow-accent)' }}>
-                  <span className="inline-flex items-center gap-1"><Link2 size={12} />Import</span>
-                </a>.
-              </p>
-            )}
-          </Card>
-        ),
-      },
-      {
-        id: 'schedule-summary',
-        label: 'Schedule summary',
-        render: () => (
-          <Card>
-            <div className="flex items-center gap-2 mb-4" style={{ color: 'var(--glow-text-muted)' }}>
-              <CalendarDays size={15} />
-              <p className="text-xs font-semibold uppercase tracking-[0.3em]">Schedule summary</p>
-            </div>
-            <div className="grid gap-3 md:grid-cols-2">
-              {[
-                {
-                  title: 'Work schedule',
-                  items: data.todaySchedule.workSlots.map((s) => `${s.title} · ${formatWorkTime(s.startTime)}–${formatWorkTime(s.endTime)}`),
-                  empty: 'No work schedule set for today.',
-                },
-                {
-                  title: 'Calendar events',
-                  items: data.todaySchedule.events.map((e) => `${e.title} · ${e.allDay ? 'All day' : formatTime(e.startAt)}`),
-                  empty: 'No calendar events scheduled today.',
-                },
-              ].map((col) => (
-                <div
-                  key={col.title}
-                  className="rounded-2xl p-4"
-                  style={{ border: '1px solid var(--glow-border)' }}
-                >
-                  <p className="text-sm font-semibold mb-2" style={{ color: 'var(--glow-text)' }}>{col.title}</p>
-                  {col.items.length > 0 ? (
-                    <ul className="space-y-1.5">
-                      {col.items.map((item) => (
-                        <li key={item} className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>{col.empty}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </Card>
-        ),
-      },
-      {
-        id: 'notes-summary',
-        label: 'Notes summary',
-        render: () => (
-          <Card>
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: 'var(--glow-accent)' }}>
-                Notes summary
-              </p>
-              <span className="text-xs" style={{ color: 'var(--glow-text-muted)' }}>
-                {data.notesSummary.pinnedCount} pinned
-              </span>
-            </div>
-            {data.notesSummary.recentNotes.length > 0 ? (
-              <div className="space-y-2">
-                {data.notesSummary.recentNotes.map((note) => (
-                  <div
-                    key={note.id}
-                    className="rounded-2xl p-4"
-                    style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)' }}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="truncate font-medium" style={{ color: 'var(--glow-text)' }}>{note.title}</p>
-                      {note.pinned && (
-                        <span
-                          className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium"
-                          style={{ background: 'var(--glow-accent-soft)', color: 'var(--glow-accent)' }}
-                        >
-                          Pinned
-                        </span>
-                      )}
-                    </div>
-                    {note.content && (
-                      <p className="mt-1 truncate text-sm" style={{ color: 'var(--glow-text-muted)' }}>{note.content}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                No notes yet. Capture your first idea.
-              </p>
-            )}
-          </Card>
-        ),
-      },
-      {
-        id: 'project-status',
-        label: 'Project status',
-        render: () => (
-          <Card>
-            <div className="flex items-center gap-2 mb-4" style={{ color: 'var(--glow-accent)' }}>
-              <FolderKanban size={15} />
-              <p className="text-xs font-semibold uppercase tracking-[0.3em]">Project status</p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              {[
-                { label: 'Goals in progress', value: data.projectStatus.goalsInProgress },
-                { label: 'Goals achieved',    value: data.projectStatus.goalsAchieved },
-                { label: 'Average progress',  value: `${data.projectStatus.averageGoalProgress}%` },
-                { label: 'Active tasks',      value: data.projectStatus.activeTaskCount },
-                { label: 'Completed tasks',   value: data.projectStatus.completedTaskCount },
-              ].map((stat) => (
-                <div
-                  key={stat.label}
-                  className="rounded-2xl p-4"
-                  style={{ background: 'var(--glow-surface-muted)', border: '1px solid var(--glow-border)' }}
-                >
-                  <p className="text-xs" style={{ color: 'var(--glow-text-muted)' }}>{stat.label}</p>
-                  <p
-                    className="mt-2 text-xl font-semibold"
-                    style={{ fontFamily: 'var(--glow-font-display)', color: 'var(--glow-text)' }}
-                  >
-                    {stat.value}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </Card>
-        ),
-      },
-    ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data]
-  );
-
-  const widgetsById = useMemo(() => new Map(widgets.map((widget) => [widget.id, widget])), [widgets]);
-
-  const heroSrc = getVisualSrc('hero');
-  const profileSrc = getVisualSrc('profile');
-  const heroPosition = getVisualPosition('hero');
-  const profilePosition = getVisualPosition('profile');
+  const now = new Date();
+  const habitPercent = data.habitSummary.totalHabits ? Math.round((data.habitSummary.completedToday / data.habitSummary.totalHabits) * 100) : 0;
+  const topTask = data.dailyFocus ?? data.topPriorityTasks[0] ?? null;
+  const water = data.wellnessToday.entry?.waterGlasses ?? 0;
+  const totalTasks = Math.max(data.todayOverview.tasksDueToday, data.topPriorityTasks.length);
+  const completedTasks = Math.min(data.projectStatus.completedTaskCount, Math.max(totalTasks, 1));
+  const scheduled = [
+    ...data.todaySchedule.events.map((event) => ({ id: event.id, title: event.title, start: event.startAt, note: event.location ?? (event.allDay ? 'All day' : 'Calendar') })),
+    ...data.todaySchedule.workSlots.map((slot) => ({ id: slot.id, title: slot.title, start: null, note: `${slot.startTime.slice(0, 5)} – ${slot.endTime.slice(0, 5)}` })),
+  ].slice(0, 5);
+  const upcoming = [...data.todaySchedule.events].sort((a, b) => a.startAt.getTime() - b.startAt.getTime()).slice(0, 4);
+  const greeting = now.getHours() < 12 ? 'morning' : now.getHours() < 17 ? 'afternoon' : 'evening';
 
   return (
-    <div className="space-y-5 animate-fade-in">
-      {/* Hero card */}
-      <Card className="overflow-hidden !p-0">
-        <div className="relative">
-          {/* Hero visual */}
-          <div className="relative h-40 sm:h-52">
-            <CustomizableVisual
-              id="hero"
-              src={heroSrc}
-              alt="Dashboard hero image"
-              aspectRatio="wide"
-              mode={heroSrc ? 'photo' : 'none'}
-              position={heroPosition}
-              editable={isCustomizing}
-              className="absolute inset-0 h-full w-full rounded-none"
-              fallbackIcon={<Sparkles size={40} />}
-              onChange={(v) => {
-                updateVisual({ visualId: 'hero', mode: v.mode, imageUrl: v.imageUrl, position: v.position });
-                markChanged();
-              }}
-              onFileUpload={createObjectUrl}
-            />
-            {/* Gradient overlay */}
-            <div
-              className="absolute inset-0"
-              style={{ background: 'linear-gradient(to bottom, transparent 30%, var(--glow-surface) 100%)' }}
-            />
-          </div>
+    <div className="mx-auto w-full max-w-[1500px] animate-fade-in">
+      {error ? <div className="mb-4 rounded-[10px] border border-amber-200 bg-amber-50/80 px-4 py-3 text-xs text-amber-900">Glow OS is showing the safe dashboard while live data reconnects: {error}</div> : null}
 
-          {/* Profile + greeting */}
-          <div className="flex flex-col gap-4 p-5 pt-0 sm:flex-row sm:items-end sm:justify-between">
-            <div className="flex items-end gap-4 -mt-8">
-              {/* Profile photo */}
-              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full ring-4 ring-[var(--glow-surface)]">
-                <CustomizableVisual
-                  id="profile"
-                  src={profileSrc}
-                  alt="Your profile photo"
-                  aspectRatio="square"
-                  mode={profileSrc ? 'photo' : 'none'}
-                  position={profilePosition}
-                  editable={isCustomizing}
-                  fallbackIcon={<User size={24} />}
-                  onChange={(v) => {
-                    updateVisual({ visualId: 'profile', mode: v.mode, imageUrl: v.imageUrl, position: v.position });
-                    markChanged();
-                  }}
-                  onFileUpload={createObjectUrl}
-                />
+      <div className="mb-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_220px] xl:items-start">
+        <div className="min-w-0">
+          <div className="mb-4 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+            <div>
+              <p className="glow-display text-[34px] leading-none tracking-[-.04em] text-[#322824] sm:text-[42px]">Good {greeting},</p>
+              <div className="mt-1 flex items-center gap-2">
+                <p className="glow-hand text-[55px] leading-none text-[#76524d] sm:text-[64px]">Tatiyana</p>
+                <Crown size={18} className="text-[#b58c58]" />
               </div>
-              <div className="mb-1">
-                <p
-                  className="text-xs font-semibold uppercase tracking-[0.35em]"
-                  style={{ color: 'var(--glow-accent)' }}
-                >
-                  {data.greeting.label}
-                </p>
-                <h1
-                  className="mt-1 text-2xl font-semibold sm:text-3xl"
-                  style={{ fontFamily: 'var(--glow-font-display)', color: 'var(--glow-text)' }}
-                >
-                  {data.greeting.title}
-                </h1>
-              </div>
+              <p className="mt-5 max-w-xl text-[10px] leading-5 text-[#725f57]">{data.greeting.message || 'Anchor one priority early and keep your pace intentional.'}</p>
+              <p className="glow-display mt-3 text-[12px] italic text-[#6a554f]">“Every day is a new chapter of the life you’re creating.”</p>
             </div>
-
-            {/* Week theme */}
-            <div
-              className="shrink-0 rounded-2xl px-4 py-3 text-sm max-w-xs"
-              style={{
-                border: '1px solid var(--glow-border)',
-                background: 'var(--glow-accent-soft)',
-              }}
-            >
-              <p className="font-semibold" style={{ color: 'var(--glow-accent)' }}>{data.weekTheme.title}</p>
-              <p className="mt-1 text-xs leading-5" style={{ color: 'var(--glow-text-muted)' }}>
-                {data.weekTheme.note}
-              </p>
+            <div className="hidden items-center gap-3 sm:flex">
+              <Link href="/briefings" className="rounded-full border border-[#e6d7cf] bg-white/55 p-2.5 text-[#775f57]"><Sparkles size={15}/></Link>
+              <Link href="/settings" className="rounded-full border border-[#e6d7cf] bg-white/55 p-2.5 text-[#775f57]"><SunMedium size={15}/></Link>
             </div>
           </div>
 
-          {/* Greeting message */}
-          <div className="px-5 pb-5">
-            <p className="max-w-2xl text-sm leading-7" style={{ color: 'var(--glow-text-muted)' }}>
-              {data.greeting.message}
-            </p>
-          </div>
+          <Surface className="relative min-h-[420px] bg-[linear-gradient(135deg,#fbf3ee,#f5e7e2_65%,#f3dedf)] p-3 sm:p-4">
+            <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_82%_15%,rgba(255,255,255,.75),transparent_25%),radial-gradient(circle_at_15%_88%,rgba(229,190,194,.2),transparent_30%)]" />
+            <div className="relative h-full min-h-[390px]">
+              <MoodBoard />
+            </div>
+          </Surface>
         </div>
 
-        {error && (
-          <div
-            className="mx-5 mb-5 rounded-2xl border p-3 text-sm"
-            style={{
-              background: 'var(--glow-accent-soft)',
-              borderColor: 'var(--glow-border)',
-              color: 'var(--glow-text-muted)',
-            }}
-          >
-            Dashboard data partially unavailable. ({error})
-          </div>
-        )}
-      </Card>
+        <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+          <Surface className="p-4">
+            <p className="glow-display text-[25px] leading-none text-[#342a27]">{now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}</p>
+            <p className="mt-2 text-[9px] text-[#7d6b64]">{now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</p>
+            <div className="mt-4 flex items-center gap-2 border-t border-[#eee3dc] pt-3 text-[9px] text-[#6f5d56]"><SunMedium size={16} className="text-[#b78d59]"/><span>Weather · open details</span></div>
+          </Surface>
 
-      {/* Widgets */}
-      {isPreferencesLoading ? (
-        <Card>
-          <p className="text-sm animate-pulse" style={{ color: 'var(--glow-text-muted)' }}>
-            Loading your dashboard…
-          </p>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {widgetOrder.map((widgetId, index) => {
-            const widget = widgetsById.get(widgetId);
-            if (!widget) return null;
-            return (
-              <section key={widgetId} className="space-y-1.5 animate-fade-in" style={{ animationDelay: `${index * 40}ms` }}>
-                <div className="flex items-center justify-between px-1">
-                  <p className="text-[10px] uppercase tracking-[0.25em]" style={{ color: 'var(--glow-text-muted)' }}>
-                    {widget.label}
-                  </p>
-                  <div className="flex items-center gap-0.5">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="h-7 w-7 rounded-full p-0 text-xs"
-                      onClick={() => moveWidget(widgetId, 'up')}
-                      disabled={index === 0}
-                      aria-label={`Move ${widget.label} up`}
-                    >
-                      <ArrowUp size={12} />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="h-7 w-7 rounded-full p-0 text-xs"
-                      onClick={() => moveWidget(widgetId, 'down')}
-                      disabled={index === widgetOrder.length - 1}
-                      aria-label={`Move ${widget.label} down`}
-                    >
-                      <ArrowDown size={12} />
-                    </Button>
-                  </div>
-                </div>
-                {widget.render()}
-              </section>
-            );
-          })}
+          <Surface className="p-4">
+            <p className="text-[8px] font-semibold uppercase tracking-[.14em] text-[#8c7770]">Today&apos;s Focus</p>
+            <div className="mt-3 space-y-3">
+              {[topTask?.title ?? 'Choose one meaningful priority','Discipline over pressure','Soft life, clear actions'].map((item)=><div key={item} className="flex items-start gap-2 text-[9px] leading-4 text-[#5f4e48]"><CheckCircle2 size={13} className="mt-0.5 shrink-0 text-[#cf8e96]"/><span>{item}</span></div>)}
+            </div>
+          </Surface>
+
+          <Surface className="p-4">
+            <p className="text-[8px] font-semibold uppercase tracking-[.14em] text-[#8c7770]">Ritual of the Day</p>
+            <p className="glow-display mt-3 text-[17px] text-[#3e312d]">{data.routinesForNow[0]?.name ?? data.beautyToday[0]?.name ?? 'Evening Wind-Down'}</p>
+            <p className="mt-1 text-[8px] text-[#8e7770]">Your current ritual, ready when you are.</p>
+            <div className="mt-4 h-2 rounded-full bg-[#eadfda]"><div className="h-full w-[72%] rounded-full bg-[#d58f9a]"/></div>
+            <Link href="/beauty" className="mt-4 flex items-center justify-center gap-1 rounded-[7px] bg-[#d58f9a] px-3 py-2.5 text-[9px] font-medium text-white">Continue Ritual <ArrowRight size={10}/></Link>
+          </Surface>
         </div>
-      )}
+      </div>
+
+      <Surface className="mb-4">
+        <div className="grid divide-y divide-[#eee3dc] sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-5 lg:divide-x lg:divide-[#eee3dc]">
+          <Stat href="/tasks" icon={<Star size={20} className="text-[#c77d86]"/>} label="Top Priority" value={topTask?.title ?? 'Choose your focus'} note="Due today"/>
+          <Stat href="/tasks" icon={<ListChecks size={20} className="text-[#b98377]"/>} label="Tasks Today" value={`${completedTasks} / ${totalTasks}`} note={`${totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0}% complete`}/>
+          <Stat href="/habits" icon={<Sparkles size={20} className="text-[#c77784]"/>} label="Habit Score" value={`${habitPercent}%`} note="Keep your rhythm"/>
+          <Stat href="/planning" icon={<Clock3 size={20} className="text-[#c28a72]"/>} label="Focus Time" value="Plan" note="Shape your next block"/>
+          <Stat href="/wellness" icon={<Droplets size={20} className="text-[#83afc0]"/>} label="Water" value={`${water} / 8`} note="glasses"/>
+        </div>
+      </Surface>
+
+      <div className="grid gap-4 xl:grid-cols-[1fr_1fr_1fr_1.05fr]">
+        <Surface>
+          <Heading title="Today's Plan" href="/planning" action="View full plan"/>
+          <div className="p-3">
+            {scheduled.length ? scheduled.map((item,index)=><Link href="/calendar" key={`${item.id}-${index}`} className="grid grid-cols-[56px_1fr] gap-2 rounded-[7px] px-2 py-2.5 transition hover:bg-[#f9ecec]"><p className="text-[8px] font-semibold text-[#77645d]">{item.start ? time(item.start) : item.note.split('–')[0]}</p><div><p className="text-[9px] font-medium text-[#3b302c]">{item.title}</p><p className="mt-0.5 truncate text-[7px] text-[#917d75]">{item.note}</p></div></Link>) : <p className="px-3 py-8 text-center text-[9px] text-[#917d75]">Your day is open.</p>}
+          </div>
+        </Surface>
+
+        <Surface>
+          <Heading title="Upcoming" href="/calendar" action="View calendar"/>
+          <div className="p-3">
+            {upcoming.length ? upcoming.map((event)=><Link key={event.id} href="/calendar" className="grid grid-cols-[54px_1fr_12px] items-center gap-2 border-b border-[#eee5df] px-2 py-3 last:border-0"><p className="text-[8px] font-semibold text-[#77645d]">{time(event.startAt)}</p><div><p className="text-[9px] font-medium text-[#3b302c]">{event.title}</p><p className="mt-0.5 text-[7px] text-[#917d75]">{event.location ?? dateLabel(event.startAt)}</p></div><ArrowRight size={9} className="text-[#c7b6ae]"/></Link>) : <p className="px-3 py-8 text-center text-[9px] text-[#917d75]">Nothing urgent coming up.</p>}
+          </div>
+        </Surface>
+
+        <Surface>
+          <Heading title="Today's Meals" href="/food" action="View meal plan"/>
+          <div className="space-y-2 p-4">
+            {[['Breakfast','Plan breakfast'],['Lunch','Plan lunch'],['Dinner','Plan dinner']].map(([meal,label])=><Link href="/food" key={meal} className="flex items-center gap-3 rounded-[8px] bg-[#faf0eb]/65 p-2.5"><div className="h-9 w-9 rounded-[8px] bg-[radial-gradient(circle_at_35%_35%,#efd2b4,transparent_30%),linear-gradient(145deg,#d9b69b,#8f745f)]"/><div><p className="text-[7px] uppercase tracking-[.12em] text-[#9b8074]">{meal}</p><p className="mt-0.5 text-[9px] font-medium text-[#4a3b35]">{label}</p></div></Link>)}
+          </div>
+        </Surface>
+
+        <Surface>
+          <Heading title="Habit Tracker" href="/habits" action="View habits"/>
+          <div className="p-4">
+            <div className="space-y-3">
+              {['Morning Routine','Workout','Water','Skincare AM','No Spend Day'].map((habit,index)=><div key={habit} className="grid grid-cols-[1fr_auto] items-center gap-3"><p className="text-[8px] text-[#5f4e48]">{habit}</p><div className="flex gap-1">{Array.from({length:6}).map((_,i)=><span key={i} className={`h-3 w-3 rounded-full border ${i < Math.max(1, Math.min(6, Math.round((habitPercent/100)*6) + (index%2))) ? 'border-[#cf9299] bg-[#dfa5aa]' : 'border-[#ddcec8] bg-transparent'}`}/>)}</div></div>)}
+            </div>
+            <div className="mt-5 flex items-center justify-between border-t border-[#eee3dc] pt-3"><p className="text-[8px] text-[#8f7a73]">Today</p><p className="glow-display text-[17px] text-[#4b3a35]">{habitPercent}%</p></div>
+          </div>
+        </Surface>
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-[1.35fr_.85fr]">
+        <Surface className="p-4">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[#d88f99] text-white"><Sparkles size={17}/></div>
+              <div><p className="text-[8px] font-semibold uppercase tracking-[.14em] text-[#7c6760]">Glow Intelligence</p><p className="mt-1 text-[10px] leading-5 text-[#51413b]">You have a full life system around you. Use Brain to decide the next best move without searching every room.</p></div>
+            </div>
+            <Link href="/brain" className="shrink-0 rounded-[7px] bg-[#d58f9a] px-5 py-2.5 text-center text-[9px] font-medium text-white">Do It For Me ✨</Link>
+          </div>
+        </Surface>
+
+        <Surface className="p-4">
+          <div className="flex flex-wrap gap-2">
+            {[['Build My Day','/planning'],['Plan My Meals','/food'],['Grocery List','/food'],['Prepare My Reset','/routines']].map(([label,href])=><Link key={label} href={href} className="rounded-full border border-[#e6d7cf] bg-white/55 px-3 py-2 text-[8px] text-[#806861] transition hover:bg-[#f7e8e7]">{label}</Link>)}
+          </div>
+        </Surface>
+      </div>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <Surface className="p-4"><p className="text-[8px] uppercase tracking-[.13em] text-[#8f7972]">Workout Plan</p><p className="glow-display mt-2 text-[17px] text-[#3e312d]">{data.workoutOfTheDay.label || 'Movement for today'}</p><p className="mt-2 text-[8px] leading-4 text-[#857069]">{data.workoutOfTheDay.focus || 'Open Fitness to choose the session that fits your time and energy.'}</p><Link href="/fitness" className="mt-4 inline-flex items-center gap-1 text-[8px] text-[#b07078]">Start workout <ArrowRight size={9}/></Link></Surface>
+        <Surface className="p-4"><p className="text-[8px] uppercase tracking-[.13em] text-[#8f7972]">Beauty OS</p><p className="glow-display mt-2 text-[17px] text-[#3e312d]">Today&apos;s beauty ritual</p><p className="mt-2 text-[8px] leading-4 text-[#857069]">{data.beautyToday.length ? `${data.beautyToday.length} beauty steps are ready.` : 'Your beauty room is ready for today.'}</p><Link href="/beauty" className="mt-4 inline-flex items-center gap-1 text-[8px] text-[#b07078]">View routine <ArrowRight size={9}/></Link></Surface>
+        <Surface className="p-4"><p className="text-[8px] uppercase tracking-[.13em] text-[#8f7972]">Finance Overview</p><div className="mt-3 flex items-center gap-3"><PiggyBank size={28} className="text-[#9cae92]"/><div><p className="glow-display text-[17px] text-[#3e312d]">Money room</p><p className="text-[8px] text-[#857069]">Budget, spending and savings live together.</p></div></div><Link href="/finance" className="mt-4 inline-flex items-center gap-1 text-[8px] text-[#b07078]">View finances <ArrowRight size={9}/></Link></Surface>
+        <Surface className="p-4"><p className="text-[8px] uppercase tracking-[.13em] text-[#8f7972]">Tomorrow Preview</p><div className="mt-3 flex items-center gap-3"><CalendarDays size={26} className="text-[#b28d79]"/><div><p className="glow-display text-[17px] text-[#3e312d]">Prepare gently</p><p className="text-[8px] text-[#857069]">Move unfinished work and protect tomorrow.</p></div></div><Link href="/tomorrow" className="mt-4 inline-flex items-center gap-1 text-[8px] text-[#b07078]">Prepare tomorrow <ArrowRight size={9}/></Link></Surface>
+      </div>
+
+      <Surface className="mt-4 bg-[linear-gradient(90deg,#f1dfda,#fbf5ef,#f2e0dc)] px-5 py-4">
+        <div className="flex items-center justify-center gap-3 text-center"><Heart size={13} className="text-[#b8757e]"/><p className="glow-display text-[14px] italic text-[#624f48]">You are becoming everything you prayed for.</p><Heart size={13} className="text-[#b8757e]"/></div>
+      </Surface>
     </div>
   );
 }

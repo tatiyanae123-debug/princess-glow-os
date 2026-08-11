@@ -4,17 +4,20 @@ import Google from 'next-auth/providers/google';
 import { db } from '@/db';
 import { users, accounts, sessions, verificationTokens } from '@/db/schema/auth';
 
+const PRODUCTION_AUTH_PROXY_URL = 'https://princess-glow-os.vercel.app/api/auth';
+
 function getDeploymentBaseUrl(baseUrl: string) {
-  if (process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
+  if (process.env.VERCEL_ENV === 'preview') {
+    const previewHost = process.env.VERCEL_BRANCH_URL ?? process.env.VERCEL_URL;
+    if (previewHost) return `https://${previewHost}`;
   }
 
   return baseUrl;
 }
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
   trustHost: true,
-  secret: process.env.AUTH_SECRET,
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
@@ -23,16 +26,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   }),
   providers: [
     Google({
-      // Vercel can omit runtime-only secrets while Next.js is collecting page data
-      // for route handlers. Auth.js reads these values when a request is served,
-      // so keep module evaluation side-effect free and let runtime configuration
-      // supply the real Preview/Production credentials.
       clientId: process.env.PRINCESS_GOOGLE_CLIENT_ID ?? '',
       clientSecret: process.env.PRINCESS_GOOGLE_CLIENT_SECRET ?? '',
+      redirectProxyUrl: process.env.VERCEL_ENV === 'preview' ? PRODUCTION_AUTH_PROXY_URL : undefined,
       authorization: {
         params: {
           access_type: 'offline',
           prompt: 'consent',
+          include_granted_scopes: 'true',
           scope: [
             'openid',
             'email',
@@ -52,12 +53,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const isLoggedIn = !!session?.user;
       const isOnSignIn = nextUrl.pathname === '/sign-in';
       const isApiAuth = nextUrl.pathname.startsWith('/api/auth');
+
       if (isLoggedIn && isOnSignIn) {
         return Response.redirect(new URL('/dashboard', nextUrl));
       }
+
       if (!isLoggedIn && !isOnSignIn && !isApiAuth) {
         return Response.redirect(new URL('/sign-in', nextUrl));
       }
+
       return true;
     },
     redirect({ url, baseUrl }) {
@@ -86,4 +90,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
-});
+}));

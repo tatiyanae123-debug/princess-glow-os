@@ -14,6 +14,7 @@ export const wellnessEntries = pgTable(
     entryDate: date('entry_date').notNull(),
     mood: moodEnum('mood'),
     energy: energyEnum('energy'),
+    stressLevel: integer('stress_level'),
     sleepHours: real('sleep_hours'),
     waterGlasses: integer('water_glasses'),
     notes: text('notes'),
