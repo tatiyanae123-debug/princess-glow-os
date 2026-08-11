@@ -11,10 +11,7 @@ export type UniversalIntakeState = {
   uploadedName?: string;
 };
 
-export const initialUniversalIntakeState: UniversalIntakeState = {
-  status: 'idle',
-  message: '',
-};
+export const initialUniversalIntakeState: UniversalIntakeState = { status: 'idle', message: '' };
 
 async function userId(){const session=await auth();if(!session?.user?.id)redirect('/sign-in');return session.user.id;}
 
@@ -22,17 +19,18 @@ async function processUniversalIntake(formData:FormData):Promise<UniversalIntake
   const id=await userId();
   const text=String(formData.get('text')??'').trim();
   const note=String(formData.get('note')??'').trim();
+  const sourceRoute=String(formData.get('sourceRoute')??'').trim()||undefined;
   const file=formData.get('file');
   try {
     if(file instanceof File&&file.size>0){
-      await ingestFile(id,file,note||text);
-      revalidatePath('/intake');revalidatePath('/inbox');revalidatePath('/today');
-      return {status:'success',message:`${file.name} was uploaded and added to Glow Inbox.`,uploadedName:file.name};
+      await ingestFile(id,file,note||text,{sourceRoute});
+      ['/intake','/inbox','/today','/dashboard',sourceRoute].filter(Boolean).forEach(path=>revalidatePath(String(path)));
+      return {status:'success',message:`${file.name} was uploaded, understood and added to Glow Inbox.`,uploadedName:file.name};
     }
     if(text){
-      await ingestText(id,text);
-      revalidatePath('/intake');revalidatePath('/inbox');revalidatePath('/today');
-      return {status:'success',message:'Your text was added to Glow Inbox.'};
+      await ingestText(id,text,{sourceRoute});
+      ['/intake','/inbox','/today','/dashboard',sourceRoute].filter(Boolean).forEach(path=>revalidatePath(String(path)));
+      return {status:'success',message:'Glow understood your text and added it to Glow Inbox.'};
     }
     return {status:'error',message:'Choose a file or paste something before sending it to Glow.'};
   } catch(error){
@@ -41,10 +39,5 @@ async function processUniversalIntake(formData:FormData):Promise<UniversalIntake
   }
 }
 
-export async function universalIntakeAction(formData:FormData):Promise<void>{
-  await processUniversalIntake(formData);
-}
-
-export async function universalIntakeFormAction(_previousState:UniversalIntakeState,formData:FormData):Promise<UniversalIntakeState>{
-  return processUniversalIntake(formData);
-}
+export async function universalIntakeAction(formData:FormData):Promise<void>{ await processUniversalIntake(formData); }
+export async function universalIntakeFormAction(_previousState:UniversalIntakeState,formData:FormData):Promise<UniversalIntakeState>{ return processUniversalIntake(formData); }
