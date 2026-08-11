@@ -25,6 +25,10 @@ function optionalDate(raw: string) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+function memoryPrivacy(raw: string) {
+  return raw === 'sensitive' || raw === 'private' ? raw : 'private';
+}
+
 export async function prepareAppleReminderBridgeAction() {
   const userId = await requireUser();
   const key = await prepareAppleReminderBridge(userId);
@@ -60,8 +64,37 @@ export async function createLifeMemoryAction(formData: FormData): Promise<void> 
     source: 'manual',
     summary: text(formData, 'summary').slice(0, 2000) || null,
     relatedArea: text(formData, 'relatedArea').slice(0, 120) || null,
-    privacyLevel: 'private',
+    relatedProjectId: text(formData, 'relatedProjectId').slice(0, 120) || null,
+    privacyLevel: memoryPrivacy(text(formData, 'privacyLevel')),
+    pinned: formData.get('pinned') === 'on',
   });
+  revalidatePath('/memory');
+}
+
+export async function updateLifeMemoryAction(id: string, formData: FormData): Promise<void> {
+  const userId = await requireUser();
+  const title = text(formData, 'title');
+  if (!title) return;
+  await db
+    .update(lifeMemories)
+    .set({
+      title: title.slice(0, 300),
+      category: (text(formData, 'category') || 'personal').slice(0, 80),
+      summary: text(formData, 'summary').slice(0, 2000) || null,
+      relatedArea: text(formData, 'relatedArea').slice(0, 120) || null,
+      relatedProjectId: text(formData, 'relatedProjectId').slice(0, 120) || null,
+      privacyLevel: memoryPrivacy(text(formData, 'privacyLevel')),
+    })
+    .where(and(eq(lifeMemories.id, id), eq(lifeMemories.userId, userId)));
+  revalidatePath('/memory');
+}
+
+export async function setLifeMemoryPinnedAction(id: string, pinned: boolean): Promise<void> {
+  const userId = await requireUser();
+  await db
+    .update(lifeMemories)
+    .set({ pinned })
+    .where(and(eq(lifeMemories.id, id), eq(lifeMemories.userId, userId)));
   revalidatePath('/memory');
 }
 
