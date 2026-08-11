@@ -113,6 +113,7 @@
 }
 
 .reference-room [data-glow-voice-open] { touch-action:manipulation; }
+.glow-image-edit-target { outline:3px solid rgba(201,130,141,.82) !important; outline-offset:3px; cursor:pointer !important; filter:saturate(1.05) brightness(1.02); }
 
 @media (max-width:1279px) {
   .ref-horizontal-rail {
