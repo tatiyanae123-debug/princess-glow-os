@@ -47,7 +47,7 @@ function literalInternalLinks(){
 function configuredLinks(){
   const links:Array<{source:string;href:string}>=navItems.map(item=>({source:`navigation:${item.label}`,href:item.href}));
   for(const [room,actions] of Object.entries(ROOM_ACTIONS))for(const action of actions)links.push({source:`room-action:${room}:${action.label}`,href:action.href});
-  for(const [room,spec] of Object.entries(DEEP_WORKSPACES))for(const module of spec.modules)if(module.href)links.push({source:`deep-workspace:${room}:${module.title}`,href:module.href});
+  for(const [room,spec] of Object.entries(DEEP_WORKSPACES))for(const workspaceModule of spec.modules)if(workspaceModule.href)links.push({source:`deep-workspace:${room}:${workspaceModule.title}`,href:workspaceModule.href});
   return links;
 }
 
