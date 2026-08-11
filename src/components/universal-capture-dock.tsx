@@ -1,9 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useActionState, useRef, useState } from 'react';
-import { FileImage, Inbox, Paperclip, Plus, Send, Sparkles, X } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { useActionState, useEffect, useRef, useState } from 'react';
+import { CheckCircle2, FileImage, Inbox, Paperclip, Plus, Send, Sparkles, X, XCircle } from 'lucide-react';
 import { initialUniversalIntakeState, universalIntakeFormAction } from '@/app/actions/universal-intake';
+
+const MAX_FILE_BYTES=3*1024*1024;
 
 function formatBytes(bytes:number){
   if(bytes < 1024) return `${bytes} B`;
@@ -12,28 +15,53 @@ function formatBytes(bytes:number){
 }
 
 export function UniversalCaptureDock(){
+  const pathname=usePathname();
   const [open,setOpen]=useState(false);
   const [selected,setSelected]=useState<{name:string;size:number}|null>(null);
+  const [clientError,setClientError]=useState('');
   const [state,formAction,pending]=useActionState(universalIntakeFormAction,initialUniversalIntakeState);
   const fileRef=useRef<HTMLInputElement>(null);
+  const formRef=useRef<HTMLFormElement>(null);
+
+  useEffect(()=>{
+    if(state.status==='success'){
+      formRef.current?.reset();
+      setSelected(null);
+      setClientError('');
+    }
+  },[state.status,state.message]);
+
+  function onFileChange(event:React.ChangeEvent<HTMLInputElement>){
+    const file=event.target.files?.[0]??null;
+    setClientError('');
+    if(file&&file.size>MAX_FILE_BYTES){
+      setSelected(null);
+      event.target.value='';
+      setClientError(`${file.name} is larger than 3 MB. Choose a smaller file so Glow can safely understand it.`);
+      return;
+    }
+    setSelected(file?{name:file.name,size:file.size}:null);
+  }
 
   return <div className="fixed bottom-4 right-4 z-[80] flex max-w-[calc(100vw-2rem)] flex-col items-end gap-2 sm:bottom-5 sm:right-5">
-    {open ? <div className="w-[min(390px,calc(100vw-2rem))] overflow-hidden rounded-[22px] border border-[#e5d6cd] bg-[#fffaf6]/95 shadow-[0_24px_70px_rgba(66,45,38,.22)] backdrop-blur-xl">
+    {open ? <div className="w-[min(410px,calc(100vw-2rem))] overflow-hidden rounded-[22px] border border-[#e5d6cd] bg-[#fffaf6]/95 shadow-[0_24px_70px_rgba(66,45,38,.22)] backdrop-blur-xl">
       <div className="flex items-start justify-between gap-3 border-b border-[#eee2db] bg-[linear-gradient(120deg,#f8eae7,#fffaf6)] px-4 py-3.5">
-        <div><div className="flex items-center gap-1.5 text-[#a66d75]"><Sparkles size={13}/><p className="text-[8px] font-bold uppercase tracking-[.18em]">Add Anything</p></div><p className="glow-display mt-1 text-[18px] text-[#3e312d]">Send it to Glow once.</p><p className="mt-1 text-[8px] leading-4 text-[#8b756d]">Text, photo, screenshot, PDF, receipt, list, schedule or file. Glow will understand it and propose where it belongs.</p></div>
+        <div><div className="flex items-center gap-1.5 text-[#a66d75]"><Sparkles size={13}/><p className="text-[8px] font-bold uppercase tracking-[.18em]">Add Anything · From {pathname==='/'?'Dashboard':pathname.replace('/','')}</p></div><p className="glow-display mt-1 text-[18px] text-[#3e312d]">Send it to Glow once.</p><p className="mt-1 text-[8px] leading-4 text-[#8b756d]">Text, photo, screenshot, PDF, receipt, recipe, outfit, reminder, schedule or file. Glow analyzes it and proposes where it belongs.</p></div>
         <button type="button" onClick={()=>setOpen(false)} aria-label="Close Add Anything" className="rounded-full border border-[#e4d6cf] bg-white/60 p-1.5 text-[#816c65]"><X size={14}/></button>
       </div>
-      <form action={formAction} className="space-y-3 p-4">
+      <form ref={formRef} action={formAction} className="space-y-3 p-4">
+        <input type="hidden" name="sourceRoute" value={pathname}/>
         <textarea name="text" rows={3} placeholder="Paste or type anything…" className="w-full resize-none rounded-[12px] border border-[#e7d9d1] bg-white/70 px-3 py-2.5 text-[10px] text-[#4c3e38] outline-none placeholder:text-[#a9958d] focus:border-[#d4a1a7]"/>
         <label className="flex cursor-pointer items-center gap-3 rounded-[12px] border border-dashed border-[#d9c7bd] bg-[#fbf3ef] px-3 py-3 transition hover:bg-[#f8e9e7]">
           <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-white text-[#bd7c85]"><FileImage size={16}/></div>
-          <div className="min-w-0 flex-1"><p className="truncate text-[9px] font-medium text-[#54453f]">{selected?.name ?? 'Choose photo or file'}</p><p className="mt-0.5 text-[7px] text-[#958078]">{selected ? `${formatBytes(selected.size)} selected` : 'Images, PDFs, text, CSV, JSON and more · up to 3 MB'}</p></div>
-          <Paperclip size={14} className="text-[#9b837a]"/>
-          <input ref={fileRef} name="file" type="file" className="sr-only" onChange={(event)=>{const file=event.target.files?.[0];setSelected(file?{name:file.name,size:file.size}:null);}}/>
+          <div className="min-w-0 flex-1"><p className="truncate text-[9px] font-medium text-[#54453f]">{selected?.name ?? 'Choose photo or file'}</p><p className="mt-0.5 text-[7px] text-[#958078]">{selected ? `${formatBytes(selected.size)} selected and ready` : 'Images, PDFs, text, CSV, JSON and more · up to 3 MB'}</p></div>
+          {selected?<CheckCircle2 size={14} className="text-emerald-700"/>:<Paperclip size={14} className="text-[#9b837a]"/>}
+          <input ref={fileRef} name="file" type="file" className="sr-only" onChange={onFileChange} accept="image/*,.pdf,.txt,.csv,.json,.md,audio/*,video/*,application/*"/>
         </label>
-        <input name="note" placeholder="Optional context: what is this?" className="w-full rounded-[12px] border border-[#e7d9d1] bg-white/70 px-3 py-2.5 text-[9px] outline-none placeholder:text-[#aa968e] focus:border-[#d4a1a7]"/>
-        {state.status !== 'idle' ? <div className={`rounded-[10px] px-3 py-2 text-[8px] leading-4 ${state.status==='success'?'bg-emerald-50 text-emerald-800':'bg-rose-50 text-rose-800'}`}>{state.message}</div> : null}
-        <button type="submit" disabled={pending} className="flex w-full items-center justify-center gap-2 rounded-[12px] bg-[#302724] px-4 py-3 text-[9px] font-semibold text-white transition hover:bg-[#704c4c] disabled:cursor-wait disabled:opacity-60"><Send size={12}/>{pending?'Understanding + routing…':'Understand + send to Glow Inbox'}</button>
+        <input name="note" placeholder="Optional context: what is this or why does it matter?" className="w-full rounded-[12px] border border-[#e7d9d1] bg-white/70 px-3 py-2.5 text-[9px] outline-none placeholder:text-[#aa968e] focus:border-[#d4a1a7]"/>
+        {clientError?<div role="alert" className="flex items-start gap-2 rounded-[10px] bg-rose-50 px-3 py-2 text-[8px] leading-4 text-rose-800"><XCircle size={12} className="mt-0.5 shrink-0"/>{clientError}</div>:null}
+        {state.status !== 'idle' ? <div role="status" className={`flex items-start gap-2 rounded-[10px] px-3 py-2 text-[8px] leading-4 ${state.status==='success'?'bg-emerald-50 text-emerald-800':'bg-rose-50 text-rose-800'}`}>{state.status==='success'?<CheckCircle2 size={12} className="mt-0.5 shrink-0"/>:<XCircle size={12} className="mt-0.5 shrink-0"/>}{state.message}</div> : null}
+        <button type="submit" disabled={pending||Boolean(clientError)} className="flex w-full items-center justify-center gap-2 rounded-[12px] bg-[#302724] px-4 py-3 text-[9px] font-semibold text-white transition hover:bg-[#704c4c] disabled:cursor-wait disabled:opacity-60"><Send size={12}/>{pending?'Understanding + routing…':'Understand + send to Glow Inbox'}</button>
         <div className="flex items-center justify-between gap-2 border-t border-[#eee3dd] pt-3"><Link href="/intake" className="text-[8px] text-[#95666d]">Open full Intake</Link><Link href="/inbox" className="inline-flex items-center gap-1 text-[8px] text-[#806c65]"><Inbox size={10}/>Glow Inbox</Link></div>
       </form>
     </div> : null}
