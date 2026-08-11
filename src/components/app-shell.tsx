@@ -8,6 +8,7 @@ import { UniversalCaptureDock } from '@/components/universal-capture-dock';
 import { SystemExpansionDock } from '@/components/system-expansion-dock';
 import { ReferenceRoomWorkspace } from '@/components/reference-room-workspace';
 import { GlowVoiceCommand } from '@/components/voice/glow-voice-command';
+import { GlobalImageEditor } from '@/components/media/global-image-editor';
 
 function roomFor(pathname: string) {
   if (pathname.startsWith('/beauty/lab')) return 'beauty-lab';
@@ -67,6 +68,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       <GlowVoiceCommand />
+      <GlobalImageEditor />
       <QuickAdd />
       <UniversalCaptureDock />
     </GlowProvider>
