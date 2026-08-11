@@ -1,28 +1,22 @@
 'use client';
 
-import { useActionState, useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { CheckCircle2, FileText, LoaderCircle, UploadCloud, XCircle } from 'lucide-react';
-import { initialUniversalIntakeState, universalIntakeFormAction } from '@/app/actions/universal-intake';
 
 const MAX_FILE_BYTES = 3 * 1024 * 1024;
+type IntakeState={status:'idle'|'success'|'error';message:string};
 
 export function UniversalIntakeForm(){
-  const [state,action,pending]=useActionState(universalIntakeFormAction,initialUniversalIntakeState);
+  const [state,setState]=useState<IntakeState>({status:'idle',message:''});
+  const [pending,setPending]=useState(false);
   const [selected,setSelected]=useState<File|null>(null);
   const [clientError,setClientError]=useState('');
   const formRef=useRef<HTMLFormElement>(null);
 
-  useEffect(()=>{
-    if(state.status==='success'){
-      formRef.current?.reset();
-      setSelected(null);
-      setClientError('');
-    }
-  },[state.status,state.message]);
-
   function onFileChange(event:React.ChangeEvent<HTMLInputElement>){
     const file=event.target.files?.[0]??null;
     setClientError('');
+    setState({status:'idle',message:''});
     if(file&&file.size>MAX_FILE_BYTES){
       setSelected(null);
       event.target.value='';
@@ -32,7 +26,32 @@ export function UniversalIntakeForm(){
     setSelected(file);
   }
 
-  return <form ref={formRef} action={action} className="rounded-[26px] border border-rose-200/70 bg-[linear-gradient(135deg,rgba(255,248,245,.96),rgba(249,228,232,.75))] p-6 shadow-sm">
+  async function submit(event:React.FormEvent<HTMLFormElement>){
+    event.preventDefault();
+    if(pending||clientError)return;
+    const data=new FormData(event.currentTarget);
+    data.set('sourceRoute','/intake');
+    const text=String(data.get('text')??'').trim();
+    const file=data.get('file');
+    if(!text&&(!(file instanceof File)||file.size===0)){
+      setState({status:'error',message:'Choose a file or paste something before sending it to Glow.'});
+      return;
+    }
+    setPending(true);
+    setState({status:'idle',message:''});
+    try{
+      const response=await fetch('/api/intake',{method:'POST',body:data,credentials:'same-origin'});
+      const payload=await response.json().catch(()=>({ok:false,message:'Glow could not read the upload response.'})) as {ok?:boolean;message?:string};
+      if(!response.ok||!payload.ok)throw new Error(payload.message||`Upload failed (${response.status}).`);
+      setState({status:'success',message:payload.message||'Added to Glow Inbox.'});
+      formRef.current?.reset();
+      setSelected(null);
+      setClientError('');
+    }catch(error){setState({status:'error',message:error instanceof Error?error.message:'Glow could not save that item.'});}
+    finally{setPending(false);}
+  }
+
+  return <form ref={formRef} onSubmit={submit} encType="multipart/form-data" className="rounded-[26px] border border-rose-200/70 bg-[linear-gradient(135deg,rgba(255,248,245,.96),rgba(249,228,232,.75))] p-6 shadow-sm">
     <p className="text-[10px] font-bold uppercase tracking-[.18em] text-rose-700">+ Add Anything</p>
     <textarea name="text" rows={6} placeholder="Paste anything here… a reminder, schedule, appointment, shopping list, project idea, receipt text, link, or brain dump." className="mt-4 w-full resize-none rounded-2xl border border-white/80 bg-white/70 p-4 text-sm text-stone-800 outline-none focus:border-rose-300"/>
     <div className="my-4 flex items-center gap-3 text-[10px] uppercase tracking-[.15em] text-stone-400"><span className="h-px flex-1 bg-stone-200"/>or upload<span className="h-px flex-1 bg-stone-200"/></div>
