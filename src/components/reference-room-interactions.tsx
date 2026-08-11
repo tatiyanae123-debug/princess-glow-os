@@ -30,7 +30,7 @@ export function ReferenceRoomInteractions(){
       const module=quickModule(text);
       event.preventDefault();
       if(module){
-        document.dispatchEvent(new CustomEvent('glow:quick-add',{detail:{module}}));
+        document.dispatchEvent(new Event(`glow:quick-add-${module}`));
         return;
       }
       document.dispatchEvent(new Event('glow:vault-open'));
