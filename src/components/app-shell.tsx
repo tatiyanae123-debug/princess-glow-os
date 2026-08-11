@@ -9,21 +9,25 @@ import { EditorialRoomBanner } from '@/components/editorial-room-banner';
 import { SystemRoomContext } from '@/components/system-room-context';
 import { SystemExpansionDock } from '@/components/system-expansion-dock';
 import { DeepWorkspaceCanvas } from '@/components/deep-workspace-canvas';
+import { GlobalIntakeDock } from '@/components/global-intake-dock';
 
 function roomFor(pathname: string) {
   if (pathname.startsWith('/beauty/lab')) return 'beauty-lab';
   if (pathname.startsWith('/finance/brain')) return 'financial-brain';
   if (pathname.startsWith('/calendar')) return 'calendar';
   if (pathname.startsWith('/tasks')) return 'tasks';
+  if (pathname.startsWith('/routines')) return 'routines';
   if (pathname.startsWith('/planning') || pathname.startsWith('/tomorrow')) return 'planning';
   if (pathname.startsWith('/today')) return 'dashboard';
   if (pathname.startsWith('/habits')) return 'habits';
   if (pathname.startsWith('/fitness')) return 'fitness';
+  if (pathname.startsWith('/food')) return 'food';
   if (pathname.startsWith('/beauty')) return 'beauty';
   if (pathname.startsWith('/hair')) return 'hair';
   if (pathname.startsWith('/wellness')) return 'wellness';
   if (pathname.startsWith('/maintenance')) return 'wellness';
   if (pathname.startsWith('/finance')) return 'finance';
+  if (pathname.startsWith('/goals')) return 'goals';
   if (pathname.startsWith('/projects')) return 'projects';
   if (pathname.startsWith('/brain') || pathname.startsWith('/inbox') || pathname.startsWith('/intake') || pathname.startsWith('/rules')) return 'brain';
   if (pathname.startsWith('/concierge')) return 'concierge';
@@ -68,6 +72,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       <QuickAdd />
+      <GlobalIntakeDock />
     </GlowProvider>
   );
 }
