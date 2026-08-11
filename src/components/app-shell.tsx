@@ -6,6 +6,7 @@ import { GlowProvider } from '@/lib/context/glow-provider';
 import { QuickAdd } from '@/components/quick-add/quick-add';
 import { UniversalCaptureDock } from '@/components/universal-capture-dock';
 import { ReferenceRoomWorkspace } from '@/components/reference-room-workspace';
+import { ReferenceRoomInteractions } from '@/components/reference-room-interactions';
 import { GlowVoiceCommand } from '@/components/voice/glow-voice-command';
 import { GlobalImageEditor } from '@/components/media/global-image-editor';
 import { DataConnectionVault } from '@/components/data-connection-vault';
@@ -65,6 +66,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </div>
+      <ReferenceRoomInteractions />
       <GlowVoiceCommand />
       <GlobalImageEditor />
       <QuickAdd />
