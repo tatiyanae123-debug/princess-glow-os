@@ -5,10 +5,7 @@ import { Sidebar } from '@/components/ui/sidebar';
 import { TopNav } from '@/components/ui/top-nav';
 import { GlowProvider } from '@/lib/context/glow-provider';
 import { QuickAdd } from '@/components/quick-add/quick-add';
-import { EditorialRoomBanner } from '@/components/editorial-room-banner';
-import { SystemRoomContext } from '@/components/system-room-context';
-import { SystemExpansionDock } from '@/components/system-expansion-dock';
-import { DeepWorkspaceCanvas } from '@/components/deep-workspace-canvas';
+import { ImmersiveRoomHero } from '@/components/immersive-room-hero';
 import { RoomActionConsole } from '@/components/room-action-console';
 
 function roomFor(pathname: string) {
@@ -57,22 +54,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Sidebar />
           </div>
           <div className="min-w-0 flex-1">
-            {!isDashboard ? (
-              <div className="px-3 pt-2 sm:px-5 sm:pt-3 lg:px-7 lg:pt-4">
-                <TopNav />
-              </div>
-            ) : null}
-            <main className={isDashboard ? 'min-h-screen px-3 pb-6 pt-3 sm:px-5 lg:px-7 lg:pb-8 lg:pt-5' : 'glow-editorial-page min-h-[calc(100vh-60px)] px-3 pb-8 pt-2 sm:px-5 lg:px-7 lg:pb-10'}>
-              {!isDashboard ? (
-                <>
-                  <EditorialRoomBanner />
-                  <SystemRoomContext />
-                  <RoomActionConsole />
-                  <DeepWorkspaceCanvas />
-                </>
-              ) : null}
-              {children}
-              {!isDashboard ? <SystemExpansionDock /> : null}
+            {!isDashboard ? <div className="px-3 pt-2 sm:px-5 sm:pt-3 lg:px-7 lg:pt-4"><TopNav /></div> : null}
+            <main className={isDashboard ? 'min-h-screen px-3 pb-6 pt-3 sm:px-5 lg:px-7 lg:pb-8 lg:pt-5' : 'min-h-[calc(100vh-60px)] px-3 pb-10 pt-2 sm:px-5 lg:px-7'}>
+              {!isDashboard ? <><ImmersiveRoomHero /><RoomActionConsole /></> : null}
+              <div className={!isDashboard ? 'mx-auto w-full max-w-[1540px] space-y-5' : ''}>{children}</div>
             </main>
           </div>
         </div>
