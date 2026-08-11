@@ -62,7 +62,18 @@ export function QuickAdd() {
       setActiveModule(requested&&MODULE_IDS.has(requested)?requested:null);
     };
     document.addEventListener('glow:quick-add',listener);
-    return()=>document.removeEventListener('glow:quick-add',listener);
+
+    const staticListeners=MODULES.map(({id})=>{
+      const name=`glow:quick-add-${id}`;
+      const handler=()=>{setOpen(true);setActiveModule(id);};
+      document.addEventListener(name,handler);
+      return {name,handler};
+    });
+
+    return()=>{
+      document.removeEventListener('glow:quick-add',listener);
+      staticListeners.forEach(({name,handler})=>document.removeEventListener(name,handler));
+    };
   },[]);
 
   return <>
