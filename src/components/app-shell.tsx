@@ -17,6 +17,7 @@ function roomFor(pathname: string) {
   if (pathname.startsWith('/calendar')) return 'calendar';
   if (pathname.startsWith('/tasks')) return 'tasks';
   if (pathname.startsWith('/planning') || pathname.startsWith('/tomorrow')) return 'planning';
+  if (pathname.startsWith('/routines')) return 'routines';
   if (pathname.startsWith('/today')) return 'dashboard';
   if (pathname.startsWith('/habits')) return 'habits';
   if (pathname.startsWith('/fitness')) return 'fitness';

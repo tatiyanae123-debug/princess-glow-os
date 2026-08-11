@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { BellRing, CalendarDays, CloudSun, FileUp, Inbox, Mail, Sparkles } from 'lucide-react';
+import { BellRing, CalendarDays, FileUp, Inbox, Mail, Sparkles } from 'lucide-react';
+import { LiveWeatherCard } from '@/components/dashboard/live-weather-card';
 import type { LivingDashboardData } from '@/lib/dashboard/types';
 
 function statusLabel(status:LivingDashboardData['googleCalendar']['status']){
@@ -20,12 +21,7 @@ export function DashboardLifeDock({data}:{data:LivingDashboardData}){
       </div>
     </div>
 
-    <div className="rounded-[14px] border border-[#dfe5df] bg-[linear-gradient(145deg,#f6f7ef,#eef3ef)] p-4 shadow-[0_12px_36px_rgba(91,62,53,.04)]">
-      <div className="flex items-center gap-2 text-[#768875]"><CloudSun size={17}/><p className="text-[8px] font-bold uppercase tracking-[.15em]">Weather Context</p></div>
-      <p className="glow-display mt-4 text-[19px] text-[#3d463e]">Weather-aware planning</p>
-      <p className="mt-2 text-[8px] leading-4 text-[#718074]">Glow can use weather for outfits, travel time, workouts, errands and your day plan once Weather is connected.</p>
-      <Link href="/connections" className="mt-4 inline-flex items-center gap-1 rounded-full border border-[#d2ddd1] bg-white/55 px-3 py-2 text-[8px] text-[#667466]">Connect / review Weather →</Link>
-    </div>
+    <LiveWeatherCard />
 
     <div className="rounded-[14px] border border-[#ead8d5] bg-[linear-gradient(145deg,#faeceb,#fff8f4)] p-4 shadow-[0_12px_36px_rgba(91,62,53,.04)]">
       <div className="flex items-center gap-2 text-[#b7747e]"><Sparkles size={15}/><p className="text-[8px] font-bold uppercase tracking-[.15em]">Glow Intake</p></div>
