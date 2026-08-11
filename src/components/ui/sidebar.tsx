@@ -10,7 +10,7 @@ import { THEMES } from '@/lib/themes';
 import { useMemo, useState } from 'react';
 
 const GROUPS: Array<{label:string;paths:string[]}> = [
-  {label:'TODAY',paths:['/dashboard','/today','/tomorrow','/tasks','/calendar','/planning','/briefings']},
+  {label:'TODAY',paths:['/dashboard','/today','/tomorrow','/tasks','/reminders','/calendar','/planning','/briefings']},
   {label:'SELF',paths:['/routines','/habits','/fitness','/wellness','/food','/beauty','/beauty/lab','/hair','/maintenance']},
   {label:'LIFE',paths:['/finance','/finance/brain','/goals','/home','/closet']},
   {label:'CREATE',paths:['/projects','/notes','/resources']},
