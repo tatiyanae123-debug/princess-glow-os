@@ -15,15 +15,17 @@ function roomFor(pathname: string) {
   if (pathname.startsWith('/finance/brain')) return 'financial-brain';
   if (pathname.startsWith('/calendar')) return 'calendar';
   if (pathname.startsWith('/tasks')) return 'tasks';
-  if (pathname.startsWith('/planning')) return 'planning';
+  if (pathname.startsWith('/planning') || pathname.startsWith('/tomorrow')) return 'planning';
+  if (pathname.startsWith('/today')) return 'dashboard';
   if (pathname.startsWith('/habits')) return 'habits';
   if (pathname.startsWith('/fitness')) return 'fitness';
   if (pathname.startsWith('/beauty')) return 'beauty';
   if (pathname.startsWith('/hair')) return 'hair';
   if (pathname.startsWith('/wellness')) return 'wellness';
+  if (pathname.startsWith('/maintenance')) return 'wellness';
   if (pathname.startsWith('/finance')) return 'finance';
   if (pathname.startsWith('/projects')) return 'projects';
-  if (pathname.startsWith('/brain')) return 'brain';
+  if (pathname.startsWith('/brain') || pathname.startsWith('/inbox') || pathname.startsWith('/intake') || pathname.startsWith('/rules')) return 'brain';
   if (pathname.startsWith('/concierge')) return 'concierge';
   if (pathname.startsWith('/observations')) return 'observations';
   if (pathname.startsWith('/memory')) return 'memory';
@@ -32,7 +34,7 @@ function roomFor(pathname: string) {
   if (pathname.startsWith('/closet')) return 'closet';
   if (pathname.startsWith('/world')) return 'world';
   if (pathname.startsWith('/home')) return 'home';
-  if (pathname.startsWith('/notes')) return 'notes';
+  if (pathname.startsWith('/notes') || pathname.startsWith('/resources')) return 'notes';
   if (pathname.startsWith('/connections')) return 'connections';
   if (pathname.startsWith('/gmail')) return 'gmail';
   if (pathname.startsWith('/import')) return 'import';

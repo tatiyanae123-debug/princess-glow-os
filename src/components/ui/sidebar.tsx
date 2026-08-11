@@ -10,11 +10,11 @@ import { THEMES } from '@/lib/themes';
 import { useMemo, useState } from 'react';
 
 const GROUPS: Array<{label:string;paths:string[]}> = [
-  {label:'TODAY',paths:['/dashboard','/today','/tasks','/calendar','/planning','/briefings']},
-  {label:'SELF',paths:['/habits','/fitness','/wellness','/beauty','/beauty/lab','/hair']},
+  {label:'TODAY',paths:['/dashboard','/today','/tomorrow','/tasks','/calendar','/planning','/briefings']},
+  {label:'SELF',paths:['/habits','/fitness','/wellness','/beauty','/beauty/lab','/hair','/maintenance']},
   {label:'LIFE',paths:['/finance','/finance/brain','/goals','/home','/closet']},
   {label:'CREATE',paths:['/projects','/notes','/resources']},
-  {label:'INTELLIGENCE',paths:['/brain','/concierge','/observations','/memory','/timeline']},
+  {label:'INTELLIGENCE',paths:['/brain','/concierge','/observations','/memory','/timeline','/inbox','/intake','/rules']},
   {label:'WORLD',paths:['/world']},
   {label:'SYSTEM',paths:['/gmail','/connections','/import','/settings']},
 ];
