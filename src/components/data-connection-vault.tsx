@@ -1,10 +1,24 @@
 'use client';
 
 import { ChevronDown, Database, ShieldCheck } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 
 export function DataConnectionVault({ children }: { children: React.ReactNode }) {
+  const detailsRef=useRef<HTMLDetailsElement>(null);
+
+  useEffect(()=>{
+    const openVault=()=>{
+      const details=detailsRef.current;
+      if(!details)return;
+      details.open=true;
+      window.requestAnimationFrame(()=>details.scrollIntoView({behavior:'smooth',block:'start'}));
+    };
+    document.addEventListener('glow:vault-open',openVault);
+    return()=>document.removeEventListener('glow:vault-open',openVault);
+  },[]);
+
   return (
-    <details className="data-connection-vault mt-5 overflow-hidden rounded-[18px] border border-[#dfd2cb] bg-[#fffaf6]/88">
+    <details ref={detailsRef} className="data-connection-vault mt-5 overflow-hidden rounded-[18px] border border-[#dfd2cb] bg-[#fffaf6]/88">
       <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 py-3 text-[#4a3b35] sm:px-5">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f1dfdc] text-[#a96372]">
           <Database size={16} />
