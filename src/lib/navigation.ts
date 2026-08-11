@@ -1,5 +1,6 @@
 import {
   Activity,
+  BellRing,
   BrainCircuit,
   CalendarClock,
   CalendarDays,
@@ -39,6 +40,7 @@ export const navItems: NavItem[] = [
   { label:'Maintenance', href:'/maintenance', icon:CalendarClock, description:'See upcoming care and replacement forecasts' },
   { label:'Planning', href:'/planning', icon:PanelsTopLeft, description:'Connect today, week, quarter, and year' },
   { label:'Calendar', href:'/calendar', icon:CalendarDays, description:'Shape the week' },
+  { label:'Reminders', href:'/reminders', icon:BellRing, description:'Bring Apple Reminders into Glow intelligence' },
   { label:'Tasks', href:'/tasks', icon:CheckSquare, description:'Focus on what matters' },
   { label:'Routines', href:'/routines', icon:RefreshCw, description:'Enter adaptive morning, night, reset, and care rituals' },
   { label:'Habits', href:'/habits', icon:Activity, description:'Build steady rituals' },
