@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import './reference-rooms.css';
 
 export const metadata: Metadata = {
   title: 'Princess Glow OS',
