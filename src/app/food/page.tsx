@@ -5,14 +5,14 @@ import { desc, eq, and } from 'drizzle-orm';
 import { AppShell } from '@/components/app-shell';
 import { db } from '@/db';
 import { glowInboxItems } from '@/db/schema/adaptive-os';
-import { CalendarDays, ChefHat, Fridge, PackageOpen, ShoppingBasket, Sparkles, Utensils } from 'lucide-react';
+import { CalendarDays, ChefHat, Refrigerator, PackageOpen, ShoppingBasket, Sparkles, Utensils } from 'lucide-react';
 
 export const dynamic='force-dynamic';
 
 export default async function FoodPage(){
   const session=await auth();
   if(!session?.user?.id)redirect('/sign-in');
-  let captures:typeof glowInboxItems.$inferSelect[]=[];
+  let captures:Array<typeof glowInboxItems.$inferSelect>=[];
   try{
     captures=await db.select().from(glowInboxItems).where(and(eq(glowInboxItems.userId,session.user.id),eq(glowInboxItems.suggestedType,'food'))).orderBy(desc(glowInboxItems.createdAt)).limit(12);
   }catch{}
@@ -28,7 +28,7 @@ export default async function FoodPage(){
     </section>
 
     <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-      {[[Utensils,'Counter','Today’s meals','/planning'],[Fridge,'Fridge','Use-soon inventory','/home'],[PackageOpen,'Pantry','Staples + restock','/home'],[ShoppingBasket,'Groceries','Shopping + receipts','/intake']].map(([Icon,title,descText,href])=>{const I=Icon as typeof Utensils;return <Link href={String(href)} key={String(title)} className="rounded-[18px] border border-[#e8ddd1] bg-white/75 p-5 transition hover:-translate-y-0.5 hover:shadow-md"><I size={18} className="text-[#8d7850]"/><p className="glow-display mt-3 text-[19px] text-[#453931]">{String(title)}</p><p className="mt-2 text-[9px] text-[#7d6a61]">{String(descText)}</p></Link>})}
+      {[[Utensils,'Counter','Today’s meals','/planning'],[Refrigerator,'Fridge','Use-soon inventory','/home'],[PackageOpen,'Pantry','Staples + restock','/home'],[ShoppingBasket,'Groceries','Shopping + receipts','/intake']].map(([Icon,title,descText,href])=>{const I=Icon as typeof Utensils;return <Link href={String(href)} key={String(title)} className="rounded-[18px] border border-[#e8ddd1] bg-white/75 p-5 transition hover:-translate-y-0.5 hover:shadow-md"><I size={18} className="text-[#8d7850]"/><p className="glow-display mt-3 text-[19px] text-[#453931]">{String(title)}</p><p className="mt-2 text-[9px] text-[#7d6a61]">{String(descText)}</p></Link>})}
     </section>
 
     <section className="rounded-[22px] border border-[#e6d9ce] bg-white/70">
