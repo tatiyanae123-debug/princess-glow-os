@@ -10,6 +10,7 @@ import type { Note } from '@/lib/types';
 type NoteFormValues = {
   title: string;
   content: string;
+  tags: string;
   pinned: boolean;
 };
 
@@ -17,6 +18,7 @@ function toFormValues(note?: Note | null): NoteFormValues {
   return {
     title: note?.title ?? '',
     content: note?.content ?? '',
+    tags: note?.tags?.join(', ') ?? '',
     pinned: note?.pinned ?? false,
   };
 }
@@ -40,6 +42,7 @@ export function NoteForm({
     const payload = {
       title: values.title,
       content: values.content || undefined,
+      tags: values.tags.split(',').map((tag) => tag.trim()).filter(Boolean),
       pinned: values.pinned,
     };
     if (note) {
@@ -65,6 +68,14 @@ export function NoteForm({
           onChange={(e) => setValues((v) => ({ ...v, content: e.target.value }))}
           placeholder="Write it down before it slips away"
         />
+      </FieldWrapper>
+      <FieldWrapper label="Tags">
+        <TextInput
+          value={values.tags}
+          onChange={(e) => setValues((v) => ({ ...v, tags: e.target.value }))}
+          placeholder="ideas, planning, inspiration"
+        />
+        <p className="mt-1 text-xs" style={{ color: 'var(--glow-text-muted)' }}>Separate tags with commas.</p>
       </FieldWrapper>
       <label className="flex items-center gap-2 text-sm" style={{ color: 'var(--glow-text-muted)' }}>
         <input

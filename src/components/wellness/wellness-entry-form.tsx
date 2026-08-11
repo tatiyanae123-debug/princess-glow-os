@@ -11,6 +11,7 @@ type WellnessFormValues = {
   entryDate: string;
   mood: string;
   energy: string;
+  stressLevel: string;
   sleepHours: string;
   waterGlasses: string;
   notes: string;
@@ -25,6 +26,7 @@ function toFormValues(entry?: WellnessEntry | null): WellnessFormValues {
     entryDate: entry?.entryDate ?? todayKey(),
     mood: entry?.mood ?? '',
     energy: entry?.energy ?? '',
+    stressLevel: entry?.stressLevel != null ? String(entry.stressLevel) : '',
     sleepHours: entry?.sleepHours != null ? String(entry.sleepHours) : '',
     waterGlasses: entry?.waterGlasses != null ? String(entry.waterGlasses) : '',
     notes: entry?.notes ?? '',
@@ -51,6 +53,7 @@ export function WellnessEntryForm({
       entryDate: values.entryDate,
       mood: values.mood || undefined,
       energy: values.energy || undefined,
+      stressLevel: values.stressLevel ? Number(values.stressLevel) : undefined,
       sleepHours: values.sleepHours ? Number(values.sleepHours) : undefined,
       waterGlasses: values.waterGlasses ? Number(values.waterGlasses) : undefined,
       notes: values.notes || undefined,
@@ -93,6 +96,16 @@ export function WellnessEntryForm({
           </SelectInput>
         </FieldWrapper>
       </div>
+      <FieldWrapper label="Stress">
+        <SelectInput value={values.stressLevel} onChange={(e) => setValues((v) => ({ ...v, stressLevel: e.target.value }))}>
+          <option value="">–</option>
+          <option value="1">1 · Calm</option>
+          <option value="2">2 · Light</option>
+          <option value="3">3 · Moderate</option>
+          <option value="4">4 · High</option>
+          <option value="5">5 · Overwhelmed</option>
+        </SelectInput>
+      </FieldWrapper>
       <div className="grid grid-cols-2 gap-3">
         <FieldWrapper label="Sleep (hours)">
           <TextInput

@@ -4,19 +4,29 @@ import { eq, and, desc, asc } from 'drizzle-orm';
 import type { CreateRoutineInput, UpdateRoutineInput, CreateRoutineStepInput, UpdateRoutineStepInput } from '@/lib/validations/routines';
 
 export async function getRoutinesByUser(userId: string) {
-  return db
-    .select()
-    .from(routines)
-    .where(and(eq(routines.userId, userId), eq(routines.archived, false)))
-    .orderBy(desc(routines.createdAt));
+  try {
+    return await db
+      .select()
+      .from(routines)
+      .where(and(eq(routines.userId, userId), eq(routines.archived, false)))
+      .orderBy(desc(routines.createdAt));
+  } catch (error) {
+    console.error('[Glow OS] routines unavailable', error);
+    return [];
+  }
 }
 
 export async function getRoutineById(id: string, userId: string) {
-  const [routine] = await db
-    .select()
-    .from(routines)
-    .where(and(eq(routines.id, id), eq(routines.userId, userId)));
-  return routine ?? null;
+  try {
+    const [routine] = await db
+      .select()
+      .from(routines)
+      .where(and(eq(routines.id, id), eq(routines.userId, userId)));
+    return routine ?? null;
+  } catch (error) {
+    console.error('[Glow OS] routine unavailable', error);
+    return null;
+  }
 }
 
 export async function createRoutine(userId: string, data: CreateRoutineInput) {
@@ -46,11 +56,16 @@ export async function deleteRoutine(id: string, userId: string) {
 }
 
 export async function getStepsByRoutine(routineId: string, userId: string) {
-  return db
-    .select()
-    .from(routineSteps)
-    .where(and(eq(routineSteps.routineId, routineId), eq(routineSteps.userId, userId)))
-    .orderBy(asc(routineSteps.order));
+  try {
+    return await db
+      .select()
+      .from(routineSteps)
+      .where(and(eq(routineSteps.routineId, routineId), eq(routineSteps.userId, userId)))
+      .orderBy(asc(routineSteps.order));
+  } catch (error) {
+    console.error('[Glow OS] routine steps unavailable', error);
+    return [];
+  }
 }
 
 export async function createRoutineStep(userId: string, data: CreateRoutineStepInput) {
