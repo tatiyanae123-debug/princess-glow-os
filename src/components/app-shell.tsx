@@ -47,25 +47,32 @@ function roomFor(pathname: string) {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const room = roomFor(pathname);
+  const isDashboard = pathname === '/dashboard' || pathname === '/';
 
   return (
     <GlowProvider>
       <div className="room-canvas min-h-screen transition-colors" data-room={room}>
         <div className="mx-auto flex min-h-screen w-full max-w-[1880px] flex-col lg:flex-row">
-          <div className="w-full lg:sticky lg:top-0 lg:h-screen lg:w-[244px] lg:shrink-0">
+          <div className="w-full lg:sticky lg:top-0 lg:h-screen lg:w-[258px] lg:shrink-0">
             <Sidebar />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="px-3 pt-2 sm:px-5 sm:pt-3 lg:px-7 lg:pt-4">
-              <TopNav />
-            </div>
-            <main className="glow-editorial-page min-h-[calc(100vh-60px)] px-3 pb-8 pt-2 sm:px-5 lg:px-7 lg:pb-10">
-              <EditorialRoomBanner />
-              <SystemRoomContext />
-              <RoomActionConsole />
-              <DeepWorkspaceCanvas />
+            {!isDashboard ? (
+              <div className="px-3 pt-2 sm:px-5 sm:pt-3 lg:px-7 lg:pt-4">
+                <TopNav />
+              </div>
+            ) : null}
+            <main className={isDashboard ? 'min-h-screen px-3 pb-6 pt-3 sm:px-5 lg:px-7 lg:pb-8 lg:pt-5' : 'glow-editorial-page min-h-[calc(100vh-60px)] px-3 pb-8 pt-2 sm:px-5 lg:px-7 lg:pb-10'}>
+              {!isDashboard ? (
+                <>
+                  <EditorialRoomBanner />
+                  <SystemRoomContext />
+                  <RoomActionConsole />
+                  <DeepWorkspaceCanvas />
+                </>
+              ) : null}
               {children}
-              <SystemExpansionDock />
+              {!isDashboard ? <SystemExpansionDock /> : null}
             </main>
           </div>
         </div>
