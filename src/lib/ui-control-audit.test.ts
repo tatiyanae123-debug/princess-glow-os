@@ -16,7 +16,7 @@ function walk(dir:string):string[]{
 }
 
 function attr(opening:ts.JsxOpeningLikeElement,name:string){
-  return opening.attributes.properties.find(p=>ts.isJsxAttribute(p)&&p.name.text===name) as ts.JsxAttribute|undefined;
+  return opening.attributes.properties.find(p=>ts.isJsxAttribute(p)&&ts.isIdentifier(p.name)&&p.name.text===name) as ts.JsxAttribute|undefined;
 }
 
 function attrLiteral(a:ts.JsxAttribute|undefined){
