@@ -5,7 +5,6 @@ import { Sidebar } from '@/components/ui/sidebar';
 import { GlowProvider } from '@/lib/context/glow-provider';
 import { QuickAdd } from '@/components/quick-add/quick-add';
 import { UniversalCaptureDock } from '@/components/universal-capture-dock';
-import { SystemExpansionDock } from '@/components/system-expansion-dock';
 import { ReferenceRoomWorkspace } from '@/components/reference-room-workspace';
 import { GlowVoiceCommand } from '@/components/voice/glow-voice-command';
 import { GlobalImageEditor } from '@/components/media/global-image-editor';
@@ -24,8 +23,7 @@ function roomFor(pathname: string) {
   if (pathname.startsWith('/food')) return 'food';
   if (pathname.startsWith('/beauty')) return 'beauty';
   if (pathname.startsWith('/hair')) return 'hair';
-  if (pathname.startsWith('/wellness')) return 'wellness';
-  if (pathname.startsWith('/maintenance')) return 'wellness';
+  if (pathname.startsWith('/wellness') || pathname.startsWith('/maintenance')) return 'wellness';
   if (pathname.startsWith('/finance')) return 'finance';
   if (pathname.startsWith('/projects')) return 'projects';
   if (pathname.startsWith('/brain') || pathname.startsWith('/inbox') || pathname.startsWith('/intake') || pathname.startsWith('/rules')) return 'brain';
@@ -60,8 +58,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <main className="min-h-screen px-3 pb-28 pt-4 sm:px-5 lg:px-7 lg:pt-7">
               <div className="mx-auto w-full max-w-[1560px]">
                 <ReferenceRoomWorkspace />
-                <div className="native-room-depth space-y-5">{children}</div>
-                <SystemExpansionDock />
+
+                <details className="legacy-capability-vault mt-6">
+                  <summary>Advanced tools & preserved legacy capabilities</summary>
+                  <div className="legacy-capability-vault__content">{children}</div>
+                </details>
               </div>
             </main>
           </div>
