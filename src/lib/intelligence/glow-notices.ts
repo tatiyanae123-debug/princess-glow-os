@@ -5,6 +5,8 @@ import { db } from '@/db';
 import { glowNotices } from '@/db/schema/interconnected-os';
 import { buildCrossSystemSnapshot } from '@/lib/intelligence/cross-system';
 
+export type GlowNoticeFeedback = 'helpful' | 'not_helpful';
+
 export async function ensureGlowNotices(userId:string){
   const snapshot=await buildCrossSystemSnapshot(userId,'observations');
   const existing=await db.select().from(glowNotices).where(and(eq(glowNotices.userId,userId),eq(glowNotices.status,'active')));
@@ -20,4 +22,23 @@ export async function ensureGlowNotices(userId:string){
   return db.select().from(glowNotices).where(eq(glowNotices.userId,userId)).orderBy(desc(glowNotices.createdAt));
 }
 
-export async function setGlowNoticeStatus(userId:string,id:string,status:string,snoozedUntil?:Date){const[updated]=await db.update(glowNotices).set({status,snoozedUntil:snoozedUntil??null}).where(and(eq(glowNotices.id,id),eq(glowNotices.userId,userId))).returning();return updated??null;}
+export async function setGlowNoticeStatus(userId:string,id:string,status:string,snoozedUntil?:Date){
+  const[updated]=await db.update(glowNotices).set({status,snoozedUntil:snoozedUntil??null}).where(and(eq(glowNotices.id,id),eq(glowNotices.userId,userId))).returning();
+  return updated??null;
+}
+
+export async function setGlowNoticeFeedback(userId:string,id:string,feedback:GlowNoticeFeedback){
+  const [notice]=await db.select().from(glowNotices).where(and(eq(glowNotices.id,id),eq(glowNotices.userId,userId))).limit(1);
+  if(!notice)return null;
+  const actionPayload={...(notice.actionPayload??{}),feedback,feedbackAt:new Date().toISOString()};
+  const [updated]=await db.update(glowNotices).set({actionPayload}).where(and(eq(glowNotices.id,id),eq(glowNotices.userId,userId))).returning();
+  return updated??null;
+}
+
+export async function applyGlowNotice(userId:string,id:string){
+  const [notice]=await db.select().from(glowNotices).where(and(eq(glowNotices.id,id),eq(glowNotices.userId,userId))).limit(1);
+  if(!notice||notice.status!=='active')return null;
+  const actionPayload={...(notice.actionPayload??{}),appliedAt:new Date().toISOString()};
+  const [updated]=await db.update(glowNotices).set({status:'applied',actionPayload,snoozedUntil:null}).where(and(eq(glowNotices.id,id),eq(glowNotices.userId,userId),eq(glowNotices.status,'active'))).returning();
+  return updated??null;
+}
