@@ -1,6 +1,6 @@
 import { db } from '@/db';
 import { habits, habitLogs } from '@/db/schema/habits';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, gte, lte } from 'drizzle-orm';
 import type { CreateHabitInput, UpdateHabitInput, CreateHabitLogInput } from '@/lib/validations/habits';
 
 export async function getHabitsByUser(userId: string) {
@@ -53,7 +53,34 @@ export async function getHabitLogsByHabit(habitId: string, userId: string) {
     .orderBy(desc(habitLogs.loggedDate));
 }
 
+export async function getHabitLogsForUser(userId: string, startDate: string, endDate: string) {
+  return db
+    .select()
+    .from(habitLogs)
+    .where(
+      and(
+        eq(habitLogs.userId, userId),
+        gte(habitLogs.loggedDate, startDate),
+        lte(habitLogs.loggedDate, endDate),
+      ),
+    )
+    .orderBy(desc(habitLogs.loggedDate));
+}
+
 export async function createHabitLog(userId: string, data: CreateHabitLogInput) {
+  const [existing] = await db
+    .select()
+    .from(habitLogs)
+    .where(
+      and(
+        eq(habitLogs.userId, userId),
+        eq(habitLogs.habitId, data.habitId),
+        eq(habitLogs.loggedDate, data.loggedDate),
+      ),
+    )
+    .limit(1);
+  if (existing) return existing;
+
   const [log] = await db
     .insert(habitLogs)
     .values({ ...data, userId })
