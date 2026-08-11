@@ -2,14 +2,13 @@
 
 import { usePathname } from 'next/navigation';
 import { Sidebar } from '@/components/ui/sidebar';
-import { TopNav } from '@/components/ui/top-nav';
 import { GlowProvider } from '@/lib/context/glow-provider';
 import { QuickAdd } from '@/components/quick-add/quick-add';
-import { ImmersiveRoomHero } from '@/components/immersive-room-hero';
-import { RoomActionConsole } from '@/components/room-action-console';
 import { UniversalCaptureDock } from '@/components/universal-capture-dock';
-import { DeepWorkspaceCanvas } from '@/components/deep-workspace-canvas';
 import { SystemExpansionDock } from '@/components/system-expansion-dock';
+import { ReferenceRoomWorkspace } from '@/components/reference-room-workspace';
+import { GlowVoiceCommand } from '@/components/voice/glow-voice-command';
+import { GlobalImageEditor } from '@/components/media/global-image-editor';
 
 function roomFor(pathname: string) {
   if (pathname.startsWith('/beauty/lab')) return 'beauty-lab';
@@ -49,25 +48,27 @@ function roomFor(pathname: string) {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const room = roomFor(pathname);
-  const isDashboard = pathname === '/dashboard' || pathname === '/';
 
   return (
     <GlowProvider>
       <div className="room-canvas min-h-screen transition-colors" data-room={room}>
-        <div className="mx-auto flex min-h-screen w-full max-w-[1880px] flex-col lg:flex-row">
+        <div className="mx-auto flex min-h-screen w-full max-w-[1920px] flex-col lg:flex-row">
           <div className="w-full lg:sticky lg:top-0 lg:h-screen lg:w-[258px] lg:shrink-0">
             <Sidebar />
           </div>
           <div className="min-w-0 flex-1">
-            {!isDashboard ? <div className="px-3 pt-2 sm:px-5 sm:pt-3 lg:px-7 lg:pt-4"><TopNav /></div> : null}
-            <main className={isDashboard ? 'min-h-screen px-3 pb-24 pt-3 sm:px-5 lg:px-7 lg:pb-24 lg:pt-5' : 'min-h-[calc(100vh-60px)] px-3 pb-24 pt-2 sm:px-5 lg:px-7'}>
-              {!isDashboard ? <><ImmersiveRoomHero /><RoomActionConsole /><DeepWorkspaceCanvas /></> : null}
-              <div className={!isDashboard ? 'mx-auto w-full max-w-[1540px] space-y-5' : ''}>{children}</div>
-              {!isDashboard ? <SystemExpansionDock /> : null}
+            <main className="min-h-screen px-3 pb-28 pt-4 sm:px-5 lg:px-7 lg:pt-7">
+              <div className="mx-auto w-full max-w-[1560px]">
+                <ReferenceRoomWorkspace />
+                <div className="native-room-depth space-y-5">{children}</div>
+                <SystemExpansionDock />
+              </div>
             </main>
           </div>
         </div>
       </div>
+      <GlowVoiceCommand />
+      <GlobalImageEditor />
       <QuickAdd />
       <UniversalCaptureDock />
     </GlowProvider>
