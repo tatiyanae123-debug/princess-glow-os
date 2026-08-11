@@ -4,6 +4,7 @@ import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { ingestFile, ingestText } from '@/lib/intelligence/universal-intake';
+import { ensureGlowIntelligenceSchema } from '@/app/actions/intelligence-activation';
 
 export type UniversalIntakeState = {
   status: 'idle' | 'success' | 'error';
@@ -22,20 +23,27 @@ async function processUniversalIntake(formData:FormData):Promise<UniversalIntake
   const sourceRoute=String(formData.get('sourceRoute')??'').trim()||undefined;
   const file=formData.get('file');
   try {
+    if(!(file instanceof File&&file.size>0)&&!text){
+      return {status:'error',message:'Choose a file or paste something before sending it to Glow.'};
+    }
+
+    // Universal Intake must work even if the user has not manually visited Intelligence Settings yet.
+    // These are the same idempotent CREATE TABLE/INDEX statements used by the activation screen.
+    await ensureGlowIntelligenceSchema();
+
     if(file instanceof File&&file.size>0){
       await ingestFile(id,file,note||text,{sourceRoute});
       ['/intake','/inbox','/today','/dashboard',sourceRoute].filter(Boolean).forEach(path=>revalidatePath(String(path)));
       return {status:'success',message:`${file.name} was uploaded, understood and added to Glow Inbox.`,uploadedName:file.name};
     }
-    if(text){
-      await ingestText(id,text,{sourceRoute});
-      ['/intake','/inbox','/today','/dashboard',sourceRoute].filter(Boolean).forEach(path=>revalidatePath(String(path)));
-      return {status:'success',message:'Glow understood your text and added it to Glow Inbox.'};
-    }
-    return {status:'error',message:'Choose a file or paste something before sending it to Glow.'};
+
+    await ingestText(id,text,{sourceRoute});
+    ['/intake','/inbox','/today','/dashboard',sourceRoute].filter(Boolean).forEach(path=>revalidatePath(String(path)));
+    return {status:'success',message:'Glow understood your text and added it to Glow Inbox.'};
   } catch(error){
-    const message=error instanceof Error?error.message:'Glow could not upload that item. Please try again.';
-    return {status:'error',message};
+    const detail=error instanceof Error?error.message:'Unknown intake error';
+    console.error('[Universal Intake]',detail);
+    return {status:'error',message:'Glow could not save that item yet. Refresh once and try again. If it still fails, open Glow Inbox so the error can be diagnosed without losing the rest of your app.'};
   }
 }
 

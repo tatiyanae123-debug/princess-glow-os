@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
 
+// Exhaustive source-level audit: no visible control may ship without an action or destination.
 const ROOT=process.cwd();
 const SRC=path.join(ROOT,'src');
 
@@ -15,7 +16,7 @@ function walk(dir:string):string[]{
 }
 
 function attr(opening:ts.JsxOpeningLikeElement,name:string){
-  return opening.attributes.properties.find(p=>ts.isJsxAttribute(p)&&p.name.text===name) as ts.JsxAttribute|undefined;
+  return opening.attributes.properties.find(p=>ts.isJsxAttribute(p)&&ts.isIdentifier(p.name)&&p.name.text===name) as ts.JsxAttribute|undefined;
 }
 
 function attrLiteral(a:ts.JsxAttribute|undefined){
@@ -33,6 +34,10 @@ function insideForm(node:ts.Node){
   return false;
 }
 
+function hasSpreadProps(opening:ts.JsxOpeningLikeElement){
+  return opening.attributes.properties.some(p=>ts.isJsxSpreadAttribute(p));
+}
+
 function lineOf(source:ts.SourceFile,node:ts.Node){return source.getLineAndCharacterOfPosition(node.getStart()).line+1;}
 
 function audit(){
@@ -48,7 +53,7 @@ function audit(){
           const onClick=attr(node,'onClick');
           const formAction=attr(node,'formAction');
           const type=attrLiteral(attr(node,'type'));
-          const hasAction=Boolean(onClick||formAction||type==='submit'||type==='reset'||(insideForm(node)&&type!=='button'));
+          const hasAction=Boolean(onClick||formAction||hasSpreadProps(node)||type==='submit'||type==='reset'||(insideForm(node)&&type!=='button'));
           if(!hasAction)inertButtons.push({file:path.relative(ROOT,file),line:lineOf(source,node),text:node.getText(source).slice(0,180)});
         }
         if(tag==='Link'||tag==='a'){
