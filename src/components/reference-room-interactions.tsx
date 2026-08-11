@@ -51,6 +51,11 @@ function quickModule(text:string):QuickAddModule|null{
   if(/beauty step/i.test(text))return'beauty';
   return null;
 }
+function isImageControl(control:HTMLElement){
+  const aria=control.getAttribute('aria-label')??'';
+  const text=clean(control.textContent??'');
+  return /^(change|reset) /i.test(aria)||/^upload replacement/i.test(aria)||/^(change image|reset image)$/i.test(text);
+}
 
 export function ReferenceRoomInteractions(){
   const pathname=usePathname();
@@ -98,7 +103,8 @@ export function ReferenceRoomInteractions(){
 
     const activate=(target:HTMLElement)=>{
       if(target.closest('[data-glow-voice-open]'))return;
-      if(target.closest('[aria-label^="Change "]')||target.closest('[aria-label^="Reset "]')||target.closest('[aria-label^="Upload replacement"]'))return;
+      const imageControl=target.closest<HTMLElement>('button');
+      if(imageControl&&isImageControl(imageControl))return;
 
       const worldPortal=target.closest<HTMLElement>('[data-ref-world-portal="true"]');
       if(worldPortal){
@@ -110,6 +116,7 @@ export function ReferenceRoomInteractions(){
       const control=target.closest<HTMLElement>('button,a,[data-ref-linklike="true"]');
       if(!control||!control.closest('.reference-room'))return;
       if(control.tagName==='A'&&control.getAttribute('href'))return;
+      if(isImageControl(control))return;
       const aria=control.getAttribute('aria-label')??'';
       const text=clean(`${aria} ${control.textContent??''}`);
       if(!text)return;
@@ -160,10 +167,9 @@ export function ReferenceRoomInteractions(){
     const click=(event:MouseEvent)=>{
       const target=event.target instanceof HTMLElement?event.target:null;
       if(!target||!target.closest('.reference-room'))return;
-      const actionable=target.closest('button,[data-ref-linklike="true"],[data-ref-world-portal="true"]');
+      const actionable=target.closest<HTMLElement>('button,[data-ref-linklike="true"],[data-ref-world-portal="true"]');
       if(!actionable)return;
-      if(actionable.closest('[data-glow-voice-open]'))return;
-      if(actionable.closest('[aria-label^="Change "]')||actionable.closest('[aria-label^="Reset "]'))return;
+      if(actionable.closest('[data-glow-voice-open]')||isImageControl(actionable))return;
       event.preventDefault();
       activate(target);
     };
