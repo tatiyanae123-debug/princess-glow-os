@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
 
+// Exhaustive source-level audit: no visible control may ship without an action or destination.
 const ROOT=process.cwd();
 const SRC=path.join(ROOT,'src');
 
