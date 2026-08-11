@@ -15,6 +15,10 @@ export function getLifeMemoriesByUser(userId: string) {
   return safeRows('life memories', db.select().from(lifeMemories).where(and(eq(lifeMemories.userId, userId), eq(lifeMemories.archived, false))).orderBy(desc(lifeMemories.createdAt)));
 }
 
+export function getAllLifeMemoriesByUser(userId: string) {
+  return safeRows('all life memories', db.select().from(lifeMemories).where(eq(lifeMemories.userId, userId)).orderBy(desc(lifeMemories.createdAt)));
+}
+
 export function getProjectsByUser(userId: string) {
   return safeRows('projects', db.select().from(projects).where(eq(projects.userId, userId)).orderBy(desc(projects.updatedAt)));
 }

@@ -54,6 +54,7 @@ export const lifeMemories = pgTable('life_memories', {
   relatedProjectId: text('related_project_id'),
   confidence: real('confidence').notNull().default(1),
   privacyLevel: text('privacy_level').notNull().default('private'),
+  pinned: boolean('pinned').notNull().default(false),
   archived: boolean('archived').notNull().default(false),
   createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
 }, (m) => ({ userIdx: index('life_memories_user_idx').on(m.userId) }));

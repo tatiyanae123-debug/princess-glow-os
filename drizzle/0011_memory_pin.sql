@@ -1,0 +1,2 @@
+ALTER TABLE "life_memories"
+ADD COLUMN IF NOT EXISTS "pinned" boolean DEFAULT false NOT NULL;
