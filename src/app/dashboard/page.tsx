@@ -2,6 +2,7 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
 import { LivingDashboard } from '@/components/dashboard/living-dashboard';
+import { DashboardLifeDock } from '@/components/dashboard/dashboard-life-dock';
 import type { LivingDashboardData } from '@/lib/dashboard/types';
 
 export const dynamic = 'force-dynamic';
@@ -58,15 +59,20 @@ function getFallbackData(): LivingDashboardData {
   };
 }
 
+function DashboardExperience({data,error}:{data:LivingDashboardData;error?:string}){
+  return <><LivingDashboard data={data} error={error}/><DashboardLifeDock data={data}/></>;
+}
+
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
   const userId = session.user.id;
 
   if (!process.env.DATABASE_URL) {
+    const data=getFallbackData();
     return (
       <AppShell>
-        <LivingDashboard data={getFallbackData()} error="DATABASE_URL is not configured." />
+        <DashboardExperience data={data} error="DATABASE_URL is not configured." />
       </AppShell>
     );
   }
@@ -76,14 +82,15 @@ export default async function DashboardPage() {
     const data = await getLivingDashboardData(userId);
     return (
       <AppShell>
-        <LivingDashboard data={data} />
+        <DashboardExperience data={data} />
       </AppShell>
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
+    const data=getFallbackData();
     return (
       <AppShell>
-        <LivingDashboard data={getFallbackData()} error={message} />
+        <DashboardExperience data={data} error={message} />
       </AppShell>
     );
   }
