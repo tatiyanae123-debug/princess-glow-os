@@ -8,6 +8,8 @@ import { QuickAdd } from '@/components/quick-add/quick-add';
 import { ImmersiveRoomHero } from '@/components/immersive-room-hero';
 import { RoomActionConsole } from '@/components/room-action-console';
 import { UniversalCaptureDock } from '@/components/universal-capture-dock';
+import { DeepWorkspaceCanvas } from '@/components/deep-workspace-canvas';
+import { SystemExpansionDock } from '@/components/system-expansion-dock';
 
 function roomFor(pathname: string) {
   if (pathname.startsWith('/beauty/lab')) return 'beauty-lab';
@@ -57,8 +59,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="min-w-0 flex-1">
             {!isDashboard ? <div className="px-3 pt-2 sm:px-5 sm:pt-3 lg:px-7 lg:pt-4"><TopNav /></div> : null}
             <main className={isDashboard ? 'min-h-screen px-3 pb-24 pt-3 sm:px-5 lg:px-7 lg:pb-24 lg:pt-5' : 'min-h-[calc(100vh-60px)] px-3 pb-24 pt-2 sm:px-5 lg:px-7'}>
-              {!isDashboard ? <><ImmersiveRoomHero /><RoomActionConsole /></> : null}
+              {!isDashboard ? <><ImmersiveRoomHero /><RoomActionConsole /><DeepWorkspaceCanvas /></> : null}
               <div className={!isDashboard ? 'mx-auto w-full max-w-[1540px] space-y-5' : ''}>{children}</div>
+              {!isDashboard ? <SystemExpansionDock /> : null}
             </main>
           </div>
         </div>
