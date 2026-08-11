@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
 import { appleReminderImportSchema } from '@/lib/validations/apple-reminders';
 import { importAppleReminders, resolveBridgeUser } from '@/lib/apple-reminders/service';
@@ -28,5 +29,6 @@ export async function POST(request: Request) {
   if (!parsed.success) return NextResponse.json({ error: 'Invalid reminders payload' }, { status: 400 });
 
   const result = await importAppleReminders(userId, parsed.data);
+  ['/reminders','/dashboard','/today','/tasks','/calendar','/briefings','/brain','/connections'].forEach(path=>revalidatePath(path));
   return NextResponse.json({ ok: true, ...result });
 }
