@@ -3,7 +3,7 @@ import { BellRing, CalendarDays, FileUp, Inbox, Mail, Sparkles } from 'lucide-re
 import { LiveWeatherCard } from '@/components/dashboard/live-weather-card';
 import type { LivingDashboardData } from '@/lib/dashboard/types';
 
-export type DashboardReminder={id:string;title:string;rawText:string};
+export type DashboardReminder={id:string;title:string;rawText:string;href?:string;source?:string};
 
 function statusLabel(status:LivingDashboardData['googleCalendar']['status']){
   if(status==='connected') return 'Connected';
@@ -14,13 +14,13 @@ function statusLabel(status:LivingDashboardData['googleCalendar']['status']){
 }
 
 export function DashboardLifeDock({data,reminders=[]}:{data:LivingDashboardData;reminders?:DashboardReminder[]}){
-  const taskFallback=data.topPriorityTasks.slice(0,3).map(item=>({id:item.id,title:item.title,rawText:item.dueDate?`Due ${new Date(item.dueDate).toLocaleDateString('en-US',{month:'short',day:'numeric'})}`:'Keep visible today'}));
+  const taskFallback=data.topPriorityTasks.slice(0,3).map(item=>({id:item.id,title:item.title,rawText:item.dueDate?`Due ${new Date(item.dueDate).toLocaleDateString('en-US',{month:'short',day:'numeric'})}`:'Keep visible today',href:'/tasks',source:'Tasks'}));
   const visible=reminders.length?reminders:taskFallback;
   return <section className="mt-4 grid gap-4 xl:grid-cols-[1.2fr_.8fr_.8fr]">
     <div className="overflow-hidden rounded-[14px] border border-[#eaded6] bg-[#fffaf6]/78 shadow-[0_12px_36px_rgba(91,62,53,.045)]">
-      <div className="flex items-center justify-between border-b border-[#eee3dc] px-4 py-3"><div className="flex items-center gap-2"><BellRing size={14} className="text-[#b97882]"/><h2 className="text-[8px] font-bold uppercase tracking-[.15em] text-[#6d5952]">Reminders + Tasks</h2></div><Link href="/inbox" className="text-[8px] text-[#9b6b71]">Glow Inbox</Link></div>
+      <div className="flex items-center justify-between border-b border-[#eee3dc] px-4 py-3"><div className="flex items-center gap-2"><BellRing size={14} className="text-[#b97882]"/><h2 className="text-[8px] font-bold uppercase tracking-[.15em] text-[#6d5952]">Reminders + Tasks</h2></div><Link href="/reminders" className="text-[8px] text-[#9b6b71]">Open Reminders</Link></div>
       <div className="divide-y divide-[#f0e6e0] px-4">
-        {visible.length?visible.map((item,index)=><Link href={reminders.length?'/inbox':'/tasks'} key={item.id} className="flex items-start gap-3 py-3"><span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${index===0?'bg-[#cf7e88]':'bg-[#d6b9ad]'}`}/><div className="min-w-0"><p className="truncate text-[9px] font-medium text-[#4a3b35]">{item.title}</p><p className="mt-1 line-clamp-1 text-[7px] text-[#927d75]">{item.rawText}</p></div></Link>):<div className="py-6 text-center"><p className="text-[9px] text-[#806d65]">No reminders need attention.</p><Link href="/intake" className="mt-2 inline-flex text-[8px] text-[#a06b72]">Add a reminder →</Link></div>}
+        {visible.length?visible.map((item,index)=><Link href={item.href??'/tasks'} key={`${item.source??'item'}-${item.id}`} className="flex items-start gap-3 py-3"><span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${index===0?'bg-[#cf7e88]':'bg-[#d6b9ad]'}`}/><div className="min-w-0"><div className="flex items-center gap-1.5"><p className="truncate text-[9px] font-medium text-[#4a3b35]">{item.title}</p>{item.source?<span className="rounded-full bg-[#f3e8e7] px-1.5 py-0.5 text-[6px] text-[#9b6b71]">{item.source}</span>:null}</div><p className="mt-1 line-clamp-1 text-[7px] text-[#927d75]">{item.rawText}</p></div></Link>):<div className="py-6 text-center"><p className="text-[9px] text-[#806d65]">No reminders need attention.</p><div className="mt-2 flex justify-center gap-3"><Link href="/reminders" className="text-[8px] text-[#a06b72]">Apple Reminders</Link><Link href="/intake" className="text-[8px] text-[#a06b72]">Add reminder →</Link></div></div>}
       </div>
     </div>
 
@@ -36,7 +36,7 @@ export function DashboardLifeDock({data,reminders=[]}:{data:LivingDashboardData;
     <div className="xl:col-span-3 grid gap-2 sm:grid-cols-3">
       <Link href="/calendar" className="flex items-center gap-3 rounded-[12px] border border-[#eadfd8] bg-white/55 px-4 py-3"><CalendarDays size={14} className="text-[#a87872]"/><div><p className="text-[8px] font-medium text-[#594741]">Calendar</p><p className="text-[7px] text-[#948078]">{statusLabel(data.googleCalendar.status)} · {data.todaySchedule.events.length} local events today</p></div></Link>
       <Link href="/gmail" className="flex items-center gap-3 rounded-[12px] border border-[#eadfd8] bg-white/55 px-4 py-3"><Mail size={14} className="text-[#a87872]"/><div><p className="text-[8px] font-medium text-[#594741]">Gmail</p><p className="text-[7px] text-[#948078]">{statusLabel(data.gmailInbox.status)} · {data.gmailInbox.unreadCount} unread</p></div></Link>
-      <Link href="/connections" className="flex items-center gap-3 rounded-[12px] border border-[#eadfd8] bg-white/55 px-4 py-3"><Sparkles size={14} className="text-[#a87872]"/><div><p className="text-[8px] font-medium text-[#594741]">Connected World</p><p className="text-[7px] text-[#948078]">Calendar · Reminders · Gmail · Weather · future Health</p></div></Link>
+      <Link href="/reminders" className="flex items-center gap-3 rounded-[12px] border border-[#eadfd8] bg-white/55 px-4 py-3"><BellRing size={14} className="text-[#a87872]"/><div><p className="text-[8px] font-medium text-[#594741]">Apple Reminders</p><p className="text-[7px] text-[#948078]">Imported safely · understood across Glow rooms</p></div></Link>
     </div>
   </section>;
 }
