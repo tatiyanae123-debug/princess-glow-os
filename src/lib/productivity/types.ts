@@ -1,4 +1,4 @@
-export type PlanningView = 'week' | 'quarter' | 'year' | 'books' | 'bucket-list';
+export type PlanningView = 'today' | 'week' | 'month' | 'quarter' | 'year' | 'books' | 'bucket-list';
 
 export interface WeeklyTask {
   id: string;
