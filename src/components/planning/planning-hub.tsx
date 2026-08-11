@@ -2,11 +2,13 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { BookOpen, CalendarRange, Flag, ListChecks, Target } from 'lucide-react';
+import { BookOpen, CalendarDays, CalendarRange, Flag, ListChecks, MoonStar, RefreshCw, SunMedium, Target } from 'lucide-react';
 import type { PlanningView } from '@/lib/productivity/types';
 
 const views: Array<{ id: PlanningView; label: string; icon: typeof CalendarRange; description: string }> = [
+  { id: 'today', label: 'Today', icon: SunMedium, description: 'Anchor the day to real commitments, priorities, routines, and energy.' },
   { id: 'week', label: 'Week', icon: CalendarRange, description: 'Tasks, gym sessions, weekly focus, reading, and reflections.' },
+  { id: 'month', label: 'Month', icon: CalendarDays, description: 'See the month as one connected layer of commitments, maintenance, goals, and resets.' },
   { id: 'quarter', label: 'Quarter', icon: Target, description: 'Finances, goals, achievements, books, and your idea parking lot.' },
   { id: 'year', label: 'Year', icon: Flag, description: 'Vision, non-negotiables, yearly themes, and long-range goals.' },
   { id: 'books', label: 'Books', icon: BookOpen, description: 'Save and track what you are reading inside persistent Planning.' },
@@ -14,12 +16,26 @@ const views: Array<{ id: PlanningView; label: string; icon: typeof CalendarRange
 ];
 
 const sections: Record<PlanningView, Array<{ title: string; href: string; detail: string }>> = {
+  today: [
+    { title: 'Build My Day', href: '/today', detail: 'Use live tasks, calendar context, routines, and the Now Engine to shape today.' },
+    { title: 'Today’s commitments', href: '/calendar?view=day', detail: 'Review fixed commitments before adding more.' },
+    { title: 'Current focus', href: '/tasks?view=now', detail: 'Move directly into the highest-value executable work.' },
+    { title: 'Life mode and energy', href: '/today', detail: 'Let planning adapt to your current mode and capacity.' },
+    { title: 'Finish My Day', href: '/today', detail: 'Close the loop so today can feed Memory, Timeline, and tomorrow.' },
+  ],
   week: [
-    { title: 'Weekly task checklist', href: '/tasks', detail: 'Open Tasks and work through the real list.' },
+    { title: 'Weekly task checklist', href: '/tasks?view=upcoming', detail: 'Open upcoming work and decide what actually belongs this week.' },
+    { title: 'Week calendar', href: '/calendar?view=week', detail: 'Balance commitments with realistic open space.' },
     { title: 'Gym session tracker', href: '/fitness', detail: 'Log workouts, energy, soreness, equipment, and notes.' },
     { title: 'Weekly focus and goals', href: '/goals', detail: 'Connect current goals to this week.' },
-    { title: 'Currently reading', href: '/planning', detail: 'Create a Book planning layer above.' },
     { title: 'Weekly reflections', href: '/planning', detail: 'Save reflections directly in your planning layers.' },
+  ],
+  month: [
+    { title: 'Month calendar', href: '/calendar?view=month', detail: 'Scan the whole month for busy periods, open space, and collisions.' },
+    { title: 'Maintenance forecast', href: '/notices', detail: 'Bring upcoming life maintenance into the plan before it becomes urgent.' },
+    { title: 'Goals and milestones', href: '/goals', detail: 'Choose the milestones that should move this month.' },
+    { title: 'Finance horizon', href: '/finance', detail: 'Review bills, subscriptions, savings, and upcoming expenses.' },
+    { title: 'Monthly reflection', href: '/briefings', detail: 'Use reports and patterns to adjust the next month.' },
   ],
   quarter: [
     { title: '13-week consistency overview', href: '/habits', detail: 'Use Habit history as the consistency signal.' },
@@ -50,11 +66,26 @@ const sections: Record<PlanningView, Array<{ title: string; href: string; detail
 };
 
 export function PlanningHub() {
-  const [activeView, setActiveView] = useState<PlanningView>('week');
+  const [activeView, setActiveView] = useState<PlanningView>('today');
   const active = useMemo(() => views.find((view) => view.id === activeView) ?? views[0], [activeView]);
 
   return (
     <div className="space-y-6">
+      <section className="grid gap-3 md:grid-cols-2">
+        <Link href="/planning?reset=sunday" className="rounded-[24px] border border-[#eadfd8] bg-[linear-gradient(145deg,#fffaf7,#f4ece6)] p-5 transition hover:-translate-y-0.5 hover:shadow-sm">
+          <div className="flex items-center gap-2 text-[#9b6c70]"><RefreshCw size={15}/><p className="glow-eyebrow">Sunday Reset</p></div>
+          <p className="glow-display mt-2 text-[20px] text-[#493b36]">Reset the week before it starts.</p>
+          <p className="mt-2 text-[9px] leading-4 text-[#7d6c65]">Review unfinished work, calendar pressure, home maintenance, wellness, money, and the one focus that matters most next week.</p>
+          <p className="mt-4 text-[9px] font-medium text-[#6d5355]">Open weekly planning →</p>
+        </Link>
+        <Link href="/tomorrow" className="rounded-[24px] border border-[#e4ded7] bg-[linear-gradient(145deg,#faf8f5,#eee8e3)] p-5 transition hover:-translate-y-0.5 hover:shadow-sm">
+          <div className="flex items-center gap-2 text-[#7c6b78]"><MoonStar size={15}/><p className="glow-eyebrow">Prepare Tomorrow</p></div>
+          <p className="glow-display mt-2 text-[20px] text-[#493b36]">End today with tomorrow already lighter.</p>
+          <p className="mt-2 text-[9px] leading-4 text-[#7d6c65]">Review tomorrow’s commitments, top three priorities, suggested wake target, and what should be prepared tonight.</p>
+          <p className="mt-4 text-[9px] font-medium text-[#625761]">Prepare tomorrow →</p>
+        </Link>
+      </section>
+
       <div className="flex flex-wrap gap-2" role="tablist" aria-label="Planning views">
         {views.map((view) => {
           const Icon = view.icon;
