@@ -2,7 +2,7 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
 import { LivingDashboard } from '@/components/dashboard/living-dashboard';
-import { MoodBoard } from '@/components/dashboard/mood-board';
+import { DashboardLifeDock } from '@/components/dashboard/dashboard-life-dock';
 import type { LivingDashboardData } from '@/lib/dashboard/types';
 
 export const dynamic = 'force-dynamic';
@@ -12,7 +12,7 @@ function getFallbackData(): LivingDashboardData {
     greeting: {
       label: 'Welcome',
       title: 'Your living dashboard is ready.',
-      message: 'Start by adding tasks, routines, and goals to shape your day with clarity.',
+      message: 'Anchor one priority early and keep your pace intentional.',
     },
     weekTheme: {
       title: 'Foundation Week',
@@ -59,18 +59,8 @@ function getFallbackData(): LivingDashboardData {
   };
 }
 
-function DashboardWithMoodBoard({ data, error }: { data: LivingDashboardData; error?: string }) {
-  return (
-    <div className="relative">
-      <div className="mb-4 md:hidden">
-        <MoodBoard />
-      </div>
-      <LivingDashboard data={data} error={error} />
-      <div className="pointer-events-auto absolute right-[18px] top-[58px] z-20 hidden h-[300px] w-[50%] md:block xl:right-[318px] xl:w-[42%]">
-        <MoodBoard />
-      </div>
-    </div>
-  );
+function DashboardExperience({data,error}:{data:LivingDashboardData;error?:string}){
+  return <><LivingDashboard data={data} error={error}/><DashboardLifeDock data={data}/></>;
 }
 
 export default async function DashboardPage() {
@@ -79,9 +69,10 @@ export default async function DashboardPage() {
   const userId = session.user.id;
 
   if (!process.env.DATABASE_URL) {
+    const data=getFallbackData();
     return (
       <AppShell>
-        <DashboardWithMoodBoard data={getFallbackData()} error="DATABASE_URL is not configured." />
+        <DashboardExperience data={data} error="DATABASE_URL is not configured." />
       </AppShell>
     );
   }
@@ -91,15 +82,15 @@ export default async function DashboardPage() {
     const data = await getLivingDashboardData(userId);
     return (
       <AppShell>
-        <DashboardWithMoodBoard data={data} />
+        <DashboardExperience data={data} />
       </AppShell>
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-
+    const data=getFallbackData();
     return (
       <AppShell>
-        <DashboardWithMoodBoard data={getFallbackData()} error={message} />
+        <DashboardExperience data={data} error={message} />
       </AppShell>
     );
   }
