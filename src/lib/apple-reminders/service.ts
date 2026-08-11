@@ -29,7 +29,7 @@ export async function importAppleReminders(userId:string,payload:AppleReminderIm
   for(const reminder of payload.reminders){
     const dueAt=reminder.dueAt?new Date(reminder.dueAt):null;
     const intelligence=understandAppleReminder({title:reminder.title,notes:reminder.notes,dueAt,completed:reminder.completed});
-    const importance=intelligence.urgency==='overdue'||intelligence.urgency==='today'?.85:.55;
+    const importance=(intelligence.urgency==='overdue'||intelligence.urgency==='today')?0.85:0.55;
     const [saved]=await db.insert(appleReminders).values({userId,externalId:reminder.externalId,listName:reminder.listName,title:reminder.title,notes:reminder.notes??null,dueAt,completed:reminder.completed,lastSyncedAt:now,importAudit:{importedAt:now.toISOString(),source:'iphone_shortcuts',understoodAs:intelligence.domain,destinations:intelligence.destinations}}).onConflictDoUpdate({target:[appleReminders.userId,appleReminders.externalId],set:{listName:reminder.listName,title:reminder.title,notes:reminder.notes??null,dueAt,completed:reminder.completed,lastSyncedAt:now,importAudit:{importedAt:now.toISOString(),source:'iphone_shortcuts',understoodAs:intelligence.domain,destinations:intelligence.destinations}}}).returning();
 
     await db.insert(glowEntities).values({
