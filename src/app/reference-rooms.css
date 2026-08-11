@@ -91,25 +91,29 @@
 [data-reference-layout='sanctuary'] .reference-room { color:#30342b; }
 [data-reference-layout='money'] .ref-card,
 [data-reference-layout='money-brain'] .ref-card { border-color:rgba(112,130,91,.18); }
-[data-reference-layout='world'] .native-room-depth { margin-top:12px; }
 
-.native-room-depth {
-  position:relative;
-  margin-top:20px;
-  padding-top:20px;
-  border-top:1px solid rgba(139,110,98,.12);
+.legacy-capability-vault {
+  border:1px solid rgba(139,110,98,.12);
+  border-radius:14px;
+  background:rgba(255,251,247,.56);
+  color:#7e6a63;
 }
-.native-room-depth::before {
-  content:'DEEPER ROOM DATA + EXISTING TOOLS';
-  position:absolute;
-  top:-7px;
-  left:12px;
-  padding:0 8px;
-  background:var(--glow-bg,#f6eee8);
-  font-size:7px;
+.legacy-capability-vault > summary {
+  list-style:none;
+  cursor:pointer;
+  padding:12px 14px;
+  font-size:8px;
   font-weight:600;
-  letter-spacing:.16em;
-  color:#aa948b;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  user-select:none;
+}
+.legacy-capability-vault > summary::-webkit-details-marker { display:none; }
+.legacy-capability-vault > summary::after { content:'+'; float:right; font-size:14px; line-height:10px; }
+.legacy-capability-vault[open] > summary::after { content:'−'; }
+.legacy-capability-vault__content {
+  border-top:1px solid rgba(139,110,98,.12);
+  padding:16px;
 }
 
 .reference-room [data-glow-voice-open] { touch-action:manipulation; }
@@ -128,7 +132,7 @@
   .reference-room h1 { font-size:30px; }
   .paper-note { min-height:295px; }
   .reference-room .ref-card { border-radius:13px; }
-  .native-room-depth { margin-top:14px; }
+  .legacy-capability-vault { margin-top:14px; }
 }
 
 @media (prefers-reduced-motion:no-preference) {
