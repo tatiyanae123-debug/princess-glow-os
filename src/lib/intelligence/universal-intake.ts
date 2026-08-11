@@ -15,6 +15,8 @@ export type IntakeClassification = {
   extracted: Record<string, unknown>;
 };
 
+type IntakeContext={sourceRoute?:string};
+
 function normalize(value: string) { return value.toLowerCase().replace(/\s+/g, ' ').trim(); }
 
 export function classifyUniversalInput(input: { text?: string; filename?: string; mimeType?: string }): IntakeClassification {
@@ -23,10 +25,15 @@ export function classifyUniversalInput(input: { text?: string; filename?: string
   const firstLine = (input.text ?? '').split(/\r?\n/).map((line) => line.trim()).find(Boolean);
   const title = firstLine?.slice(0, 120) || input.filename || 'Untitled intake';
   const rules: Array<{ match: boolean; type: string; confidence: number; destinations: string[] }> = [
-    { match: /receipt|order total|subtotal|purchase|paid|invoice/.test(text), type: 'receipt', confidence: .92, destinations: ['finance', 'beauty', 'closet'] },
+    { match: /recipe|ingredients|meal prep|breakfast|lunch|dinner|grocery|groceries|pantry|fridge|food/.test(text), type: 'food', confidence: .9, destinations: ['food','planning','home','finance'] },
+    { match: /dress|shirt|pants|jeans|skirt|shoes|heels|bag|outfit|wardrobe|closet|jacket|coat/.test(text), type: 'clothing', confidence: .88, destinations: ['closet','finance','calendar'] },
+    { match: /medication|medicine|prescription|supplement|vitamin|dose|tablet|capsule/.test(text), type: 'wellness', confidence: .9, destinations: ['wellness','today','calendar'] },
+    { match: /rent|budget|bill|subscription|bank|credit card|savings|income|paycheck|expense/.test(text), type: 'finance', confidence: .9, destinations: ['finance','financial-brain','calendar'] },
+    { match: /clean|laundry|bedroom|bathroom|kitchen|home reset|house|restock/.test(text), type: 'home', confidence: .86, destinations: ['home','tasks','planning'] },
+    { match: /receipt|order total|subtotal|purchase|paid|invoice/.test(text), type: 'receipt', confidence: .92, destinations: ['finance', 'beauty-lab', 'closet', 'food'] },
     { match: /appointment|dentist|doctor|salon|interview|reservation/.test(text), type: 'appointment', confidence: .9, destinations: ['calendar', 'tasks', 'timeline'] },
     { match: /schedule|shift|roster|class schedule|work schedule/.test(text), type: 'schedule', confidence: .9, destinations: ['calendar', 'today', 'planning'] },
-    { match: /remind|remember to|don't forget|do not forget/.test(text), type: 'reminder', confidence: .88, destinations: ['tasks', 'today'] },
+    { match: /remind|reminder|remember to|don't forget|do not forget/.test(text), type: 'reminder', confidence: .9, destinations: ['tasks', 'today', 'briefings'] },
     { match: /todo|to-do|need to|call |email |buy |pick up|research |submit /.test(text), type: 'task', confidence: .84, destinations: ['tasks', 'today'] },
     { match: /goal|by the end of|target|save \$|want to reach/.test(text), type: 'goal', confidence: .82, destinations: ['goals', 'planning'] },
     { match: /project|prototype|milestone|vendor|manufacturer|creative brief/.test(text), type: 'project', confidence: .8, destinations: ['projects', 'tasks', 'memory'] },
@@ -46,17 +53,18 @@ export function classifyUniversalInput(input: { text?: string; filename?: string
   return { type: matched.type, title, confidence: matched.confidence, destinations: matched.destinations, extracted };
 }
 
-export async function ingestText(userId: string, rawText: string) {
+export async function ingestText(userId: string, rawText: string, context:IntakeContext={}) {
   const heuristic = classifyUniversalInput({ text: rawText });
   const ai = await analyzeUniversalInputWithAI({ text: rawText });
   const classification: IntakeClassification = ai ? { type: ai.type, title: ai.title, confidence: ai.confidence, destinations: ai.destinations, extracted: ai.extracted } : heuristic;
-  const [inbox] = await db.insert(glowInboxItems).values({ userId, rawText, source: ai ? 'universal_intake_ai' : 'universal_intake', suggestedType: classification.type, suggestedTitle: classification.title, confidence: classification.confidence, metadata: { destinations: classification.destinations, extracted: classification.extracted, summary: ai?.summary ?? null } }).returning();
-  const [artifact] = await db.insert(universalIntakeArtifacts).values({ userId, inboxItemId: inbox.id, kind: 'text', sourceText: rawText, detectedType: classification.type, detectedTitle: classification.title, extracted: classification.extracted, proposedDestinations: classification.destinations, confidence: classification.confidence, analysisStatus: ai ? 'ai_analyzed' : 'analyzed' }).returning();
-  await db.insert(glowEntities).values({ userId, entityType: 'intake_artifact', sourceTable: 'universal_intake_artifacts', sourceId: artifact.id, title: classification.title, summary: ai?.summary ?? rawText.slice(0, 500), searchableText: rawText, metadata: { detectedType: classification.type, destinations: classification.destinations } }).onConflictDoNothing();
+  const metadata={ destinations: classification.destinations, extracted: classification.extracted, summary: ai?.summary ?? null, sourceRoute:context.sourceRoute??null };
+  const [inbox] = await db.insert(glowInboxItems).values({ userId, rawText, source: ai ? 'universal_intake_ai' : 'universal_intake', suggestedType: classification.type, suggestedTitle: classification.title, confidence: classification.confidence, metadata }).returning();
+  const [artifact] = await db.insert(universalIntakeArtifacts).values({ userId, inboxItemId: inbox.id, kind: 'text', sourceText: rawText, detectedType: classification.type, detectedTitle: classification.title, extracted: {...classification.extracted,sourceRoute:context.sourceRoute??null}, proposedDestinations: classification.destinations, confidence: classification.confidence, analysisStatus: ai ? 'ai_analyzed' : 'analyzed' }).returning();
+  await db.insert(glowEntities).values({ userId, entityType: 'intake_artifact', sourceTable: 'universal_intake_artifacts', sourceId: artifact.id, title: classification.title, summary: ai?.summary ?? rawText.slice(0, 500), searchableText: rawText, metadata: { detectedType: classification.type, destinations: classification.destinations, sourceRoute:context.sourceRoute??null } }).onConflictDoNothing();
   return { inbox, artifact, classification };
 }
 
-export async function ingestFile(userId: string, file: File, note = '') {
+export async function ingestFile(userId: string, file: File, note = '', context:IntakeContext={}) {
   if (!file.size) throw new Error('The selected file is empty.');
   if (file.size > MAX_STORED_FILE_BYTES) throw new Error('For now, upload files smaller than 3 MB so Glow can safely store and analyze them in one request.');
   const bytes = Buffer.from(await file.arrayBuffer());
@@ -69,8 +77,9 @@ export async function ingestFile(userId: string, file: File, note = '') {
   const ai = await analyzeUniversalInputWithAI({ filename: file.name, mimeType: file.type, base64: file.type.startsWith('image/') ? undefined : base64, dataUrl: file.type.startsWith('image/') ? dataUrl : undefined, text: extractedText, note });
   const classification: IntakeClassification = ai ? { type: ai.type, title: ai.title, confidence: ai.confidence, destinations: ai.destinations, extracted: { ...heuristic.extracted, ...ai.extracted } } : heuristic;
   const rawText = combinedText || ai?.summary || `${file.name} (${file.type || 'file'})`;
-  const [inbox] = await db.insert(glowInboxItems).values({ userId, rawText, source: ai ? 'file_upload_ai' : 'file_upload', suggestedType: classification.type, suggestedTitle: classification.title, confidence: classification.confidence, metadata: { filename: file.name, mimeType: file.type, sizeBytes: file.size, destinations: classification.destinations, extracted: classification.extracted, summary: ai?.summary ?? null } }).returning();
-  const [artifact] = await db.insert(universalIntakeArtifacts).values({ userId, inboxItemId: inbox.id, kind: file.type.startsWith('image/') ? 'image' : file.type.includes('pdf') ? 'pdf' : 'file', originalName: file.name, mimeType: file.type || null, sizeBytes: file.size, sourceText: extractedText || note || ai?.summary || null, contentDataUrl: dataUrl, detectedType: classification.type, detectedTitle: classification.title, extracted: classification.extracted, proposedDestinations: classification.destinations, confidence: classification.confidence, analysisStatus: ai ? 'ai_analyzed' : textLike ? 'analyzed' : 'stored_for_deeper_analysis' }).returning();
-  await db.insert(glowEntities).values({ userId, entityType: 'intake_artifact', sourceTable: 'universal_intake_artifacts', sourceId: artifact.id, title: classification.title, summary: ai?.summary ?? rawText.slice(0, 500), searchableText: `${file.name} ${combinedText} ${ai?.summary ?? ''}`.trim(), metadata: { detectedType: classification.type, destinations: classification.destinations, mimeType: file.type } }).onConflictDoNothing();
+  const sharedMetadata={filename:file.name,mimeType:file.type,sizeBytes:file.size,destinations:classification.destinations,extracted:classification.extracted,summary:ai?.summary??null,sourceRoute:context.sourceRoute??null};
+  const [inbox] = await db.insert(glowInboxItems).values({ userId, rawText, source: ai ? 'file_upload_ai' : 'file_upload', suggestedType: classification.type, suggestedTitle: classification.title, confidence: classification.confidence, metadata: sharedMetadata }).returning();
+  const [artifact] = await db.insert(universalIntakeArtifacts).values({ userId, inboxItemId: inbox.id, kind: file.type.startsWith('image/') ? 'image' : file.type.includes('pdf') ? 'pdf' : 'file', originalName: file.name, mimeType: file.type || null, sizeBytes: file.size, sourceText: extractedText || note || ai?.summary || null, contentDataUrl: dataUrl, detectedType: classification.type, detectedTitle: classification.title, extracted: {...classification.extracted,sourceRoute:context.sourceRoute??null}, proposedDestinations: classification.destinations, confidence: classification.confidence, analysisStatus: ai ? 'ai_analyzed' : textLike ? 'analyzed' : 'stored_for_deeper_analysis' }).returning();
+  await db.insert(glowEntities).values({ userId, entityType: 'intake_artifact', sourceTable: 'universal_intake_artifacts', sourceId: artifact.id, title: classification.title, summary: ai?.summary ?? rawText.slice(0, 500), searchableText: `${file.name} ${combinedText} ${ai?.summary ?? ''}`.trim(), metadata: { detectedType: classification.type, destinations: classification.destinations, mimeType: file.type, sourceRoute:context.sourceRoute??null } }).onConflictDoNothing();
   return { inbox, artifact, classification };
 }
