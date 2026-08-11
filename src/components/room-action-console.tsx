@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ArrowRight, CheckCircle2, Plus, Sparkles, WandSparkles } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Sparkles, WandSparkles } from 'lucide-react';
 import { getSystemRoom } from '@/lib/intelligence/system-registry';
 
 type RoomUpgrade = {
@@ -57,13 +57,13 @@ export function RoomActionConsole(){
         <div><p className="text-[8px] font-bold uppercase tracking-[.18em] text-[var(--room-accent,#9c7470)]">DO IT FOR ME</p><h3 className="glow-display mt-1 max-w-2xl text-[20px] leading-tight text-[var(--glow-text)]">{upgrade.hero}</h3></div>
         <WandSparkles size={22} className="shrink-0 text-[var(--room-accent,#a67974)]"/>
       </div>
-      <button type="button" className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#2e2824] px-4 py-2 text-[9px] font-semibold text-white shadow-sm transition hover:-translate-y-px"><Sparkles size={11}/>{upgrade.action}<ArrowRight size={11}/></button>
+      <Link href="/brain" className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#2e2824] px-4 py-2 text-[9px] font-semibold text-white shadow-sm transition hover:-translate-y-px"><Sparkles size={11}/>{upgrade.action}<ArrowRight size={11}/></Link>
       <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">{upgrade.metrics.map(([label,value])=><div key={label} className="rounded-[12px] border border-white/80 bg-white/50 p-3"><p className="text-[7px] font-bold uppercase tracking-[.14em] text-stone-400">{label}</p><p className="glow-display mt-1 text-[14px] text-stone-800">{value}</p></div>)}</div>
       <div className="mt-4 flex gap-1.5 overflow-x-auto pb-1">{upgrade.workspace.map(item=><span key={item} className="min-w-max rounded-full border border-[var(--glow-border)] bg-white/45 px-2.5 py-1.5 text-[8px] text-stone-600">{item}</span>)}</div>
     </div>
     <div className="paper-card flex flex-col justify-between p-4 sm:p-5">
       <div><div className="flex items-center gap-2"><Sparkles size={12} className="text-[var(--room-accent,#a67974)]"/><p className="text-[8px] font-bold uppercase tracking-[.18em] text-[var(--room-accent,#9c7470)]">Glow intelligence</p></div><p className="mt-3 text-[11px] leading-5 text-stone-600">{upgrade.intelligence}</p></div>
-      <div className="mt-5"><p className="mb-2 text-[7px] font-bold uppercase tracking-[.16em] text-stone-400">Connected workflow</p><div className="flex flex-wrap gap-1.5">{upgrade.related.map(([label,href])=><Link key={href} href={href} className="inline-flex items-center gap-1 rounded-full bg-[#f1e5df] px-2.5 py-1.5 text-[8px] text-stone-700">{label}<ArrowRight size={8}/></Link>)}</div><button type="button" className="mt-3 inline-flex items-center gap-1 text-[8px] font-semibold text-[#9a6d6d]"><Plus size={10}/>Quick add</button><span className="ml-3 inline-flex items-center gap-1 text-[8px] text-stone-400"><CheckCircle2 size={10}/>History + undo ready</span></div>
+      <div className="mt-5"><p className="mb-2 text-[7px] font-bold uppercase tracking-[.16em] text-stone-400">Connected workflow</p><div className="flex flex-wrap gap-1.5">{upgrade.related.map(([label,href])=><Link key={href} href={href} className="inline-flex items-center gap-1 rounded-full bg-[#f1e5df] px-2.5 py-1.5 text-[8px] text-stone-700">{label}<ArrowRight size={8}/></Link>)}</div><Link href="/intake" className="mt-3 inline-flex items-center gap-1 text-[8px] font-semibold text-[#9a6d6d]">+ Quick add</Link><span className="ml-3 inline-flex items-center gap-1 text-[8px] text-stone-400"><CheckCircle2 size={10}/>History + undo ready</span></div>
     </div>
   </section>;
 }
