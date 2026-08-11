@@ -32,19 +32,23 @@ export async function importAppleReminders(userId:string,payload:AppleReminderIm
     const importance=(intelligence.urgency==='overdue'||intelligence.urgency==='today')?0.85:0.55;
     const [saved]=await db.insert(appleReminders).values({userId,externalId:reminder.externalId,listName:reminder.listName,title:reminder.title,notes:reminder.notes??null,dueAt,completed:reminder.completed,lastSyncedAt:now,importAudit:{importedAt:now.toISOString(),source:'iphone_shortcuts',understoodAs:intelligence.domain,destinations:intelligence.destinations}}).onConflictDoUpdate({target:[appleReminders.userId,appleReminders.externalId],set:{listName:reminder.listName,title:reminder.title,notes:reminder.notes??null,dueAt,completed:reminder.completed,lastSyncedAt:now,importAudit:{importedAt:now.toISOString(),source:'iphone_shortcuts',understoodAs:intelligence.domain,destinations:intelligence.destinations}}}).returning();
 
-    await db.insert(glowEntities).values({
-      userId,
-      entityType:'reminder',
-      sourceTable:'apple_reminders',
-      sourceId:saved.id,
-      title:saved.title,
-      summary:saved.notes??`${saved.listName} · ${intelligence.intent}`,
-      searchableText:`${saved.title} ${saved.notes??''} ${saved.listName}`.trim(),
-      status:saved.completed?'completed':'active',
-      importance,
-      metadata:{source:'apple_reminders',externalId:saved.externalId,listName:saved.listName,dueAt:saved.dueAt?.toISOString()??null,domain:intelligence.domain,destinations:intelligence.destinations,intent:intelligence.intent,nextAction:intelligence.nextAction,urgency:intelligence.urgency,readOnlySource:true},
-      updatedAt:now,
-    }).onConflictDoUpdate({target:[glowEntities.userId,glowEntities.sourceTable,glowEntities.sourceId],set:{title:saved.title,summary:saved.notes??`${saved.listName} · ${intelligence.intent}`,searchableText:`${saved.title} ${saved.notes??''} ${saved.listName}`.trim(),status:saved.completed?'completed':'active',importance,metadata:{source:'apple_reminders',externalId:saved.externalId,listName:saved.listName,dueAt:saved.dueAt?.toISOString()??null,domain:intelligence.domain,destinations:intelligence.destinations,intent:intelligence.intent,nextAction:intelligence.nextAction,urgency:intelligence.urgency,readOnlySource:true},updatedAt:now}});
+    try {
+      await db.insert(glowEntities).values({
+        userId,
+        entityType:'reminder',
+        sourceTable:'apple_reminders',
+        sourceId:saved.id,
+        title:saved.title,
+        summary:saved.notes??`${saved.listName} · ${intelligence.intent}`,
+        searchableText:`${saved.title} ${saved.notes??''} ${saved.listName}`.trim(),
+        status:saved.completed?'completed':'active',
+        importance,
+        metadata:{source:'apple_reminders',externalId:saved.externalId,listName:saved.listName,dueAt:saved.dueAt?.toISOString()??null,domain:intelligence.domain,destinations:intelligence.destinations,intent:intelligence.intent,nextAction:intelligence.nextAction,urgency:intelligence.urgency,readOnlySource:true},
+        updatedAt:now,
+      }).onConflictDoUpdate({target:[glowEntities.userId,glowEntities.sourceTable,glowEntities.sourceId],set:{title:saved.title,summary:saved.notes??`${saved.listName} · ${intelligence.intent}`,searchableText:`${saved.title} ${saved.notes??''} ${saved.listName}`.trim(),status:saved.completed?'completed':'active',importance,metadata:{source:'apple_reminders',externalId:saved.externalId,listName:saved.listName,dueAt:saved.dueAt?.toISOString()??null,domain:intelligence.domain,destinations:intelligence.destinations,intent:intelligence.intent,nextAction:intelligence.nextAction,urgency:intelligence.urgency,readOnlySource:true},updatedAt:now}});
+    } catch (error) {
+      console.error('[Glow OS] Reminder imported but entity indexing is unavailable', error);
+    }
     imported+=1;
   }
   await db.update(appleReminderConnections).set({status:'connected',lastImportedAt:now,lastError:null,updatedAt:now}).where(eq(appleReminderConnections.userId,userId));
