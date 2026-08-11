@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import { navItems } from '@/lib/navigation';
+import { ROOM_ACTIONS } from '@/lib/intelligence/room-actions';
+import { DEEP_WORKSPACES } from '@/lib/workspaces/deep-workspace-blueprints';
 
 const ROOT=process.cwd();
 const SRC=path.join(ROOT,'src');
@@ -41,10 +44,23 @@ function literalInternalLinks(){
   return links;
 }
 
+function configuredLinks(){
+  const links:Array<{source:string;href:string}>=navItems.map(item=>({source:`navigation:${item.label}`,href:item.href}));
+  for(const [room,actions] of Object.entries(ROOM_ACTIONS))for(const action of actions)links.push({source:`room-action:${room}:${action.label}`,href:action.href});
+  for(const [room,spec] of Object.entries(DEEP_WORKSPACES))for(const module of spec.modules)if(module.href)links.push({source:`deep-workspace:${room}:${module.title}`,href:module.href});
+  return links;
+}
+
 describe('Glow OS UI integrity',()=>{
   it('every literal internal link points at a real application page',()=>{
     const routes=appRoutes();
     const missing=literalInternalLinks().filter(({href})=>!href.startsWith('/api/')&&!routes.has(href));
+    expect(missing).toEqual([]);
+  });
+
+  it('every configured navigation, action-dock, and deep-workspace link points at a real page',()=>{
+    const routes=appRoutes();
+    const missing=configuredLinks().filter(({href})=>!href.startsWith('/api/')&&!routes.has(href));
     expect(missing).toEqual([]);
   });
 
