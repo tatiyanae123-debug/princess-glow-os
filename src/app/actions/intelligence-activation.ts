@@ -36,10 +36,24 @@ const statements = [
 `CREATE INDEX IF NOT EXISTS glow_notices_user_status_idx ON glow_notices(user_id,status)`,
 ];
 
+let activationPromise:Promise<void>|null=null;
+
+export async function ensureGlowIntelligenceSchema():Promise<void>{
+  if(!activationPromise){
+    activationPromise=(async()=>{
+      for(const statement of statements)await db.execute(sql.raw(statement));
+    })().catch(error=>{
+      activationPromise=null;
+      throw error;
+    });
+  }
+  return activationPromise;
+}
+
 export async function activateGlowIntelligenceAction(formData:FormData):Promise<void>{
   const session=await auth();if(!session?.user?.id)redirect('/sign-in');
   const confirmation=String(formData.get('confirmation')??'').trim().toUpperCase();
   if(confirmation!=='ACTIVATE')throw new Error('Type ACTIVATE to confirm the idempotent intelligence schema activation.');
-  for(const statement of statements) await db.execute(sql.raw(statement));
+  await ensureGlowIntelligenceSchema();
   revalidatePath('/settings/intelligence');revalidatePath('/today');revalidatePath('/intake');revalidatePath('/inbox');
 }
