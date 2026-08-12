@@ -1,0 +1,390 @@
+/* Dashboard-only reconstruction against the approved final reference image.
+   This file intentionally overrides shared room styles only when the active room is Dashboard. */
+
+@media (min-width:1024px){
+  .room-canvas[data-room="dashboard"] .glow-global-header{
+    height:78px!important;
+    padding:0 64px!important;
+    border-bottom-color:transparent!important;
+    background:#fff!important;
+  }
+  .room-canvas[data-room="dashboard"] .glow-search-pill{
+    display:flex!important;
+    width:302px!important;
+    min-width:302px!important;
+    height:46px!important;
+    padding:0 18px!important;
+    border:1px solid #e4e4e4!important;
+    border-radius:24px!important;
+    background:#fff!important;
+    color:#737373!important;
+    font-size:14px!important;
+    justify-content:space-between!important;
+  }
+  .room-canvas[data-room="dashboard"] .glow-header-action{
+    width:46px!important;
+    height:46px!important;
+    border-radius:999px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    color:#1c1c1e!important;
+  }
+  .room-canvas[data-room="dashboard"] .glow-header-create{
+    width:50px!important;
+    height:50px!important;
+    background:#c65d75!important;
+    color:#fff!important;
+  }
+  .room-canvas[data-room="dashboard"] .glow-global-header>div{
+    gap:10px!important;
+  }
+
+  .room-canvas[data-room="dashboard"] main{
+    padding:18px 64px 42px!important;
+  }
+  .room-canvas[data-room="dashboard"] main>div{
+    max-width:none!important;
+  }
+  .room-canvas[data-room="dashboard"] .reference-room{
+    font-size:14px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dashboard-page{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+  }
+
+  .room-canvas[data-room="dashboard"] .dashboard-greeting{
+    margin:0 0 42px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dashboard-greeting h1{
+    margin:0!important;
+    font-size:47px!important;
+    line-height:1.02!important;
+    letter-spacing:-.025em!important;
+    font-weight:500!important;
+  }
+  .room-canvas[data-room="dashboard"] .dashboard-greeting h1 em{
+    color:#bc6678!important;
+    font-size:.98em!important;
+    font-weight:400!important;
+  }
+  .room-canvas[data-room="dashboard"] .dashboard-greeting p{
+    margin:8px 0 0!important;
+    color:#606065!important;
+    font-size:20px!important;
+    line-height:1.3!important;
+  }
+
+  .room-canvas[data-room="dashboard"] .section-heading{
+    margin:0 0 18px!important;
+  }
+  .room-canvas[data-room="dashboard"] .section-heading b{
+    font-size:13px!important;
+    letter-spacing:.025em!important;
+  }
+  .room-canvas[data-room="dashboard"] .section-heading button{
+    color:#55555a!important;
+    font-size:13px!important;
+  }
+
+  .room-canvas[data-room="dashboard"] .dash-glance{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:18px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-glance .board-card{
+    height:192px!important;
+    min-height:192px!important;
+    padding:24px 24px 22px!important;
+    border:1px solid #e6e6e6!important;
+    border-radius:9px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-glance .mini{
+    margin:0!important;
+    color:#55555a!important;
+    font-size:14px!important;
+    line-height:1.25!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-glance h3{
+    margin:23px 0 0!important;
+    color:#211d1b!important;
+    font-size:27px!important;
+    line-height:1.08!important;
+    letter-spacing:-.015em!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-glance .board-card>span{
+    display:block!important;
+    margin-top:44px!important;
+    color:#777176!important;
+    font-size:14px!important;
+    line-height:1.2!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-glance .board-card:nth-child(2)>span{
+    margin-top:54px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-glance .board-card:nth-child(3)>span{
+    margin-top:54px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-glance .board-card:nth-child(4)>span{
+    margin-top:18px!important;
+  }
+  .room-canvas[data-room="dashboard"] .danger{color:#c65d75!important}
+  .room-canvas[data-room="dashboard"] .green{color:#688a5d!important}
+
+  .room-canvas[data-room="dashboard"] .dash-middle{
+    display:grid!important;
+    grid-template-columns:.92fr 1.08fr 1fr!important;
+    gap:18px!important;
+    margin-top:25px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-middle>.board-card{
+    min-height:312px!important;
+    padding:26px 24px!important;
+    border:1px solid #e6e6e6!important;
+    border-radius:9px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-middle>.board-card:first-child{
+    background:linear-gradient(135deg,#fff 0%,#fff 42%,#fbf7f7 100%)!important;
+  }
+  .room-canvas[data-room="dashboard"] .board-label{
+    margin:0 0 22px!important;
+    color:#4c4847!important;
+    font-size:12px!important;
+    letter-spacing:.025em!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-middle blockquote{
+    margin:0 0 19px!important;
+    font-size:27px!important;
+    line-height:1.16!important;
+    letter-spacing:-.012em!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-middle>.board-card:first-child>p:not(.board-label){
+    max-width:255px!important;
+    margin:0 0 18px!important;
+    color:#6f6a68!important;
+    font-size:16px!important;
+    line-height:1.48!important;
+  }
+  .room-canvas[data-room="dashboard"] .board-btn{
+    min-height:42px!important;
+    padding:0 18px!important;
+    border-radius:6px!important;
+    font-size:14px!important;
+    background:#c65d75!important;
+    border-color:#c65d75!important;
+  }
+  .room-canvas[data-room="dashboard"] .time-list li{
+    grid-template-columns:96px 1fr!important;
+    min-height:51px!important;
+    font-size:14px!important;
+  }
+  .room-canvas[data-room="dashboard"] .time-list li span{
+    color:#777176!important;
+    font-size:14px!important;
+  }
+  .room-canvas[data-room="dashboard"] .check-lines li{
+    min-height:48px!important;
+    gap:13px!important;
+    font-size:14px!important;
+  }
+  .room-canvas[data-room="dashboard"] .check-lines svg{
+    width:20px!important;
+    height:20px!important;
+    stroke-width:1.5!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-middle .link{
+    float:right!important;
+    margin-top:8px!important;
+    color:#c65d75!important;
+    font-size:13px!important;
+  }
+
+  .room-canvas[data-room="dashboard"] .dash-strip{
+    position:relative!important;
+    display:grid!important;
+    grid-template-columns:.62fr .62fr .96fr .96fr .85fr 1.20fr!important;
+    gap:0!important;
+    margin-top:24px!important;
+    border:0!important;
+    border-radius:0!important;
+    overflow:visible!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-strip>div{
+    min-height:177px!important;
+    padding:22px!important;
+    border:1px solid #e6e6e6!important;
+    border-radius:9px!important;
+    background:#fff!important;
+    gap:11px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-strip>div:nth-child(1){
+    border-radius:9px 0 0 9px!important;
+    border-right:0!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-strip>div:nth-child(2){
+    margin-right:14px!important;
+    border-radius:0 9px 9px 0!important;
+    border-left:1px solid #e6e6e6!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-strip>div:nth-child(3),
+  .room-canvas[data-room="dashboard"] .dash-strip>div:nth-child(4),
+  .room-canvas[data-room="dashboard"] .dash-strip>div:nth-child(5){
+    margin-right:14px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-strip small{
+    color:#353236!important;
+    font-size:11px!important;
+    letter-spacing:.02em!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-strip b{
+    color:#211d1b!important;
+    font-size:23px!important;
+    line-height:1.1!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-strip span{
+    color:#777176!important;
+    font-size:13px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-strip>div:nth-child(1)::after,
+  .room-canvas[data-room="dashboard"] .dash-strip>div:nth-child(2)::after{
+    content:'→';
+    display:flex;
+    width:25px;
+    height:25px;
+    margin-top:auto;
+    align-items:center;
+    justify-content:center;
+    border:1px solid #b9b5b2;
+    border-radius:50%;
+    color:#4f4b49;
+    font-size:14px;
+  }
+  .room-canvas[data-room="dashboard"] .dash-strip>div:nth-child(1)::after{
+    border-color:#8da169;
+    color:#718d4b;
+  }
+  .room-canvas[data-room="dashboard"] .small-ring{
+    width:88px!important;
+    height:88px!important;
+    border-width:9px!important;
+    font-size:17px!important;
+  }
+  .room-canvas[data-room="dashboard"] .small-ring em{
+    margin-top:3px!important;
+    font-size:8px!important;
+  }
+  .room-canvas[data-room="dashboard"] .mini-progress{
+    width:100%!important;
+    height:7px!important;
+    margin-top:9px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dashboard-quote{
+    min-height:177px!important;
+    margin:0!important;
+    border:0!important;
+    border-radius:9px!important;
+    overflow:hidden!important;
+  }
+  .room-canvas[data-room="dashboard"] .dashboard-quote .photo-quote{
+    left:auto!important;
+    right:18px!important;
+    bottom:22px!important;
+    width:128px!important;
+    color:#302825!important;
+    font-size:14px!important;
+    line-height:1.25!important;
+  }
+}
+
+/* Phone/tablet: preserve the approved visual hierarchy while avoiding the oversized stacked cards seen in the prior build. */
+@media (max-width:1023px){
+  .room-canvas[data-room="dashboard"] .glow-global-header{
+    height:58px!important;
+    padding:0 18px!important;
+  }
+  .room-canvas[data-room="dashboard"] main{
+    padding:22px 18px 34px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dashboard-greeting{
+    margin:0 0 28px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dashboard-greeting h1{
+    font-size:38px!important;
+    line-height:1.02!important;
+  }
+  .room-canvas[data-room="dashboard"] .dashboard-greeting p{
+    margin-top:8px!important;
+    font-size:17px!important;
+  }
+  .room-canvas[data-room="dashboard"] .section-heading{
+    margin:0 0 14px!important;
+  }
+  .room-canvas[data-room="dashboard"] .section-heading b,
+  .room-canvas[data-room="dashboard"] .section-heading button{
+    font-size:12px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-glance{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:10px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-glance .board-card{
+    height:180px!important;
+    padding:20px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-glance .mini{font-size:13px!important}
+  .room-canvas[data-room="dashboard"] .dash-glance h3{font-size:25px!important;margin-top:20px!important}
+  .room-canvas[data-room="dashboard"] .dash-glance .board-card>span{font-size:13px!important;margin-top:34px!important}
+  .room-canvas[data-room="dashboard"] .dash-middle{
+    grid-template-columns:1fr 1fr!important;
+    gap:10px!important;
+    margin-top:14px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-middle>.board-card{
+    min-height:280px!important;
+    padding:20px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-middle>.board-card:nth-child(3){
+    grid-column:1 / -1!important;
+    min-height:auto!important;
+  }
+  .room-canvas[data-room="dashboard"] .board-label{font-size:12px!important;margin-bottom:18px!important}
+  .room-canvas[data-room="dashboard"] .dash-middle blockquote{font-size:26px!important}
+  .room-canvas[data-room="dashboard"] .dash-middle>.board-card:first-child>p:not(.board-label){font-size:15px!important;line-height:1.5!important}
+  .room-canvas[data-room="dashboard"] .time-list li{grid-template-columns:84px 1fr!important;min-height:46px!important;font-size:14px!important}
+  .room-canvas[data-room="dashboard"] .time-list li span{font-size:13px!important}
+  .room-canvas[data-room="dashboard"] .check-lines li{font-size:14px!important;min-height:44px!important}
+  .room-canvas[data-room="dashboard"] .dash-strip{
+    grid-template-columns:1fr 1fr!important;
+    gap:10px!important;
+    margin-top:14px!important;
+    border:0!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-strip>div{
+    min-height:160px!important;
+    margin:0!important;
+    padding:20px!important;
+    border:1px solid #e6e6e6!important;
+    border-radius:9px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-strip>div:last-child{
+    grid-column:1 / -1!important;
+    min-height:190px!important;
+  }
+  .room-canvas[data-room="dashboard"] .dash-strip small{font-size:10px!important}
+  .room-canvas[data-room="dashboard"] .dash-strip b{font-size:22px!important}
+  .room-canvas[data-room="dashboard"] .dash-strip span{font-size:13px!important}
+  .room-canvas[data-room="dashboard"] .small-ring{width:86px!important;height:86px!important;border-width:9px!important;font-size:16px!important}
+}
+
+@media (max-width:640px){
+  .room-canvas[data-room="dashboard"] main{padding:20px 16px 28px!important}
+  .room-canvas[data-room="dashboard"] .dashboard-greeting h1{font-size:34px!important}
+  .room-canvas[data-room="dashboard"] .dashboard-greeting p{font-size:16px!important}
+  .room-canvas[data-room="dashboard"] .dash-glance .board-card{height:168px!important;padding:17px!important}
+  .room-canvas[data-room="dashboard"] .dash-glance h3{font-size:22px!important}
+  .room-canvas[data-room="dashboard"] .dash-middle{grid-template-columns:1fr!important}
+  .room-canvas[data-room="dashboard"] .dash-middle>.board-card:nth-child(3){grid-column:auto!important}
+  .room-canvas[data-room="dashboard"] .dash-middle>.board-card{min-height:auto!important}
+  .room-canvas[data-room="dashboard"] .dash-strip{grid-template-columns:1fr 1fr!important}
+}
