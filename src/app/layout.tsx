@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import './reference-rooms.css';
+import './glow-os-3.css';
 
 export const metadata: Metadata = {
-  title: 'Princess Glow OS',
-  description: 'A polished personal life OS dashboard',
+  title: 'Glow OS',
+  description: 'A calm intelligent personal life operating system',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

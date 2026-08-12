@@ -1,10 +1,19 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 export function ReferenceRoomInteractions(){
   const router=useRouter();
+  const pathname=usePathname();
+
+  useEffect(()=>{
+    try{
+      const saved=window.localStorage.getItem(`glow:last-view:${pathname}`);
+      const current=new URLSearchParams(window.location.search).get('view');
+      if(saved&&!current){router.replace(`${pathname}?view=${encodeURIComponent(saved)}`);}
+    }catch{/* local storage unavailable */}
+  },[pathname,router]);
 
   useEffect(()=>{
     function handleClick(event:MouseEvent){
@@ -20,27 +29,20 @@ export function ReferenceRoomInteractions(){
       if(!action) return;
       event.preventDefault();
 
-      if(action.startsWith('navigate:')){
-        router.push(action.substring('navigate:'.length));
-        return;
-      }
-      if(action.startsWith('quick:')){
-        const name=action.substring('quick:'.length);
-        document.dispatchEvent(new Event('glow:quick-add-'+name));
-        return;
-      }
+      if(action.startsWith('navigate:')){router.push(action.substring('navigate:'.length));return;}
+      if(action.startsWith('quick:')){document.dispatchEvent(new CustomEvent('glow:quick-add',{detail:{module:action.substring('quick:'.length)}}));return;}
       if(action.startsWith('view:')){
-        document.dispatchEvent(new CustomEvent('glow:reference-view',{detail:{view:action.substring('view:'.length)}}));
+        const view=action.substring('view:'.length);
+        try{window.localStorage.setItem(`glow:last-view:${pathname}`,view);}catch{/* ignore */}
+        router.push(`${pathname}?view=${encodeURIComponent(view)}`);
+        document.dispatchEvent(new Event('glow:vault-open'));
         return;
       }
-      if(action==='voice'){
-        document.dispatchEvent(new Event('glow:voice-open'));
-        return;
-      }
+      if(action==='voice'){document.dispatchEvent(new Event('glow:voice-open'));return;}
       document.dispatchEvent(new Event('glow:vault-open'));
     }
     document.addEventListener('click',handleClick);
     return()=>document.removeEventListener('click',handleClick);
-  },[router]);
+  },[pathname,router]);
   return null;
 }
