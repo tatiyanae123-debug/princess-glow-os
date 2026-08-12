@@ -51,6 +51,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const room = roomFor(pathname);
+  const isDashboard = room === 'dashboard';
   const [focus, setFocus] = useState(false);
 
   useEffect(() => {
@@ -75,20 +76,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <GlowProvider>
       <div className="room-canvas min-h-screen bg-white text-[#1C1C1E]" data-room={room} data-focus-mode={focus ? 'true' : 'false'}>
         <div className="mx-auto flex min-h-screen w-full max-w-[1920px] flex-col lg:flex-row">
-          {!focus ? <div className="w-full lg:sticky lg:top-0 lg:h-screen lg:w-[176px] lg:shrink-0"><Sidebar /></div> : null}
+          {!focus ? <div className={isDashboard ? 'w-full lg:sticky lg:top-0 lg:h-screen lg:w-[296px] lg:shrink-0' : 'w-full lg:sticky lg:top-0 lg:h-screen lg:w-[176px] lg:shrink-0'}><Sidebar /></div> : null}
           <div className="min-w-0 flex-1 bg-white">
             {!focus ? <GlobalHeader /> : null}
-            <main className={focus ? 'min-h-screen px-4 py-8 sm:px-7 lg:px-10' : 'min-h-screen px-4 pb-20 pt-3 sm:px-5 lg:px-6 lg:pt-4'}>
-              <div className="mx-auto w-full max-w-[1500px]">
+            <main className={focus ? 'min-h-screen px-4 py-8 sm:px-7 lg:px-10' : isDashboard ? 'min-h-screen px-4 pb-10 pt-4 sm:px-6 lg:px-[64px] lg:pt-[18px]' : 'min-h-screen px-4 pb-20 pt-3 sm:px-5 lg:px-6 lg:pt-4'}>
+              <div className={isDashboard ? 'mx-auto w-full max-w-none' : 'mx-auto w-full max-w-[1500px]'}>
                 <ReferenceRoomWorkspace />
-                {!focus ? <DataConnectionVault>{children}</DataConnectionVault> : null}
+                {!focus && !isDashboard ? <DataConnectionVault>{children}</DataConnectionVault> : null}
               </div>
             </main>
           </div>
         </div>
       </div>
       {focus ? <button type="button" onClick={exitFocus} className="fixed right-5 top-5 z-[100] inline-flex h-10 items-center gap-2 rounded-full border border-[#E6E6E6] bg-white px-4 text-[13px] font-medium text-[#444448] shadow-sm"><X size={15}/>Exit Focus</button> : null}
-      {!focus ? <><ReferenceRoomInteractions /><GlowVoiceCommand /><QuickAdd /><GlowActionButton /></> : null}
+      {!focus ? <><ReferenceRoomInteractions /><GlowVoiceCommand /><QuickAdd />{!isDashboard ? <GlowActionButton /> : null}</> : null}
     </GlowProvider>
   );
 }
