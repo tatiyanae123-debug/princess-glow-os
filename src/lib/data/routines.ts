@@ -55,6 +55,19 @@ export async function deleteRoutine(id: string, userId: string) {
   return routine ?? null;
 }
 
+export async function getStepsByUser(userId: string) {
+  try {
+    return await db
+      .select()
+      .from(routineSteps)
+      .where(eq(routineSteps.userId, userId))
+      .orderBy(asc(routineSteps.order));
+  } catch (error) {
+    console.error('[Glow OS] routine steps unavailable', error);
+    return [];
+  }
+}
+
 export async function getStepsByRoutine(routineId: string, userId: string) {
   try {
     return await db

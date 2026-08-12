@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
 import { RoutineManager } from '@/components/routines/routine-manager';
 import { RitualLibraryExperience } from '@/components/routines/ritual-library-experience';
-import { getRoutinesByUser } from '@/lib/data/routines';
+import { getRoutinesByUser, getStepsByUser } from '@/lib/data/routines';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +11,10 @@ export default async function RoutinesPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
 
-  const routines = await getRoutinesByUser(session.user.id);
+  const [routines, steps] = await Promise.all([
+    getRoutinesByUser(session.user.id),
+    getStepsByUser(session.user.id),
+  ]);
 
   return (
     <AppShell>
@@ -22,7 +25,7 @@ export default async function RoutinesPage() {
           <p className="glow-display mt-1 text-[23px] text-[#40332f]">Routine Library</p>
           <p className="mt-1 text-[9px] leading-5 text-[#826e67]">Create, edit, reorder and maintain the real routines that power the guided Ritual Library above.</p>
         </div>
-        <RoutineManager initialRoutines={routines} />
+        <RoutineManager initialRoutines={routines} initialSteps={steps} />
       </section>
     </AppShell>
   );
