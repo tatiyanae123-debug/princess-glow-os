@@ -3,12 +3,16 @@
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { addInboxItem, finishFocusSession, setActiveLifeMode, startFocusSession, upsertDayReview } from '@/lib/intelligence/adaptive-os';
+import { addInboxItem, finishFocusSession, getLifeModes, setActiveLifeMode, startFocusSession, upsertDayReview } from '@/lib/intelligence/adaptive-os';
 import { captureDayMemory, captureTomorrowBrief } from '@/lib/intelligence/memory-capture';
 import { buildTomorrowBrief } from '@/lib/intelligence/tomorrow';
 
 async function requireUserId(){const session=await auth();if(!session?.user?.id)redirect('/sign-in');return session.user.id;}
-export async function setLifeModeAction(modeId:string):Promise<void>{const userId=await requireUserId();await setActiveLifeMode(userId,modeId);revalidatePath('/today');revalidatePath('/dashboard');}
+
+const LIFE_MODE_DEPENDENT_PATHS=['/today','/dashboard','/planning','/tasks','/calendar','/habits','/routines','/fitness','/wellness','/brain','/briefings','/world'] as const;
+function revalidateLifeModeViews(){for(const path of LIFE_MODE_DEPENDENT_PATHS)revalidatePath(path);}
+
+export async function setLifeModeAction(modeId:string):Promise<void>{const userId=await requireUserId();const modes=await getLifeModes(userId);if(!modes.some(mode=>mode.id===modeId))throw new Error('Life Mode not found for this user.');await setActiveLifeMode(userId,modeId);revalidateLifeModeViews();}
 export async function addInboxItemFormAction(formData:FormData):Promise<void>{const userId=await requireUserId();const rawText=String(formData.get('rawText')??'').trim();if(!rawText)return;await addInboxItem(userId,rawText);revalidatePath('/inbox');revalidatePath('/today');}
 export async function startFocusSessionAction(entityType:string,entityId:string,title:string,plannedMinutes=25):Promise<void>{const userId=await requireUserId();await startFocusSession(userId,entityType,entityId,title,plannedMinutes);revalidatePath('/today');}
 export async function finishFocusSessionFormAction(sessionId:string,formData:FormData):Promise<void>{const userId=await requireUserId();const outcome=String(formData.get('outcome')??'completed');const notes=String(formData.get('notes')??'');await finishFocusSession(userId,sessionId,outcome,notes||undefined);revalidatePath('/today');}
