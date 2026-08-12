@@ -1,6 +1,7 @@
 'use client';
 
-import { usePathname, useSearchParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { Sidebar } from '@/components/ui/sidebar';
 import { GlowProvider } from '@/lib/context/glow-provider';
@@ -49,15 +50,23 @@ function roomFor(pathname: string) {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const searchParams=useSearchParams();
   const router=useRouter();
   const room = roomFor(pathname);
-  const focus=searchParams.get('focus')==='1';
+  const [focus,setFocus]=useState(false);
+
+  useEffect(()=>{
+    const sync=()=>setFocus(new URLSearchParams(window.location.search).get('focus')==='1');
+    sync();
+    window.addEventListener('popstate',sync);
+    document.addEventListener('glow:focus-changed',sync);
+    return()=>{window.removeEventListener('popstate',sync);document.removeEventListener('glow:focus-changed',sync);};
+  },[pathname]);
 
   function exitFocus(){
-    const params=new URLSearchParams(searchParams.toString());
+    const params=new URLSearchParams(window.location.search);
     params.delete('focus');
-    router.replace(params.size?`${pathname}?${params.toString()}`:pathname);
+    router.replace(params.toString()?`${pathname}?${params.toString()}`:pathname);
+    setFocus(false);
   }
 
   return (
