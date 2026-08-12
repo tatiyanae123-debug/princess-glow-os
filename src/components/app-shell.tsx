@@ -21,7 +21,7 @@ function roomFor(pathname: string) {
   if (pathname.startsWith('/tasks')) return 'tasks';
   if (pathname.startsWith('/planning') || pathname.startsWith('/tomorrow')) return 'planning';
   if (pathname.startsWith('/routines')) return 'routines';
-  if (pathname.startsWith('/today')) return 'dashboard';
+  if (pathname.startsWith('/today') || pathname.startsWith('/dashboard')) return 'dashboard';
   if (pathname.startsWith('/habits')) return 'habits';
   if (pathname.startsWith('/fitness')) return 'fitness';
   if (pathname.startsWith('/food')) return 'food';
@@ -29,6 +29,7 @@ function roomFor(pathname: string) {
   if (pathname.startsWith('/hair')) return 'hair';
   if (pathname.startsWith('/wellness') || pathname.startsWith('/maintenance')) return 'wellness';
   if (pathname.startsWith('/finance')) return 'finance';
+  if (pathname.startsWith('/goals')) return 'goals';
   if (pathname.startsWith('/projects')) return 'projects';
   if (pathname.startsWith('/brain') || pathname.startsWith('/inbox') || pathname.startsWith('/intake') || pathname.startsWith('/rules')) return 'brain';
   if (pathname.startsWith('/concierge')) return 'concierge';
@@ -37,7 +38,7 @@ function roomFor(pathname: string) {
   if (pathname.startsWith('/timeline')) return 'timeline';
   if (pathname.startsWith('/briefings')) return 'briefings';
   if (pathname.startsWith('/closet')) return 'closet';
-  if (pathname.startsWith('/world')) return 'world';
+  if (pathname.startsWith('/world') || pathname.startsWith('/life-world')) return 'world';
   if (pathname.startsWith('/home')) return 'home';
   if (pathname.startsWith('/notes') || pathname.startsWith('/resources')) return 'notes';
   if (pathname.startsWith('/connections')) return 'connections';
