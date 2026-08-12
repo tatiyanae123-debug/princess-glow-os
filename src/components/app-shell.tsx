@@ -6,10 +6,8 @@ import { X } from 'lucide-react';
 import { Sidebar } from '@/components/ui/sidebar';
 import { GlowProvider } from '@/lib/context/glow-provider';
 import { QuickAdd } from '@/components/quick-add/quick-add';
-import { ReferenceRoomWorkspace } from '@/components/reference-room-workspace';
 import { ReferenceRoomInteractions } from '@/components/reference-room-interactions';
 import { GlowVoiceCommand } from '@/components/voice/glow-voice-command';
-import { DataConnectionVault } from '@/components/data-connection-vault';
 import { GlobalHeader } from '@/components/global-header';
 import { GlowActionButton } from '@/components/glow-action-button';
 
@@ -95,10 +93,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="min-w-0 flex-1 bg-white">
             {!focus ? <GlobalHeader /> : null}
             <main className={focus ? 'min-h-screen px-4 py-8 sm:px-7 lg:px-10' : 'min-h-screen px-4 pb-20 pt-3 sm:px-5 lg:px-6 lg:pt-4'}>
-              <div className="mx-auto w-full max-w-[1500px]">
-                <ReferenceRoomWorkspace />
-                {!focus ? <DataConnectionVault>{children}</DataConnectionVault> : null}
-              </div>
+              <div className="mx-auto w-full max-w-[1500px]">{children}</div>
             </main>
           </div>
         </div>
