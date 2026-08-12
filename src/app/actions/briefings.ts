@@ -7,7 +7,11 @@ import { db } from '@/db';
 import { briefingSnapshots } from '@/db/schema/completion-v1';
 import { buildPersonalContext } from '@/lib/intelligence/context';
 
-export type BriefingKind = 'morning' | 'evening' | 'weekly' | 'monthly' | 'tomorrow';
+export type BriefingKind = 'morning' | 'evening' | 'weekly' | 'monthly' | 'tomorrow' | 'quarterly' | 'year';
+
+function quarterKey(date: Date) {
+  return `${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1}`;
+}
 
 async function requireUser() {
   const session = await auth();
@@ -27,6 +31,8 @@ function isoWeekKey(date: Date) {
 function periodKey(kind: BriefingKind, date: Date) {
   if (kind === 'weekly') return isoWeekKey(date);
   if (kind === 'monthly') return date.toISOString().slice(0, 7);
+  if (kind === 'quarterly') return quarterKey(date);
+  if (kind === 'year') return String(date.getFullYear());
   return date.toISOString().slice(0, 10);
 }
 
@@ -49,6 +55,12 @@ function summaryFor(kind: BriefingKind, context: Awaited<ReturnType<typeof build
   }
   if (kind === 'monthly') {
     return `Monthly checkpoint: ${context.activeGoals.length} active goal${context.activeGoals.length === 1 ? '' : 's'}, ${openTasks} open task${openTasks === 1 ? '' : 's'}, ${overdue} overdue, and ${context.focusScore}/100 current focus. Use this snapshot to decide what deserves more or less attention next month.`;
+  }
+  if (kind === 'quarterly') {
+    return `Quarterly checkpoint: ${context.activeGoals.length} active goal${context.activeGoals.length === 1 ? '' : 's'} carrying forward, ${context.patterns.length} pattern${context.patterns.length === 1 ? '' : 's'} detected, and a focus score of ${context.focusScore}/100. Decide what this quarter's direction should protect.`;
+  }
+  if (kind === 'year') {
+    return `Year checkpoint: ${context.activeGoals.length} active goal${context.activeGoals.length === 1 ? '' : 's'} in motion right now. Use this as a marker to reflect on the year's direction, not a full year in review.`;
   }
   return `${context.dailyBrief} Your focus score is ${context.focusScore}/100.${topRecommendation ? ` Best next move: ${topRecommendation}.` : ''}`;
 }
