@@ -1,3 +1,9 @@
+import { EditableRoomImage } from '@/components/media/editable-room-image';
+
+function slug(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'room';
+}
+
 export function SectionPage({
   eyebrow,
   title,
@@ -11,15 +17,18 @@ export function SectionPage({
 }) {
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-2 border-b border-[var(--glow-border)] px-1 pb-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="glow-eyebrow">{eyebrow}</p>
-          <h1 className="glow-display mt-1 text-[25px] leading-none tracking-[-.025em] text-[var(--glow-text)]">{title}</h1>
-        </div>
-        <div className="max-w-xl text-right">
-          <p className="text-[9px] leading-4 text-[var(--glow-text-muted)]">{description}</p>
-          <p className="glow-hand mt-1 text-[21px] leading-none text-[var(--room-accent,#9d6f73)]">today&apos;s chapter</p>
-        </div>
+      <div className="overflow-hidden rounded-[20px] border border-[var(--glow-border)]">
+        <EditableRoomImage
+          slot={`hero:${slug(eyebrow || title)}`}
+          label={`${title} hero image`}
+          className="min-h-[128px] sm:min-h-[148px]"
+        >
+          <div className="relative z-10 flex h-full flex-col justify-end gap-1.5 bg-[linear-gradient(0deg,rgba(24,18,17,.62),rgba(24,18,17,.08)_70%,transparent)] p-5 sm:p-6">
+            <p className="text-[9px] font-semibold uppercase tracking-[.18em] text-white/85">{eyebrow}</p>
+            <h1 className="glow-display text-[26px] leading-none tracking-[-.02em] text-white sm:text-[32px]">{title}</h1>
+            <p className="max-w-xl text-[10px] leading-4 text-white/80 sm:text-[10.5px]">{description}</p>
+          </div>
+        </EditableRoomImage>
       </div>
       {children}
     </div>
