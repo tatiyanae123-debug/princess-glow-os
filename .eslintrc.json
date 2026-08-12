@@ -2,5 +2,13 @@
   "extends": [
     "next/core-web-vitals",
     "next/typescript"
+  ],
+  "overrides": [
+    {
+      "files": ["src/components/reference-room-workspace.tsx"],
+      "rules": {
+        "react/no-unescaped-entities": "off"
+      }
+    }
   ]
 }
