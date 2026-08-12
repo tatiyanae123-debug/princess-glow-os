@@ -1,15 +1,16 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
+import { X } from 'lucide-react';
 import { Sidebar } from '@/components/ui/sidebar';
 import { GlowProvider } from '@/lib/context/glow-provider';
 import { QuickAdd } from '@/components/quick-add/quick-add';
-import { UniversalCaptureDock } from '@/components/universal-capture-dock';
 import { ReferenceRoomWorkspace } from '@/components/reference-room-workspace';
 import { ReferenceRoomInteractions } from '@/components/reference-room-interactions';
 import { GlowVoiceCommand } from '@/components/voice/glow-voice-command';
-import { GlobalImageEditor } from '@/components/media/global-image-editor';
 import { DataConnectionVault } from '@/components/data-connection-vault';
+import { GlobalHeader } from '@/components/global-header';
+import { GlowActionButton } from '@/components/glow-action-button';
 
 function roomFor(pathname: string) {
   if (pathname.startsWith('/beauty/lab')) return 'beauty-lab';
@@ -47,30 +48,35 @@ function roomFor(pathname: string) {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const searchParams=useSearchParams();
+  const router=useRouter();
   const room = roomFor(pathname);
+  const focus=searchParams.get('focus')==='1';
+
+  function exitFocus(){
+    const params=new URLSearchParams(searchParams.toString());
+    params.delete('focus');
+    router.replace(params.size?`${pathname}?${params.toString()}`:pathname);
+  }
 
   return (
     <GlowProvider>
-      <div className="room-canvas min-h-screen transition-colors" data-room={room}>
+      <div className="room-canvas min-h-screen bg-white text-[#1C1C1E]" data-room={room} data-focus-mode={focus?'true':'false'}>
         <div className="mx-auto flex min-h-screen w-full max-w-[1920px] flex-col lg:flex-row">
-          <div className="w-full lg:sticky lg:top-0 lg:h-screen lg:w-[258px] lg:shrink-0">
-            <Sidebar />
-          </div>
-          <div className="min-w-0 flex-1">
-            <main className="min-h-screen px-3 pb-28 pt-4 sm:px-5 lg:px-7 lg:pt-7">
-              <div className="mx-auto w-full max-w-[1560px]">
+          {!focus?<div className="w-full lg:sticky lg:top-0 lg:h-screen lg:w-[224px] lg:shrink-0"><Sidebar /></div>:null}
+          <div className="min-w-0 flex-1 bg-white">
+            {!focus?<GlobalHeader />:null}
+            <main className={focus?'min-h-screen px-4 py-10 sm:px-8 lg:px-12':'min-h-screen px-4 pb-24 pt-7 sm:px-6 lg:px-8 lg:pt-9'}>
+              <div className="mx-auto w-full max-w-[1320px]">
                 <ReferenceRoomWorkspace />
-                <DataConnectionVault>{children}</DataConnectionVault>
+                {!focus?<DataConnectionVault>{children}</DataConnectionVault>:null}
               </div>
             </main>
           </div>
         </div>
       </div>
-      <ReferenceRoomInteractions />
-      <GlowVoiceCommand />
-      <GlobalImageEditor />
-      <QuickAdd />
-      <UniversalCaptureDock />
+      {focus?<button type="button" onClick={exitFocus} className="fixed right-5 top-5 z-[100] inline-flex h-10 items-center gap-2 rounded-full border border-[#E6E6E6] bg-white px-4 text-[13px] font-medium text-[#444448] shadow-sm"><X size={15}/>Exit Focus</button>:null}
+      {!focus?<><ReferenceRoomInteractions /><GlowVoiceCommand /><QuickAdd /><GlowActionButton /></>:null}
     </GlowProvider>
   );
 }
