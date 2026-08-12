@@ -5,6 +5,8 @@ import { auth } from '@/auth';
 import { buildPersonalContext } from '@/lib/intelligence/context';
 import { getAppleRemindersByUser } from '@/lib/apple-reminders/service';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
+import { getPersonalRules } from '@/lib/intelligence/adaptive-rules';
+import { getPlanningRuleDayEnd } from '@/lib/intelligence/planning-rule-constraints';
 import { rankRecommendations } from '@/lib/intelligence/recommendations';
 import { buildScheduleProposal } from '@/lib/intelligence/scheduler';
 
@@ -23,9 +25,12 @@ export async function buildMyDayAction(mode: 'standard' | 'lighter' = 'standard'
   const userId = session.user.id;
   const now = new Date();
 
-  const context = await safely('personal context', buildPersonalContext(userId, now), null);
-  const reminders = await safely('Apple Reminders', getAppleRemindersByUser(userId), []);
-  const calendarEvents = await safely('calendar', getCalendarEventsByUser(userId), []);
+  const [context, reminders, calendarEvents, personalRules] = await Promise.all([
+    safely('personal context', buildPersonalContext(userId, now), null),
+    safely('Apple Reminders', getAppleRemindersByUser(userId), []),
+    safely('calendar', getCalendarEventsByUser(userId), []),
+    safely('personal rules', getPersonalRules(userId), []),
+  ]);
 
   const recommendations = rankRecommendations({
     tasks: context?.unfinishedTasks ?? [],
@@ -42,5 +47,8 @@ export async function buildMyDayAction(mode: 'standard' | 'lighter' = 'standard'
     .filter((event) => event.startAt >= start && event.startAt <= end)
     .map((event) => ({ id: event.id, title: event.title, startAt: event.startAt, endAt: event.endAt }));
 
-  return buildScheduleProposal({ recommendations, commitments, now, mode });
+  const ruleDayEnd = getPlanningRuleDayEnd(personalRules, now);
+  const dayEnd = ruleDayEnd && ruleDayEnd > now ? ruleDayEnd : undefined;
+
+  return buildScheduleProposal({ recommendations, commitments, now, mode, dayEnd });
 }
