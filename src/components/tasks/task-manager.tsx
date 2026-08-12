@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import {
   CalendarClock,
@@ -79,11 +80,16 @@ function priorityRank(priority: TaskPriority) {
   return { urgent: 4, high: 3, medium: 2, low: 1 }[priority];
 }
 
+const TASK_VIEWS = new Set<TaskView>(['now', 'upcoming', 'all', 'done']);
+
 export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
+  const searchParams = useSearchParams();
+  const requestedView = searchParams.get('view');
+  const initialView: TaskView = requestedView && TASK_VIEWS.has(requestedView as TaskView) ? (requestedView as TaskView) : 'now';
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [dialogTask, setDialogTask] = useState<Task | 'new' | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Task | null>(null);
-  const [view, setView] = useState<TaskView>('now');
+  const [view, setView] = useState<TaskView>(initialView);
   const del = useServerAction((id: string) => deleteTaskAction(id));
   const quickUpdate = useServerAction((payload: { id: string; data: QuickUpdate }) =>
     updateTaskAction(payload.id, payload.data),

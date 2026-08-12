@@ -1,5 +1,6 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight, Clock3, Pencil, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -99,11 +100,16 @@ function buildMonthDays(anchor: Date) {
   return Array.from({ length: 42 }, (_, index) => new Date(gridStart.getTime() + index * DAY_MS));
 }
 
+const CALENDAR_VIEWS = new Set<ViewMode>(['day', 'week', 'month', 'flow']);
+
 export function EventManager({ initialEvents }: { initialEvents: CalendarEvent[] }) {
+  const searchParams = useSearchParams();
+  const requestedView = searchParams.get('view');
+  const initialView: ViewMode = requestedView && CALENDAR_VIEWS.has(requestedView as ViewMode) ? (requestedView as ViewMode) : 'week';
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents);
   const [dialogEvent, setDialogEvent] = useState<CalendarEvent | 'new' | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<CalendarEvent | null>(null);
-  const [view, setView] = useState<ViewMode>('week');
+  const [view, setView] = useState<ViewMode>(initialView);
   const [anchor, setAnchor] = useState(() => new Date());
   const del = useServerAction((id: string) => deleteCalendarEventAction(id));
   const convert = useServerAction(convertCalendarEventToTaskAction);
