@@ -8,11 +8,9 @@ import { EditorialTopNav } from '@/components/ui/editorial-top-nav';
 import { GlowProvider } from '@/lib/context/glow-provider';
 import { QuickAdd } from '@/components/quick-add/quick-add';
 import { UniversalCaptureDock } from '@/components/universal-capture-dock';
-import { ReferenceRoomWorkspace } from '@/components/reference-room-workspace';
 import { ReferenceRoomInteractions } from '@/components/reference-room-interactions';
 import { GlowVoiceCommand } from '@/components/voice/glow-voice-command';
 import { GlobalImageEditor } from '@/components/media/global-image-editor';
-import { DataConnectionVault } from '@/components/data-connection-vault';
 import { isEditorialRoute } from '@/lib/editorial-routes';
 
 function roomFor(pathname: string) {
@@ -72,8 +70,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <main className="min-h-screen px-3 pb-28 pt-4 sm:px-5 lg:px-7 lg:pt-7">
                 <div className="mx-auto w-full max-w-[1560px]">
                   <TopNav />
-                  <ReferenceRoomWorkspace />
-                  <DataConnectionVault>{children}</DataConnectionVault>
+                  {children}
                 </div>
               </main>
             </div>
