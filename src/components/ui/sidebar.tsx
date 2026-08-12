@@ -30,6 +30,17 @@ export function Sidebar(){
   const [mobileOpen,setMobileOpen]=useState(false);
   const [roomsOpen,setRoomsOpen]=useState(false);
   const byHref=useMemo(()=>new Map(navItems.map(item=>[item.href,item])),[]);
+  const isDashboard=pathname==='/dashboard'||pathname.startsWith('/dashboard/');
+
+  if(isDashboard){
+    return <aside className="reference-sidebar">
+      <div>
+        <Link href="/dashboard" className="reference-brand"><Sparkles/><span>GLOW OS</span></Link>
+        <nav>{PRIMARY.map(item=>{const navItem=byHref.get(item.href);const Icon=navItem?.icon??Sparkles;const active=item.href==='/dashboard';return <Link key={item.href} href={item.href} className={active?'active':''}><Icon/><span>{item.label}</span></Link>;})}<hr/><Link href="/planning?allRooms=1"><CircleEllipsis/><span>All Rooms</span></Link></nav>
+      </div>
+      <Link href="/settings?section=profile" className="sidebar-profile"><div>T</div><span><strong>Tatiyana</strong><em>View Profile</em></span></Link>
+    </aside>;
+  }
 
   const roomItem=(item:NavItem)=>{
     const Icon=item.icon;
