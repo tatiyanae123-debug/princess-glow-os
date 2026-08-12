@@ -18,7 +18,8 @@ export async function previewImportAction(categories: ImportCategory[]) {
 
 export async function previewUploadedImportAction(items: unknown) {
   const session = await auth();
-  if (!session?.user?.id) redirect('/sign-in');
+  const userId = session?.user?.id;
+  if (!userId) redirect('/sign-in');
 
   const parsed = confirmImportSchema.safeParse({ batchCategory: 'uploaded', items });
   if (!parsed.success) return { error: parsed.error.flatten() };
@@ -26,7 +27,7 @@ export async function previewUploadedImportAction(items: unknown) {
   const preview = await Promise.all(
     parsed.data.items.map(async (item) => ({
       item,
-      duplicate: await isDuplicate(session.user.id, item as ImportTemplate),
+      duplicate: await isDuplicate(userId, item as ImportTemplate),
     })),
   );
 
