@@ -11,23 +11,49 @@ function roomFor(pathname:string){
   if(pathname.startsWith('/finance/brain')) return 'financial-brain';
   if(pathname.startsWith('/tasks')) return 'tasks';
   if(pathname.startsWith('/calendar')) return 'calendar';
-  if(pathname.startsWith('/planning')) return 'planning';
+  if(pathname.startsWith('/planning')||pathname.startsWith('/tomorrow')) return 'planning';
   if(pathname.startsWith('/routines')) return 'routines';
   if(pathname.startsWith('/habits')) return 'habits';
   if(pathname.startsWith('/food')) return 'food';
-  if(pathname.startsWith('/wellness')) return 'wellness';
+  if(pathname.startsWith('/wellness')||pathname.startsWith('/maintenance')) return 'wellness';
   if(pathname.startsWith('/beauty')) return 'beauty';
   if(pathname.startsWith('/hair')) return 'hair';
   if(pathname.startsWith('/finance')) return 'finance';
   if(pathname.startsWith('/goals')) return 'goals';
   if(pathname.startsWith('/projects')) return 'projects';
-  if(pathname.startsWith('/notes')) return 'notes';
+  if(pathname.startsWith('/notes')||pathname.startsWith('/resources')) return 'notes';
   if(pathname.startsWith('/settings')) return 'settings';
   if(pathname.startsWith('/inbox')) return 'inbox';
   if(pathname.startsWith('/briefings')) return 'briefings';
   if(pathname.startsWith('/world')) return 'world';
-  if(pathname.startsWith('/brain')||pathname.startsWith('/concierge')||pathname.startsWith('/observations')||pathname.startsWith('/memory')||pathname.startsWith('/timeline')) return 'glow';
-  return 'dashboard';
+  if(pathname.startsWith('/brain')||pathname.startsWith('/concierge')||pathname.startsWith('/observations')||pathname.startsWith('/memory')||pathname.startsWith('/timeline')||pathname.startsWith('/rules')||pathname.startsWith('/intake')) return 'glow';
+  if(pathname.startsWith('/closet')) return 'closet';
+  if(pathname.startsWith('/gmail')) return 'gmail';
+  if(pathname.startsWith('/home')) return 'home';
+  if(pathname.startsWith('/connections')) return 'connections';
+  if(pathname.startsWith('/import')) return 'import';
+  if(pathname.startsWith('/reminders')) return 'reminders';
+  if(pathname.startsWith('/money')) return 'financial-brain';
+  if(pathname.startsWith('/work')) return 'projects';
+  if(pathname.startsWith('/focus')) return 'tasks';
+  if(pathname.startsWith('/graph')) return 'glow';
+  if(pathname.startsWith('/notices')) return 'inbox';
+  if(pathname==='/dashboard'||pathname==='/today') return 'dashboard';
+  return 'generic';
+}
+
+const GENERIC_COPY:Record<string,{kicker:string;title:string;line:string}>={
+  closet:{kicker:'CLOSET',title:'Digital Dressing Room',line:'Your wardrobe, outfits, and packing lists live in your workspace below.'},
+  gmail:{kicker:'COMMUNICATION DESK',title:'Gmail Intelligence',line:'Needs Reply, Important, and Orders are organized in your workspace below.'},
+  home:{kicker:'HOME',title:'Home Command Center',line:'Cleaning, laundry, and room resets are tracked in your workspace below.'},
+  connections:{kicker:'INTEGRATIONS',title:'Connections',line:'Every connected service and its sync status is in your workspace below.'},
+  import:{kicker:'INTAKE',title:'Import Center',line:'Bring in receipts, screenshots, and lists — review them in your workspace below.'},
+  reminders:{kicker:'PLAN',title:'Reminders',line:'Apple Reminders and due items sync into your workspace below.'},
+};
+
+function Generic({room}:{room:string}){
+  const copy=GENERIC_COPY[room];
+  return <div className="board-page"><Top kicker={copy?.kicker??'GLOW OS'} title={copy?.title??'Glow OS'}/><Card><p>{copy?.line??'This room is connected to your Glow OS system.'}</p></Card></div>;
 }
 
 const view=(s:string)=>`view:${s.toLowerCase().replace(/[^a-z0-9]+/g,'-')}`;
@@ -152,8 +178,6 @@ function Glow(){
   return <div className="board-page"><Top kicker="GLOW" title="Glow"/><div className="glow-search"><span>Ask Glow anything...</span><B action="voice">⌘</B></div><div className="prompt-chips">{['Morning Brief','What should I focus on?','Plan my day','Log a habit'].map(x=><B key={x} action="voice">◉ {x}</B>)}</div><nav className="glow-tabs"><B className="active">Briefings</B><B>Insights</B><B>Inbox</B><B>Memory</B></nav><div className="glow-main"><Card><p className="board-label">Morning Brief</p><small>May 14, 2025</small><p>You have a productive day ahead. Focus on finishing your brand deck, move your body, and hydrate well.</p></Card><Img slot="glow:hero" label="Glow botanical"><div className="glow-quote">Glow is here<br/>to simplify,<br/>support, and<br/>elevate your<br/>every day.</div></Img></div></div>;
 }
 
-function Generic(){return <div className="board-page"><Top kicker="GLOW OS" title="Glow OS"/><Card><p>This room is connected to your Glow OS system.</p></Card></div>}
-
 export function ReferenceRoomWorkspace(){
   const room=roomFor(usePathname());
   let page:React.ReactNode;
@@ -179,7 +203,7 @@ export function ReferenceRoomWorkspace(){
     case'inbox':page=<Inbox/>;break;
     case'briefings':page=<Briefings/>;break;
     case'glow':page=<Glow/>;break;
-    default:page=<Generic/>;
+    default:page=<Generic room={room}/>;
   }
   return <div className="reference-room board-exact" data-room-board={room}>{page}</div>;
 }
