@@ -1,7 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
 import { NoteManager } from '@/components/notes/note-manager';
 import { getNotesByUser } from '@/lib/data/notes';
 
@@ -15,9 +14,7 @@ export default async function NotesPage() {
 
   return (
     <AppShell>
-      <SectionPage eyebrow="Notes" title="A place for beautiful ideas" description="Capture thoughts as they arrive and return to them later with ease.">
-        <NoteManager initialNotes={notes} />
-      </SectionPage>
+      <NoteManager initialNotes={notes} />
     </AppShell>
   );
 }
