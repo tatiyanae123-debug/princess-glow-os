@@ -31,17 +31,18 @@ export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
   const userId = session.user.id;
+  const userName = session.user.name;
 
   if (!process.env.DATABASE_URL) {
-    return <AppShell><LivingDashboard data={getFallbackData()} error="DATABASE_URL is not configured." /></AppShell>;
+    return <AppShell><LivingDashboard data={getFallbackData()} error="DATABASE_URL is not configured." userName={userName} /></AppShell>;
   }
 
   try {
     const { getLivingDashboardData } = await import('@/lib/dashboard/living-dashboard');
     const data = await getLivingDashboardData(userId);
-    return <AppShell><LivingDashboard data={data} /></AppShell>;
+    return <AppShell><LivingDashboard data={data} userName={userName} /></AppShell>;
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    return <AppShell><LivingDashboard data={getFallbackData()} error={message} /></AppShell>;
+    return <AppShell><LivingDashboard data={getFallbackData()} error={message} userName={userName} /></AppShell>;
   }
 }
