@@ -1,7 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
 import { EventManager } from '@/components/calendar/event-manager';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
 
@@ -15,9 +14,7 @@ export default async function CalendarPage() {
 
   return (
     <AppShell>
-      <SectionPage eyebrow="Calendar" title="A beautifully paced week" description="Keep your commitments visible without letting the schedule feel crowded.">
-        <EventManager initialEvents={events} />
-      </SectionPage>
+      <EventManager initialEvents={events} />
     </AppShell>
   );
 }

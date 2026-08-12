@@ -1,132 +1,22 @@
 'use client';
 
-import { useState } from 'react';
-import { Plus, Pencil, Trash2, Check } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Dialog } from '@/components/ui/dialog';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { HabitForm } from '@/components/habits/habit-form';
-import { useServerAction } from '@/lib/hooks/use-server-action';
-import { deleteHabitAction, logHabitAction } from '@/app/actions/habits';
-import type { Habit } from '@/lib/types';
-
-function todayKey() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-export function HabitManager({ initialHabits }: { initialHabits: Habit[] }) {
-  const [habits, setHabits] = useState<Habit[]>(initialHabits);
-  const [dialogHabit, setDialogHabit] = useState<Habit | 'new' | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Habit | null>(null);
-  const [loggedToday, setLoggedToday] = useState<Set<string>>(new Set());
-  const del = useServerAction((id: string) => deleteHabitAction(id));
-  const log = useServerAction(logHabitAction);
-
-  function handleSaved(habit: Habit) {
-    setHabits((current) => {
-      const exists = current.some((h) => h.id === habit.id);
-      return exists ? current.map((h) => (h.id === habit.id ? habit : h)) : [habit, ...current];
-    });
-    setDialogHabit(null);
-  }
-
-  function handleDelete() {
-    if (!deleteTarget) return;
-    del.run(deleteTarget.id, () => {
-      setHabits((current) => current.filter((h) => h.id !== deleteTarget.id));
-      setDeleteTarget(null);
-    });
-  }
-
-  function handleLogToday(habit: Habit) {
-    log.run({ habitId: habit.id, loggedDate: todayKey(), count: 1 }, () => {
-      setLoggedToday((current) => new Set(current).add(habit.id));
-    });
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button onClick={() => setDialogHabit('new')} className="flex items-center gap-1.5">
-          <Plus size={14} /> Add habit
-        </Button>
-      </div>
-
-      {habits.length === 0 ? (
-        <Card>
-          <p className="py-4 text-center text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-            No habits yet. Add your first habit to start tracking.
-          </p>
-        </Card>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-3">
-          {habits.map((habit) => {
-            const isLogged = loggedToday.has(habit.id);
-            return (
-              <Card key={habit.id} className="space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold" style={{ color: 'var(--glow-text)' }}>
-                      {habit.name}
-                    </p>
-                    <p className="truncate text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                      {habit.description ?? `${habit.frequency} · target ${habit.targetCount}×`}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => setDialogHabit(habit)}
-                      aria-label="Edit habit"
-                      className="rounded-full p-1.5 transition hover:opacity-70"
-                      style={{ color: 'var(--glow-text-muted)' }}
-                    >
-                      <Pencil size={13} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDeleteTarget(habit)}
-                      aria-label="Delete habit"
-                      className="rounded-full p-1.5 transition hover:opacity-70"
-                      style={{ color: 'var(--glow-text-muted)' }}
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                </div>
-                <Button
-                  type="button"
-                  variant={isLogged ? 'secondary' : 'primary'}
-                  className="flex w-full items-center justify-center gap-1.5"
-                  disabled={isLogged || log.isPending}
-                  onClick={() => handleLogToday(habit)}
-                >
-                  <Check size={14} />
-                  {isLogged ? 'Logged today' : 'Log today'}
-                </Button>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-
-      <Dialog
-        open={dialogHabit !== null}
-        onClose={() => setDialogHabit(null)}
-        title={dialogHabit === 'new' ? 'Add habit' : 'Edit habit'}
-      >
-        <HabitForm habit={dialogHabit === 'new' ? null : dialogHabit} onSaved={handleSaved} onCancel={() => setDialogHabit(null)} />
-      </Dialog>
-
-      <ConfirmDialog
-        open={deleteTarget !== null}
-        title="Delete this habit?"
-        description={deleteTarget ? `"${deleteTarget.name}" will be removed from your list.` : undefined}
-        pending={del.isPending}
-        onCancel={() => setDeleteTarget(null)}
-        onConfirm={handleDelete}
-      />
-    </div>
-  );
+import { useMemo, useState } from 'react';
+import { Check, Flame, Pencil, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { Dialog } from '@/components/ui/dialog'; import { ConfirmDialog } from '@/components/ui/confirm-dialog'; import { HabitForm } from '@/components/habits/habit-form';
+import { useServerAction } from '@/lib/hooks/use-server-action'; import { deleteHabitAction, logHabitAction } from '@/app/actions/habits'; import type { Habit, HabitLog } from '@/lib/types';
+const todayKey=()=>new Date().toISOString().slice(0,10); const dateKey=(d:Date)=>d.toISOString().slice(0,10);
+function streak(logs:HabitLog[]){const keys=new Set(logs.map(l=>l.loggedDate));let count=0;const d=new Date();while(keys.has(dateKey(d))){count++;d.setDate(d.getDate()-1)}return count}
+export function HabitManager({initialHabits,initialLogs}:{initialHabits:Habit[];initialLogs:HabitLog[]}){
+ const [habits,setHabits]=useState(initialHabits); const [logs,setLogs]=useState(initialLogs); const [view,setView]=useState<'garden'|'list'>('garden'); const [dialogHabit,setDialogHabit]=useState<Habit|'new'|null>(null);const [deleteTarget,setDeleteTarget]=useState<Habit|null>(null);
+ const del=useServerAction((id:string)=>deleteHabitAction(id));const log=useServerAction(logHabitAction);const week=useMemo(()=>Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);return d}),[]);
+ const logsFor=(id:string)=>logs.filter(l=>l.habitId===id); const weekDone=(id:string)=>week.filter(d=>logsFor(id).some(l=>l.loggedDate===dateKey(d))).length; const percent=(id:string)=>Math.round(weekDone(id)/7*100);const todayLogged=(id:string)=>logsFor(id).some(l=>l.loggedDate===todayKey());
+ const totalSlots=Math.max(1,habits.length*7),completedSlots=habits.reduce((n,h)=>n+weekDone(h.id),0),score=Math.round(completedSlots/totalSlots*100);const longest=habits.reduce((best,h)=>Math.max(best,streak(logsFor(h.id))),0);const weakest=habits.length?[...habits].sort((a,b)=>percent(a.id)-percent(b.id))[0]:null;
+ function handleSaved(h:Habit){setHabits(c=>c.some(x=>x.id===h.id)?c.map(x=>x.id===h.id?h:x):[h,...c]);setDialogHabit(null)} function handleDelete(){if(!deleteTarget)return;del.run(deleteTarget.id,()=>{setHabits(c=>c.filter(h=>h.id!==deleteTarget.id));setLogs(c=>c.filter(l=>l.habitId!==deleteTarget.id));setDeleteTarget(null)})}
+ function handleLog(h:Habit){if(todayLogged(h.id))return;log.run({habitId:h.id,loggedDate:todayKey(),count:1},data=>setLogs(c=>[data as HabitLog,...c]))}
+ return <div className="editorial-page habits-page"><header className="habits-heading"><div><h1>Habits</h1><p>small steps, big transformation ♕</p></div><button onClick={()=>setDialogHabit('new')}><Plus/> Add Habit</button></header><nav className="habit-periods">{['Today','Week','Month','Year','All Habits'].map((x,i)=><button className={i===0?'active':''} key={x}>{x}</button>)}</nav>
+  <div className="habits-layout"><main><section className="habit-garden"><header><div><h2>MY HABIT GARDEN</h2><p>consistency grows everything ♡</p></div><div><button className={view==='garden'?'active':''} onClick={()=>setView('garden')}>Garden View</button><button className={view==='list'?'active':''} onClick={()=>setView('list')}>List View</button></div></header>{view==='garden'?<div className="garden-bed">{habits.map((h,i)=>{const growth=percent(h.id);return <article className={`habit-plant growth-${growth>=70?'high':growth>=35?'mid':'low'}`} key={h.id}><div className="plant" style={{'--habit-color':h.color||'#8aa178','--plant-delay':`${i*.2}s`} as React.CSSProperties}><i/><i/><i/><i/><b/></div><button className={todayLogged(h.id)?'logged':''} onClick={()=>handleLog(h)}><span>{h.icon||'✦'}</span><b>{h.name}</b><small>{growth}% · {h.targetCount}× {h.frequency}</small>{todayLogged(h.id)&&<Check/>}</button></article>})}{!habits.length&&<div className="garden-empty"><span>🌱</span><h3>Your garden is ready to grow</h3><button onClick={()=>setDialogHabit('new')}>Plant your first habit</button></div>}<div className="garden-shelf"/></div>:<div className="garden-list-preview">The detailed habit list is just below the garden.</div>}</section>
+   <section className="habit-table"><header><div><h2>TODAY’S HABITS</h2><p>today is a new chance to grow</p></div><button onClick={()=>setDialogHabit('new')}><Plus/> Add Habit</button></header><div className="habit-table-head"><span>HABIT</span><span>GOAL</span><span>TODAY</span><span>WEEK</span><span>STREAK</span><span/></div>{habits.map(h=><div className="habit-table-row" key={h.id}><div><i style={{color:h.color||'#bd7d7d'}}>{h.icon||'❀'}</i><span><b>{h.name}</b><small>{h.description||`${h.frequency} practice`}</small></span></div><span>{h.targetCount}× {h.frequency}</span><button className={todayLogged(h.id)?'done':''} onClick={()=>handleLog(h)} aria-label={`Log ${h.name} today`}>{todayLogged(h.id)&&<Check/>}</button><div className="week-dots">{week.map(d=><i className={logsFor(h.id).some(l=>l.loggedDate===dateKey(d))?'done':''} key={dateKey(d)}/>)}</div><strong>{streak(logsFor(h.id))}<small>days</small></strong><div className="habit-row-actions"><button onClick={()=>setDialogHabit(h)} aria-label={`Edit ${h.name}`}><Pencil/></button><button onClick={()=>setDeleteTarget(h)} aria-label={`Delete ${h.name}`}><Trash2/></button></div></div>)}{!habits.length&&<p className="habit-empty-row">No habits yet. Add one to begin tracking real growth.</p>}</section>
+   <section className="habit-intelligence"><b><span>AI</span> HABIT INTELLIGENCE</b><p>{logs.length<3?'There is not enough history to identify a pattern yet. Keep logging to grow your insight.':weakest&&percent(weakest.id)<50?`${weakest.name} needs attention with ${percent(weakest.id)}% completion over the visible seven days.`:`Your seven-day consistency is ${score}%. Keep nurturing what is working.`}</p></section>
+  </main><aside className="habit-rail"><section className="streak-card"><h2>LONGEST ACTIVE STREAK</h2><div><Flame/><strong>{longest}<small>days</small></strong></div><p>{longest?'Your consistency is growing.':'Complete habits on consecutive days to begin a streak.'}</p><div className="rail-week-dots">{week.map(d=><span key={dateKey(d)}><b>{d.toLocaleDateString('en',{weekday:'narrow'})}</b><i className={logs.some(l=>l.loggedDate===dateKey(d))?'done':''}/></span>)}</div></section><section><h2>WEEKLY CONSISTENCY</h2><div className="habit-ring" style={{'--score':`${score*3.6}deg`} as React.CSSProperties}><strong>{score}%<small>actual logs</small></strong></div><p>{completedSlots} completed · {totalSlots-completedSlots} missed</p></section><section><h2>NEEDS ATTENTION</h2>{weakest?<><h3>{weakest.name}</h3><p>{percent(weakest.id)}% completed in the visible week.</p></>:<small>Add habits to reveal what needs care.</small>}</section><section><h2>HABIT SCORE <Sparkles/></h2><strong className="big-score">{score}<small>/100</small></strong><p>Completed habit-days divided by all possible habit-days over the last seven days.</p></section><section><h2>QUICK ACTIONS</h2><button onClick={()=>setDialogHabit('new')}><Plus/> Build Habit</button><button onClick={()=>setView('list')}>☷ Habit List</button></section></aside></div>
+  <Dialog open={dialogHabit!==null} onClose={()=>setDialogHabit(null)} title={dialogHabit==='new'?'Add habit':'Edit habit'}><HabitForm habit={dialogHabit==='new'?null:dialogHabit} onSaved={handleSaved} onCancel={()=>setDialogHabit(null)}/></Dialog><ConfirmDialog open={deleteTarget!==null} title="Delete this habit?" description={deleteTarget?`“${deleteTarget.name}” will be removed from your garden.`:undefined} pending={del.isPending} onCancel={()=>setDeleteTarget(null)} onConfirm={handleDelete}/></div>
 }

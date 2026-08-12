@@ -45,7 +45,7 @@ export function Dialog({
       <div className="absolute inset-0 animate-fade-in bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div
         className={cn(
-          'relative max-h-[92vh] w-full overflow-y-auto rounded-t-[28px] p-5 shadow-xl animate-fade-in sm:max-w-lg sm:rounded-[28px] sm:p-6',
+          'relative max-h-[92dvh] w-full overflow-y-auto overscroll-contain rounded-t-[28px] p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-xl animate-fade-in sm:max-w-lg sm:rounded-[28px] sm:p-6',
           className
         )}
         style={{

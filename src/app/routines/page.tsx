@@ -11,10 +11,12 @@ export default async function RoutinesPage() {
   if (!session?.user?.id) redirect('/sign-in');
 
   const routines = await getRoutinesByUser(session.user.id);
+  const steps = await Promise.all(routines.map((routine) => import('@/lib/data/routines').then(({ getStepsByRoutine }) => getStepsByRoutine(routine.id, session.user!.id!))));
+  const stepsByRoutine = Object.fromEntries(routines.map((routine, index) => [routine.id, steps[index]]));
 
   return (
     <AppShell>
-      <RoutineManager initialRoutines={routines} />
+      <RoutineManager initialRoutines={routines} stepsByRoutine={stepsByRoutine} />
     </AppShell>
   );
 }

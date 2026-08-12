@@ -1,12 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { BellRing, Search, Palette, Save, X } from 'lucide-react';
 import { useGlow } from '@/lib/context/glow-provider';
 import { Button } from '@/components/ui/button';
 import { VisualSettingsPanel } from '@/components/ui/visual-settings-panel';
+import { isEditorialRoute } from '@/lib/editorial-routes';
 
 export function TopNav() {
+  const pathname = usePathname();
+  const editorial = isEditorialRoute(pathname);
   const [dateTime, setDateTime] = useState(new Date());
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { isCustomizing, hasPendingChanges, saveCustomize, discardCustomize } = useGlow();
@@ -26,7 +30,7 @@ export function TopNav() {
   return (
     <>
       <header
-        className="flex flex-col gap-3 p-4 animate-fade-in sm:flex-row sm:items-center sm:justify-between"
+        className={editorial ? 'editorial-topnav' : 'flex flex-col gap-3 p-4 animate-fade-in sm:flex-row sm:items-center sm:justify-between'}
         style={{
           background: 'var(--glow-surface)',
           borderRadius: 'var(--glow-radius)',
@@ -35,7 +39,7 @@ export function TopNav() {
         }}
       >
         {/* Date & Time */}
-        <div>
+        <div className={editorial ? 'editorial-clock' : ''}>
           <p className="text-xs uppercase tracking-[0.3em]" style={{ color: 'var(--glow-text-muted)' }}>
             {dateTime.toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
@@ -57,7 +61,9 @@ export function TopNav() {
             <Search size={14} />
             <input
               className="w-32 bg-transparent outline-none sm:w-40"
-              placeholder="Search"
+              placeholder="Search unavailable"
+              aria-label="Global Search is not installed on this branch"
+              disabled
               style={{ color: 'var(--glow-text)' }}
             />
           </label>
@@ -66,6 +72,8 @@ export function TopNav() {
           <button
             type="button"
             aria-label="Notifications"
+            title="Notifications are not connected on this branch"
+            disabled
             className="rounded-full border p-2.5 transition hover:opacity-80"
             style={{ borderColor: 'var(--glow-border)', background: 'var(--glow-surface-muted)', color: 'var(--glow-text-muted)' }}
           >

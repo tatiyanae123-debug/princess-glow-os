@@ -66,7 +66,7 @@ export default async function DashboardPage() {
   if (!process.env.DATABASE_URL) {
     return (
       <AppShell>
-        <LivingDashboard data={getFallbackData()} error="DATABASE_URL is not configured." />
+        <LivingDashboard data={getFallbackData()} error="DATABASE_URL is not configured." userName={session.user.name} />
       </AppShell>
     );
   }
@@ -76,7 +76,7 @@ export default async function DashboardPage() {
     const data = await getLivingDashboardData(userId);
     return (
       <AppShell>
-        <LivingDashboard data={data} />
+        <LivingDashboard data={data} userName={session.user.name} />
       </AppShell>
     );
   } catch (error) {
@@ -84,7 +84,7 @@ export default async function DashboardPage() {
 
     return (
       <AppShell>
-        <LivingDashboard data={getFallbackData()} error={message} />
+        <LivingDashboard data={getFallbackData()} error={message} userName={session.user.name} />
       </AppShell>
     );
   }

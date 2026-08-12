@@ -1,139 +1,35 @@
 'use client';
 
-import { useState } from 'react';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useMemo, useState } from 'react';
+import { Check, Clock3, Pencil, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { Dialog } from '@/components/ui/dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { RoutineForm } from '@/components/routines/routine-form';
 import { useServerAction } from '@/lib/hooks/use-server-action';
 import { deleteRoutineAction } from '@/app/actions/routines';
-import type { Routine } from '@/lib/types';
+import type { Routine, RoutineStep } from '@/lib/types';
 
-export function RoutineManager({ initialRoutines }: { initialRoutines: Routine[] }) {
-  const [routines, setRoutines] = useState<Routine[]>(initialRoutines);
-  const [dialogRoutine, setDialogRoutine] = useState<Routine | 'new' | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Routine | null>(null);
-  const del = useServerAction((id: string) => deleteRoutineAction(id));
+const modes=[['Full','All steps'],['Normal','45–60 min'],['30 min','Focused'],['15 min','Express'],['Emergency','5 min']] as const;
+const ritualImages:Record<string,string>={morning:'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=700&q=80',afternoon:'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=700&q=80',evening:'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=700&q=80',night:'https://images.unsplash.com/photo-1511295742362-92c96b1cf484?auto=format&fit=crop&w=700&q=80',anytime:'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=700&q=80'};
 
-  function handleSaved(routine: Routine) {
-    setRoutines((current) => {
-      const exists = current.some((r) => r.id === routine.id);
-      return exists ? current.map((r) => (r.id === routine.id ? routine : r)) : [routine, ...current];
-    });
-    setDialogRoutine(null);
-  }
-
-  function handleDelete() {
-    if (!deleteTarget) return;
-    del.run(deleteTarget.id, () => {
-      setRoutines((current) => current.filter((r) => r.id !== deleteTarget.id));
-      setDeleteTarget(null);
-    });
-  }
-
-  return (
-    <div className="space-y-6">
-      <section
-        className="rounded-[28px] border p-6 shadow-sm"
-        style={{ borderColor: 'var(--glow-border)', background: 'var(--glow-surface)' }}
-      >
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="text-sm uppercase tracking-[0.3em]" style={{ color: 'var(--glow-accent)' }}>
-              Routines
-            </p>
-            <h2 className="mt-2 text-3xl font-semibold" style={{ color: 'var(--glow-text)' }}>
-              Design repeatable rituals that feel effortless.
-            </h2>
-            <p className="mt-3" style={{ color: 'var(--glow-text-muted)' }}>
-              Design repeatable rituals that feel elegant and easy to maintain.
-            </p>
-          </div>
-          <Button onClick={() => setDialogRoutine('new')} className="flex shrink-0 items-center gap-1.5">
-            <Plus size={14} /> Add routine
-          </Button>
-        </div>
-      </section>
-
-      {routines.length === 0 ? (
-        <p className="py-4 text-center text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-          No routines yet. Add your first ritual to get started.
-        </p>
-      ) : (
-        <section
-          className="rounded-[28px] border p-6 shadow-sm"
-          style={{ borderColor: 'var(--glow-border)', background: 'var(--glow-surface)' }}
-        >
-          <div className="space-y-3">
-            {routines.map((routine) => (
-              <div
-                key={routine.id}
-                className="flex items-center justify-between gap-3 rounded-2xl px-4 py-3"
-                style={{ background: 'var(--glow-surface-muted)' }}
-              >
-                <div className="min-w-0">
-                  <p className="font-medium" style={{ color: 'var(--glow-text)' }}>
-                    {routine.name}
-                  </p>
-                  {routine.description && (
-                    <p className="mt-0.5 truncate text-sm" style={{ color: 'var(--glow-text-muted)' }}>
-                      {routine.description}
-                    </p>
-                  )}
-                </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <span
-                    className="rounded-full px-2 py-0.5 text-xs capitalize"
-                    style={{ background: 'var(--glow-accent-soft)', color: 'var(--glow-accent)' }}
-                  >
-                    {routine.timeOfDay}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setDialogRoutine(routine)}
-                    aria-label="Edit routine"
-                    className="rounded-full p-1.5 transition hover:opacity-70"
-                    style={{ color: 'var(--glow-text-muted)' }}
-                  >
-                    <Pencil size={13} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDeleteTarget(routine)}
-                    aria-label="Delete routine"
-                    className="rounded-full p-1.5 transition hover:opacity-70"
-                    style={{ color: 'var(--glow-text-muted)' }}
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <Dialog
-        open={dialogRoutine !== null}
-        onClose={() => setDialogRoutine(null)}
-        title={dialogRoutine === 'new' ? 'Add routine' : 'Edit routine'}
-      >
-        <RoutineForm
-          routine={dialogRoutine === 'new' ? null : dialogRoutine}
-          onSaved={handleSaved}
-          onCancel={() => setDialogRoutine(null)}
-        />
-      </Dialog>
-
-      <ConfirmDialog
-        open={deleteTarget !== null}
-        title="Delete this routine?"
-        description={deleteTarget ? `"${deleteTarget.name}" will be removed.` : undefined}
-        pending={del.isPending}
-        onCancel={() => setDeleteTarget(null)}
-        onConfirm={handleDelete}
-      />
-    </div>
-  );
+export function RoutineManager({initialRoutines,stepsByRoutine}:{initialRoutines:Routine[];stepsByRoutine:Record<string,RoutineStep[]>}){
+ const [routines,setRoutines]=useState(initialRoutines); const [selectedId,setSelectedId]=useState(initialRoutines[0]?.id||'');
+ const [dialogRoutine,setDialogRoutine]=useState<Routine|'new'|null>(null); const [deleteTarget,setDeleteTarget]=useState<Routine|null>(null);
+ const [mode,setMode]=useState('Full'); const [journeyDone,setJourneyDone]=useState<Set<string>>(new Set()); const del=useServerAction((id:string)=>deleteRoutineAction(id));
+ const selected=routines.find(r=>r.id===selectedId)||routines[0]; const allSteps=useMemo(()=>selected?stepsByRoutine[selected.id]||[]:[],[selected,stepsByRoutine]);
+ const visibleSteps=useMemo(()=>{if(mode==='Full'||mode==='Normal')return allSteps;if(mode==='30 min')return allSteps.slice(0,Math.max(1,Math.ceil(allSteps.length*.65)));if(mode==='15 min')return allSteps.slice(0,Math.max(1,Math.ceil(allSteps.length*.4)));return allSteps.slice(0,Math.min(2,allSteps.length))},[allSteps,mode]);
+ const duration=visibleSteps.reduce((sum,s)=>sum+(s.durationMinutes||0),0); const completed=visibleSteps.filter(s=>journeyDone.has(s.id)).length;
+ function handleSaved(r:Routine){setRoutines(c=>c.some(x=>x.id===r.id)?c.map(x=>x.id===r.id?r:x):[r,...c]);setSelectedId(r.id);setDialogRoutine(null)}
+ function handleDelete(){if(!deleteTarget)return;del.run(deleteTarget.id,()=>{setRoutines(c=>c.filter(r=>r.id!==deleteTarget.id));setDeleteTarget(null)})}
+ return <div className="editorial-page rituals-page">
+  <header className="ritual-heading"><div><h1>Routines &amp; Rituals</h1><p>small rituals, big transformations ♕</p></div><button onClick={()=>setDialogRoutine('new')}><Plus/> Create Ritual</button></header>
+  <nav className="ritual-tabs">{['My Rituals','Library','Custom','Templates','Adaptive Modes','Completed'].map((x,i)=><button className={i===0?'active':''} key={x}>{x}</button>)}</nav>
+  <div className="ritual-layout"><main>
+   <section className="ritual-selector">{routines.length?routines.map(r=><button key={r.id} className={selected?.id===r.id?'active':''} onClick={()=>{setSelectedId(r.id);setJourneyDone(new Set())}}><img src={ritualImages[r.timeOfDay]} alt=""/><span><b>{r.name}</b><small>{r.timeOfDay} · {(stepsByRoutine[r.id]||[]).length} steps</small></span></button>):<button className="empty" onClick={()=>setDialogRoutine('new')}><Plus/><b>Create your first ritual</b></button>}</section>
+   <section className="ritual-hero">{selected?<><header><div><span className="ritual-sun">☼</span><h2>{selected.name}<small>{selected.description||'A guided pause designed around your day.'}</small></h2></div><div><b>{visibleSteps.length} Steps</b><b>{duration?`${duration} min`:'Flexible'}</b><button onClick={()=>visibleSteps[0]&&setJourneyDone(c=>new Set(c).add(visibleSteps[0].id))}>{completed?'Continue':'Start'} Ritual ▶</button></div></header><div className="ritual-workspace"><aside><h3>YOUR JOURNEY</h3>{visibleSteps.map((s,i)=><button key={s.id} className={journeyDone.has(s.id)?'done':i===completed?'current':''} onClick={()=>setJourneyDone(c=>{const n=new Set(c);if(n.has(s.id))n.delete(s.id);else n.add(s.id);return n})}><i>{journeyDone.has(s.id)?<Check/>:i+1}</i><span>{s.title}<small>{s.durationMinutes?`${s.durationMinutes} min`:'No duration set'}</small></span></button>)}{!visibleSteps.length&&<p className="ritual-empty">This ritual has no stored steps yet. Add steps to create its guided journey.</p>}<button className="edit-ritual" onClick={()=>setDialogRoutine(selected)}><Pencil/> Edit ritual</button></aside><article className="ritual-focus"><div className="ritual-focus-copy"><small>{visibleSteps.length?`STEP ${Math.min(completed+1,visibleSteps.length)} OF ${visibleSteps.length}`:'RITUAL OVERVIEW'}</small><h3>{visibleSteps[completed]?.title||selected.name}</h3><p>{visibleSteps[completed]?.notes||selected.description||'Set up the steps for this ritual to begin your guided practice.'}</p>{visibleSteps[completed]?.durationMinutes&&<span><Clock3/> {visibleSteps[completed].durationMinutes} minutes</span>}</div><img src={ritualImages[selected.timeOfDay]} alt={`${selected.name} atmosphere`}/></article></div></>:<div className="ritual-zero"><Sparkles/><h2>Your ritual journey begins here</h2><button onClick={()=>setDialogRoutine('new')}>Create Ritual</button></div>}</section>
+   <section className="adaptive-panel"><div><h2>ADAPT YOUR RITUAL</h2><p>How much time and energy do you have?</p></div>{modes.map(([name,note])=><button key={name} className={mode===name?'active':''} onClick={()=>setMode(name)}><b>{name}</b><small>{note}</small></button>)}</section>
+   <section className="ritual-intelligence"><b><span>AI</span> RITUAL ADVISOR</b><p>{!allSteps.length?'Add real steps to unlock adaptive ritual suggestions.':mode!=='Full'?`${mode} mode shows ${visibleSteps.length} of ${allSteps.length} stored steps without changing your ritual.`:`Your ${selected?.name||'ritual'} has ${allSteps.length} steps and ${duration||'no fixed'} total minutes.`}</p></section>
+  </main><aside className="ritual-rail"><section><h2>RITUAL OF THE DAY</h2>{selected?<><img src={ritualImages[selected.timeOfDay]} alt=""/><h3>{selected.name}</h3><p>{selected.timeOfDay} · {allSteps.length} steps</p><div className="ritual-progress"><i style={{width:`${visibleSteps.length?completed/visibleSteps.length*100:0}%`}}/></div><small>{completed} of {visibleSteps.length} complete this session</small></>:<small>No rituals created yet.</small>}</section><section><h2>UPCOMING RITUALS</h2>{routines.filter(r=>r.id!==selected?.id).slice(0,4).map(r=><button key={r.id} onClick={()=>setSelectedId(r.id)}><span>◌</span><b>{r.name}<small>{r.timeOfDay}</small></b></button>)}{routines.length<2&&<small>No additional rituals scheduled.</small>}</section><section><h2>RITUAL PROGRESS</h2><div className="ritual-stat"><strong>{routines.length}<small>Rituals</small></strong><strong>{allSteps.length}<small>Steps</small></strong><strong>{completed}<small>Done now</small></strong></div><p>Completion history is not stored yet; session progress is shown honestly.</p></section><section><h2>QUICK ACTIONS</h2><button onClick={()=>setDialogRoutine('new')}><Plus/> Create New Ritual</button>{selected&&<><button onClick={()=>setDialogRoutine(selected)}><Pencil/> Edit Current Ritual</button><button onClick={()=>setDeleteTarget(selected)}><Trash2/> Delete Ritual</button></>}</section></aside></div>
+  <Dialog open={dialogRoutine!==null} onClose={()=>setDialogRoutine(null)} title={dialogRoutine==='new'?'Add routine':'Edit routine'}><RoutineForm routine={dialogRoutine==='new'?null:dialogRoutine} onSaved={handleSaved} onCancel={()=>setDialogRoutine(null)}/></Dialog><ConfirmDialog open={deleteTarget!==null} title="Delete this routine?" description={deleteTarget?`“${deleteTarget.name}” will be removed.`:undefined} pending={del.isPending} onCancel={()=>setDeleteTarget(null)} onConfirm={handleDelete}/>
+ </div>
 }

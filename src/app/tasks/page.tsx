@@ -1,7 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
 import { TaskManager } from '@/components/tasks/task-manager';
 import { getTasksByUser } from '@/lib/data/tasks';
 
@@ -15,9 +14,7 @@ export default async function TasksPage() {
 
   return (
     <AppShell>
-      <SectionPage eyebrow="Tasks" title="What deserves your attention" description="A calm, focused list that protects your energy and keeps your priorities visible.">
-        <TaskManager initialTasks={tasks} />
-      </SectionPage>
+      <TaskManager initialTasks={tasks} />
     </AppShell>
   );
 }
