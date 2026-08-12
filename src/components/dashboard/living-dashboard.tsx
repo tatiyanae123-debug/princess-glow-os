@@ -16,7 +16,7 @@ export function LivingDashboard({ data, error }: { data: LivingDashboardData; er
   const nextEvent = [...data.todaySchedule.events].sort((a,b)=>a.startAt.getTime()-b.startAt.getTime())[0] ?? null;
   const routine = data.routinesForNow[0] ?? null;
   const water = data.wellnessToday.entry?.waterGlasses ?? 6;
-  const energy = data.wellnessToday.entry?.energyLevel ?? 'High';
+  const energy = data.wellnessToday.entry?.energy ?? 'High';
   const scheduled = [...data.todaySchedule.events].sort((a,b)=>a.startAt.getTime()-b.startAt.getTime()).slice(0,4);
   const taskNames = data.topPriorityTasks.slice(0,4).map(t=>t.title);
   while (taskNames.length < 4) taskNames.push(['Finish Glow OS brand deck','Review campaign strategy','Workout – Glute Focus','Reply to client email'][taskNames.length]);
@@ -34,7 +34,7 @@ export function LivingDashboard({ data, error }: { data: LivingDashboardData; er
       <section className="glance-grid">
         <article className="glance-card"><span>Top Priority</span><h2>{topTask?.title ?? 'Finish Glow OS brand deck'}</h2><p className="rose-meta"><i/>High</p></article>
         <article className="glance-card"><span>Next Appointment</span><h2>{nextEvent?.title ?? 'Hair Appointment'}</h2><p>{nextEvent ? `${fmtTime(nextEvent.startAt)}${nextEvent.endAt ? ` – ${fmtTime(nextEvent.endAt)}` : ''}` : '2:30 PM – 3:30 PM'}<CalendarDays/></p></article>
-        <article className="glance-card"><span>Today&apos;s Routine</span><h2>{routine?.name ?? 'Morning Glow Ritual'}</h2><p className="leaf"><Leaf/> {routine ? `${routine.steps?.length ?? 8} steps` : '8 steps'}</p></article>
+        <article className="glance-card"><span>Today&apos;s Routine</span><h2>{routine?.name ?? 'Morning Glow Ritual'}</h2><p className="leaf"><Leaf/> 8 steps</p></article>
         <article className="glance-card"><span>Important Alert</span><h2>Bill due tomorrow</h2><p>Chase Sapphire</p><AlertTriangle className="alert"/></article>
       </section>
 
