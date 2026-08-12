@@ -2,112 +2,57 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { BookOpen, CalendarDays, CalendarRange, Flag, ListChecks, MoonStar, RefreshCw, SunMedium, Target } from 'lucide-react';
-import type { PlanningView } from '@/lib/productivity/types';
+import { Brain, CalendarDays, Check, Lightbulb, Plus, ShoppingBag, Sparkles } from 'lucide-react';
+import type { CalendarEvent, Goal, Note, Routine, Task } from '@/lib/types';
 
-const views: Array<{ id: PlanningView; label: string; icon: typeof CalendarRange; description: string }> = [
-  { id: 'today', label: 'Today', icon: SunMedium, description: 'Anchor the day to real commitments, priorities, routines, and energy.' },
-  { id: 'week', label: 'Week', icon: CalendarRange, description: 'Tasks, gym sessions, weekly focus, reading, and reflections.' },
-  { id: 'month', label: 'Month', icon: CalendarDays, description: 'See the month as one connected layer of commitments, maintenance, goals, and resets.' },
-  { id: 'quarter', label: 'Quarter', icon: Target, description: 'Finances, goals, achievements, books, and your idea parking lot.' },
-  { id: 'year', label: 'Year', icon: Flag, description: 'Vision, non-negotiables, yearly themes, and long-range goals.' },
-  { id: 'books', label: 'Books', icon: BookOpen, description: 'Save and track what you are reading inside persistent Planning.' },
-  { id: 'bucket-list', label: 'Bucket List', icon: ListChecks, description: 'Track meaningful experiences and long-term wishes inside persistent Planning.' },
-];
+const periods = ['Today', 'This Week', 'This Month', 'Quarter', 'Year'] as const;
+const resetSteps = ['Clean & Reset Home','Laundry','Groceries','Meal Prep','Planning & Review','Beauty Maintenance','Hair Care','Finances','Calendar Setup','Week Intentions'];
+const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+function sameDate(a:Date,b:Date){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
+function monday(){const d=new Date();const day=d.getDay();d.setDate(d.getDate()-(day===0?6:day-1));d.setHours(0,0,0,0);return d}
+function matches(task:Task, terms:RegExp){return terms.test(`${task.title} ${task.description||''}`.toLowerCase())}
 
-const sections: Record<PlanningView, Array<{ title: string; href: string; detail: string }>> = {
-  today: [
-    { title: 'Build My Day', href: '/today', detail: 'Use live tasks, calendar context, routines, and the Now Engine to shape today.' },
-    { title: 'Today’s commitments', href: '/calendar?view=day', detail: 'Review fixed commitments before adding more.' },
-    { title: 'Current focus', href: '/tasks?view=now', detail: 'Move directly into the highest-value executable work.' },
-    { title: 'Life mode and energy', href: '/today', detail: 'Let planning adapt to your current mode and capacity.' },
-    { title: 'Finish My Day', href: '/today', detail: 'Close the loop so today can feed Memory, Timeline, and tomorrow.' },
-  ],
-  week: [
-    { title: 'Weekly task checklist', href: '/tasks?view=upcoming', detail: 'Open upcoming work and decide what actually belongs this week.' },
-    { title: 'Week calendar', href: '/calendar?view=week', detail: 'Balance commitments with realistic open space.' },
-    { title: 'Gym session tracker', href: '/fitness', detail: 'Log workouts, energy, soreness, equipment, and notes.' },
-    { title: 'Weekly focus and goals', href: '/goals', detail: 'Connect current goals to this week.' },
-    { title: 'Weekly reflections', href: '/planning', detail: 'Save reflections directly in your planning layers.' },
-  ],
-  month: [
-    { title: 'Month calendar', href: '/calendar?view=month', detail: 'Scan the whole month for busy periods, open space, and collisions.' },
-    { title: 'Maintenance forecast', href: '/notices', detail: 'Bring upcoming life maintenance into the plan before it becomes urgent.' },
-    { title: 'Goals and milestones', href: '/goals', detail: 'Choose the milestones that should move this month.' },
-    { title: 'Finance horizon', href: '/finance', detail: 'Review bills, subscriptions, savings, and upcoming expenses.' },
-    { title: 'Monthly reflection', href: '/briefings', detail: 'Use reports and patterns to adjust the next month.' },
-  ],
-  quarter: [
-    { title: '13-week consistency overview', href: '/habits', detail: 'Use Habit history as the consistency signal.' },
-    { title: 'Credit cards and savings goals', href: '/finance/brain', detail: 'Track savings and financial goals.' },
-    { title: 'Quarterly goals by category', href: '/goals', detail: 'Organize the outcomes that matter this quarter.' },
-    { title: 'Achievements', href: '/timeline', detail: 'Record milestones in your Life Timeline.' },
-    { title: 'Idea parking lot', href: '/notes', detail: 'Capture ideas without losing focus.' },
-  ],
-  year: [
-    { title: 'Vision reflection', href: '/planning', detail: 'Create or update a Year planning layer above.' },
-    { title: 'Non-negotiables', href: '/habits', detail: 'Turn recurring standards into trackable habits.' },
-    { title: 'Yearly focus', href: '/goals', detail: 'Review long-range goals.' },
-    { title: 'What I want to change', href: '/memory', detail: 'Save important decisions and identity shifts.' },
-    { title: 'Goals by category', href: '/goals', detail: 'Keep every life area connected.' },
-  ],
-  books: [
-    { title: 'Add a book', href: '/planning', detail: 'Choose Book in Create a planning layer above.' },
-    { title: 'Currently reading', href: '/planning', detail: 'Use progress and reflection fields to track the book.' },
-    { title: 'Want to read', href: '/planning', detail: 'Save future reads as Book layers with 0% progress.' },
-    { title: 'Books finished', href: '/timeline', detail: 'Add completed books to your Life Timeline.' },
-  ],
-  'bucket-list': [
-    { title: 'Add a bucket-list item', href: '/planning', detail: 'Choose Bucket list in Create a planning layer above.' },
-    { title: 'Completion progress', href: '/planning', detail: 'Update each item from 0 to 100%.' },
-    { title: 'Dates and notes', href: '/planning', detail: 'Add target dates, details, and reflections.' },
-    { title: 'Completed experiences', href: '/timeline', detail: 'Move meaningful completed experiences into your Life Timeline.' },
-  ],
-};
+export function PlanningHub({ tasks, events, goals, notes, routines }: { tasks:Task[]; events:CalendarEvent[]; goals:Goal[]; notes:Note[]; routines:Routine[] }) {
+  const [period,setPeriod]=useState<(typeof periods)[number]>('Today');
+  const [resetDone,setResetDone]=useState<number[]>([]);
+  const week=useMemo(()=>Array.from({length:7},(_,i)=>{const d=monday();d.setDate(d.getDate()+i);return d}),[]);
+  const open=tasks.filter(t=>t.status!=='done'&&t.status!=='cancelled');
+  const top=open.filter(t=>t.priority==='urgent'||t.priority==='high').slice(0,3);
+  const deadlines=open.filter(t=>t.dueDate).sort((a,b)=>(a.dueDate?.getTime()||0)-(b.dueDate?.getTime()||0)).slice(0,4);
+  const shopping=open.filter(t=>matches(t,/buy|purchase|order|restock|shop/)).slice(0,4);
+  const groceries=open.filter(t=>matches(t,/grocery|groceries|produce|protein|pantry|food/)).slice(0,5);
+  const waiting=open.filter(t=>matches(t,/waiting|follow.?up|feedback|reply/)).slice(0,4);
+  const ideas=notes.filter(n=>/idea|brain|inspiration/i.test(`${n.title} ${n.content||''}`)).slice(0,4);
+  const weekEvents=events.filter(e=>e.startAt>=week[0]&&e.startAt<new Date(week[6].getTime()+86400000));
+  const overdue=deadlines.filter(t=>t.dueDate&&t.dueDate<new Date()).length;
+  const resetRoutine=routines.find(r=>/reset|weekly/i.test(r.name));
+  const PaperModule=({title,icon,children,link,wide=false,className=''}:{title:string;icon?:React.ReactNode;children:React.ReactNode;link:string;wide?:boolean;className?:string})=><article className={`planning-paper ${wide?'wide':''} ${className}`}><h2>{icon}{title}</h2><div className="planning-paper-body">{children}</div><Link href={link}>View {title.toLowerCase()} →</Link></article>;
+  const TaskRows=({items,empty}:{items:Task[];empty:string})=><>{items.map(t=><p className="planning-row" key={t.id}><i className={t.status==='done'?'done':''}>{t.status==='done'&&<Check/>}</i><span>{t.title}</span>{t.dueDate&&<time>{t.dueDate.toLocaleDateString('en',{month:'short',day:'numeric'})}</time>}</p>)}{!items.length&&<small>{empty}</small>}</>;
 
-export function PlanningHub() {
-  const [activeView, setActiveView] = useState<PlanningView>('today');
-  const active = useMemo(() => views.find((view) => view.id === activeView) ?? views[0], [activeView]);
-
-  return (
-    <div className="space-y-6">
-      <section className="grid gap-3 md:grid-cols-2">
-        <Link href="/planning?reset=sunday" className="rounded-[24px] border border-[#eadfd8] bg-[linear-gradient(145deg,#fffaf7,#f4ece6)] p-5 transition hover:-translate-y-0.5 hover:shadow-sm">
-          <div className="flex items-center gap-2 text-[#9b6c70]"><RefreshCw size={15}/><p className="glow-eyebrow">Sunday Reset</p></div>
-          <p className="glow-display mt-2 text-[20px] text-[#493b36]">Reset the week before it starts.</p>
-          <p className="mt-2 text-[9px] leading-4 text-[#7d6c65]">Review unfinished work, calendar pressure, home maintenance, wellness, money, and the one focus that matters most next week.</p>
-          <p className="mt-4 text-[9px] font-medium text-[#6d5355]">Open weekly planning →</p>
-        </Link>
-        <Link href="/tomorrow" className="rounded-[24px] border border-[#e4ded7] bg-[linear-gradient(145deg,#faf8f5,#eee8e3)] p-5 transition hover:-translate-y-0.5 hover:shadow-sm">
-          <div className="flex items-center gap-2 text-[#7c6b78]"><MoonStar size={15}/><p className="glow-eyebrow">Prepare Tomorrow</p></div>
-          <p className="glow-display mt-2 text-[20px] text-[#493b36]">End today with tomorrow already lighter.</p>
-          <p className="mt-2 text-[9px] leading-4 text-[#7d6c65]">Review tomorrow’s commitments, top three priorities, suggested wake target, and what should be prepared tonight.</p>
-          <p className="mt-4 text-[9px] font-medium text-[#625761]">Prepare tomorrow →</p>
-        </Link>
-      </section>
-
-      <div className="flex flex-wrap gap-2" role="tablist" aria-label="Planning views">
-        {views.map((view) => {
-          const Icon = view.icon;
-          const selected = view.id === activeView;
-          return (
-            <button key={view.id} type="button" role="tab" aria-selected={selected} onClick={() => setActiveView(view.id)} className="flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition" style={{ borderColor: selected ? 'var(--glow-accent)' : 'var(--glow-border)', background: selected ? 'var(--glow-accent-soft)' : 'var(--glow-surface)', color: selected ? 'var(--glow-accent)' : 'var(--glow-text)' }}>
-              <Icon size={16} />{view.label}
-            </button>
-          );
-        })}
-      </div>
-
-      <section className="rounded-glow border p-5 sm:p-6" style={{ background: 'var(--glow-surface)', borderColor: 'var(--glow-border)' }}>
-        <div className="max-w-2xl"><p className="text-xs uppercase tracking-[0.3em] opacity-50">{active.label} view</p><h2 className="mt-2 text-2xl font-semibold" style={{ fontFamily: 'var(--glow-font-display)' }}>One calm place for the bigger picture</h2><p className="mt-2 text-sm opacity-70">{active.description}</p></div>
-        <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {sections[activeView].map((section) => (
-            <Link key={section.title} href={section.href} className="rounded-3xl border p-4 transition hover:-translate-y-0.5 hover:shadow-sm" style={{ background: 'var(--glow-bg)', borderColor: 'var(--glow-border)' }}>
-              <p className="font-medium">{section.title}</p><p className="mt-1 text-sm opacity-60">{section.detail}</p><p className="mt-3 text-xs font-medium opacity-70">Open →</p>
-            </Link>
-          ))}
-        </div>
-      </section>
+  return <div className="editorial-page planning-page">
+    <header className="planning-heading"><div><h1>Planning</h1><p>design your days, then your destiny ♕</p></div><div><Link href="/notes"><Brain/> Brain Dump</Link><button>•••</button></div></header>
+    <nav className="planning-periods">{periods.map(p=><button className={period===p?'active':''} onClick={()=>setPeriod(p)} key={p}>{p}</button>)}</nav>
+    <div className="planning-layout">
+      <main className="planning-board">
+        <section className="planning-module-grid">
+          <PaperModule title="TOP THREE" icon={<Sparkles/>} link="/tasks" className="top-three">{top.map((t,i)=><p className="rank-row" key={t.id}><b>{i+1}</b>{t.title}</p>)}{!top.length&&<small>No high-priority tasks selected.</small>}</PaperModule>
+          <PaperModule title="APPOINTMENTS" icon={<CalendarDays/>} link="/calendar">{events.filter(e=>e.startAt>=new Date()).slice(0,4).map(e=><p className="planning-row" key={e.id}><i/><span>{e.title}</span><time>{e.startAt.toLocaleDateString('en',{month:'short',day:'numeric'})}</time></p>)}{!events.some(e=>e.startAt>=new Date())&&<small>No upcoming appointments.</small>}</PaperModule>
+          <PaperModule title="DEADLINES" link="/tasks"><TaskRows items={deadlines} empty="No dated deadlines."/></PaperModule>
+          <PaperModule title="THINGS TO BUY" icon={<ShoppingBag/>} link="/tasks"><TaskRows items={shopping} empty="No shopping tasks saved."/></PaperModule>
+          <PaperModule title="GROCERIES" link="/tasks"><TaskRows items={groceries} empty="No grocery tasks saved."/></PaperModule>
+          <PaperModule title="THINGS TO REMEMBER" link="/notes">{notes.slice(0,4).map(n=><p className="planning-row" key={n.id}><i/><span>{n.title}</span></p>)}{!notes.length&&<small>No notes captured yet.</small>}</PaperModule>
+          <PaperModule title="WAITING ON" link="/tasks"><TaskRows items={waiting} empty="Nothing waiting on a response."/></PaperModule>
+          <PaperModule title="IDEAS" icon={<Lightbulb/>} link="/notes" className="idea-paper">{ideas.map(n=><p key={n.id}>{n.title}</p>)}{!ideas.length&&<small>Your idea space is open.</small>}</PaperModule>
+          <PaperModule title="MEALS TO MAKE" link="/planning" wide className="meal-plans"><div className="honest-placeholder"><span>🍽</span><b>No meal plan saved</b><small>Add meal-related tasks to populate this space.</small></div></PaperModule>
+          <PaperModule title="PROJECTS TO MOVE" link="/goals" wide className="project-plans">{goals.filter(g=>g.status==='in_progress'||g.status==='not_started').slice(0,5).map(g=><div className="project-row" key={g.id}><span>{g.title}</span><i><b style={{width:`${Math.min(100,g.progress)}%`}}/></i><time>{Math.round(g.progress)}%</time></div>)}{!goals.length&&<small>No active goals or projects.</small>}</PaperModule>
+        </section>
+        <section className="weekly-overview"><h2>WEEKLY OVERVIEW</h2><div>{week.map((day,i)=><article className={sameDate(day,new Date())?'today':''} key={day.toISOString()}><b>{dayNames[i]}</b><time>{day.toLocaleDateString('en',{month:'short',day:'numeric'})}</time>{weekEvents.filter(e=>sameDate(e.startAt,day)).slice(0,3).map(e=><p key={e.id}><i/>{e.title}</p>)}{open.filter(t=>t.dueDate&&sameDate(t.dueDate,day)).slice(0,2).map(t=><p key={t.id}><i className="task"/>{t.title}</p>)}{!weekEvents.some(e=>sameDate(e.startAt,day))&&!open.some(t=>t.dueDate&&sameDate(t.dueDate,day))&&<small>Open day</small>}</article>)}</div></section>
+        <section className="planning-insight"><b><span>AI</span> PLANNING INTELLIGENCE</b><p>{overdue?`${overdue} deadline${overdue===1?' is':'s are'} overdue. Review before adding more priorities.`:top.length>2?'Your Top Three is full. Protect time before adding another priority.':'Your plan has room for one intentional priority.'}</p><Link href="/planning">Build My Day ✨</Link></section>
+      </main>
+      <aside className="planning-rail">
+        <section className="sunday-reset"><h2>{resetRoutine?.name?.toUpperCase() || 'SUNDAY RESET'}</h2><p>reset, realign, refocus</p><div className="reset-photo"><span>Reset<br/>Realign<br/>Refocus</span></div><div className="reset-progress"><i style={{width:`${resetDone.length*10}%`}}/><small>{resetDone.length}/10 complete</small></div>{resetSteps.map((step,i)=><button key={step} onClick={()=>setResetDone(current=>current.includes(i)?current.filter(x=>x!==i):[...current,i])}><b>{i+1}</b><span>{step}</span><i className={resetDone.includes(i)?'done':''}>{resetDone.includes(i)&&<Check/>}</i></button>)}<Link href="/routines">{resetDone.length?'Continue':'Start'} Weekly Reset ✨</Link></section>
+        <div className="planning-rail-bottom"><section><h2>NOTES</h2><p>capture thoughts<br/>organise later</p><Link href="/notes"><Plus/> New Note</Link></section><section><h2>QUICK ADD</h2><Link href="/tasks">New Task</Link><Link href="/calendar">New Event</Link><Link href="/notes">New Note</Link><Link href="/routines">New Routine</Link></section></div>
+      </aside>
     </div>
-  );
+  </div>;
 }
