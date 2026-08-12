@@ -114,9 +114,15 @@ export default async function BriefingsPage() {
                 <Icon size={30} strokeWidth={1} className="text-[#8c786b]" />
                 <h2 className="glow-display mt-4 text-[17px] text-[#4b4034]">{title}</h2>
                 <p className="mt-2 min-h-[64px] text-[8px] leading-4 text-[#7e7064]">{description}</p>
-                <form action={generateExpandedBriefingAction.bind(null, kind)} className="mt-4">
-                  <button className="rounded-[6px] bg-[#443a32] px-3 py-2 text-[8px] text-white">Generate {kindLabel(kind)}</button>
-                </form>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {kind === 'evening' ? (
+                    <Link href="/briefings/evening" className="rounded-[6px] bg-[#443a32] px-3 py-2 text-[8px] text-white">Open Evening Debrief</Link>
+                  ) : (
+                    <form action={generateExpandedBriefingAction.bind(null, kind)}>
+                      <button className="rounded-[6px] bg-[#443a32] px-3 py-2 text-[8px] text-white">Generate {kindLabel(kind)}</button>
+                    </form>
+                  )}
+                </div>
               </Card>
             ))}
           </div>
