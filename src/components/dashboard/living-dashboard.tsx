@@ -23,7 +23,6 @@ export function LivingDashboard({ data, error, insight, userName }: { data: Livi
   const name = userName ?? 'there';
   const topTask = data.dailyFocus ?? data.topPriorityTasks[0] ?? null;
   const scheduled = [...data.todaySchedule.events].sort((a, b) => a.startAt.getTime() - b.startAt.getTime());
-  const nextEvent = scheduled[0] ?? null;
   const routine = data.routinesForNow[0] ?? null;
   const wellness = data.wellnessToday.entry;
 
