@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Focus } from 'lucide-react';
 
 const CONTEXT:Record<string,[string,string,string]>={
@@ -24,10 +24,10 @@ function contextFor(pathname:string){
 }
 
 export function RoomContextBar(){
-  const pathname=usePathname();const router=useRouter();const searchParams=useSearchParams();
+  const pathname=usePathname();const router=useRouter();
   if(pathname.startsWith('/world'))return null;
   const [now,next,later]=contextFor(pathname);
-  function enterFocus(){const params=new URLSearchParams(searchParams.toString());params.set('focus','1');router.push(`${pathname}?${params.toString()}`);}
+  function enterFocus(){const params=new URLSearchParams(window.location.search);params.set('focus','1');router.push(`${pathname}?${params.toString()}`);window.setTimeout(()=>document.dispatchEvent(new Event('glow:focus-changed')),0);}
   return <div className="mb-7 space-y-3">
     <div className="flex items-center justify-between"><p className="text-[11px] font-semibold uppercase tracking-[.14em] text-[#9A9A9F]">Now · Next · Later</p><button type="button" onClick={enterFocus} className="inline-flex h-9 items-center gap-2 rounded-full border border-[#E7E7E7] bg-white px-3 text-[12px] font-medium text-[#5A5A5F] hover:bg-[#FAFAFA]"><Focus size={14}/>Focus Mode</button></div>
     <div className="glow-temporal-strip"><div className="glow-temporal-item"><p className="glow-temporal-label">Now</p><p className="glow-temporal-value">{now}</p></div><div className="glow-temporal-item"><p className="glow-temporal-label">Next</p><p className="glow-temporal-value">{next}</p></div><div className="glow-temporal-item"><p className="glow-temporal-label">Later</p><p className="glow-temporal-value">{later}</p></div></div>
