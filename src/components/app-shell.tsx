@@ -50,7 +50,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const room = roomFor(pathname);
-  const isDashboard = room === 'dashboard';
   const [focus, setFocus] = useState(false);
 
   useEffect(() => {
@@ -71,28 +70,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setFocus(false);
   }
 
-  if (isDashboard && !focus) {
-    return <GlowProvider>
-      <div data-dashboard-shell className="dashboard-shell-grid min-h-screen bg-white text-[#171719]" data-room="dashboard">
-        <div className="dashboard-sidebar-wrap"><Sidebar /></div>
-        <div className="dashboard-main-wrap">
-          <GlobalHeader />
-          <main className="dashboard-main">{children}</main>
-        </div>
-      </div>
-      <GlowVoiceCommand />
-      <QuickAdd />
-    </GlowProvider>;
-  }
-
   return (
     <GlowProvider>
-      <div className="room-canvas min-h-screen bg-white text-[#1C1C1E]" data-room={room} data-focus-mode={focus ? 'true' : 'false'}>
+      <div className="room-canvas min-h-screen bg-[#FDFAF8] text-[#2B2420]" data-room={room} data-focus-mode={focus ? 'true' : 'false'}>
         <div className="mx-auto flex min-h-screen w-full max-w-[1920px] flex-col lg:flex-row">
-          {!focus ? <div className="w-full lg:sticky lg:top-0 lg:h-screen lg:w-[176px] lg:shrink-0"><Sidebar /></div> : null}
-          <div className="min-w-0 flex-1 bg-white">
+          {!focus ? <div className="w-full lg:sticky lg:top-0 lg:h-screen lg:w-[236px] lg:shrink-0"><Sidebar /></div> : null}
+          <div className="min-w-0 flex-1 bg-[#FDFAF8]">
             {!focus ? <GlobalHeader /> : null}
-            <main className={focus ? 'min-h-screen px-4 py-8 sm:px-7 lg:px-10' : 'min-h-screen px-4 pb-20 pt-3 sm:px-5 lg:px-6 lg:pt-4'}>
+            <main className={focus ? 'min-h-screen px-4 py-8 sm:px-7 lg:px-10' : 'min-h-screen px-4 pb-20 pt-5 sm:px-7 lg:px-10 lg:pt-7'}>
               <div className="mx-auto w-full max-w-[1500px]">{children}</div>
             </main>
           </div>
