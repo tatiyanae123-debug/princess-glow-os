@@ -11,6 +11,7 @@ import { GlowVoiceCommand } from '@/components/voice/glow-voice-command';
 import { DataConnectionVault } from '@/components/data-connection-vault';
 import { GlobalHeader } from '@/components/global-header';
 import { GlowActionButton } from '@/components/glow-action-button';
+import { RoomContextBar } from '@/components/room-context-bar';
 
 function roomFor(pathname: string) {
   if (pathname.startsWith('/beauty/lab')) return 'beauty-lab';
@@ -68,6 +69,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {!focus?<GlobalHeader />:null}
             <main className={focus?'min-h-screen px-4 py-10 sm:px-8 lg:px-12':'min-h-screen px-4 pb-24 pt-7 sm:px-6 lg:px-8 lg:pt-9'}>
               <div className="mx-auto w-full max-w-[1320px]">
+                {!focus?<RoomContextBar />:null}
                 <ReferenceRoomWorkspace />
                 {!focus?<DataConnectionVault>{children}</DataConnectionVault>:null}
               </div>
