@@ -52,6 +52,10 @@ function read(relativePath: string) {
   return fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
 }
 
+function compact(value: string) {
+  return value.replace(/\s+/g, '');
+}
+
 function tableSegment(source: string, tableName: string) {
   const marker = `pgTable('${tableName}'`;
   const start = source.indexOf(marker);
@@ -65,19 +69,19 @@ describe('Glow OS security completion gate', () => {
     for (const [relativePath, tables] of Object.entries(USER_SCOPED_TABLES)) {
       const source = read(relativePath);
       for (const table of tables) {
-        const segment = tableSegment(source, table);
+        const segment = compact(tableSegment(source, table));
         expect(segment, `${table} must expose a userId field`).toContain('userId:');
         expect(segment, `${table} must persist user_id`).toContain("text('user_id')");
-        expect(segment, `${table} must reference Auth.js users`).toContain('references(() => users.id');
+        expect(segment, `${table} must reference Auth.js users`).toContain('references(()=>users.id');
       }
     }
   });
 
   it('keeps executable Concierge AI actions approval-gated, user-scoped, auditable and reversible', () => {
-    const schema = read('src/db/schema/completion-v1.ts');
+    const schema = compact(read('src/db/schema/completion-v1.ts'));
     const concierge = read('src/app/actions/concierge.ts');
 
-    expect(tableSegment(schema, 'ai_proposals')).toContain("status: text('status').notNull().default('pending')");
+    expect(compact(tableSegment(schema, 'ai_proposals'))).toContain("status:text('status').notNull().default('pending')");
     expect(concierge).toContain("proposal.status !== 'pending'");
     expect(concierge).toContain("if (decision === 'approved')");
     expect(concierge).toContain('eq(aiProposals.userId, userId)');
