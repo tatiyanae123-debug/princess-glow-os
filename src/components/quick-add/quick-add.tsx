@@ -47,7 +47,15 @@ export function QuickAdd(){
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{MODULES.map(({id,label,icon:Icon})=><button key={id} type="button" onClick={()=>setActiveModule(id)} className="flex min-h-[92px] flex-col items-center justify-center gap-2 rounded-[12px] border border-[#E9E9E9] bg-white p-4 text-center text-[13px] font-medium text-[#343438] transition hover:border-[#DADADA] hover:bg-[#FAFAFA]"><Icon size={18} className="text-[#B86F7D]"/>{label}</button>)}</div>
     </Dialog>
     <Dialog open={activeModule!==null} onClose={close} title={activeModule?MODULE_LABEL[activeModule]:''}>
-      {activeModule==='task'&&<TaskForm onSaved={handleSaved} onCancel={close}/>} {activeModule==='habit'&&<HabitForm onSaved={handleSaved} onCancel={close}/>} {activeModule==='routine'&&<RoutineForm onSaved={handleSaved} onCancel={close}/>} {activeModule==='goal'&&<GoalForm onSaved={handleSaved} onCancel={close}/>} {activeModule==='event'&&<EventForm onSaved={handleSaved} onCancel={close}/>} {activeModule==='note'&&<NoteForm onSaved={handleSaved} onCancel={close}/>} {activeModule==='beauty'&&<BeautyRoutineForm onSaved={handleSaved} onCancel={close}/>} {activeModule==='wellness'&&<WellnessEntryForm onSaved={handleSaved} onCancel={close}/>} {activeModule==='finance'&&<FinanceEntryForm onSaved={handleSaved} onCancel={close}/>} 
+      {activeModule==='task'&&<TaskForm onSaved={handleSaved} onCancel={close}/>}
+      {activeModule==='habit'&&<HabitForm onSaved={handleSaved} onCancel={close}/>}
+      {activeModule==='routine'&&<RoutineForm onSaved={handleSaved} onCancel={close}/>}
+      {activeModule==='goal'&&<GoalForm onSaved={handleSaved} onCancel={close}/>}
+      {activeModule==='event'&&<EventForm onSaved={handleSaved} onCancel={close}/>}
+      {activeModule==='note'&&<NoteForm onSaved={handleSaved} onCancel={close}/>}
+      {activeModule==='beauty'&&<BeautyRoutineForm onSaved={handleSaved} onCancel={close}/>}
+      {activeModule==='wellness'&&<WellnessEntryForm onSaved={handleSaved} onCancel={close}/>}
+      {activeModule==='finance'&&<FinanceEntryForm onSaved={handleSaved} onCancel={close}/>}
     </Dialog>
   </>;
 }
