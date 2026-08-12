@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
+import { MoneyGrowthExperience } from '@/components/finance/money-growth-experience';
 import { FinanceEntryManager } from '@/components/finance/finance-entry-manager';
 import { getFinanceEntriesByUser } from '@/lib/data/finance-entries';
 import { getFinanceGoals } from '@/lib/data/completion-v1';
@@ -19,9 +19,10 @@ export default async function FinancePage() {
 
   return (
     <AppShell>
-      <SectionPage eyebrow="Finance" title="Your wealth in one clear view" description="A calmer relationship with money begins with honest visibility, recurring-cost awareness, and gentle structure.">
+      <div className="space-y-6">
+        <MoneyGrowthExperience entries={entries} goals={goals} />
         <FinanceEntryManager initialEntries={entries} initialGoals={goals} />
-      </SectionPage>
+      </div>
     </AppShell>
   );
 }

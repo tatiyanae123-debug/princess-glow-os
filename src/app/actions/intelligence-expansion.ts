@@ -144,3 +144,27 @@ export async function updateProjectAction(id: string, formData: FormData): Promi
 
   revalidatePath('/projects');
 }
+
+export type ProjectMilestone = { id: string; title: string; done: boolean };
+
+export async function addProjectMilestoneAction(projectId: string, formData: FormData): Promise<void> {
+  const userId = await requireUser();
+  const title = text(formData, 'title');
+  if (!title) return;
+  const [project] = await db.select().from(projects).where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
+  if (!project) return;
+  const milestones = (Array.isArray(project.milestones) ? project.milestones : []) as ProjectMilestone[];
+  const next: ProjectMilestone[] = [...milestones, { id: crypto.randomUUID(), title: title.slice(0, 200), done: false }];
+  await db.update(projects).set({ milestones: next, updatedAt: new Date() }).where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
+  revalidatePath('/projects');
+}
+
+export async function toggleProjectMilestoneAction(projectId: string, milestoneId: string): Promise<void> {
+  const userId = await requireUser();
+  const [project] = await db.select().from(projects).where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
+  if (!project) return;
+  const milestones = (Array.isArray(project.milestones) ? project.milestones : []) as ProjectMilestone[];
+  const next = milestones.map((milestone) => (milestone.id === milestoneId ? { ...milestone, done: !milestone.done } : milestone));
+  await db.update(projects).set({ milestones: next, updatedAt: new Date() }).where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
+  revalidatePath('/projects');
+}
