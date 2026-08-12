@@ -10,6 +10,7 @@ import { calendarEvents } from '@/db/schema/calendar-events';
 import { financeEntries } from '@/db/schema/finance-entries';
 import { projects } from '@/db/schema/intelligence-expansion';
 import { glowEntities, universalIntakeArtifacts } from '@/db/schema/interconnected-os';
+import { getSuggestedInboxDestination, type InboxRouteDestination } from '@/lib/intelligence/inbox-routing-options';
 
 function parseMetadata(value: unknown) {
   return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
@@ -29,12 +30,13 @@ function parseDateTime(dateText: unknown, timeText: unknown) {
   return date;
 }
 
-export async function routeInboxItem(userId: string, itemId: string) {
+export async function routeInboxItem(userId: string, itemId: string, requestedDestination?: InboxRouteDestination) {
   const rows = await db.select().from(glowInboxItems).where(and(eq(glowInboxItems.id, itemId), eq(glowInboxItems.userId, userId))).limit(1);
   const item = rows[0];
   if (!item || item.status !== 'unprocessed') return null;
 
   const suggestedType = item.suggestedType ?? 'note';
+  const destination = requestedDestination ?? getSuggestedInboxDestination(suggestedType);
   const title = (item.suggestedTitle || item.rawText).slice(0, 300);
   const metadata = parseMetadata(item.metadata);
   const extracted = parseExtracted(metadata);
@@ -42,7 +44,7 @@ export async function routeInboxItem(userId: string, itemId: string) {
   let routedEntityId: string | undefined;
   let routedTitle = title;
 
-  if (['task', 'shopping', 'reminder'].includes(suggestedType)) {
+  if (destination === 'task') {
     const [created] = await db.insert(tasks).values({
       userId,
       title,
@@ -52,7 +54,7 @@ export async function routeInboxItem(userId: string, itemId: string) {
     }).returning();
     routedEntityType = 'task';
     routedEntityId = created.id;
-  } else if (suggestedType === 'appointment' || suggestedType === 'calendar') {
+  } else if (destination === 'calendar') {
     const startAt = parseDateTime(extracted.dateText, extracted.timeText);
     if (startAt) {
       const endAt = new Date(startAt.getTime() + 60 * 60 * 1000);
@@ -65,15 +67,15 @@ export async function routeInboxItem(userId: string, itemId: string) {
       routedEntityId = created.id;
       routedTitle = `Schedule: ${title}`;
     }
-  } else if (suggestedType === 'goal') {
+  } else if (destination === 'goal') {
     const [created] = await db.insert(goals).values({ userId, title, description: item.rawText, category: 'personal', status: 'not_started' }).returning();
     routedEntityType = 'goal';
     routedEntityId = created.id;
-  } else if (suggestedType === 'project' || suggestedType === 'career') {
+  } else if (destination === 'project') {
     const [created] = await db.insert(projects).values({ userId, title, area: suggestedType === 'career' ? 'Career' : 'Universal Intake', status: 'active', priority: 'medium', progress: 0, nextAction: item.rawText }).returning();
     routedEntityType = 'project';
     routedEntityId = created.id;
-  } else if (suggestedType === 'receipt' && typeof extracted.amount === 'number' && Number.isFinite(extracted.amount)) {
+  } else if (destination === 'finance' && typeof extracted.amount === 'number' && Number.isFinite(extracted.amount)) {
     const date = typeof extracted.dateText === 'string' ? new Date(extracted.dateText) : new Date();
     const entryDate = Number.isNaN(date.getTime()) ? new Date().toISOString().slice(0, 10) : date.toISOString().slice(0, 10);
     const lower = item.rawText.toLowerCase();
@@ -82,7 +84,7 @@ export async function routeInboxItem(userId: string, itemId: string) {
     routedEntityType = 'finance_entry';
     routedEntityId = created.id;
   } else {
-    const tags = ['glow-inbox', suggestedType];
+    const tags = ['glow-inbox', suggestedType, requestedDestination ? `reviewed-${requestedDestination}` : 'auto-routed'];
     const [created] = await db.insert(notes).values({ userId, title, content: item.rawText, tags }).returning();
     routedEntityType = 'note';
     routedEntityId = created.id;
@@ -99,7 +101,7 @@ export async function routeInboxItem(userId: string, itemId: string) {
       title: routedTitle,
       summary: item.rawText.slice(0, 500),
       searchableText: item.rawText,
-      metadata: { createdFrom: 'glow_inbox', inboxItemId: item.id, suggestedType },
+      metadata: { createdFrom: 'glow_inbox', inboxItemId: item.id, suggestedType, requestedDestination: requestedDestination ?? null },
     }).onConflictDoNothing().returning();
 
     await db.insert(entityRelations).values({
@@ -109,12 +111,12 @@ export async function routeInboxItem(userId: string, itemId: string) {
       relation: 'created_from',
       toType: routedEntityType,
       toId: routedEntityId,
-      metadata: { confidence: item.confidence },
+      metadata: { confidence: item.confidence, requestedDestination: requestedDestination ?? null },
     });
 
     const artifacts = await db.select({ id: universalIntakeArtifacts.id }).from(universalIntakeArtifacts).where(and(eq(universalIntakeArtifacts.userId, userId), eq(universalIntakeArtifacts.inboxItemId, item.id))).limit(1);
     if (artifacts[0]) {
-      await db.insert(entityRelations).values({ userId, fromType: 'intake_artifact', fromId: artifacts[0].id, relation: 'created', toType: routedEntityType, toId: routedEntityId, metadata: {} });
+      await db.insert(entityRelations).values({ userId, fromType: 'intake_artifact', fromId: artifacts[0].id, relation: 'created', toType: routedEntityType, toId: routedEntityId, metadata: { requestedDestination: requestedDestination ?? null } });
     }
 
     void entity;
