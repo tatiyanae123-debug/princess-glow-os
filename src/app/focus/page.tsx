@@ -18,10 +18,11 @@ function formatMinutes(minutes: number) {
   return remainder ? `${hours}h ${remainder}m` : `${hours}h`;
 }
 
-export default async function FocusPage() {
+export default async function FocusPage({ searchParams }: { searchParams?: Promise<{ task?: string }> }) {
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
   const userId = session.user.id;
+  const requestedTaskId = (await searchParams)?.task ?? null;
 
   let active = null;
   let history: (typeof focusSessions.$inferSelect)[] = [];
@@ -34,7 +35,9 @@ export default async function FocusPage() {
     return <AppShell><div className="mx-auto max-w-3xl rounded-[22px] border border-amber-200 bg-amber-50 p-6"><p className="text-sm font-semibold">Focus Sessions need intelligence activation.</p><a href="/settings/intelligence" className="mt-3 inline-block text-xs text-amber-900">Activate intelligence →</a></div></AppShell>;
   }
 
-  const tasks = (await getTasksByUser(userId)).filter((task) => task.status !== 'done' && task.status !== 'cancelled').slice(0, 12);
+  const openTasks = (await getTasksByUser(userId)).filter((task) => task.status !== 'done' && task.status !== 'cancelled');
+  const requestedTask = requestedTaskId ? openTasks.find((task) => task.id === requestedTaskId) ?? null : null;
+  const tasks = openTasks.slice(0, 12);
   const finished = history.filter((item) => item.endedAt);
   const completed = finished.filter((item) => item.completed);
   const totalMinutes = finished.reduce((sum, item) => sum + (item.actualMinutes ?? 0), 0);
@@ -46,6 +49,8 @@ export default async function FocusPage() {
 
   return <AppShell><div className="mx-auto max-w-5xl space-y-5">
     <header><div className="flex items-center gap-2 text-violet-700"><Focus size={17}/><p className="text-[9px] font-bold uppercase tracking-[.2em]">Focus Sessions</p></div><h1 className="glow-display mt-2 text-[42px] leading-none text-[#392e2a]">One thing at a time.</h1><p className="mt-2 max-w-2xl text-[10px] leading-5 text-[#7e6b64]">Start a focused work block from any open task. Glow persists every session, duration, outcome, and note so execution history can inform planning instead of disappearing when the timer ends.</p></header>
+
+    {requestedTask && !active ? <section className="rounded-[22px] border border-[#d8c7c0] bg-[linear-gradient(135deg,#f7efeb,#fffaf7)] p-5"><p className="text-[8px] font-bold uppercase tracking-[.18em] text-[#9b5f68]">Ready to focus</p><h2 className="glow-display mt-2 text-[22px] text-[#433631]">{requestedTask.title}</h2><p className="mt-1 text-[9px] uppercase tracking-[.1em] text-[#9b857d]">{requestedTask.priority}{requestedTask.dueDate ? ` · due ${requestedTask.dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''}</p><form action={startFocusSessionAction.bind(null, 'task', requestedTask.id, requestedTask.title, 25)} className="mt-4"><button type="submit" className="flex items-center gap-2 rounded-xl bg-[#40352f] px-4 py-2.5 text-[9px] text-white"><Play size={12}/>Start focus on this task</button></form></section> : null}
 
     <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <article className="rounded-[18px] border border-[#e4d7cf] bg-white/72 p-4"><History size={14} className="text-violet-700"/><p className="glow-display mt-2 text-[24px] text-[#433631]">{finished.length}</p><p className="mt-1 text-[7px] uppercase tracking-[.14em] text-[#917b73]">Recorded sessions</p></article>

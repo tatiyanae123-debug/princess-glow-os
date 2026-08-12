@@ -3,10 +3,14 @@ import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
 import { PlanningHub } from '@/components/planning/planning-hub';
 import { BuildMyDay } from '@/components/planning/build-my-day';
+import { TopThreeCard } from '@/components/planning/top-three-card';
+import { ThisWeekCard } from '@/components/planning/this-week-card';
 import { SectionPage } from '@/components/section-page';
 import { Card } from '@/components/ui/card';
 import { archivePlanningPeriodAction, createPlanningPeriodAction, updatePlanningPeriodAction } from '@/app/actions/completion-v1';
 import { getPlanningPeriods } from '@/lib/data/completion-v1';
+import { getTasksByUser } from '@/lib/data/tasks';
+import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
 import { CalendarRange, Layers3, PenLine } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +18,11 @@ const fieldClass='w-full border px-4 py-3 text-[10px]';
 
 export default async function PlanningPage(){
   const session=await auth(); if(!session?.user?.id)redirect('/sign-in');
-  const periods=await getPlanningPeriods(session.user.id);
+  const [periods, tasks, events]=await Promise.all([
+    getPlanningPeriods(session.user.id),
+    getTasksByUser(session.user.id),
+    getCalendarEventsByUser(session.user.id),
+  ]);
   const active=periods.filter((p)=>!p.archived);
   const avg=active.length?Math.round(active.reduce((sum,p)=>sum+p.progress,0)/active.length):0;
 
@@ -24,6 +32,11 @@ export default async function PlanningPage(){
         <Card className="relative overflow-hidden bg-[linear-gradient(145deg,#f7eceb,#efe3dc)] p-5"><Layers3 size={54} strokeWidth={.8} className="absolute right-5 top-3 text-[#a66f76]/18"/><p className="glow-eyebrow">Life architecture</p><p className="glow-display mt-2 text-[24px] text-[#4b3c38]">Plan in layers, live in moments.</p><p className="mt-2 max-w-xl text-[9px] leading-4 text-[#7a6760]">Today should connect to the week, the week to the quarter, and the quarter to the person you are becoming.</p></Card>
         <Card className="p-5"><p className="glow-display text-[17px] text-[#493c38]">Planning pulse</p><div className="mt-4 flex items-end justify-between"><div><p className="text-[8px] uppercase tracking-[.12em] text-[#907b73]">Active layers</p><p className="glow-display mt-1 text-[26px] text-[#4d3f3a]">{active.length}</p></div><div className="text-right"><p className="text-[8px] uppercase tracking-[.12em] text-[#907b73]">Avg. progress</p><p className="glow-display mt-1 text-[26px] text-[#4d3f3a]">{avg}%</p></div></div></Card>
       </section>
+
+      <div className="grid gap-5 lg:grid-cols-[.9fr_1.1fr]">
+        <TopThreeCard initialTasks={tasks} />
+        <ThisWeekCard tasks={tasks} events={events} />
+      </div>
 
       <BuildMyDay />
 
