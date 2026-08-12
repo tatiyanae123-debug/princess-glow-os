@@ -2,9 +2,6 @@ import type { Metadata } from 'next';
 import './globals.css';
 import './reference-rooms.css';
 import './glow-os-3.css';
-import './reference-board-exact-v2.css';
-import './dashboard-reference-exact.css';
-import './dashboard-sidebar-exact.css';
 
 export const metadata: Metadata = {
   title: 'Glow OS',

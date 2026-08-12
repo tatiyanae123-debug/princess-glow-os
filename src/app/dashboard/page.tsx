@@ -39,9 +39,17 @@ export default async function DashboardPage() {
   try {
     const { getLivingDashboardData } = await import('@/lib/dashboard/living-dashboard');
     const data = await getLivingDashboardData(userId);
-    return <AppShell><LivingDashboard data={data} /></AppShell>;
+    let insight: string | null = null;
+    try {
+      const { buildPersonalContext } = await import('@/lib/intelligence/context');
+      const context = await buildPersonalContext(userId);
+      insight = context.recommendations[0]?.reason ?? context.dailyBrief ?? null;
+    } catch {
+      insight = null;
+    }
+    return <AppShell><LivingDashboard data={data} insight={insight} userName={session.user.name?.split(' ')[0] ?? 'there'} /></AppShell>;
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    return <AppShell><LivingDashboard data={getFallbackData()} error={message} /></AppShell>;
+    return <AppShell><LivingDashboard data={getFallbackData()} error={message} userName={session.user.name?.split(' ')[0] ?? 'there'} /></AppShell>;
   }
 }

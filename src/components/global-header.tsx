@@ -15,7 +15,7 @@ export function GlobalHeader() {
   }
 
   return (
-    <header className="glow-global-header sticky top-0 z-40 flex h-[64px] items-center justify-between gap-3 border-b border-[#F1E7E3] bg-[#FDFAF8]/95 px-4 backdrop-blur-xl sm:px-7 lg:px-10">
+    <header className="sticky top-0 z-40 flex h-[64px] items-center justify-between gap-3 border-b border-[#F1E7E3] bg-[#FDFAF8]/95 px-4 backdrop-blur-xl sm:px-7 lg:px-10">
       <button
         type="button"
         onClick={() => document.dispatchEvent(new Event('glow:voice-open'))}
