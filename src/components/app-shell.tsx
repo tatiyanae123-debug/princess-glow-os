@@ -1,9 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { Sidebar } from '@/components/ui/sidebar';
 import { EditorialSidebar } from '@/components/ui/editorial-sidebar';
-import { TopNav } from '@/components/ui/top-nav';
 import { EditorialTopNav } from '@/components/ui/editorial-top-nav';
 import { GlowProvider } from '@/lib/context/glow-provider';
 import { QuickAdd } from '@/components/quick-add/quick-add';
@@ -11,7 +9,6 @@ import { UniversalCaptureDock } from '@/components/universal-capture-dock';
 import { ReferenceRoomInteractions } from '@/components/reference-room-interactions';
 import { GlowVoiceCommand } from '@/components/voice/glow-voice-command';
 import { GlobalImageEditor } from '@/components/media/global-image-editor';
-import { isEditorialRoute } from '@/lib/editorial-routes';
 
 function roomFor(pathname: string) {
   if (pathname.startsWith('/beauty-lab') || pathname.startsWith('/beauty/lab')) return 'beauty-lab';
@@ -50,32 +47,17 @@ function roomFor(pathname: string) {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const room = roomFor(pathname);
-  const editorial = isEditorialRoute(pathname);
 
   return (
     <GlowProvider>
-      <div className={editorial ? 'room-canvas editorial-shell min-h-screen transition-colors' : 'room-canvas min-h-screen transition-colors'} data-room={room}>
-        {editorial ? (
-          <div className="editorial-shell-inner">
-            <div className="editorial-sidebar-wrap"><EditorialSidebar /></div>
-            <div className="editorial-content">
-              <EditorialTopNav />
-              <main className="editorial-main">{children}</main>
-            </div>
+      <div className="room-canvas editorial-shell min-h-screen transition-colors" data-room={room}>
+        <div className="editorial-shell-inner">
+          <div className="editorial-sidebar-wrap"><EditorialSidebar /></div>
+          <div className="editorial-content">
+            <EditorialTopNav />
+            <main className="editorial-main">{children}</main>
           </div>
-        ) : (
-          <div className="mx-auto flex min-h-screen w-full max-w-[1920px] flex-col lg:flex-row">
-            <div className="w-full lg:sticky lg:top-0 lg:h-screen lg:w-[258px] lg:shrink-0"><Sidebar /></div>
-            <div className="min-w-0 flex-1">
-              <main className="min-h-screen px-3 pb-28 pt-4 sm:px-5 lg:px-7 lg:pt-7">
-                <div className="mx-auto w-full max-w-[1560px]">
-                  <TopNav />
-                  {children}
-                </div>
-              </main>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
       <ReferenceRoomInteractions />
       <GlowVoiceCommand />
