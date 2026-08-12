@@ -1,14 +1,15 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { BellRing, Bot, Download, Eye, Palette, RotateCcw, ShieldCheck, Sparkles, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { applyTheme, THEMES, type ThemeId } from '@/lib/themes';
 
 const STORAGE_KEY = 'glow-settings-v1';
 
 type GlowSettings = {
-  theme: 'editorial-warm' | 'soft-rose' | 'quiet-night';
+  theme: ThemeId;
   density: 'airy' | 'balanced' | 'compact';
   suggestions: boolean;
   proactiveBrain: boolean;
@@ -18,7 +19,7 @@ type GlowSettings = {
 };
 
 const defaults: GlowSettings = {
-  theme: 'editorial-warm',
+  theme: 'modern-princess',
   density: 'airy',
   suggestions: true,
   proactiveBrain: true,
@@ -48,12 +49,12 @@ export function SettingsControlCenter() {
   useEffect(() => {
     if (!ready) return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-    document.documentElement.dataset.glowTheme = settings.theme;
+    applyTheme(settings.theme);
     document.documentElement.dataset.glowDensity = settings.density;
   }, [settings, ready]);
 
   const summary = useMemo(() => [
-    `${settings.theme.replaceAll('-', ' ')} theme`,
+    `${THEMES.find((theme) => theme.id === settings.theme)?.name ?? 'Glow'} theme`,
     `${settings.notificationLevel} notifications`,
     settings.proactiveBrain ? 'proactive Brain on' : 'proactive Brain off',
     settings.privateMode ? 'private mode on' : 'standard privacy',
@@ -78,6 +79,7 @@ export function SettingsControlCenter() {
     if (!window.confirm('Reset local Glow OS personalization to the defaults? Your life data will not be deleted.')) return;
     setSettings(defaults);
     window.localStorage.removeItem(STORAGE_KEY);
+    applyTheme(defaults.theme);
   }
 
   return (
@@ -94,10 +96,8 @@ export function SettingsControlCenter() {
           <Palette size={18} className="text-[#8b746c]" />
           <p className="glow-display mt-3 text-[17px] text-[#4a413a]">Appearance + personalization</p>
           <label className="mt-4 block text-[8px] uppercase tracking-[.12em] text-[#8d7d74]">Theme</label>
-          <select value={settings.theme} onChange={(event) => update('theme', event.target.value as GlowSettings['theme'])} className="mt-2 w-full rounded-[8px] border border-[#e4d9d1] bg-[#fffaf6] px-3 py-2 text-[10px] text-[#554a43]">
-            <option value="editorial-warm">Editorial warm</option>
-            <option value="soft-rose">Soft rose</option>
-            <option value="quiet-night">Quiet night</option>
+          <select value={settings.theme} onChange={(event) => update('theme', event.target.value as ThemeId)} className="mt-2 w-full rounded-[8px] border border-[#e4d9d1] bg-[#fffaf6] px-3 py-2 text-[10px] text-[#554a43]">
+            {THEMES.map((theme) => <option key={theme.id} value={theme.id}>{theme.name}</option>)}
           </select>
           <label className="mt-4 block text-[8px] uppercase tracking-[.12em] text-[#8d7d74]">Information density</label>
           <select value={settings.density} onChange={(event) => update('density', event.target.value as GlowSettings['density'])} className="mt-2 w-full rounded-[8px] border border-[#e4d9d1] bg-[#fffaf6] px-3 py-2 text-[10px] text-[#554a43]">
@@ -150,7 +150,7 @@ export function SettingsControlCenter() {
   );
 }
 
-function ToggleRow({ label, note, checked, onChange, icon }: { label: string; note: string; checked: boolean; onChange: (value: boolean) => void; icon?: React.ReactNode }) {
+function ToggleRow({ label, note, checked, onChange, icon }: { label: string; note: string; checked: boolean; onChange: (value: boolean) => void; icon?: ReactNode }) {
   return (
     <label className="mt-4 flex cursor-pointer items-start justify-between gap-4 rounded-[8px] border border-[#eadfd8] bg-[#fffaf6] p-3">
       <span className="flex gap-2">
