@@ -1,8 +1,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
-import { HabitManager } from '@/components/habits/habit-manager';
+import { HabitsExperience } from '@/components/habits/habits-experience';
 import { getHabitLogsForUser, getHabitsByUser } from '@/lib/data/habits';
 
 export const dynamic = 'force-dynamic';
@@ -25,9 +24,7 @@ export default async function HabitsPage() {
 
   return (
     <AppShell>
-      <SectionPage eyebrow="Habits" title="Tiny rituals that compound" description="See your real streaks, history and patterns, then protect the smallest next repeat.">
-        <HabitManager initialHabits={habits} initialLogs={logs} />
-      </SectionPage>
+      <HabitsExperience initialHabits={habits} initialLogs={logs} />
     </AppShell>
   );
 }
