@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { markInboxProcessed } from '@/lib/intelligence/adaptive-os';
 import { routeInboxItem } from '@/lib/intelligence/inbox-routing';
 import { isInboxRouteDestination } from '@/lib/intelligence/inbox-routing-options';
+import { getInboxRoutingRevalidationPaths } from '@/lib/intelligence/cross-page-revalidation';
 
 async function requireUserId(){const session=await auth();if(!session?.user?.id)redirect('/sign-in');return session.user.id;}
 
@@ -14,6 +15,6 @@ export async function routeInboxItemAction(itemId:string,formData:FormData):Prom
   const destination=formData.get('destination');
   if(!isInboxRouteDestination(destination))return;
   await routeInboxItem(userId,itemId,destination);
-  for(const path of ['/inbox','/today','/tasks','/notes','/goals','/calendar','/finance','/projects'])revalidatePath(path);
+  for(const path of getInboxRoutingRevalidationPaths(destination))revalidatePath(path);
 }
 export async function dismissInboxItemAction(itemId:string):Promise<void>{const userId=await requireUserId();await markInboxProcessed(userId,itemId);revalidatePath('/inbox');revalidatePath('/today');}
