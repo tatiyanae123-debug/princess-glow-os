@@ -34,11 +34,13 @@ body{background-image:none!important;font-size:14px;}
   color:var(--glow3-text)!important;
   font-family:Inter,system-ui,sans-serif;
 }
+.reference-room>header>div:first-child>div:last-child{display:none!important;}
 .reference-room h1,.reference-room .glow-display{font-family:'Playfair Display',Georgia,serif;}
 .reference-room .glow-hand{font-family:Inter,system-ui,sans-serif!important;font-style:italic;font-size:13px!important;font-weight:400;color:#8D8D92!important;}
 .reference-room h1{font-size:clamp(34px,4vw,42px)!important;line-height:1.06!important;letter-spacing:-.035em!important;}
 .reference-room h2{font-size:clamp(28px,3vw,36px);}
 .reference-room p,.reference-room button,.reference-room a{font-size:13px;}
+.reference-room>header nav button{min-height:42px!important;padding:0 14px!important;font-size:13px!important;font-weight:500!important;}
 .ref-kicker,.glow-eyebrow{font-size:11px!important;letter-spacing:.12em!important;color:#8E8E93!important;}
 
 .ref-card,.paper-tray,.paper-note,.editorial-surface,.paper-card{
