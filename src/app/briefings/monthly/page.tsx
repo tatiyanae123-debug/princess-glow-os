@@ -1,0 +1,8 @@
+import Link from 'next/link';
+import {redirect} from 'next/navigation';
+import {auth} from '@/auth';
+import {AppShell} from '@/components/app-shell';
+import {SpecialUpgradeGrid} from '@/components/special-upgrade-grid';
+import {getBriefings} from '@/lib/data/completion-v1';
+export const dynamic='force-dynamic';
+export default async function MonthlyDebriefPage(){const s=await auth();if(!s?.user?.id)redirect('/sign-in');const rows=(await getBriefings(s.user.id)).filter(x=>x.kind==='monthly').slice(0,8);return <AppShell><div className="space-y-6"><header><p className="glow-eyebrow">Monthly Debrief</p><h1 className="glow-display mt-2 text-4xl sm:text-5xl">Your month, as a chapter.</h1><p className="mt-3 max-w-2xl text-sm text-[#83756D]">Bring goals, finances, wellness, fitness, beauty, hair, memories and life changes together before planning the next chapter.</p></header><div className="grid gap-4 md:grid-cols-2">{rows.length?rows.map(row=><article key={row.id} className="rounded-[24px] border border-[#EDE1DC] bg-white p-5"><p className="text-xs font-semibold text-[#C9727E]">{row.periodKey}</p><p className="mt-2 text-xs text-[#8B7C74]">Generated {row.generatedAt.toLocaleDateString()}</p><pre className="mt-3 max-h-44 overflow-auto whitespace-pre-wrap text-[11px] leading-5 text-[#6F625B]">{JSON.stringify(row.content,null,2)}</pre></article>):<div className="rounded-[24px] border border-[#EDE1DC] bg-white p-6 text-sm text-[#8B7C74]">No monthly debrief saved yet. Use the tools below to assemble the first one.</div>}</div><SpecialUpgradeGrid room="monthly-debrief"/><Link href="/briefings" className="inline-flex text-xs font-semibold text-[#B66D77]">← Back to Briefings</Link></div></AppShell>}
