@@ -83,7 +83,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="min-w-0 flex-1 bg-[#FDFAF8]">
             {!focus ? <GlobalHeader /> : null}
             <main className={focus ? 'min-h-screen px-4 py-8 sm:px-7 lg:px-10' : 'min-h-screen px-4 pb-20 pt-5 sm:px-7 lg:px-10 lg:pt-7'}>
-              <div className="mx-auto w-full max-w-[1500px]">{children}</div>
+              <div key={pathname} className="glow-route-stage mx-auto w-full max-w-[1500px]">{children}</div>
             </main>
           </div>
         </div>
