@@ -9,7 +9,7 @@ import { getFinanceEntriesByUser } from '@/lib/data/finance-entries';
 import { Calculator, PiggyBank, ShieldCheck, Sparkles, TrendingUp, WalletCards } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
-const fieldClass = 'w-full border px-4 py-3 text-[10px]';
+const fieldClass = 'w-full rounded-lg border border-[#F1E7E3] px-3.5 py-2.5 text-[12px] text-[#2B2420] placeholder:text-[#B5ACA5] focus:border-[#C9727E] focus:outline-none';
 
 function money(value: number) {
   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
@@ -52,7 +52,7 @@ export default async function FinanceBrainPage() {
   const avgSurplus = avgIncome - avgExpenses;
   const savingsRate = avgIncome > 0 ? ((avgSavings + Math.max(0, avgSurplus)) / avgIncome) * 100 : 0;
 
-  const subscriptionAverage = recentMonths.reduce((sum, [, value], index) => {
+  const subscriptionAverage = recentMonths.reduce((sum, _entry, index) => {
     const key = recentMonths[index]?.[0];
     if (!key) return sum;
     return sum + entries.filter((entry) => entry.type === 'expense' && entry.category === 'subscriptions' && monthKey(entry.entryDate) === key).reduce((subtotal, entry) => subtotal + Number(entry.amount), 0);
@@ -89,100 +89,108 @@ export default async function FinanceBrainPage() {
         <div className="space-y-4">
           <section className="grid gap-3 sm:grid-cols-4">
             <Card className="relative overflow-hidden">
-              <WalletCards size={34} strokeWidth={0.8} className="absolute right-3 top-3 text-[#71806a]/18" />
-              <p className="text-[8px] text-[#788372]">Recorded income</p>
-              <p className="glow-display mt-2 text-[24px] text-[#41503d]">{money(income)}</p>
+              <WalletCards size={30} strokeWidth={0.8} className="absolute right-4 top-4 text-[#C9727E]/20" />
+              <p className="text-[10.5px] text-[#8A8078]">Recorded income</p>
+              <p className="glow-display mt-2 text-[24px] text-[#2B2420]">{money(income)}</p>
             </Card>
             <Card>
-              <p className="text-[8px] text-[#788372]">Recorded expenses</p>
-              <p className="glow-display mt-2 text-[24px] text-[#5e4c43]">{money(expenses)}</p>
+              <p className="text-[10.5px] text-[#8A8078]">Recorded expenses</p>
+              <p className="glow-display mt-2 text-[24px] text-[#2B2420]">{money(expenses)}</p>
             </Card>
             <Card>
-              <p className="text-[8px] text-[#788372]">Recorded savings</p>
-              <p className="glow-display mt-2 text-[24px] text-[#7e6748]">{money(savings)}</p>
+              <p className="text-[10.5px] text-[#8A8078]">Recorded savings</p>
+              <p className="glow-display mt-2 text-[24px] text-[#9A7A3D]">{money(savings)}</p>
             </Card>
-            <Card className="bg-[linear-gradient(145deg,#edf1e8,#f8f2eb)]">
-              <p className="text-[8px] text-[#788372]">Net records</p>
-              <p className={`glow-display mt-2 text-[24px] ${net >= 0 ? 'text-[#52634d]' : 'text-[#9b6065]'}`}>{money(net)}</p>
+            <Card className="bg-[linear-gradient(145deg,#F1E8D9,#FDF6F1)]">
+              <p className="text-[10.5px] text-[#8A8078]">Net records</p>
+              <p className={`glow-display mt-2 text-[24px] ${net >= 0 ? 'text-[#5A6E52]' : 'text-[#B15A68]'}`}>{money(net)}</p>
             </Card>
           </section>
 
           <section className="grid gap-3 lg:grid-cols-3">
-            <Card className="paper-card lg:col-span-2">
+            <Card className="lg:col-span-2">
               <div className="flex items-start gap-3">
-                <TrendingUp size={16} className="mt-0.5 text-[#71806a]" />
+                <TrendingUp size={16} className="mt-0.5 text-[#C9727E]" />
                 <div className="min-w-0 flex-1">
                   <p className="glow-eyebrow">30-day outlook</p>
-                  <h2 className="glow-display mt-1 text-[20px] text-[#43503f]">Baseline forecast</h2>
-                  <p className="mt-2 text-[8px] leading-4 text-[#7d8877]">Built from up to your three most recent months of logged income and expenses.</p>
+                  <h2 className="glow-display mt-1 text-[20px] text-[#2B2420]">Baseline forecast</h2>
+                  <p className="mt-2 text-[11.5px] leading-4 text-[#8A8078]">Built from up to your three most recent months of logged income and expenses.</p>
                 </div>
               </div>
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-[8px] bg-[#f4f6f1] p-4"><p className="text-[7px] uppercase tracking-[.12em] text-[#83907d]">Avg income</p><p className="glow-display mt-2 text-[18px] text-[#4d5c48]">{money(avgIncome)}</p></div>
-                <div className="rounded-[8px] bg-[#f7f2ee] p-4"><p className="text-[7px] uppercase tracking-[.12em] text-[#8d7d74]">Avg expenses</p><p className="glow-display mt-2 text-[18px] text-[#745e55]">{money(avgExpenses)}</p></div>
-                <div className="rounded-[8px] bg-[#eef2ea] p-4"><p className="text-[7px] uppercase tracking-[.12em] text-[#7d8978]">Projected surplus</p><p className={`glow-display mt-2 text-[18px] ${nextMonthBaseline >= 0 ? 'text-[#52634d]' : 'text-[#9b6065]'}`}>{money(nextMonthBaseline)}</p></div>
+                <div className="rounded-[12px] bg-[#FDF8F6] p-4"><p className="text-[10px] uppercase tracking-[.12em] text-[#B5ACA5]">Avg income</p><p className="glow-display mt-2 text-[18px] text-[#2B2420]">{money(avgIncome)}</p></div>
+                <div className="rounded-[12px] bg-[#F1E8D9] p-4"><p className="text-[10px] uppercase tracking-[.12em] text-[#9A7A3D]">Avg expenses</p><p className="glow-display mt-2 text-[18px] text-[#2B2420]">{money(avgExpenses)}</p></div>
+                <div className="rounded-[12px] bg-[#E4EBDD] p-4"><p className="text-[10px] uppercase tracking-[.12em] text-[#5A6E52]">Projected surplus</p><p className={`glow-display mt-2 text-[18px] ${nextMonthBaseline >= 0 ? 'text-[#5A6E52]' : 'text-[#B15A68]'}`}>{money(nextMonthBaseline)}</p></div>
               </div>
-              <div className="mt-4 flex flex-wrap gap-2 text-[8px] text-[#74806f]"><span className="rounded-full bg-white/70 px-3 py-1.5">Savings pace {Math.max(0, savingsRate).toFixed(0)}%</span><span className="rounded-full bg-white/70 px-3 py-1.5">Subscriptions avg {money(subscriptionAverage)}/mo</span></div>
+              <div className="mt-4 flex flex-wrap gap-2 text-[10.5px] text-[#8A8078]"><span className="rounded-full bg-[#FDF8F6] px-3 py-1.5">Savings pace {Math.max(0, savingsRate).toFixed(0)}%</span><span className="rounded-full bg-[#FDF8F6] px-3 py-1.5">Subscriptions avg {money(subscriptionAverage)}/mo</span></div>
             </Card>
 
-            <Card className="bg-[linear-gradient(155deg,#eef2ea,#f7f0e9)]">
-              <div className="flex items-center gap-2"><ShieldCheck size={15} className="text-[#71806a]" /><p className="glow-eyebrow">Affordability</p></div>
-              <h2 className="glow-display mt-2 text-[19px] text-[#43503f]">Purchase guardrail</h2>
-              <p className="mt-3 text-[9px] leading-5 text-[#6f7b6a]">{affordabilityMessage}</p>
-              <p className="mt-4 text-[7px] leading-4 text-[#899184]">This is planning guidance from logged data, not financial advice or an automatic spending approval.</p>
+            <Card className="bg-[linear-gradient(155deg,#E4EBDD,#FDF6F1)]">
+              <div className="flex items-center gap-2"><ShieldCheck size={15} className="text-[#5A6E52]" /><p className="glow-eyebrow">Affordability</p></div>
+              <h2 className="glow-display mt-2 text-[19px] text-[#2B2420]">Purchase guardrail</h2>
+              <p className="mt-3 text-[12px] leading-5 text-[#4A4440]">{affordabilityMessage}</p>
+              <p className="mt-4 text-[10.5px] leading-4 text-[#8A8078]">This is planning guidance from logged data, not financial advice or an automatic spending approval.</p>
             </Card>
           </section>
 
           <section className="grid gap-3 lg:grid-cols-3">
             <Card>
-              <div className="flex items-center gap-2"><Calculator size={14} className="text-[#71806a]" /><p className="glow-eyebrow">Scenario A</p></div>
-              <h3 className="glow-display mt-2 text-[17px] text-[#45513f]">Trim expenses 10%</h3>
-              <p className="mt-2 text-[8px] leading-4 text-[#7c8676]">Projected monthly surplus becomes <span className="font-medium text-[#52634d]">{money(trim10)}</span>.</p>
-              <p className="mt-3 text-[7px] text-[#889184]">Difference from baseline: {money(trim10 - avgSurplus)}.</p>
+              <div className="flex items-center gap-2"><Calculator size={14} className="text-[#C9727E]" /><p className="glow-eyebrow">Scenario A</p></div>
+              <h3 className="glow-display mt-2 text-[17px] text-[#2B2420]">Trim expenses 10%</h3>
+              <p className="mt-2 text-[11.5px] leading-4 text-[#8A8078]">Projected monthly surplus becomes <span className="font-medium text-[#5A6E52]">{money(trim10)}</span>.</p>
+              <p className="mt-3 text-[10.5px] text-[#B5ACA5]">Difference from baseline: {money(trim10 - avgSurplus)}.</p>
             </Card>
             <Card>
-              <div className="flex items-center gap-2"><Sparkles size={14} className="text-[#8b775b]" /><p className="glow-eyebrow">Scenario B</p></div>
-              <h3 className="glow-display mt-2 text-[17px] text-[#45513f]">Reduce subscriptions 25%</h3>
-              <p className="mt-2 text-[8px] leading-4 text-[#7c8676]">Projected monthly surplus becomes <span className="font-medium text-[#52634d]">{money(trimSubscriptions)}</span>.</p>
-              <p className="mt-3 text-[7px] text-[#889184]">Potential monthly lift: {money(subscriptionAverage * 0.25)}.</p>
+              <div className="flex items-center gap-2"><Sparkles size={14} className="text-[#9A7A3D]" /><p className="glow-eyebrow">Scenario B</p></div>
+              <h3 className="glow-display mt-2 text-[17px] text-[#2B2420]">Reduce subscriptions 25%</h3>
+              <p className="mt-2 text-[11.5px] leading-4 text-[#8A8078]">Projected monthly surplus becomes <span className="font-medium text-[#5A6E52]">{money(trimSubscriptions)}</span>.</p>
+              <p className="mt-3 text-[10.5px] text-[#B5ACA5]">Potential monthly lift: {money(subscriptionAverage * 0.25)}.</p>
             </Card>
             <Card>
-              <div className="flex items-center gap-2"><PiggyBank size={14} className="text-[#987d52]" /><p className="glow-eyebrow">Scenario C</p></div>
-              <h3 className="glow-display mt-2 text-[17px] text-[#45513f]">Protect 15% of income</h3>
-              <p className="mt-2 text-[8px] leading-4 text-[#7c8676]">A 15% savings target equals <span className="font-medium text-[#7e6748]">{money(protect15)}</span> per month at your recent income pace.</p>
-              <p className="mt-3 text-[7px] text-[#889184]">Compare this with your current average savings of {money(avgSavings)}.</p>
+              <div className="flex items-center gap-2"><PiggyBank size={14} className="text-[#9A7A3D]" /><p className="glow-eyebrow">Scenario C</p></div>
+              <h3 className="glow-display mt-2 text-[17px] text-[#2B2420]">Protect 15% of income</h3>
+              <p className="mt-2 text-[11.5px] leading-4 text-[#8A8078]">A 15% savings target equals <span className="font-medium text-[#9A7A3D]">{money(protect15)}</span> per month at your recent income pace.</p>
+              <p className="mt-3 text-[10.5px] text-[#B5ACA5]">Compare this with your current average savings of {money(avgSavings)}.</p>
             </Card>
           </section>
 
-          <div className="grid gap-5 lg:grid-cols-[.72fr_1.28fr]">
-            <Card className="paper-card">
+          <div className="grid gap-4 lg:grid-cols-[.72fr_1.28fr]">
+            <Card>
               <form action={createFinanceGoalAction} className="space-y-3">
-                <div className="flex items-center gap-2"><PiggyBank size={15} className="text-[#71806a]" /><div><p className="glow-eyebrow">Goal ledger</p><h2 className="glow-display mt-1 text-[20px] text-[#43503f]">Add financial goal</h2></div></div>
+                <div className="flex items-center gap-2"><PiggyBank size={15} className="text-[#C9727E]" /><div><p className="glow-eyebrow">Goal ledger</p><h2 className="glow-display mt-1 text-[20px] text-[#2B2420]">Add financial goal</h2></div></div>
                 <input name="name" required placeholder="Goal name" className={fieldClass} />
                 <select name="goalType" defaultValue="savings" className={fieldClass}><option value="savings">Savings</option><option value="debt">Debt payoff</option><option value="travel">Travel</option><option value="emergency">Emergency fund</option><option value="purchase">Purchase</option></select>
                 <input name="target" required inputMode="decimal" placeholder="Target amount" className={fieldClass} />
                 <input name="current" inputMode="decimal" placeholder="Current amount" className={fieldClass} />
                 <input name="targetDate" type="date" className={fieldClass} />
                 <textarea name="notes" rows={3} placeholder="Notes / scenario" className={fieldClass} />
-                <button className="rounded-[6px] bg-[#3e493a] px-4 py-2 text-[9px] font-medium text-white">Save goal</button>
+                <button className="rounded-full bg-[#C9727E] px-4 py-2.5 text-[12px] font-medium text-white hover:bg-[#B15A68]">Save goal</button>
               </form>
             </Card>
 
             <Card className="overflow-hidden p-0">
-              <div className="flex items-center justify-between gap-3 border-b border-[#dfe5da] px-5 py-4">
-                <div className="flex items-center gap-2"><TrendingUp size={14} className="text-[#71806a]" /><div><p className="glow-eyebrow">Savings intelligence</p><h2 className="glow-display mt-1 text-[19px] text-[#43503f]">Goal pace</h2></div></div>
-                {highestPressureGoal && <span className="rounded-full bg-[#f3eee7] px-3 py-1.5 text-[7px] text-[#7f6d59]">Highest pace: {highestPressureGoal.name}</span>}
+              <div className="flex items-center justify-between gap-3 border-b border-[#F1E7E3] px-5 py-4">
+                <div className="flex items-center gap-2"><TrendingUp size={14} className="text-[#C9727E]" /><div><p className="glow-eyebrow">Savings intelligence</p><h2 className="glow-display mt-1 text-[19px] text-[#2B2420]">Goal pace</h2></div></div>
+                {highestPressureGoal && <span className="rounded-full bg-[#FDF3F2] px-3 py-1.5 text-[10px] text-[#B15A68]">Highest pace: {highestPressureGoal.name}</span>}
               </div>
-              {goalPaces.length === 0 ? <div className="p-8 text-center"><p className="text-[9px] text-[#7d8877]">No financial goals yet.</p><p className="mt-2 text-[8px] text-[#969e92]">Add a savings, debt, travel, emergency, or purchase goal to see required monthly pace.</p></div> : <div className="divide-y divide-[#e5e9e1]">{goalPaces.map((goal, index) => {
-                const progress = Math.max(0, Math.min(100, goal.targetCents ? goal.currentCents / goal.targetCents * 100 : 0));
-                const paceGap = goal.neededMonthly !== null ? avgSurplus - goal.neededMonthly : null;
-                return <div key={goal.id} className={`p-4 ${index === 0 ? 'bg-[#edf2ea]/60' : ''}`}>
-                  <div className="flex justify-between gap-3"><div><p className="glow-display text-[15px] text-[#44523f]">{goal.name}</p><p className="mt-0.5 text-[7px] uppercase tracking-[.12em] text-[#81907b]">{goal.goalType}</p></div><span className="glow-display text-[14px] text-[#61705c]">{Math.round(progress)}%</span></div>
-                  <div className="mt-3 h-1.5 rounded-full bg-[#e5ebe1]"><div className="h-1.5 rounded-full bg-[#84977c]" style={{ width: `${progress}%` }} /></div>
-                  <div className="mt-2 flex flex-wrap justify-between gap-2 text-[7px] text-[#879083]"><span>{money(goal.currentCents / 100)} of {money(goal.targetCents / 100)}</span><span>{money(goal.remaining)} remaining</span></div>
-                  {goal.neededMonthly !== null && <p className={`mt-2 text-[8px] ${paceGap !== null && paceGap >= 0 ? 'text-[#5f745a]' : 'text-[#9a6868]'}`}>Needs about {money(goal.neededMonthly)}/month for the next {goal.monthsRemaining} month{goal.monthsRemaining === 1 ? '' : 's'}. {paceGap !== null && paceGap >= 0 ? 'Your recent surplus can cover that pace.' : 'That pace is above your recent surplus.'}</p>}
-                </div>;
-              })}</div>}
+              {goalPaces.length === 0 ? (
+                <div className="p-8 text-center"><p className="text-[12px] text-[#8A8078]">No financial goals yet.</p><p className="mt-2 text-[11px] text-[#B5ACA5]">Add a savings, debt, travel, emergency, or purchase goal to see required monthly pace.</p></div>
+              ) : (
+                <div className="divide-y divide-[#F1E7E3]">
+                  {goalPaces.map((goal, index) => {
+                    const progress = Math.max(0, Math.min(100, goal.targetCents ? goal.currentCents / goal.targetCents * 100 : 0));
+                    const paceGap = goal.neededMonthly !== null ? avgSurplus - goal.neededMonthly : null;
+                    return (
+                      <div key={goal.id} className={`p-4 ${index === 0 ? 'bg-[#FDF8F6]' : ''}`}>
+                        <div className="flex justify-between gap-3"><div><p className="glow-display text-[15px] text-[#2B2420]">{goal.name}</p><p className="mt-0.5 text-[10px] uppercase tracking-[.1em] text-[#B5ACA5]">{goal.goalType}</p></div><span className="glow-display text-[14px] text-[#C9727E]">{Math.round(progress)}%</span></div>
+                        <div className="mt-3 h-1.5 rounded-full bg-[#F4ECE8]"><div className="h-1.5 rounded-full bg-[#C9727E]" style={{ width: `${progress}%` }} /></div>
+                        <div className="mt-2 flex flex-wrap justify-between gap-2 text-[10.5px] text-[#8A8078]"><span>{money(goal.currentCents / 100)} of {money(goal.targetCents / 100)}</span><span>{money(goal.remaining)} remaining</span></div>
+                        {goal.neededMonthly !== null && <p className={`mt-2 text-[11px] ${paceGap !== null && paceGap >= 0 ? 'text-[#5A6E52]' : 'text-[#B15A68]'}`}>Needs about {money(goal.neededMonthly)}/month for the next {goal.monthsRemaining} month{goal.monthsRemaining === 1 ? '' : 's'}. {paceGap !== null && paceGap >= 0 ? 'Your recent surplus can cover that pace.' : 'That pace is above your recent surplus.'}</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </Card>
           </div>
         </div>
