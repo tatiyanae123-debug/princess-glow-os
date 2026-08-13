@@ -5,6 +5,7 @@ import { db } from '@/db';
 import { users, accounts, sessions, verificationTokens } from '@/db/schema/auth';
 
 const PRODUCTION_AUTH_PROXY_URL = 'https://princess-glow-os.vercel.app/api/auth';
+const THIRTY_DAYS = 30 * 24 * 60 * 60;
 
 function getDeploymentBaseUrl(baseUrl: string) {
   if (process.env.VERCEL_ENV === 'preview') {
@@ -13,6 +14,18 @@ function getDeploymentBaseUrl(baseUrl: string) {
   }
 
   return baseUrl;
+}
+
+function getStablePreviewRedirect(nextUrl: URL) {
+  if (process.env.VERCEL_ENV !== 'preview') return null;
+
+  const branchHost = process.env.VERCEL_BRANCH_URL;
+  if (!branchHost || nextUrl.host === branchHost) return null;
+
+  const stableUrl = new URL(nextUrl);
+  stableUrl.protocol = 'https:';
+  stableUrl.host = branchHost;
+  return stableUrl;
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
@@ -24,6 +37,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
     sessionsTable: sessions,
     verificationTokensTable: verificationTokens,
   }),
+  session: {
+    maxAge: THIRTY_DAYS,
+    updateAge: 24 * 60 * 60,
+  },
   providers: [
     Google({
       clientId: process.env.PRINCESS_GOOGLE_CLIENT_ID ?? '',
@@ -32,7 +49,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
       authorization: {
         params: {
           access_type: 'offline',
-          prompt: 'consent',
           include_granted_scopes: 'true',
           scope: [
             'openid',
@@ -50,6 +66,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
   },
   callbacks: {
     authorized({ auth: session, request: { nextUrl } }) {
+      const stablePreviewUrl = getStablePreviewRedirect(nextUrl);
+      if (stablePreviewUrl) {
+        return Response.redirect(stablePreviewUrl, 307);
+      }
+
       const isLoggedIn = !!session?.user;
       const isOnSignIn = nextUrl.pathname === '/sign-in';
       const isApiAuth = nextUrl.pathname.startsWith('/api/auth');
