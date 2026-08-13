@@ -13,12 +13,10 @@ import type { GlowDayMode } from '@/lib/day-mode';
 
 const MODE_PATHS=['/today','/dashboard','/planning','/calendar','/tasks','/routines','/habits','/fitness','/wellness','/food','/beauty','/hair','/maintenance','/brain','/briefings','/day-mode'] as const;
 
-export async function buildMyDayV3Action(mode: GlowDayMode) {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/sign-in');
-  const userId = session.user.id;
+async function requireUserId(){const session=await auth();if(!session?.user?.id)redirect('/sign-in');return session.user.id;}
+
+async function buildFor(userId:string,mode:GlowDayMode){
   const now = new Date();
-  await setV3DayMode(userId,mode);
   const [context, reminders, calendarEvents] = await Promise.all([
     buildPersonalContext(userId, now),
     getAppleRemindersByUser(userId).catch(() => []),
@@ -37,7 +35,15 @@ export async function buildMyDayV3Action(mode: GlowDayMode) {
   const commitments = calendarEvents
     .filter(event => event.startAt >= start && event.startAt <= end)
     .map(event => ({ id: event.id, title: event.title, startAt: event.startAt, endAt: event.endAt }));
-  const proposal=buildScheduleProposal({ recommendations, commitments, now, mode });
-  for(const path of MODE_PATHS)revalidatePath(path);
-  return proposal;
+  return buildScheduleProposal({ recommendations, commitments, now, mode });
+}
+
+export async function buildMyDayV3Action(mode:GlowDayMode){return buildFor(await requireUserId(),mode);}
+
+export async function activateDayModeV3Action(mode:GlowDayMode){
+ const userId=await requireUserId();
+ await setV3DayMode(userId,mode);
+ const proposal=await buildFor(userId,mode);
+ for(const path of MODE_PATHS)revalidatePath(path);
+ return proposal;
 }
