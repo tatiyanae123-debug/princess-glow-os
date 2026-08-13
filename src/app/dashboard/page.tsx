@@ -27,6 +27,20 @@ function getFallbackData(): LivingDashboardData {
   };
 }
 
+async function getDashboardInsight(userId: string) {
+  try {
+    const work = (async () => {
+      const { buildPersonalContext } = await import('@/lib/intelligence/context');
+      const context = await buildPersonalContext(userId);
+      return context.recommendations[0]?.reason ?? context.dailyBrief ?? null;
+    })();
+    const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 650));
+    return await Promise.race([work, timeout]);
+  } catch {
+    return null;
+  }
+}
+
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
@@ -38,15 +52,10 @@ export default async function DashboardPage() {
 
   try {
     const { getLivingDashboardData } = await import('@/lib/dashboard/living-dashboard');
-    const data = await getLivingDashboardData(userId);
-    let insight: string | null = null;
-    try {
-      const { buildPersonalContext } = await import('@/lib/intelligence/context');
-      const context = await buildPersonalContext(userId);
-      insight = context.recommendations[0]?.reason ?? context.dailyBrief ?? null;
-    } catch {
-      insight = null;
-    }
+    const [data, insight] = await Promise.all([
+      getLivingDashboardData(userId),
+      getDashboardInsight(userId),
+    ]);
     return <AppShell><LivingDashboard data={data} insight={insight} userName={session.user.name?.split(' ')[0] ?? 'there'} /></AppShell>;
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
