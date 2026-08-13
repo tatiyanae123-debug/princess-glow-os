@@ -110,6 +110,35 @@ async function getSelectedCalendars(token: string) {
   return { ok: true as const, calendars: calendars.slice(0, MAX_CALENDARS), partial };
 }
 
+async function getCalendarEvents(
+  calendar: { id: string; timeZone?: string },
+  token: string,
+  timeMin: string,
+  timeMax: string,
+) {
+  const events: NormalizedGoogleEvent[] = [];
+  let pageToken: string | undefined;
+  let partial = false;
+
+  for (let page = 0; page < MAX_PAGES; page += 1) {
+    const params = new URLSearchParams({ timeMin, timeMax, maxResults: '250', singleEvents: 'true', showDeleted: 'true' });
+    if (pageToken) params.set('pageToken', pageToken);
+    const response = await googleJson(`${API}/calendars/${encodeURIComponent(calendar.id)}/events?${params}`, token);
+    if (!response.ok) { partial = true; break; }
+    const parsed = eventsListSchema.safeParse(response.value);
+    if (!parsed.success) { partial = true; break; }
+    for (const raw of parsed.data.items ?? []) {
+      const event = normalizeEvent(raw, calendar.id, calendar.timeZone);
+      if (event) events.push(event);
+    }
+    pageToken = parsed.data.nextPageToken;
+    if (!pageToken) break;
+    if (page === MAX_PAGES - 1) partial = true;
+  }
+
+  return { events, partial };
+}
+
 export async function getUpcomingGoogleEvents(userId: string): Promise<CalendarFetchResult> {
   const token = await getValidGoogleAccessToken(userId, REQUIRED_SCOPES.calendar);
   if (!token.ok) {
@@ -122,29 +151,14 @@ export async function getUpcomingGoogleEvents(userId: string): Promise<CalendarF
   try {
     const calendarResult = await getSelectedCalendars(token.accessToken);
     if (!calendarResult.ok) return calendarResult;
-    const events: NormalizedGoogleEvent[] = [];
-    let partial = calendarResult.partial;
     const timeMin = new Date(Date.now() - 30 * 86400000).toISOString();
     const timeMax = new Date(Date.now() + 365 * 86400000).toISOString();
 
-    for (const calendar of calendarResult.calendars) {
-      let pageToken: string | undefined;
-      for (let page = 0; page < MAX_PAGES; page += 1) {
-        const params = new URLSearchParams({ timeMin, timeMax, maxResults: '250', singleEvents: 'true', showDeleted: 'true' });
-        if (pageToken) params.set('pageToken', pageToken);
-        const response = await googleJson(`${API}/calendars/${encodeURIComponent(calendar.id)}/events?${params}`, token.accessToken);
-        if (!response.ok) { partial = true; break; }
-        const parsed = eventsListSchema.safeParse(response.value);
-        if (!parsed.success) { partial = true; break; }
-        for (const raw of parsed.data.items ?? []) {
-          const event = normalizeEvent(raw, calendar.id, calendar.timeZone);
-          if (event) events.push(event);
-        }
-        pageToken = parsed.data.nextPageToken;
-        if (!pageToken) break;
-        if (page === MAX_PAGES - 1) partial = true;
-      }
-    }
+    const calendarReads = await Promise.all(
+      calendarResult.calendars.map((calendar) => getCalendarEvents(calendar, token.accessToken, timeMin, timeMax)),
+    );
+    const events = calendarReads.flatMap((result) => result.events);
+    const partial = calendarResult.partial || calendarReads.some((result) => result.partial);
 
     return { ok: true, events: deduplicateGoogleEvents(events), calendarsRead: calendarResult.calendars.length, partial };
   } catch {
