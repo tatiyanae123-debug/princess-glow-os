@@ -10,6 +10,7 @@ import { ReferenceRoomInteractions } from '@/components/reference-room-interacti
 import { GlowVoiceCommand } from '@/components/voice/glow-voice-command';
 import { GlobalHeader } from '@/components/global-header';
 import { GlowActionButton } from '@/components/glow-action-button';
+import { UniversalCaptureDock } from '@/components/universal-capture-dock';
 
 function roomFor(pathname: string) {
   if (pathname.startsWith('/beauty/lab')) return 'beauty-lab';
@@ -84,7 +85,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       {focus ? <button type="button" onClick={exitFocus} className="fixed right-5 top-5 z-[100] inline-flex h-10 items-center gap-2 rounded-full border border-[#E6E6E6] bg-white px-4 text-[13px] font-medium text-[#444448] shadow-sm"><X size={15}/>Exit Focus</button> : null}
-      {!focus ? <><ReferenceRoomInteractions /><GlowVoiceCommand /><QuickAdd /><GlowActionButton /></> : null}
+      {!focus ? <><ReferenceRoomInteractions /><GlowVoiceCommand /><QuickAdd /><UniversalCaptureDock /><GlowActionButton /></> : null}
     </GlowProvider>
   );
 }
