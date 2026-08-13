@@ -34,7 +34,7 @@ async function getDashboardInsight(userId: string) {
       const context = await buildPersonalContext(userId);
       return context.recommendations[0]?.reason ?? context.dailyBrief ?? null;
     })();
-    const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 650));
+    const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 75));
     return await Promise.race([work, timeout]);
   } catch {
     return null;
