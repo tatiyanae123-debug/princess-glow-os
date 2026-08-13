@@ -58,50 +58,50 @@ export default async function BeautyPage() {
         <BeautyExperience routines={routines} products={products} upcomingAppointments={upcomingAppointments} />
 
         <Card className="p-0 overflow-hidden">
-          <div className="border-b border-[#eaded8] px-5 py-4">
+          <div className="border-b border-[#F1E7E3] px-5 py-4">
             <p className="glow-eyebrow">Maintenance forecast</p>
-            <h2 className="glow-display mt-1 text-[19px] text-[#493733]">What needs attention next</h2>
+            <h2 className="glow-display mt-1 text-[19px] text-[#2B2420]">What needs attention next</h2>
           </div>
           <div className="space-y-3 p-5">
             {expiringProducts.slice(0, 3).map((product) => (
-              <div key={product.id} className="rounded-[8px] bg-[#fbf3ef] p-3">
-                <p className="text-[8px] uppercase tracking-[.1em] text-[#9d7d78]">Expiration watch</p>
-                <p className="glow-display mt-1 text-[14px] text-[#4c3935]">{product.name}</p>
-                <p className="mt-1 text-[8px] text-[#806a64]">{product.expiresAt ? `Due ${dayLabel(product.expiresAt)}` : 'Review date'}</p>
+              <div key={product.id} className="rounded-[12px] bg-[#FDF3F2] p-3">
+                <p className="text-[10px] uppercase tracking-[.08em] text-[#B15A68]">Expiration watch</p>
+                <p className="glow-display mt-1 text-[14px] text-[#2B2420]">{product.name}</p>
+                <p className="mt-1 text-[11px] text-[#8A8078]">{product.expiresAt ? `Due ${dayLabel(product.expiresAt)}` : 'Review date'}</p>
               </div>
             ))}
             {products.filter((product) => product.repurchase === 'yes').slice(0, 2).map((product) => (
-              <div key={`repurchase-${product.id}`} className="rounded-[8px] bg-[#f5ece9] p-3">
-                <p className="text-[8px] uppercase tracking-[.1em] text-[#9d7d78]">Repurchase</p>
-                <p className="glow-display mt-1 text-[14px] text-[#4c3935]">{product.name}</p>
+              <div key={`repurchase-${product.id}`} className="rounded-[12px] bg-[#FDF8F6] p-3">
+                <p className="text-[10px] uppercase tracking-[.08em] text-[#8A8078]">Repurchase</p>
+                <p className="glow-display mt-1 text-[14px] text-[#2B2420]">{product.name}</p>
               </div>
             ))}
-            {maintenanceCount === 0 ? <p className="py-4 text-center text-[9px] text-[#8b746e]">Nothing urgent. Your cabinet is currently clear.</p> : null}
-            <Link href="/beauty/lab" className="inline-flex items-center gap-2 rounded-[6px] border border-[#dfd0c9] px-3 py-2 text-[8px] text-[#765e58]"><FlaskConical size={11} />Open Beauty Lab</Link>
+            {maintenanceCount === 0 ? <p className="py-4 text-center text-[12px] text-[#8A8078]">Nothing urgent. Your cabinet is currently clear.</p> : null}
+            <Link href="/beauty/lab" className="inline-flex items-center gap-2 rounded-full border border-[#F1E7E3] bg-white px-3.5 py-2 text-[11px] text-[#4A4440] hover:bg-[#FDF8F6]"><FlaskConical size={11} />Open Beauty Lab</Link>
           </div>
         </Card>
 
         <Card className="p-0 overflow-hidden">
-          <div className="flex items-center justify-between gap-3 border-b border-[#eaded8] px-5 py-4">
+          <div className="flex items-center justify-between gap-3 border-b border-[#F1E7E3] px-5 py-4">
             <div>
               <p className="glow-eyebrow">Progress journal</p>
-              <h2 className="glow-display mt-1 text-[19px] text-[#493733]">Compare what your skin is telling you</h2>
+              <h2 className="glow-display mt-1 text-[19px] text-[#2B2420]">Compare what your skin is telling you</h2>
             </div>
-            <Link href="/beauty/lab" className="rounded-[6px] border border-[#dfd0c9] px-3 py-2 text-[8px] text-[#765e58]">Log response</Link>
+            <Link href="/beauty/lab" className="rounded-full border border-[#F1E7E3] bg-white px-3.5 py-2 text-[11px] text-[#4A4440] hover:bg-[#FDF8F6]">Log response</Link>
           </div>
           {reactionNotes.length === 0 ? (
             <div className="p-6 text-center">
-              <p className="text-[9px] text-[#87716a]">No response notes yet. Add reactions in Beauty Lab so Glow can build a useful progress history.</p>
+              <p className="text-[12px] text-[#8A8078]">No response notes yet. Add reactions in Beauty Lab so Glow can build a useful progress history.</p>
             </div>
           ) : (
             <div className="grid gap-0 md:grid-cols-2 xl:grid-cols-4">
               {reactionNotes.map((product) => (
-                <div key={product.id} className="border-b border-r border-[#eee2dc] p-4">
-                  <div className="mb-3 h-20 rounded-[8px] bg-[linear-gradient(145deg,#ead3ca,#f5e9e3)] p-3">
-                    <Camera size={18} strokeWidth={0.9} className="text-[#9d7378]/70" />
+                <div key={product.id} className="border-b border-r border-[#F1E7E3] p-4">
+                  <div className="mb-3 h-20 rounded-[12px] bg-[linear-gradient(145deg,#FBE4E8,#FDF3F2)] p-3">
+                    <Camera size={18} strokeWidth={0.9} className="text-[#C9727E]/70" />
                   </div>
-                  <p className="glow-display text-[14px] text-[#4b3935]">{product.name}</p>
-                  <p className="mt-2 line-clamp-3 text-[8px] leading-4 text-[#806a64]">{product.reaction}</p>
+                  <p className="glow-display text-[14px] text-[#2B2420]">{product.name}</p>
+                  <p className="mt-2 line-clamp-3 text-[11px] leading-4 text-[#8A8078]">{product.reaction}</p>
                 </div>
               ))}
             </div>
@@ -111,7 +111,7 @@ export default async function BeautyPage() {
         <div>
           <div className="mb-3">
             <p className="glow-eyebrow">Ritual editor</p>
-            <h2 className="glow-display mt-1 text-[22px] text-[#493733]">Morning + evening routine</h2>
+            <h2 className="glow-display mt-1 text-[22px] text-[#2B2420]">Morning + evening routine</h2>
           </div>
           <BeautyRoutineManager initialRoutines={routines} />
         </div>
