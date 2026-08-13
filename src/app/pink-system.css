@@ -8,6 +8,8 @@
   --glow-surface-muted: #FAE6E7;
   --glow-border: #F7D1D8;
   --glow-accent-soft: rgba(247,209,216,.58);
+  --rose-soft: #FAE6E7;
+  --line: #F7D1D8;
 }
 
 html,
@@ -150,7 +152,7 @@ select:focus {
   border-color: #F7D1D8 !important;
 }
 
-/* Do not let legacy themes reintroduce beige while the new Pink system is active. */
+/* Do not let legacy light themes reintroduce beige while the Pink system is active. */
 [data-theme='minimal-cream'],
 [data-theme='soft-nature'],
 [data-theme='blush-editorial'],
@@ -160,6 +162,8 @@ select:focus {
   --glow-sidebar: #FAE6E7 !important;
   --glow-surface-muted: #FAE6E7 !important;
   --glow-border: #F7D1D8 !important;
+  --rose-soft: #FAE6E7 !important;
+  --line: #F7D1D8 !important;
 }
 
 /* Dark themes intentionally retain dark backgrounds for accessibility/user choice. */
