@@ -21,7 +21,7 @@ export default async function FoodPage() {
 
   return (
     <AppShell>
-      <SectionPage eyebrow="Food Intelligence" title="The Nourishment Kitchen" description="Plan meals, groceries, pantry, meal prep and food spending as one connected Glow OS workflow.">
+      <SectionPage eyebrow="Food & Nutrition" title="Food & Nutrition" description="Nourish intentionally. Fuel beautifully.">
         <FoodRoom foodSpendCents={foodSpendCents} foodPurchaseCount={monthEntries.length} />
       </SectionPage>
     </AppShell>
