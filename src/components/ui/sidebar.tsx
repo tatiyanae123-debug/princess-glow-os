@@ -3,39 +3,70 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  CalendarDays, CalendarRange, ChevronDown, CircleDot, CircleEllipsis, Gem, Heart, HeartPulse, Hexagon,
-  Menu, Puzzle, RefreshCw, Sparkles, SquarePen, Tag, UserRound, X, type LucideIcon,
+  BrainCircuit, BriefcaseBusiness, ChevronDown, CircleEllipsis, CircleDot, HeartPulse, Home as HomeIcon,
+  Menu, Sparkles, WalletCards, WandSparkles, X, type LucideIcon,
 } from 'lucide-react';
-import { navItems, type NavItem } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 import { useMemo, useState } from 'react';
 
-const PRIMARY:Array<{label:string;href:string;icon:LucideIcon}>=[
-  {label:'Home',href:'/dashboard',icon:CircleDot},{label:'Plan',href:'/planning',icon:CalendarRange},{label:'Tasks',href:'/tasks',icon:SquarePen},
-  {label:'Calendar',href:'/calendar',icon:CalendarDays},{label:'Routines',href:'/routines',icon:RefreshCw},{label:'Habits',href:'/habits',icon:Heart},
-  {label:'Health & Care',href:'/wellness',icon:HeartPulse},{label:'Beauty',href:'/beauty',icon:Sparkles},{label:'Money & Growth',href:'/finance',icon:Hexagon},
-  {label:'Projects',href:'/projects',icon:Tag},{label:'Glow',href:'/brain',icon:Gem},{label:'Life World',href:'/world',icon:Puzzle},
-];
-const GROUPS=[
-  {label:'PLAN',paths:['/tasks','/calendar','/planning','/routines','/habits','/reminders','/today','/tomorrow','/work']},
-  {label:'HEALTH & CARE',paths:['/fitness','/wellness','/food','/beauty','/beauty/lab','/hair','/maintenance']},
-  {label:'MONEY & GROWTH',paths:['/finance','/finance/brain','/goals']},
-  {label:'GLOW',paths:['/brain','/concierge','/briefings','/observations','/inbox','/memory','/timeline','/intake','/rules']},
-  {label:'LIBRARY & SYSTEM',paths:['/notes','/closet','/gmail','/resources','/connections','/import','/settings','/home']},
+type World = { label:string; href:string; icon:LucideIcon; paths:string[] };
+
+const WORLDS: World[] = [
+  {label:'Today',href:'/today',icon:CircleDot,paths:['/dashboard','/today','/briefings','/tomorrow']},
+  {label:'Life',href:'/calendar',icon:Sparkles,paths:['/calendar','/tasks','/planning','/reminders','/routines','/habits','/timeline','/goals']},
+  {label:'Mind',href:'/brain',icon:BrainCircuit,paths:['/brain','/memory','/observations','/graph','/notes','/resources','/rules']},
+  {label:'Wellness',href:'/wellness',icon:HeartPulse,paths:['/wellness','/fitness','/food','/maintenance']},
+  {label:'Beauty',href:'/beauty',icon:WandSparkles,paths:['/beauty','/beauty/lab','/hair','/closet']},
+  {label:'Money',href:'/finance/brain',icon:WalletCards,paths:['/finance','/finance/brain']},
+  {label:'Work + Create',href:'/work',icon:BriefcaseBusiness,paths:['/work','/projects','/creative-studio','/concierge']},
+  {label:'Home',href:'/home',icon:HomeIcon,paths:['/home','/all-rooms','/world','/life-world']},
 ];
 
+const UTILITIES = [
+  ['Gmail','/gmail'],['Import','/import'],['Notices','/notices'],['Connections','/connections'],['Settings','/settings'],
+] as const;
+
+const LABELS: Record<string,string> = {
+  '/dashboard':'Dashboard','/today':'Today','/briefings':'Briefings','/tomorrow':'Tomorrow','/calendar':'Calendar','/tasks':'Tasks','/planning':'Planning','/reminders':'Reminders','/routines':'Routines','/habits':'Habits','/timeline':'Timeline','/goals':'Goals','/brain':'Brain','/memory':'Memory','/observations':'Observations','/graph':'Graph','/notes':'Notes','/resources':'Resources','/rules':'Personal Rules','/wellness':'Wellness','/fitness':'Fitness','/food':'Food','/maintenance':'Medications','/beauty':'Beauty','/beauty/lab':'Beauty Lab','/hair':'Hair','/closet':'Closet','/finance':'Finance','/finance/brain':'Financial Brain','/work':'Work','/projects':'Projects','/creative-studio':'Creative Studio','/concierge':'Concierge','/home':'Home','/all-rooms':'All Rooms','/world':'Glow World','/life-world':'Life World',
+};
+
+function isActive(pathname:string,path:string){return pathname===path||pathname.startsWith(`${path}/`)}
+
 export function Sidebar(){
-  const pathname=usePathname();const[mobileOpen,setMobileOpen]=useState(false);const[roomsOpen,setRoomsOpen]=useState(false);
-  const byHref=useMemo(()=>new Map(navItems.map(item=>[item.href,item])),[]);
-  const roomItem=(item:NavItem)=>{const Icon=item.icon;const active=pathname===item.href||pathname.startsWith(`${item.href}/`);return <Link key={item.href} href={item.href} onClick={()=>setMobileOpen(false)} className={cn('flex min-h-9 items-center gap-2.5 rounded-[10px] px-3 text-[12.5px] transition',active?'bg-[#FBE4E8] font-medium text-[#B15A68]':'text-[#726B67] hover:bg-[#FAF6F4] hover:text-[#2B2420]')}><Icon size={14} strokeWidth={1.6}/><span>{item.label}</span></Link>};
-  return <aside className="flex h-full w-full flex-col border-b border-[#F1E7E3] bg-white px-4 py-4 lg:min-h-screen lg:w-[236px] lg:border-b-0 lg:border-r lg:px-5 lg:py-7">
-    <div className="flex items-center justify-between"><Link href="/dashboard" className="flex items-center gap-2.5 text-[#2B2420]" onClick={()=>setMobileOpen(false)}><span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FBE4E8] text-[#C9727E]"><Sparkles size={15} strokeWidth={1.6}/></span><span className="glow-display text-[20px] tracking-[.01em]">Glow OS</span></Link><button type="button" onClick={()=>setMobileOpen(v=>!v)} className="rounded-full p-2 text-[#8A8078] hover:bg-[#FAF6F4] lg:hidden" aria-label={mobileOpen?'Close navigation':'Open navigation'}>{mobileOpen?<X size={18}/>:<Menu size={18}/>}</button></div>
-    <div className={cn('mt-7 min-h-0 flex-1 overflow-y-auto',mobileOpen?'block':'hidden lg:block')}>
-      <nav aria-label="Primary Glow OS navigation" className="space-y-1">{PRIMARY.map(item=>{const active=pathname===item.href||pathname.startsWith(`${item.href}/`);const Icon=item.icon;return <Link key={item.label} href={item.href} onClick={()=>setMobileOpen(false)} className={cn('flex min-h-[42px] items-center gap-3 rounded-[12px] px-3.5 text-[13.5px] font-medium transition',active?'bg-[#FBE4E8] text-[#B15A68]':'text-[#4A4440] hover:bg-[#FAF6F4]')}><Icon size={16} strokeWidth={1.7}/><span>{item.label}</span></Link>})}</nav>
-      <div className="my-4 h-px bg-[#F1E7E3]"/>
-      <div className={cn('flex min-h-[38px] items-center rounded-[10px]',pathname==='/all-rooms'?'bg-[#FBE4E8] text-[#B15A68]':'text-[#8A8078] hover:bg-[#FAF6F4]')}><Link href="/all-rooms" onClick={()=>setMobileOpen(false)} className="flex min-h-[38px] min-w-0 flex-1 items-center gap-2.5 px-3.5 text-[12px] font-medium"><CircleEllipsis size={14}/><span>All Rooms</span></Link><button type="button" onClick={()=>setRoomsOpen(v=>!v)} className="flex h-[38px] w-9 items-center justify-center" aria-label="Expand room list" aria-expanded={roomsOpen}><ChevronDown size={13} className={cn('transition-transform',roomsOpen?'rotate-180':'')}/></button></div>
-      {roomsOpen?<div className="mt-3 max-h-[42vh] space-y-4 overflow-y-auto pr-1">{GROUPS.map(group=><section key={group.label}><p className="mb-1 px-3.5 text-[9px] font-semibold uppercase tracking-[.14em] text-[#B5ACA5]">{group.label}</p><div className="space-y-0.5">{group.paths.map(path=>byHref.get(path)).filter(Boolean).map(item=>roomItem(item as NavItem))}</div></section>)}</div>:null}
+  const pathname=usePathname();
+  const [mobileOpen,setMobileOpen]=useState(false);
+  const activeWorld=useMemo(()=>WORLDS.find(w=>w.paths.some(p=>isActive(pathname,p)))?.label??null,[pathname]);
+  const [openWorld,setOpenWorld]=useState<string|null>(activeWorld);
+
+  return <aside className="flex h-full w-full flex-col border-b border-[#EEE5E0] bg-[rgba(255,253,251,.94)] px-4 py-4 backdrop-blur-xl lg:min-h-screen lg:w-[236px] lg:border-b-0 lg:border-r lg:px-4 lg:py-6">
+    <div className="flex items-center justify-between px-1">
+      <Link href="/today" className="flex items-center gap-2.5 text-[#2B2420]" onClick={()=>setMobileOpen(false)}>
+        <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#F0DDDA] bg-[#FBE8E9] text-[#B76672]"><Sparkles size={15}/></span>
+        <span><span className="glow-display block text-[21px] leading-none">Glow OS</span><span className="mt-1 block text-[8px] font-semibold uppercase tracking-[.18em] text-[#A99D95]">Personal digital world</span></span>
+      </Link>
+      <button type="button" onClick={()=>setMobileOpen(v=>!v)} className="rounded-full p-2 text-[#756D68] hover:bg-[#F7F1EE] lg:hidden" aria-label={mobileOpen?'Close navigation':'Open navigation'}>{mobileOpen?<X size={18}/>:<Menu size={18}/>}</button>
     </div>
-    <Link href="/settings?section=profile" className="hidden items-center gap-2.5 rounded-[14px] border border-[#F1E7E3] bg-[#FDF8F6] px-3 py-2.5 lg:flex"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F1E0D9] text-[#8A5A56]"><UserRound size={15}/></span><span className="min-w-0 flex-1"><span className="block truncate text-[12px] font-medium text-[#3A332E]">Tatiyana</span><span className="block text-[10px] text-[#9A9088]">Glow Member</span></span><ChevronDown size={13} className="shrink-0 text-[#9A9088]"/></Link>
+
+    <div className={cn('mt-7 min-h-0 flex-1 overflow-y-auto pb-4',mobileOpen?'block':'hidden lg:block')}>
+      <p className="mb-2 px-3 text-[9px] font-semibold uppercase tracking-[.18em] text-[#B2A69E]">Worlds</p>
+      <nav aria-label="Glow OS worlds" className="space-y-1">
+        {WORLDS.map(world=>{const Icon=world.icon;const active=world.label===activeWorld;const open=openWorld===world.label;return <div key={world.label} className={cn('rounded-[14px]',active?'bg-[#FBF1EF]':'')}>
+          <div className="flex items-center">
+            <Link href={world.href} onClick={()=>setMobileOpen(false)} className={cn('flex min-h-[45px] min-w-0 flex-1 items-center gap-3 rounded-[14px] px-3 text-[13px] font-medium transition',active?'text-[#A65361]':'text-[#4E4742] hover:bg-[#F8F3F0]')}>
+              <Icon size={16} strokeWidth={1.6}/><span>{world.label}</span>
+            </Link>
+            <button type="button" onClick={()=>setOpenWorld(open?null:world.label)} className="mr-1 flex h-10 w-9 items-center justify-center rounded-[10px] text-[#92877F] hover:bg-white/70" aria-label={`${open?'Collapse':'Expand'} ${world.label}`} aria-expanded={open}><ChevronDown size={13} className={cn('transition-transform',open&&'rotate-180')}/></button>
+          </div>
+          {open?<div className="pb-2 pl-10 pr-2">{world.paths.map(path=><Link key={path} href={path} onClick={()=>setMobileOpen(false)} className={cn('flex min-h-[34px] items-center rounded-[9px] px-2.5 text-[11px] transition',isActive(pathname,path)?'bg-white font-medium text-[#A65361]':'text-[#81766F] hover:bg-white/70 hover:text-[#413A36]')}>{LABELS[path]??path}</Link>)}</div>:null}
+        </div>})}
+      </nav>
+
+      <div className="my-5 h-px bg-[#EEE5E0]"/>
+      <Link href="/all-rooms" onClick={()=>setMobileOpen(false)} className="flex min-h-[42px] items-center gap-3 rounded-[12px] px-3 text-[12px] font-medium text-[#655D58] hover:bg-[#F8F3F0]"><CircleEllipsis size={15}/>All Rooms</Link>
+      <p className="mb-2 mt-4 px-3 text-[9px] font-semibold uppercase tracking-[.18em] text-[#B2A69E]">Utilities</p>
+      <div className="space-y-0.5">{UTILITIES.map(([label,href])=><Link key={href} href={href} onClick={()=>setMobileOpen(false)} className={cn('flex min-h-[36px] items-center rounded-[10px] px-3 text-[11.5px]',isActive(pathname,href)?'bg-[#FBF1EF] font-medium text-[#A65361]':'text-[#7D746E] hover:bg-[#F8F3F0]')}>{label}</Link>)}</div>
+    </div>
+
+    <div className="hidden border-t border-[#EEE5E0] px-2 pt-4 lg:block"><p className="text-[10px] leading-4 text-[#A0958E]">Spaces → objects → relationships → timeline.</p></div>
   </aside>;
 }
