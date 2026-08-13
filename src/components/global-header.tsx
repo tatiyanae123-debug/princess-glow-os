@@ -18,7 +18,7 @@ export function GlobalHeader() {
     <header className="sticky top-0 z-40 flex h-[68px] w-full max-w-full min-w-0 items-center gap-2 overflow-x-clip border-b border-[#F1E7E3] bg-[#FDFAF8]/95 px-4 backdrop-blur-xl sm:h-[64px] sm:gap-3 sm:px-7 lg:px-10">
       <button
         type="button"
-        onClick={() => document.dispatchEvent(new Event('glow:voice-open'))}
+        onClick={() => router.push('/search')}
         className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-full border border-[#F1E7E3] bg-white px-3.5 text-left text-[13px] text-[#9A9088] shadow-[0_1px_3px_rgba(60,40,30,.03)] transition hover:border-[#E6D9D2] sm:h-10 sm:max-w-[420px] sm:px-4"
         aria-label="Search Glow OS"
       >
@@ -37,7 +37,7 @@ export function GlobalHeader() {
         </button>
         <button
           type="button"
-          onClick={() => router.push('/inbox')}
+          onClick={() => router.push('/notices')}
           className="relative inline-flex h-10 w-9 shrink-0 items-center justify-center rounded-full text-[#8A8078] transition hover:bg-white sm:w-10"
           aria-label="Open notifications"
         >
