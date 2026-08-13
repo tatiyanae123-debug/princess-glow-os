@@ -34,6 +34,25 @@
 [data-room="fitness"] :is(.grid,.flex)>*, [data-room="beauty"] :is(.grid,.flex)>*,
 [data-room="beauty-lab"] :is(.grid,.flex)>*, [data-room="hair"] :is(.grid,.flex)>*{min-width:0}
 
+/* Large functional rooms retain their engines, but their visible page identity follows the newest references. */
+[data-room="fitness"] .reference-page-heading h1,
+[data-room="gmail"] .reference-page-heading h1{font-size:0!important;line-height:1!important}
+[data-room="fitness"] .reference-page-heading h1::before{content:'Fitness';font-size:60px;line-height:1.02}
+[data-room="gmail"] .reference-page-heading h1::before{content:'Gmail';font-size:60px;line-height:1.02}
+[data-room="fitness"] .reference-page-heading p:last-child,
+[data-room="gmail"] .reference-page-heading p:last-child{font-size:0}
+[data-room="fitness"] .reference-page-heading p:last-child::before{content:'Move intentionally. Live vibrantly.';font-size:14px;line-height:1.5}
+[data-room="gmail"] .reference-page-heading p:last-child::before{content:'Stay on top of what matters and keep your inbox working for you.';font-size:14px;line-height:1.5}
+
+[data-room="hair"] main h1{font-size:0!important;line-height:1!important}
+[data-room="hair"] main h1::before{content:'Hair ✧';font-size:54px;line-height:1.02}
+[data-room="hair"] main h1 + p{font-size:0}
+[data-room="hair"] main h1 + p::before{content:'Healthy hair. Confident you.';font-size:13px;line-height:1.5}
+
+[data-room="graph"] main header h1{font-size:0!important;line-height:1!important}
+[data-room="graph"] main header h1::before{content:'Graph';font-size:60px;line-height:1.02}
+[data-room="graph"] main header h1 + p{max-width:780px}
+
 @media(max-width:767px){
   [data-room="memory"] main, [data-room="timeline"] main, [data-room="briefings"] main,
   [data-room="connections"] main, [data-room="import"] main, [data-room="gmail"] main,
@@ -45,4 +64,8 @@
     padding-right:16px!important;
   }
   .reference-page-heading h1{font-size:42px!important;line-height:1.02!important}
+  [data-room="fitness"] .reference-page-heading h1::before,
+  [data-room="gmail"] .reference-page-heading h1::before,
+  [data-room="graph"] main header h1::before,
+  [data-room="hair"] main h1::before{font-size:42px}
 }
