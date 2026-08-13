@@ -32,6 +32,7 @@ export type NavItem = { label:string; href:string; icon:LucideIcon; description:
 export const navItems: NavItem[] = [
   { label:'Home', href:'/dashboard', icon:LayoutGrid, description:'Plan the day with elegance' },
   { label:'Today', href:'/today', icon:Sparkles, description:'Act on what matters now' },
+  { label:'Day Mode', href:'/day-mode', icon:SlidersHorizontal, description:'Choose Most Productive, Productive, Bare Minimum, or Clear Schedule' },
   { label:'Tomorrow', href:'/tomorrow', icon:CalendarClock, description:'Prepare the next day before it begins' },
   { label:'Brain', href:'/brain', icon:BrainCircuit, description:'See what matters next' },
   { label:'Concierge', href:'/concierge', icon:BrainCircuit, description:'Propose changes with approval' },
@@ -42,6 +43,7 @@ export const navItems: NavItem[] = [
   { label:'Planning', href:'/planning', icon:PanelsTopLeft, description:'Connect today, week, quarter, and year' },
   { label:'Calendar', href:'/calendar', icon:CalendarDays, description:'Shape the week' },
   { label:'Reminders', href:'/reminders', icon:BellRing, description:'Bring Apple Reminders into Glow intelligence' },
+  { label:'Alert Center', href:'/alerts', icon:BellRing, description:'Set reminder timing and delivery channels across Glow' },
   { label:'Work', href:'/work', icon:Briefcase, description:'Keep recurring work shifts visible' },
   { label:'Tasks', href:'/tasks', icon:CheckSquare, description:'Focus on what matters' },
   { label:'Routines', href:'/routines', icon:RefreshCw, description:'Enter adaptive morning, night, reset, and care rituals' },
@@ -58,6 +60,7 @@ export const navItems: NavItem[] = [
   { label:'Goals', href:'/goals', icon:Target, description:'Move your ambitions forward' },
   { label:'Projects', href:'/projects', icon:FolderKanban, description:'Run projects and Creative Studio' },
   { label:'Memory', href:'/memory', icon:LibraryBig, description:'Build your private life memory' },
+  { label:'Knowledge Web', href:'/knowledge', icon:LibraryBig, description:'Browse Notes and Memory with wikilinks and backlinks' },
   { label:'Timeline', href:'/timeline', icon:CalendarDays, description:'See your life story over time' },
   { label:'Briefings', href:'/briefings', icon:NotebookText, description:'Morning, evening, and weekly reviews' },
   { label:'Closet', href:'/closet', icon:HomeIcon, description:'Know what you own and wear' },
