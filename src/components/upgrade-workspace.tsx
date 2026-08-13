@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { ArrowLeft, Brain, Link2, Save, Sparkles, Timer } from 'lucide-react';
-import { createUpgradeProposalAction, createUpgradeRelationAction, startUpgradeFocusAction } from '@/app/actions/upgrade-actions';
+import { ArrowLeft, Brain, Save, Sparkles, Timer } from 'lucide-react';
+import { createUpgradeProposalAction, startUpgradeFocusAction } from '@/app/actions/upgrade-actions';
 import { saveUpgradeWorkspaceAction } from '@/app/actions/upgrade-workspace';
+import { UpgradeRelationForm } from '@/components/upgrade-relation-form';
 import type { UpgradeTool } from '@/lib/intelligence/room-upgrades';
 
 type Entity={id:string;type:string;title:string};
@@ -33,10 +34,6 @@ export function UpgradeWorkspace({room,tool,state,entities,proposalCount,focusCo
       </div>
     </div>
 
-    <form action={createUpgradeRelationAction} className="paper-card rounded-[24px] border border-[#EFE2DC] bg-white p-5 sm:p-6">
-      <input type="hidden" name="room" value={room}/><input type="hidden" name="toolId" value={tool.id}/><div className="flex items-center gap-2"><Link2 size={15} className="text-[#C9727E]"/><h2 className="font-medium text-[#342B27]">Connect Glow Objects</h2></div><p className="mt-1 text-xs text-[#93867E]">Create a real relationship used by Brain and Graph. This does not imply causation.</p>
-      <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-end"><label className="text-[10px] uppercase tracking-[.12em] text-[#9A8B84]">From<select name="fromEntity" className="mt-2 w-full rounded-xl border border-[#EDE1DC] bg-white px-3 py-3 text-sm" onChange={undefined}>{entities.map(e=><option key={e.id} value={`${e.type}|${e.id}`}>{e.title}</option>)}</select></label><span className="hidden pb-3 text-[#C9B9B0] sm:block">→</span><label className="text-[10px] uppercase tracking-[.12em] text-[#9A8B84]">To<select name="toEntity" className="mt-2 w-full rounded-xl border border-[#EDE1DC] bg-white px-3 py-3 text-sm">{entities.map(e=><option key={e.id} value={`${e.type}|${e.id}`}>{e.title}</option>)}</select></label></div>
-      <input type="hidden" name="fromType" value={entities[0]?.type??''}/><input type="hidden" name="fromId" value={entities[0]?.id??''}/><input type="hidden" name="toType" value={entities[1]?.type??entities[0]?.type??''}/><input type="hidden" name="toId" value={entities[1]?.id??entities[0]?.id??''}/><input name="relation" defaultValue="related_to" className="mt-3 w-full rounded-xl border border-[#EDE1DC] px-3 py-3 text-sm"/><button disabled={entities.length<2} className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-full border border-[#DDB9BA] px-4 text-xs font-semibold text-[#A85F69] disabled:opacity-40"><Link2 size={13}/>Create connection</button>
-    </form>
+    <UpgradeRelationForm room={room} toolId={tool.id} entities={entities}/>
   </div>;
 }
