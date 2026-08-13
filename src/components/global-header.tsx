@@ -15,18 +15,18 @@ export function GlobalHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 flex h-[64px] items-center justify-between gap-3 border-b border-[#F1E7E3] bg-[#FDFAF8]/95 px-4 backdrop-blur-xl sm:px-7 lg:px-10">
+    <header className="sticky top-0 z-40 flex h-[68px] w-full max-w-full min-w-0 items-center gap-2 overflow-x-clip border-b border-[#F1E7E3] bg-[#FDFAF8]/95 px-4 backdrop-blur-xl sm:h-[64px] sm:gap-3 sm:px-7 lg:px-10">
       <button
         type="button"
         onClick={() => document.dispatchEvent(new Event('glow:voice-open'))}
-        className="flex h-10 min-w-[200px] flex-1 max-w-[420px] items-center gap-2 rounded-full border border-[#F1E7E3] bg-white px-4 text-left text-[13px] text-[#9A9088] shadow-[0_1px_3px_rgba(60,40,30,.03)] transition hover:border-[#E6D9D2]"
+        className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-full border border-[#F1E7E3] bg-white px-3.5 text-left text-[13px] text-[#9A9088] shadow-[0_1px_3px_rgba(60,40,30,.03)] transition hover:border-[#E6D9D2] sm:h-10 sm:max-w-[420px] sm:px-4"
         aria-label="Search Glow OS"
       >
-        <Search size={15} className="shrink-0 text-[#B5ACA5]" />
-        <span className="truncate">Search Glow OS...</span>
+        <Search size={16} className="shrink-0 text-[#B5ACA5]" />
+        <span className="min-w-0 truncate">Search Glow OS...</span>
       </button>
 
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="flex min-w-0 shrink-0 items-center gap-1.5 sm:gap-2">
         <button
           type="button"
           onClick={() => router.push('/settings?section=appearance')}
@@ -38,10 +38,10 @@ export function GlobalHeader() {
         <button
           type="button"
           onClick={() => router.push('/inbox')}
-          className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-[#8A8078] transition hover:bg-white"
+          className="relative inline-flex h-10 w-9 shrink-0 items-center justify-center rounded-full text-[#8A8078] transition hover:bg-white sm:w-10"
           aria-label="Open notifications"
         >
-          <Bell size={17} strokeWidth={1.6} />
+          <Bell size={18} strokeWidth={1.6} />
         </button>
         <button
           type="button"
@@ -54,10 +54,10 @@ export function GlobalHeader() {
         <button
           type="button"
           onClick={openCreate}
-          className="inline-flex h-10 items-center gap-1.5 rounded-full bg-[#C9727E] pl-4 pr-3 text-[13px] font-medium text-white shadow-[0_6px_16px_rgba(201,114,126,.28)] transition hover:bg-[#BD6672]"
+          className="inline-flex h-11 shrink-0 items-center gap-1 rounded-full bg-[#C9727E] px-3.5 text-[13px] font-medium text-white shadow-[0_6px_16px_rgba(201,114,126,.24)] transition hover:bg-[#BD6672] sm:h-10 sm:gap-1.5 sm:pl-4 sm:pr-3"
         >
-          <Plus size={15} strokeWidth={2} />
-          {createLabel}
+          <Plus size={16} strokeWidth={2} />
+          <span className="whitespace-nowrap">{createLabel}</span>
           <ChevronDown size={13} className="opacity-80" />
         </button>
       </div>
