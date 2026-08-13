@@ -39,6 +39,10 @@ function roomFor(pathname: string) {
   if (pathname.startsWith('/closet')) return 'closet';
   if (pathname.startsWith('/world') || pathname.startsWith('/life-world')) return 'world';
   if (pathname.startsWith('/home')) return 'home';
+  if (pathname.startsWith('/work')) return 'work';
+  if (pathname.startsWith('/graph')) return 'graph';
+  if (pathname.startsWith('/notices')) return 'notices';
+  if (pathname.startsWith('/all-rooms')) return 'all-rooms';
   if (pathname.startsWith('/notes') || pathname.startsWith('/resources')) return 'notes';
   if (pathname.startsWith('/connections')) return 'connections';
   if (pathname.startsWith('/gmail')) return 'gmail';
