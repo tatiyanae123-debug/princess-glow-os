@@ -7,84 +7,49 @@ import { GoogleConnectionCard } from '@/components/connections/google-connection
 import { AppleRemindersCard } from '@/components/connections/apple-reminders-card';
 import { getConnectionsOverview } from '@/lib/data/connections';
 import { getAppleReminderConnection } from '@/lib/apple-reminders/service';
-import { ArrowRight, ArrowUpRight, CheckCircle2, Link2, LockKeyhole, RefreshCw, ShieldCheck, Smartphone } from 'lucide-react';
+import { ArrowRight, CalendarDays, CheckCircle2, Cloud, Link2, LockKeyhole, Mail, RefreshCw, ShieldCheck, Smartphone, Sparkles } from 'lucide-react';
 
-const shortcuts = [
-  { name: 'Instagram', description: 'Open Instagram for content planning and publishing.', href: 'https://www.instagram.com/' },
-  { name: 'Peacock', description: 'Open Peacock. Login credentials are never stored in Glow OS.', href: 'https://www.peacocktv.com/' },
-  { name: 'Hulu', description: 'Open Hulu. Login credentials are never stored in Glow OS.', href: 'https://www.hulu.com/' },
-  { name: 'BILH MyChart', description: 'Open the general BILH MyChart sign-in page. Visit-specific links are not stored.', href: 'https://mychart.bilh.org/MyChart-BILH/' },
-];
 export const dynamic = 'force-dynamic';
 
-function stateLabel(state: string) {
-  if (state === 'connected') return 'Connected';
-  if (state === 'needs_reauthorization') return 'Needs reauthorization';
-  if (state === 'error') return 'Attention needed';
-  return 'Not connected';
-}
+const shortcuts=[
+  {name:'Instagram',href:'https://www.instagram.com/'},
+  {name:'Peacock',href:'https://www.peacocktv.com/'},
+  {name:'Hulu',href:'https://www.hulu.com/'},
+  {name:'BILH MyChart',href:'https://mychart.bilh.org/MyChart-BILH/'},
+];
 
-export default async function ConnectionsPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/sign-in');
-  const [overview, appleConnection] = await Promise.all([getConnectionsOverview(session.user.id), getAppleReminderConnection(session.user.id)]);
-  const googleHealthy = overview.connected && overview.calendarState === 'connected';
-  const appleHealthy = appleConnection?.status === 'connected';
-  const connectedCount = [googleHealthy, appleHealthy].filter(Boolean).length;
-  const lastGoogleSync = overview.lastSync?.startedAt ?? null;
-  const lastAppleSync = appleConnection?.lastImportedAt ?? null;
+function stateLabel(state:string){if(state==='connected')return'Connected';if(state==='needs_reauthorization')return'Needs reauthorization';if(state==='error')return'Attention needed';return'Not connected'}
 
-  return (
-    <AppShell>
-      <SectionPage eyebrow="Connections" title="Your private digital world" description="Connect services securely through OAuth and private bridges while keeping passwords outside Glow OS.">
-        <div className="space-y-4">
-          <Card className="relative overflow-hidden bg-[linear-gradient(145deg,#FDF8F6,#F1E8D9)]">
-            <Link2 size={52} strokeWidth={0.8} className="absolute right-5 top-4 text-[#9A7A3D]/22" />
-            <p className="glow-eyebrow">Digital dock</p>
-            <p className="glow-display mt-2 text-[24px] text-[#2B2420]">Bring services in without giving away the keys.</p>
-            <div className="mt-3 flex items-center gap-2 text-[11px] text-[#8A8078]"><LockKeyhole size={12} />OAuth and approved bridges only. Passwords stay outside Glow OS.</div>
-          </Card>
+export default async function ConnectionsPage(){
+  const session=await auth();
+  if(!session?.user?.id) redirect('/sign-in');
+  const [overview,appleConnection]=await Promise.all([getConnectionsOverview(session.user.id),getAppleReminderConnection(session.user.id)]);
+  const googleHealthy=overview.connected&&overview.calendarState==='connected';
+  const appleHealthy=appleConnection?.status==='connected';
+  const connectedCount=[googleHealthy,appleHealthy].filter(Boolean).length;
+  const googleLabel=stateLabel(overview.calendarState);
+  const googleDate=overview.lastSync?.startedAt?new Date(overview.lastSync.startedAt):null;
+  const appleDate=appleConnection?.lastImportedAt?new Date(appleConnection.lastImportedAt):null;
 
-          <div className="grid gap-3 md:grid-cols-3">
-            <Card><p className="glow-eyebrow">Live connections</p><p className="glow-display mt-2 text-[28px] text-[#2B2420]">{connectedCount}/2</p><p className="mt-1 text-[11px] leading-4 text-[#8A8078]">Google and Apple Reminders are the two data bridges currently supported.</p></Card>
-            <Card><p className="glow-eyebrow">Google state</p><p className="mt-2 flex items-center gap-2 text-[13px] font-medium text-[#2B2420]">{googleHealthy ? <CheckCircle2 size={14} className="text-[#5A6E52]" /> : <RefreshCw size={14} className="text-[#9A7A3D]" />} {stateLabel(overview.calendarState)}</p><p className="mt-1 text-[11px] leading-4 text-[#8A8078]">Calendar {overview.hasCalendarScope ? 'read permission granted' : 'permission missing'} · Gmail {overview.hasGmailScope ? 'read permission granted' : 'permission missing'}.</p></Card>
-            <Card><p className="glow-eyebrow">Apple bridge</p><p className="mt-2 flex items-center gap-2 text-[13px] font-medium text-[#2B2420]"><Smartphone size={14} className={appleHealthy ? 'text-[#5A6E52]' : 'text-[#9A7A3D]'} />{appleHealthy ? 'Connected' : 'Shortcut setup required'}</p><p className="mt-1 text-[11px] leading-4 text-[#8A8078]">Import-only bridge. Glow OS never receives your Apple ID or iCloud password.</p></Card>
-          </div>
+  return <AppShell><SectionPage eyebrow="Connections" title="Connections" description="Nurture what matters. Keep the services that support your life close, private, and understandable.">
+    <div className="space-y-4">
+      <section className="grid gap-4 xl:grid-cols-3">
+        <Card><div className="flex items-center justify-between"><div className="flex items-center gap-2"><Link2 size={15} className="text-[#C9727E]"/><h2 className="glow-display text-[18px]">Inner Circle</h2></div><span className="text-[10px] text-[#C9727E]">View all</span></div><div className="mt-5 flex gap-5"><div className="text-center"><span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#FDF3F2] text-[#C9727E]"><Cloud size={18}/></span><p className="mt-2 text-[11px]">Google</p><p className="text-[9px] text-[#9A9088]">Calendar + Gmail</p></div><div className="text-center"><span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#F1E8D9] text-[#9A7A3D]"><Smartphone size={18}/></span><p className="mt-2 text-[11px]">Apple</p><p className="text-[9px] text-[#9A9088]">Reminders bridge</p></div></div><div className="mt-5 rounded-[12px] bg-[#FFF8F5] p-4 text-center"><p className="glow-display text-[14px] italic text-[#5C4D47]">Your connected world should make life feel lighter, not louder.</p></div></Card>
+        <Card><div className="flex items-center justify-between"><div className="flex items-center gap-2"><RefreshCw size={15} className="text-[#9A7A3D]"/><h2 className="glow-display text-[18px]">Recent Activity</h2></div><span className="text-[10px] text-[#C9727E]">View all</span></div><div className="mt-4 space-y-4"><div className="flex items-center gap-3"><span className={`h-2 w-2 rounded-full ${googleHealthy?'bg-[#5A6E52]':'bg-[#C69A52]'}`}/><div className="min-w-0 flex-1"><p className="text-[11.5px] font-medium">Google connection</p><p className="text-[10px] text-[#9A9088]">{googleLabel}</p></div><span className="text-[9px] text-[#B5ACA5]">{googleDate?googleDate.toLocaleDateString():'—'}</span></div><div className="flex items-center gap-3"><span className={`h-2 w-2 rounded-full ${appleHealthy?'bg-[#5A6E52]':'bg-[#C69A52]'}`}/><div className="min-w-0 flex-1"><p className="text-[11.5px] font-medium">Apple Reminders</p><p className="text-[10px] text-[#9A9088]">{appleHealthy?'Connected':'Setup needed'}</p></div><span className="text-[9px] text-[#B5ACA5]">{appleDate?appleDate.toLocaleDateString():'—'}</span></div></div></Card>
+        <Card><div className="flex items-center justify-between"><div className="flex items-center gap-2"><ShieldCheck size={15} className="text-[#C9727E]"/><h2 className="glow-display text-[18px]">Follow-Ups</h2></div><span className="text-[10px] text-[#C9727E]">View all</span></div><div className="mt-4 space-y-4 text-[11.5px]"><p className="flex items-start gap-2"><span className="mt-0.5 h-3.5 w-3.5 rounded-[4px] border border-[#D9CFC9]"/>Review Gmail permission state <span className="ml-auto text-[9px] text-[#9A9088]">{overview.hasGmailScope?'Done':'Open'}</span></p><p className="flex items-start gap-2"><span className="mt-0.5 h-3.5 w-3.5 rounded-[4px] border border-[#D9CFC9]"/>Review Calendar permission <span className="ml-auto text-[9px] text-[#9A9088]">{overview.hasCalendarScope?'Done':'Open'}</span></p><p className="flex items-start gap-2"><span className="mt-0.5 h-3.5 w-3.5 rounded-[4px] border border-[#D9CFC9]"/>Confirm Apple bridge <span className="ml-auto text-[9px] text-[#9A9088]">{appleHealthy?'Done':'Open'}</span></p></div></Card>
+      </section>
 
-          <Card>
-            <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="glow-eyebrow">Connection health</p><h2 className="glow-display mt-1 text-[20px] text-[#2B2420]">Sync state, permissions, and last activity</h2></div><ShieldCheck size={20} className="text-[#C9727E]" /></div>
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <div className="rounded-[14px] border border-[#F1E7E3] bg-[#FDF8F6] p-4"><p className="text-[10.5px] font-semibold uppercase tracking-[.12em] text-[#8A8078]">Google Calendar + Gmail</p><p className="mt-2 text-[12.5px] text-[#2B2420]">State: {stateLabel(overview.calendarState)}</p><p className="mt-1 text-[11px] leading-4 text-[#8A8078]">Last calendar sync: {lastGoogleSync ? new Date(lastGoogleSync).toLocaleString() : 'No completed sync recorded yet'}.</p><p className="mt-1 text-[11px] leading-4 text-[#8A8078]">Permissions: Calendar read-only {overview.hasCalendarScope ? '✓' : '—'} · Gmail read-only {overview.hasGmailScope ? '✓' : '—'}.</p></div>
-              <div className="rounded-[14px] border border-[#F1E7E3] bg-[#FDF8F6] p-4"><p className="text-[10.5px] font-semibold uppercase tracking-[.12em] text-[#8A8078]">Apple Reminders</p><p className="mt-2 text-[12.5px] text-[#2B2420]">State: {appleHealthy ? 'Connected' : 'Not connected'}</p><p className="mt-1 text-[11px] leading-4 text-[#8A8078]">Last import: {lastAppleSync ? new Date(lastAppleSync).toLocaleString() : 'No import recorded yet'}.</p><p className="mt-1 text-[11px] leading-4 text-[#8A8078]">Permission model: iPhone Shortcut sends selected reminders into Glow OS. No native Apple credentials are stored.</p></div>
-            </div>
-          </Card>
+      <section className="grid gap-4 xl:grid-cols-3">
+        <Card><div className="flex items-center gap-2"><CalendarDays size={14} className="text-[#9A7A3D]"/><h2 className="glow-display text-[18px]">Important Dates</h2></div><div className="mt-4 space-y-4 text-[11px]"><p className="flex justify-between gap-3"><span>Last Google sync</span><span className="text-[#9A9088]">{googleDate?googleDate.toLocaleString():'Not yet'}</span></p><p className="flex justify-between gap-3"><span>Last Apple import</span><span className="text-[#9A9088]">{appleDate?appleDate.toLocaleString():'Not yet'}</span></p></div></Card>
+        <Card><div className="flex items-center gap-2"><LockKeyhole size={14} className="text-[#9A7A3D]"/><h2 className="glow-display text-[18px]">Connection Notes</h2></div><div className="mt-4 space-y-4"><div><p className="text-[11.5px] font-medium">Google</p><p className="mt-1 text-[10px] leading-4 text-[#9A9088]">Calendar and Gmail stay read-only. Glow creates Glow-side actions only when you choose them.</p></div><div><p className="text-[11.5px] font-medium">Apple Reminders</p><p className="mt-1 text-[10px] leading-4 text-[#9A9088]">Your Shortcut imports selected reminder copies. Apple remains the original source.</p></div></div></Card>
+        <Card><div className="flex items-center justify-between"><div className="flex items-center gap-2"><Sparkles size={14} className="text-[#C9727E]"/><h2 className="glow-display text-[18px]">Connection Map</h2></div><span className="text-[10px] text-[#C9727E]">View full map</span></div><div className="relative mx-auto mt-5 h-44 max-w-[260px]"><div className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#F1E8D9] glow-display text-[15px]">{session.user.name?.split(' ')[0]??'You'}</div><div className="absolute left-3 top-8 rounded-full border border-[#E9D8D4] bg-white px-3 py-2 text-[10px]">Google</div><div className="absolute right-2 top-8 rounded-full border border-[#E9D8D4] bg-white px-3 py-2 text-[10px]">Calendar</div><div className="absolute bottom-5 left-5 rounded-full border border-[#E9D8D4] bg-white px-3 py-2 text-[10px]">Gmail</div><div className="absolute bottom-5 right-4 rounded-full border border-[#E9D8D4] bg-white px-3 py-2 text-[10px]">Reminders</div></div><div className="rounded-[12px] bg-[#FFF8F5] p-3 text-[10px] text-[#8A8078]">You have {connectedCount} active data bridge{connectedCount===1?'':'s'}.</div></Card>
+      </section>
 
-          <Card>
-            <p className="glow-eyebrow">Data flow map</p>
-            <h2 className="glow-display mt-1 text-[20px] text-[#2B2420]">What comes in, where it goes, and what Glow can change</h2>
-            <div className="mt-4 grid gap-3 lg:grid-cols-2">
-              <div className="rounded-[14px] border border-[#F1E7E3] bg-white p-4"><div className="flex items-center gap-2 text-[12px] font-semibold text-[#2B2420]"><span>Google</span><ArrowRight size={13} /><span>Glow intelligence</span></div><p className="mt-2 text-[11px] leading-4 text-[#8A8078]">Calendar events feed Calendar, Dashboard, Planning, Brain, Briefings, and smart scheduling context. Gmail metadata feeds Gmail Intelligence and can create Glow-side Tasks/Calendar/Project records only after your action. Glow OS does not edit your Google Calendar or Gmail.</p></div>
-              <div className="rounded-[14px] border border-[#F1E7E3] bg-white p-4"><div className="flex items-center gap-2 text-[12px] font-semibold text-[#2B2420]"><span>Apple Reminders</span><ArrowRight size={13} /><span>Glow rooms</span></div><p className="mt-2 text-[11px] leading-4 text-[#8A8078]">The Shortcut imports reminder copies into Glow OS, where they can appear in Reminders, Dashboard, Brain, and relevant life rooms. Apple remains the original source and Glow does not delete or edit the original reminders.</p></div>
-            </div>
-          </Card>
+      <section className="grid gap-4 lg:grid-cols-2"><GoogleConnectionCard overview={overview}/><AppleRemindersCard connection={appleConnection}/></section>
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            <GoogleConnectionCard overview={overview} />
-            <AppleRemindersCard connection={appleConnection} />
-            <Card className="space-y-3 lg:col-span-2">
-              <div><p className="glow-eyebrow">Private shortcuts</p><p className="mt-1 text-[11px] leading-4 text-[#8A8078]">Plain links, not live integrations. Glow OS never signs in, reads, or stores anything from these sites.</p></div>
-              <div className="grid gap-3 md:grid-cols-2">
-                {shortcuts.map((shortcut) => (
-                  <a key={shortcut.name} href={shortcut.href} target="_blank" rel="noopener noreferrer" className="group block rounded-[14px] border border-[#F1E7E3] bg-[#FDF8F6] p-4 transition hover:-translate-y-0.5 hover:bg-white">
-                    <div className="flex items-center justify-between"><p className="glow-display text-[14px] text-[#2B2420]">{shortcut.name}</p><ArrowUpRight size={12} className="text-[#C9727E]" /></div>
-                    <p className="mt-2 text-[11px] leading-4 text-[#8A8078]">{shortcut.description}</p>
-                  </a>
-                ))}
-              </div>
-            </Card>
-          </div>
-        </div>
-      </SectionPage>
-    </AppShell>
-  );
+      <Card><div className="flex items-center gap-2"><Mail size={14} className="text-[#C9727E]"/><h2 className="glow-display text-[18px]">Private Shortcuts</h2></div><div className="mt-4 flex flex-wrap gap-2">{shortcuts.map(item=><a key={item.name} href={item.href} target="_blank" rel="noopener noreferrer" className="rounded-full border border-[#F1E7E3] bg-white px-3 py-2 text-[10.5px] text-[#4A4440]">{item.name} ↗</a>)}</div></Card>
+
+      <Card className="grid gap-4 bg-[linear-gradient(90deg,#FFF,#FFF7F5)] lg:grid-cols-[160px_1fr_auto] lg:items-center"><div className="flex items-center gap-2"><Sparkles size={14} className="text-[#C9727E]"/><span className="glow-display text-[18px]">Glow Insight</span></div><p className="glow-display text-[17px] italic text-[#4A4440]">Your connection pattern is strongest when every service has a clear purpose and permission boundary.</p><span className="text-[10px] text-[#9A9088]">{connectedCount}/2 live</span></Card>
+    </div>
+  </SectionPage></AppShell>;
 }
