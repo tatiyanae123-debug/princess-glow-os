@@ -143,7 +143,7 @@ export function WellnessEntryManager({ initialEntries }: { initialEntries: Welln
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="glow-eyebrow">Daily check-in</p>
-          <p className="mt-1 text-[9px] text-[#758074]">Mood, energy, stress, sleep, and hydration become more useful when Glow can see them together over time.</p>
+          <p className="mt-1 text-[11.5px] text-[#8A8078]">Mood, energy, stress, sleep, and hydration become more useful when Glow can see them together over time.</p>
         </div>
         <Button onClick={() => setDialogEntry('new')} className="flex items-center gap-1.5">
           <Plus size={14} /> Log check-in
@@ -152,112 +152,109 @@ export function WellnessEntryManager({ initialEntries }: { initialEntries: Welln
 
       {latest ? (
         <Card className="grid gap-3 md:grid-cols-5">
-          <div className="rounded-[20px] border p-4" style={{ borderColor: 'var(--glow-border)', background: 'var(--glow-surface-muted)' }}>
-            <p className="font-medium" style={{ color: 'var(--glow-text)' }}>Mood</p>
-            <p className="mt-2 text-lg font-semibold capitalize text-rose-600 dark:text-rose-400">{latest.mood ?? '–'}</p>
-            <p className="mt-1 text-xs" style={{ color: 'var(--glow-text-muted)' }}>Latest entry · {latest.entryDate}</p>
+          <div className="rounded-[16px] border border-[#F1E7E3] bg-[#FDF8F6] p-4">
+            <p className="text-[12px] font-medium text-[#2B2420]">Mood</p>
+            <p className="mt-2 text-[18px] font-semibold capitalize text-[#C9727E]">{latest.mood ?? '–'}</p>
+            <p className="mt-1 text-[10.5px] text-[#9A9088]">Latest entry · {latest.entryDate}</p>
           </div>
-          <div className="rounded-[20px] border p-4" style={{ borderColor: 'var(--glow-border)', background: 'var(--glow-surface-muted)' }}>
-            <p className="font-medium" style={{ color: 'var(--glow-text)' }}>Energy</p>
-            <p className="mt-2 text-lg font-semibold capitalize text-amber-600 dark:text-amber-400">{latest.energy ?? '–'}</p>
-            <p className="mt-1 text-xs" style={{ color: 'var(--glow-text-muted)' }}>Current body signal</p>
+          <div className="rounded-[16px] border border-[#F1E7E3] bg-[#FDF8F6] p-4">
+            <p className="text-[12px] font-medium text-[#2B2420]">Energy</p>
+            <p className="mt-2 text-[18px] font-semibold capitalize text-[#9A7A3D]">{latest.energy ?? '–'}</p>
+            <p className="mt-1 text-[10.5px] text-[#9A9088]">Current body signal</p>
           </div>
-          <div className="rounded-[20px] border p-4" style={{ borderColor: 'var(--glow-border)', background: 'var(--glow-surface-muted)' }}>
-            <p className="font-medium" style={{ color: 'var(--glow-text)' }}>Stress</p>
-            <p className="mt-2 text-lg font-semibold text-violet-600 dark:text-violet-400">{stressLabel(latest.stressLevel)}</p>
-            <p className="mt-1 text-xs" style={{ color: 'var(--glow-text-muted)' }}>{latest.stressLevel != null ? `${latest.stressLevel}/5` : 'Latest check-in'}</p>
+          <div className="rounded-[16px] border border-[#F1E7E3] bg-[#FDF8F6] p-4">
+            <p className="text-[12px] font-medium text-[#2B2420]">Stress</p>
+            <p className="mt-2 text-[18px] font-semibold text-[#7C6B9C]">{stressLabel(latest.stressLevel)}</p>
+            <p className="mt-1 text-[10.5px] text-[#9A9088]">{latest.stressLevel != null ? `${latest.stressLevel}/5` : 'Latest check-in'}</p>
           </div>
-          <div className="rounded-[20px] border p-4" style={{ borderColor: 'var(--glow-border)', background: 'var(--glow-surface-muted)' }}>
-            <p className="font-medium" style={{ color: 'var(--glow-text)' }}>Hydration</p>
-            <p className="mt-2 text-lg font-semibold text-cyan-600 dark:text-cyan-400">{latest.waterGlasses != null ? `${latest.waterGlasses} glasses` : '–'}</p>
-            <p className="mt-1 text-xs" style={{ color: 'var(--glow-text-muted)' }}>Latest check-in</p>
+          <div className="rounded-[16px] border border-[#F1E7E3] bg-[#FDF8F6] p-4">
+            <p className="text-[12px] font-medium text-[#2B2420]">Hydration</p>
+            <p className="mt-2 text-[18px] font-semibold text-[#5A6E52]">{latest.waterGlasses != null ? `${latest.waterGlasses} glasses` : '–'}</p>
+            <p className="mt-1 text-[10.5px] text-[#9A9088]">Latest check-in</p>
           </div>
-          <div className="rounded-[20px] border p-4" style={{ borderColor: 'var(--glow-border)', background: 'var(--glow-surface-muted)' }}>
+          <div className="rounded-[16px] border border-[#F1E7E3] bg-[#FDF8F6] p-4">
             <div className="flex items-start justify-between gap-2">
-              <p className="font-medium" style={{ color: 'var(--glow-text)' }}>Sleep</p>
+              <p className="text-[12px] font-medium text-[#2B2420]">Sleep</p>
               <div className="flex shrink-0 items-center gap-1">
-                <button type="button" onClick={() => setDialogEntry(latest)} aria-label="Edit entry" className="rounded-full p-1 transition hover:opacity-70" style={{ color: 'var(--glow-text-muted)' }}>
+                <button type="button" onClick={() => setDialogEntry(latest)} aria-label="Edit entry" className="rounded-full p-1 text-[#9A9088] transition hover:opacity-70">
                   <Pencil size={13} />
                 </button>
-                <button type="button" onClick={() => setDeleteTarget(latest)} aria-label="Delete entry" className="rounded-full p-1 transition hover:opacity-70" style={{ color: 'var(--glow-text-muted)' }}>
+                <button type="button" onClick={() => setDeleteTarget(latest)} aria-label="Delete entry" className="rounded-full p-1 text-[#9A9088] transition hover:opacity-70">
                   <Trash2 size={13} />
                 </button>
               </div>
             </div>
-            <p className="mt-2 text-lg font-semibold text-sky-600 dark:text-sky-400">{latest.sleepHours != null ? `${latest.sleepHours}h` : '–'}</p>
-            {latest.notes && <p className="mt-1 text-xs" style={{ color: 'var(--glow-text-muted)' }}>{latest.notes}</p>}
+            <p className="mt-2 text-[18px] font-semibold text-[#4A6A7C]">{latest.sleepHours != null ? `${latest.sleepHours}h` : '–'}</p>
+            {latest.notes && <p className="mt-1 text-[10.5px] text-[#9A9088]">{latest.notes}</p>}
           </div>
         </Card>
       ) : (
         <Card>
           <div className="py-6 text-center">
-            <p className="text-sm font-medium" style={{ color: 'var(--glow-text)' }}>No wellness entries yet.</p>
-            <p className="mt-1 text-xs" style={{ color: 'var(--glow-text-muted)' }}>Log your first check-in to create a private baseline Glow can learn from.</p>
+            <p className="text-[13px] font-medium text-[#2B2420]">No wellness entries yet.</p>
+            <p className="mt-1 text-[11.5px] text-[#8A8078]">Log your first check-in to create a private baseline Glow can learn from.</p>
             <Button onClick={() => setDialogEntry('new')} className="mt-4 inline-flex items-center gap-1.5"><Plus size={14}/> Log first check-in</Button>
           </div>
         </Card>
       )}
 
       <section className="grid gap-4 lg:grid-cols-[1.05fr_.95fr]">
-        <Card className="paper-card">
+        <Card>
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="glow-eyebrow">Wellness correlations</p>
-              <h3 className="glow-display mt-1 text-[20px] text-[#455247]">What your check-ins are beginning to show</h3>
+              <h3 className="glow-display mt-1 text-[20px] text-[#2B2420]">What your check-ins are beginning to show</h3>
             </div>
-            <Activity size={18} className="text-[#82917f]" />
+            <Activity size={18} className="text-[#C9727E]" />
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[12px] border border-[#dfe5db] bg-white/45 p-4">
-              <div className="flex items-center gap-2 text-[9px] font-medium text-[#596657]"><BedDouble size={13}/> Sleep → energy</div>
-              <p className="glow-display mt-2 text-[22px] text-[#455247]">{signedDelta(insights.sleepEnergyDelta) ?? 'Learning'}</p>
-              <p className="mt-1 text-[8px] leading-4 text-[#788477]">{insights.sleepEnergyDelta == null ? 'Glow needs at least two rested and two shorter-sleep days with energy logged before comparing them.' : `${insights.sleepEnergyDelta >= 0 ? 'Energy has been higher' : 'Energy has not been higher'} on 7h+ sleep days in this recent sample.`}</p>
+            <div className="rounded-[14px] border border-[#F1E7E3] bg-[#FDF8F6] p-4">
+              <div className="flex items-center gap-2 text-[11px] font-medium text-[#4A4440]"><BedDouble size={13}/> Sleep → energy</div>
+              <p className="glow-display mt-2 text-[22px] text-[#2B2420]">{signedDelta(insights.sleepEnergyDelta) ?? 'Learning'}</p>
+              <p className="mt-1 text-[10.5px] leading-4 text-[#8A8078]">{insights.sleepEnergyDelta == null ? 'Glow needs at least two rested and two shorter-sleep days with energy logged before comparing them.' : `${insights.sleepEnergyDelta >= 0 ? 'Energy has been higher' : 'Energy has not been higher'} on 7h+ sleep days in this recent sample.`}</p>
             </div>
-            <div className="rounded-[12px] border border-[#dfe5db] bg-white/45 p-4">
-              <div className="flex items-center gap-2 text-[9px] font-medium text-[#596657]"><Droplets size={13}/> Hydration → mood</div>
-              <p className="glow-display mt-2 text-[22px] text-[#455247]">{signedDelta(insights.hydrationMoodDelta) ?? 'Learning'}</p>
-              <p className="mt-1 text-[8px] leading-4 text-[#788477]">{insights.hydrationMoodDelta == null ? 'Glow needs at least two 8+ glass days and two lower-hydration days with mood logged before comparing them.' : `${insights.hydrationMoodDelta >= 0 ? 'Mood has been higher' : 'Mood has not been higher'} on 8+ glass days in this recent sample.`}</p>
+            <div className="rounded-[14px] border border-[#F1E7E3] bg-[#FDF8F6] p-4">
+              <div className="flex items-center gap-2 text-[11px] font-medium text-[#4A4440]"><Droplets size={13}/> Hydration → mood</div>
+              <p className="glow-display mt-2 text-[22px] text-[#2B2420]">{signedDelta(insights.hydrationMoodDelta) ?? 'Learning'}</p>
+              <p className="mt-1 text-[10.5px] leading-4 text-[#8A8078]">{insights.hydrationMoodDelta == null ? 'Glow needs at least two 8+ glass days and two lower-hydration days with mood logged before comparing them.' : `${insights.hydrationMoodDelta >= 0 ? 'Mood has been higher' : 'Mood has not been higher'} on 8+ glass days in this recent sample.`}</p>
             </div>
           </div>
-          <div className="mt-3 flex flex-wrap gap-2 text-[8px] text-[#7b8778]">
-            <span className="rounded-full bg-[#edf1ea] px-3 py-1.5">{insights.sampleSize} recent check-ins</span>
-            <span className="rounded-full bg-[#edf1ea] px-3 py-1.5">Avg stress {insights.averageStress == null ? '—' : `${insights.averageStress.toFixed(1)}/5`}</span>
-            <span className="rounded-full bg-[#edf1ea] px-3 py-1.5">Avg sleep {insights.averageSleep == null ? '—' : `${insights.averageSleep.toFixed(1)}h`}</span>
-            <span className="rounded-full bg-[#edf1ea] px-3 py-1.5">Avg water {insights.averageWater == null ? '—' : `${insights.averageWater.toFixed(1)} glasses`}</span>
+          <div className="mt-3 flex flex-wrap gap-2 text-[10.5px] text-[#8A8078]">
+            <span className="rounded-full bg-[#FDF3F2] px-3 py-1.5">{insights.sampleSize} recent check-ins</span>
+            <span className="rounded-full bg-[#FDF3F2] px-3 py-1.5">Avg stress {insights.averageStress == null ? '—' : `${insights.averageStress.toFixed(1)}/5`}</span>
+            <span className="rounded-full bg-[#FDF3F2] px-3 py-1.5">Avg sleep {insights.averageSleep == null ? '—' : `${insights.averageSleep.toFixed(1)}h`}</span>
+            <span className="rounded-full bg-[#FDF3F2] px-3 py-1.5">Avg water {insights.averageWater == null ? '—' : `${insights.averageWater.toFixed(1)} glasses`}</span>
           </div>
         </Card>
 
-        <Card className="paper-card bg-[linear-gradient(145deg,#edf2e9,#f8f0eb)]">
+        <Card className="bg-[linear-gradient(145deg,#F1E8D9,#FDF6F1)]">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="glow-eyebrow">Support toolkit</p>
-              <h3 className="glow-display mt-1 text-[20px] text-[#455247]">{toolkit.title}</h3>
+              <h3 className="glow-display mt-1 text-[20px] text-[#2B2420]">{toolkit.title}</h3>
             </div>
-            <Sparkles size={18} className="text-[#82917f]" />
+            <Sparkles size={18} className="text-[#9A7A3D]" />
           </div>
-          <p className="mt-3 text-[9px] leading-5 text-[#6f7b6d]">{toolkit.detail}</p>
+          <p className="mt-3 text-[11.5px] leading-5 text-[#8A8078]">{toolkit.detail}</p>
           <div className="mt-4 grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-            <div className="rounded-[10px] border border-white/70 bg-white/45 p-3"><HeartPulse size={13} className="text-[#758573]"/><p className="mt-2 text-[9px] font-medium text-[#566354]">2-minute reset</p><p className="mt-1 text-[7px] leading-4 text-[#7a8678]">Pause, unclench, breathe slowly, then choose the next smallest useful action.</p></div>
-            <div className="rounded-[10px] border border-white/70 bg-white/45 p-3"><Droplets size={13} className="text-[#758573]"/><p className="mt-2 text-[9px] font-medium text-[#566354]">Hydration anchor</p><p className="mt-1 text-[7px] leading-4 text-[#7a8678]">Pair water with meals, medication, or a routine you already complete.</p></div>
-            <div className="rounded-[10px] border border-white/70 bg-white/45 p-3"><BedDouble size={13} className="text-[#758573]"/><p className="mt-2 text-[9px] font-medium text-[#566354]">Tonight setup</p><p className="mt-1 text-[7px] leading-4 text-[#7a8678]">Reduce tomorrow friction before bed: charge devices, prep essentials, and protect wind-down time.</p></div>
+            <div className="rounded-[12px] border border-white/70 bg-white/60 p-3"><HeartPulse size={13} className="text-[#9A7A3D]"/><p className="mt-2 text-[11px] font-medium text-[#2B2420]">2-minute reset</p><p className="mt-1 text-[10.5px] leading-4 text-[#8A8078]">Pause, unclench, breathe slowly, then choose the next smallest useful action.</p></div>
+            <div className="rounded-[12px] border border-white/70 bg-white/60 p-3"><Droplets size={13} className="text-[#9A7A3D]"/><p className="mt-2 text-[11px] font-medium text-[#2B2420]">Hydration anchor</p><p className="mt-1 text-[10.5px] leading-4 text-[#8A8078]">Pair water with meals, medication, or a routine you already complete.</p></div>
+            <div className="rounded-[12px] border border-white/70 bg-white/60 p-3"><BedDouble size={13} className="text-[#9A7A3D]"/><p className="mt-2 text-[11px] font-medium text-[#2B2420]">Tonight setup</p><p className="mt-1 text-[10.5px] leading-4 text-[#8A8078]">Reduce tomorrow friction before bed: charge devices, prep essentials, and protect wind-down time.</p></div>
           </div>
-          <span className="mt-4 inline-flex rounded-full bg-white/60 px-3 py-1 text-[8px] font-medium text-[#62715f]">{toolkit.label}</span>
+          <span className="mt-4 inline-flex rounded-full bg-white/70 px-3 py-1.5 text-[10.5px] font-medium text-[#9A7A3D]">{toolkit.label}</span>
         </Card>
       </section>
 
       {entries.length > 1 && (
         <Card className="space-y-2">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em]" style={{ color: 'var(--glow-text-muted)' }}>
-            Recent entries
-          </p>
+          <p className="glow-eyebrow">Recent entries</p>
           {entries.slice(1, 8).map((entry) => (
             <div
               key={entry.id}
-              className="flex items-center justify-between rounded-[16px] border px-4 py-3"
-              style={{ borderColor: 'var(--glow-border)', background: 'var(--glow-surface-muted)' }}
+              className="flex items-center justify-between rounded-[14px] border border-[#F1E7E3] bg-[#FDF8F6] px-4 py-3"
             >
-              <p className="text-sm" style={{ color: 'var(--glow-text)' }}>{entry.entryDate}</p>
-              <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--glow-text-muted)' }}>
+              <p className="text-[12.5px] text-[#2B2420]">{entry.entryDate}</p>
+              <div className="flex items-center gap-3 text-[11px] text-[#8A8078]">
                 {entry.mood && <span className="capitalize">{entry.mood}</span>}
                 {entry.energy && <span className="capitalize">{entry.energy}</span>}
                 {entry.stressLevel != null && <span>{entry.stressLevel}/5 stress</span>}
