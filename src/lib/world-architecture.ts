@@ -24,6 +24,7 @@ const worlds: Record<WorldKey, Omit<WorldArchitecture, 'title' | 'eyebrow'>> = {
 
 function routeTitle(pathname: string): { world: WorldKey; title: string; eyebrow: string } {
   if (pathname.startsWith('/dashboard') || pathname.startsWith('/today')) return {world:'today',title:'Today',eyebrow:'YOUR LIFE / NOW'};
+  if (pathname.startsWith('/tomorrow')) return {world:'today',title:'Tomorrow',eyebrow:'YOUR LIFE / NEXT'};
   if (pathname.startsWith('/briefings/evening')) return {world:'mind',title:'Evening Debrief',eyebrow:'MIND / CLOSE THE DAY'};
   if (pathname.startsWith('/briefings/weekly')) return {world:'mind',title:'Weekly Debrief',eyebrow:'MIND / WEEK IN REVIEW'};
   if (pathname.startsWith('/briefings/monthly')) return {world:'mind',title:'Monthly Debrief',eyebrow:'MIND / MONTH IN REVIEW'};
@@ -32,11 +33,14 @@ function routeTitle(pathname: string): { world: WorldKey; title: string; eyebrow
   if (pathname.startsWith('/memory')) return {world:'mind',title:'Memory',eyebrow:'MIND / ARCHIVE'};
   if (pathname.startsWith('/observations')) return {world:'mind',title:'Observations',eyebrow:'MIND / QUIET SIGNALS'};
   if (pathname.startsWith('/graph')) return {world:'mind',title:'Graph',eyebrow:'MIND / RELATIONSHIPS'};
+  if (pathname.startsWith('/rules')) return {world:'mind',title:'Personal Rules',eyebrow:'MIND / OPERATING RULES'};
   if (pathname.startsWith('/timeline')) return {world:'life',title:'Timeline',eyebrow:'LIFE / THROUGH TIME'};
   if (pathname.startsWith('/calendar')) return {world:'life',title:'Calendar',eyebrow:'LIFE / TIME'};
   if (pathname.startsWith('/tasks')) return {world:'life',title:'Tasks',eyebrow:'LIFE / WORKBENCH'};
   if (pathname.startsWith('/planning')) return {world:'life',title:'Planning',eyebrow:'LIFE / PLAN'};
   if (pathname.startsWith('/reminders')) return {world:'life',title:'Reminders',eyebrow:'LIFE / CONTEXT'};
+  if (pathname.startsWith('/routines')) return {world:'life',title:'Routines',eyebrow:'LIFE / RITUALS'};
+  if (pathname.startsWith('/habits')) return {world:'life',title:'Habits',eyebrow:'LIFE / RHYTHMS'};
   if (pathname.startsWith('/goals')) return {world:'life',title:'Goals',eyebrow:'LIFE / JOURNEYS'};
   if (pathname.startsWith('/wellness')) return {world:'wellness',title:'Wellness',eyebrow:'WELLNESS / QUIET ROOM'};
   if (pathname.startsWith('/fitness')) return {world:'wellness',title:'Fitness',eyebrow:'WELLNESS / MOVEMENT'};
@@ -45,6 +49,7 @@ function routeTitle(pathname: string): { world: WorldKey; title: string; eyebrow
   if (pathname.startsWith('/beauty/lab')) return {world:'beauty',title:'Beauty Lab',eyebrow:'BEAUTY / LAB'};
   if (pathname.startsWith('/beauty')) return {world:'beauty',title:'Beauty',eyebrow:'BEAUTY / DRESSING ROOM'};
   if (pathname.startsWith('/hair')) return {world:'beauty',title:'Hair',eyebrow:'BEAUTY / HAIR STUDIO'};
+  if (pathname.startsWith('/closet')) return {world:'beauty',title:'Closet',eyebrow:'BEAUTY / WARDROBE'};
   if (pathname.startsWith('/finance/brain')) return {world:'money',title:'Financial Brain',eyebrow:'MONEY / FORECAST'};
   if (pathname.startsWith('/finance')) return {world:'money',title:'Finance',eyebrow:'MONEY / CURRENT POSITION'};
   if (pathname.startsWith('/creative-studio') || pathname.startsWith('/projects')) return {world:'work',title:'Creative Studio',eyebrow:'WORK + CREATE / STUDIO'};
@@ -57,7 +62,8 @@ function routeTitle(pathname: string): { world: WorldKey; title: string; eyebrow
   if (pathname.startsWith('/all-rooms')) return {world:'home',title:'All Rooms',eyebrow:'HOME / ARCHITECTURE'};
   if (pathname.startsWith('/world') || pathname.startsWith('/life-world')) return {world:'home',title:'Glow World',eyebrow:'LIFE WORLD / ARCHITECTURE'};
   if (pathname.startsWith('/notices')) return {world:'mind',title:'Notices',eyebrow:'MIND / ATTENTION'};
-  if (pathname.startsWith('/notes') || pathname.startsWith('/resources')) return {world:'life',title:pathname.startsWith('/notes')?'Notes':'Resources',eyebrow:'LIFE / LIBRARY'};
+  if (pathname.startsWith('/notes') || pathname.startsWith('/resources')) return {world:'mind',title:pathname.startsWith('/notes')?'Notes':'Resources',eyebrow:'MIND / LIBRARY'};
+  if (pathname.startsWith('/settings')) return {world:'life',title:'Settings',eyebrow:'SYSTEM / ENVIRONMENT'};
   return {world:'life',title:'Glow OS',eyebrow:'PERSONAL DIGITAL WORLD'};
 }
 
