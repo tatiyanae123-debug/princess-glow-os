@@ -19,10 +19,11 @@ export default async function WorkPage(){
   const userId=session.user.id;
   const [schedules,tasks,events,projects]=await Promise.all([getWorkSchedulesByUser(userId),getTasksByUser(userId),getCalendarEventsByUser(userId),getProjectsByUser(userId)]);
   const open=tasks.filter(t=>t.status!=='done'&&t.status!=='cancelled');
-  const priorities=[...open].sort((a,b)=>({urgent:0,high:1,medium:2,low:3}[a.priority]-{urgent:0,high:1,medium:2,low:3}[b.priority])).slice(0,5);
+  const priorityRank={urgent:0,high:1,medium:2,low:3} as const;
+  const priorities=[...open].sort((a,b)=>priorityRank[a.priority]-priorityRank[b.priority]).slice(0,5);
   const upcomingEvents=events.filter(e=>e.startAt.getTime()>=Date.now()).sort((a,b)=>a.startAt.getTime()-b.startAt.getTime()).slice(0,5);
   const deadlines=open.filter(t=>t.dueDate).sort((a,b)=>(a.dueDate?.getTime()??0)-(b.dueDate?.getTime()??0)).slice(0,5);
-  const activeProjects=projects.slice(0,5);
+  const activeProjects=projects.filter(p=>p.status==='active').slice(0,5);
 
   return <AppShell><SectionPage eyebrow="Work" title="Work" description="Your work life, lighter, focused, and deliberate.">
     <div className="space-y-4">
@@ -33,7 +34,7 @@ export default async function WorkPage(){
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[1.15fr_.65fr_.85fr]">
-        <Card><h2 className="glow-display text-[18px]">Active Projects</h2><div className="mt-4 space-y-4">{activeProjects.length?activeProjects.map((p,index)=><div key={p.id}><div className="flex items-center justify-between text-[11px]"><span>{p.title}</span><span className="text-[#9A9088]">{[70,55,40,30,20][index]??20}%</span></div><div className="mt-1.5 h-1.5 rounded-full bg-[#F1E7E3]"><div className="h-full rounded-full bg-[#C9727E]" style={{width:`${[70,55,40,30,20][index]??20}%`}}/></div></div>):<p className="text-[11px] text-[#9A9088]">No projects yet.</p>}</div><Link href="/projects" className="mt-5 inline-flex items-center gap-1 text-[11px] text-[#C9727E]">View all projects <ArrowRight size={11}/></Link></Card>
+        <Card><h2 className="glow-display text-[18px]">Active Projects</h2><div className="mt-4 space-y-4">{activeProjects.length?activeProjects.map(p=><div key={p.id}><div className="flex items-center justify-between text-[11px]"><span>{p.title}</span><span className="text-[#9A9088]">{p.progress}%</span></div><div className="mt-1.5 h-1.5 rounded-full bg-[#F1E7E3]"><div className="h-full rounded-full bg-[#C9727E]" style={{width:`${Math.max(0,Math.min(100,p.progress))}%`}}/></div><p className="mt-1 text-[9.5px] capitalize text-[#9A9088]">{p.area} · {p.priority}</p></div>):<p className="text-[11px] text-[#9A9088]">No active projects yet.</p>}</div><Link href="/projects" className="mt-5 inline-flex items-center gap-1 text-[11px] text-[#C9727E]">View all projects <ArrowRight size={11}/></Link></Card>
         <Card><h2 className="glow-display text-[18px]">Deadlines</h2><div className="mt-4 space-y-3">{deadlines.length?deadlines.map(t=><div key={t.id} className="flex justify-between gap-2 text-[10.5px]"><span className="line-clamp-1">{t.title}</span><span className="shrink-0 text-[#C9727E]">{t.dueDate?.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span></div>):<p className="text-[11px] text-[#9A9088]">No dated deadlines.</p>}</div></Card>
         <Card><h2 className="glow-display text-[18px]">Notes & Ideas</h2><p className="mt-4 text-[11px] leading-5 text-[#8A8078]">Capture campaign thoughts, follow-ups, creative direction, and meeting notes in the same system that feeds Brain and Projects.</p><Link href="/notes" className="mt-5 inline-flex items-center gap-1 text-[11px] text-[#C9727E]">Open notes <ArrowRight size={11}/></Link></Card>
       </section>
