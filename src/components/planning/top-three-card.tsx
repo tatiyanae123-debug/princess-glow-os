@@ -49,23 +49,23 @@ export function TopThreeCard({ initialTasks }: { initialTasks: Task[] }) {
 
   return (
     <Card className="p-0 overflow-hidden">
-      <div className="flex items-center justify-between gap-2 border-b border-[#e7dbd4] px-5 py-4">
-        <div className="flex items-center gap-2"><Star size={14} className="text-[#c48a55]" /><h2 className="glow-display text-[19px] text-[#463833]">Top Three</h2></div>
-        <button type="button" onClick={() => setEditing((value) => !value)} className="text-[8px] font-semibold uppercase tracking-[.1em] text-[#9d6f73]">{editing ? 'Done editing' : 'Edit Top Three'}</button>
+      <div className="flex items-center justify-between gap-2 border-b border-[#F1E7E3] px-5 py-4">
+        <div className="flex items-center gap-2"><Star size={14} className="text-[#9A7A3D]" /><h2 className="glow-display text-[19px] text-[#2B2420]">Top Three</h2></div>
+        <button type="button" onClick={() => setEditing((value) => !value)} className="text-[10.5px] font-semibold uppercase tracking-[.08em] text-[#C9727E]">{editing ? 'Done editing' : 'Edit Top Three'}</button>
       </div>
-      <div className="divide-y divide-[#eee3dc]">
+      <div className="divide-y divide-[#F1E7E3]">
         {topThree.length === 0 ? (
-          <p className="p-6 text-center text-[9px] text-[#8e7b74]">No open tasks yet. Add tasks and the three most important will surface here automatically.</p>
+          <p className="p-6 text-center text-[12px] text-[#8A8078]">No open tasks yet. Add tasks and the three most important will surface here automatically.</p>
         ) : topThree.map((task, index) => (
           <div key={task.id} className="flex items-center gap-3 px-5 py-4">
-            <span className="glow-display text-[20px] text-[#c48a55]">{index + 1}</span>
-            <button type="button" onClick={() => complete(task)} disabled={update.isPending} aria-label="Complete task" className="text-[#8a746c] disabled:opacity-50"><Circle size={15} className="text-[#c7b5ad]" /></button>
+            <span className="glow-display text-[20px] text-[#9A7A3D]">{index + 1}</span>
+            <button type="button" onClick={() => complete(task)} disabled={update.isPending} aria-label="Complete task" className="text-[#8A8078] disabled:opacity-50"><Circle size={15} className="text-[#D9CFC9]" /></button>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[11px] font-medium text-[#4a3d38]">{task.title}</p>
-              <p className="mt-0.5 text-[7px] uppercase tracking-[.12em] text-[#9a847c]">{task.priority}{task.dueDate ? ` · due ${task.dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''}</p>
+              <p className="truncate text-[12.5px] font-medium text-[#2B2420]">{task.title}</p>
+              <p className="mt-0.5 text-[10px] uppercase tracking-[.08em] text-[#B5ACA5]">{task.priority}{task.dueDate ? ` · due ${task.dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''}</p>
             </div>
             {editing ? (
-              <select value={task.priority} onChange={(event) => setPriority(task, event.target.value as Task['priority'])} className="rounded-md border border-[#e0d2ca] px-2 py-1 text-[8px] text-[#6d5a53]">
+              <select value={task.priority} onChange={(event) => setPriority(task, event.target.value as Task['priority'])} className="rounded-md border border-[#F1E7E3] px-2 py-1.5 text-[11px] text-[#4A4440]">
                 {PRIORITIES.map((priority) => <option key={priority} value={priority}>{priority}</option>)}
               </select>
             ) : null}
@@ -73,19 +73,19 @@ export function TopThreeCard({ initialTasks }: { initialTasks: Task[] }) {
         ))}
       </div>
       {editing && rest.length > 0 ? (
-        <div className="border-t border-[#eee3dc] bg-[#faf5f0] px-5 py-4">
-          <p className="text-[8px] font-semibold uppercase tracking-[.1em] text-[#9a847c]">Promote something into the Top Three</p>
+        <div className="border-t border-[#F1E7E3] bg-[#FDF8F6] px-5 py-4">
+          <p className="text-[10.5px] font-semibold uppercase tracking-[.08em] text-[#8A8078]">Promote something into the Top Three</p>
           <div className="mt-2 space-y-2">
             {rest.map((task) => (
               <div key={task.id} className="flex items-center justify-between gap-3">
-                <p className="min-w-0 truncate text-[9px] text-[#6d5a53]">{task.title}</p>
-                <button type="button" onClick={() => setPriority(task, 'urgent')} disabled={update.isPending} className="flex shrink-0 items-center gap-1 rounded-full border border-[#e0d2ca] px-2.5 py-1 text-[7px] font-medium text-[#6d5a53]"><CheckCircle2 size={9} />Make urgent</button>
+                <p className="min-w-0 truncate text-[12px] text-[#4A4440]">{task.title}</p>
+                <button type="button" onClick={() => setPriority(task, 'urgent')} disabled={update.isPending} className="flex shrink-0 items-center gap-1 rounded-full border border-[#F1E7E3] bg-white px-2.5 py-1.5 text-[10.5px] font-medium text-[#4A4440] hover:bg-[#FBE4E8]"><CheckCircle2 size={9} />Make urgent</button>
               </div>
             ))}
           </div>
         </div>
       ) : null}
-      <div className="border-t border-[#eee3dc] px-5 py-3"><Link href="/tasks?view=now" className="text-[8px] font-medium text-[#9d6f73]">Open Tasks →</Link></div>
+      <div className="border-t border-[#F1E7E3] px-5 py-3"><Link href="/tasks?view=now" className="text-[11px] font-medium text-[#C9727E]">Open Tasks →</Link></div>
     </Card>
   );
 }
