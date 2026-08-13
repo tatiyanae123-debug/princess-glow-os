@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import './reference-rooms.css';
 import './glow-os-3.css';
+import './final-reference-batch.css';
 
 export const metadata: Metadata = {
   title: 'Glow OS',
