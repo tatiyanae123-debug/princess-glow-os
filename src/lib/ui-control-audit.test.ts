@@ -76,4 +76,21 @@ function audit(){
 describe('interactive control audit',()=>{
   it('ships no inert buttons anywhere in the app',()=>{expect(audit().inertButtons).toEqual([]);});
   it('ships no missing or placeholder link targets',()=>{expect(audit().badLinks).toEqual([]);});
+
+  it('Brain Add Connection edits the mind map in place instead of redirecting to another room',()=>{
+    const file=path.join(SRC,'components','brain','brain-mind-map.tsx');
+    const text=fs.readFileSync(file,'utf8');
+    expect(text).toContain("onClick={() => setAdding(true)}");
+    expect(text).toContain('Add to Mind Map');
+    expect(text).toContain('Edit Map');
+    expect(text).not.toMatch(/<Link[^>]+href=["']\/memory["'][^>]*>\s*Add Connection/i);
+  });
+
+  it('Brain custom map entries are removable and only target real internal rooms',()=>{
+    const file=path.join(SRC,'components','brain','brain-mind-map.tsx');
+    const text=fs.readFileSync(file,'utf8');
+    expect(text).toContain('removeConnection');
+    expect(text).toContain('CUSTOM_DESTINATIONS');
+    expect(text).toContain("candidate.href?.startsWith('/')");
+  });
 });
