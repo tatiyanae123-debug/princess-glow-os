@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowRight, BrainCircuit, CalendarClock, CheckCircle2, Clock3, Droplets, MoonStar, Sparkles, Target, Zap } from 'lucide-react';
 import { AppShell } from '@/components/app-shell';
 import { AdaptiveTodayPanel } from '@/components/adaptive-today-panel';
+import { LiveWeatherCard } from '@/components/dashboard/live-weather-card';
 import { getTasksByUser } from '@/lib/data/tasks';
 import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
@@ -109,6 +110,8 @@ export default async function TodayPage() {
 
           <aside className="space-y-4">
             <section className="overflow-hidden rounded-[18px] border border-[#F1E7E3] bg-white"><div className="flex items-center gap-2 border-b border-[#F1E7E3] px-4 py-3"><Sparkles size={13} className="text-[#C9727E]" /><p className="text-[10.5px] font-semibold uppercase tracking-[.1em] text-[#8A8078]">GLOW CONTEXT</p></div><div className="p-4"><p className="glow-display text-[18px] leading-6 text-[#2B2420]">{snapshot.message}</p><p className="mt-2 text-[11px] leading-4 text-[#8A8078]">This is generated from live cross-system context, not a decorative message.</p><Link href="/notices" className="mt-4 inline-flex items-center gap-1 text-[11px] font-medium text-[#C9727E]">See actionable notices <ArrowRight size={11} /></Link></div></section>
+
+            <LiveWeatherCard />
 
             <section className="rounded-[18px] border border-[#F1E7E3] bg-white p-4"><p className="text-[10.5px] font-semibold uppercase tracking-[.1em] text-[#8A8078]">LIFE SNAPSHOT</p><div className="mt-3 grid grid-cols-2 gap-2">{[[`${snapshot.openTasks}`, 'Open tasks'], [`${snapshot.habitPercent}%`, 'Habits'], [`${snapshot.eventsToday}`, 'Events'], [latestWellness?.energy ? String(latestWellness.energy) : '–', 'Energy']].map(([value, label]) => <div key={label} className="rounded-[12px] bg-[#FDF3F2] p-3"><p className="glow-display text-[21px] text-[#2B2420]">{value}</p><p className="mt-1 text-[10px] uppercase tracking-[.08em] text-[#B5ACA5]">{label}</p></div>)}</div></section>
 

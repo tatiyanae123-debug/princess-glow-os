@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { BellRing, Bot, Download, Eye, Palette, RotateCcw, ShieldCheck, Sparkles, Trash2 } from 'lucide-react';
 import { applyTheme, THEMES, type ThemeId } from '@/lib/themes';
+import { VisualSettingsPanel } from '@/components/ui/visual-settings-panel';
 
 const STORAGE_KEY = 'glow-settings-v1';
 
@@ -39,6 +40,7 @@ function loadSettings(): GlowSettings {
 export function SettingsControlCenter() {
   const [settings, setSettings] = useState<GlowSettings>(defaults);
   const [ready, setReady] = useState(false);
+  const [visualPanelOpen, setVisualPanelOpen] = useState(false);
 
   useEffect(() => {
     setSettings(loadSettings());
@@ -100,7 +102,7 @@ export function SettingsControlCenter() {
             <option value="balanced">Balanced</option>
             <option value="compact">Compact</option>
           </select>
-          <Link href="/dashboard" className="mt-3 inline-flex text-[11px] font-medium text-[#C9727E]">Open visual customization →</Link>
+          <button type="button" onClick={() => setVisualPanelOpen(true)} className="mt-3 inline-flex text-[11px] font-medium text-[#C9727E]">Open visual customization →</button>
         </div>
 
         <div className="rounded-[18px] border border-[#F1E7E3] bg-white p-5">
@@ -140,6 +142,8 @@ export function SettingsControlCenter() {
         </div>
         <div className="mt-3 flex items-start gap-2 rounded-lg border border-[#F1E7E3] bg-[#FDFAF8] p-3 text-[10.5px] leading-4 text-[#8A8078]"><Trash2 size={13} className="mt-0.5 shrink-0" />Account-level deletion is deliberately not automated here. Destructive life-data deletion must remain a separate, explicit, authenticated flow with confirmation rather than a one-click Settings action.</div>
       </div>
+
+      <VisualSettingsPanel open={visualPanelOpen} onClose={() => setVisualPanelOpen(false)} />
     </div>
   );
 }
