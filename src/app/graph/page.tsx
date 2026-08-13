@@ -8,66 +8,27 @@ import { entityRelations } from '@/db/schema/adaptive-os';
 import { glowEntities } from '@/db/schema/interconnected-os';
 import { Network, Sparkles } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
-
-export default async function GraphPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/sign-in');
-  let entities;
-  let relations;
-  try {
-    [entities, relations] = await Promise.all([
-      db.select().from(glowEntities).where(eq(glowEntities.userId, session.user.id)).orderBy(desc(glowEntities.updatedAt)).limit(60),
-      db.select().from(entityRelations).where(eq(entityRelations.userId, session.user.id)).orderBy(desc(entityRelations.createdAt)).limit(80),
-    ]);
-  } catch {
-    return (
-      <AppShell>
-        <div className="mx-auto max-w-4xl rounded-[20px] border border-[#F1E7E3] bg-white p-6">
-          <p className="text-[13px] font-semibold text-[#2B2420]">The Glow Relationship Graph needs intelligence activation.</p>
-          <Link href="/settings/intelligence" className="mt-3 inline-block text-[12px] font-medium text-[#C9727E]">Activate intelligence →</Link>
-        </div>
-      </AppShell>
-    );
-  }
-  const labels = new Map(entities.map((e) => [`${e.entityType}:${e.sourceId ?? e.id}`, e.title]));
-  return (
-    <AppShell>
-      <div className="mx-auto max-w-6xl space-y-5">
-        <header>
-          <div className="flex items-center gap-2 text-[#7C6B9C]"><Network size={18} /><p className="text-[11px] font-semibold uppercase tracking-[.16em]">Universal Intelligence Graph</p></div>
-          <h1 className="glow-display mt-2 text-[40px] leading-none text-[#2B2420] sm:text-[42px]">Everything can understand everything else.</h1>
-          <p className="mt-2 max-w-3xl text-[13px] leading-5 text-[#8A8078]">Glow stores relationships between captured information and the systems it creates. That lets a single appointment, purchase, project or memory become useful in more than one room without duplicate entry.</p>
-        </header>
-        <section className="grid gap-4 lg:grid-cols-[.8fr_1.2fr]">
-          <div className="rounded-[20px] border border-[#F1E7E3] bg-white p-5">
-            <div className="flex items-center justify-between"><p className="text-[10.5px] font-semibold uppercase tracking-[.12em] text-[#8A8078]">Entities</p><span className="text-[10.5px] text-[#B5ACA5]">{entities.length}</span></div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {entities.length ? entities.map((entity) => (
-                <span key={entity.id} className="rounded-full border border-[#F1E7E3] bg-[#FDF8F6] px-3 py-1.5 text-[11px] text-[#4A4440]">{entity.title}<span className="ml-1 text-[#B5ACA5]">· {entity.entityType}</span></span>
-              )) : <p className="text-[12px] text-[#8A8078]">Use Universal Intake and route items to begin building the graph.</p>}
-            </div>
-          </div>
-          <div className="rounded-[20px] border border-[#F1E7E3] bg-white">
-            <div className="flex items-center justify-between border-b border-[#F1E7E3] px-4 py-3"><p className="text-[10.5px] font-semibold uppercase tracking-[.12em] text-[#8A8078]">Relationships</p><span className="text-[10.5px] text-[#B5ACA5]">{relations.length}</span></div>
-            <div className="divide-y divide-[#F1E7E3]">
-              {relations.length ? relations.map((rel) => (
-                <div key={rel.id} className="grid gap-2 px-4 py-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-                  <div><p className="text-[11.5px] font-medium text-[#2B2420]">{labels.get(`${rel.fromType}:${rel.fromId}`) ?? rel.fromType}</p><p className="text-[10px] text-[#B5ACA5]">{rel.fromType}</p></div>
-                  <span className="rounded-full bg-[#E9E4F2] px-2.5 py-1 text-center text-[10px] font-semibold uppercase text-[#7C6B9C]">{rel.relation}</span>
-                  <div className="sm:text-right"><p className="text-[11.5px] font-medium text-[#2B2420]">{labels.get(`${rel.toType}:${rel.toId}`) ?? rel.toType}</p><p className="text-[10px] text-[#B5ACA5]">{rel.toType}</p></div>
-                </div>
-              )) : (
-                <div className="p-8 text-center"><Sparkles size={18} className="mx-auto text-[#7C6B9C]" /><p className="mt-2 text-[12px] text-[#8A8078]">Relationships appear when Glow routes intake or connects systems.</p></div>
-              )}
-            </div>
-          </div>
-        </section>
-        <div className="flex gap-2">
-          <Link href="/intake" className="rounded-full bg-[#2B2420] px-3.5 py-2 text-[11px] font-medium text-white">Add Anything</Link>
-          <Link href="/inbox" className="rounded-full border border-[#F1E7E3] bg-white px-3.5 py-2 text-[11px] text-[#8A8078] hover:bg-[#FDF8F6]">Route Inbox</Link>
-        </div>
-      </div>
-    </AppShell>
-  );
+export const dynamic='force-dynamic';
+const C='rounded-[18px] border border-[#EEE3DE] bg-white p-4';
+export default async function GraphPage(){
+ const s=await auth(); if(!s?.user?.id)redirect('/sign-in');
+ let entities;let relations;try{[entities,relations]=await Promise.all([
+  db.select().from(glowEntities).where(eq(glowEntities.userId,s.user.id)).orderBy(desc(glowEntities.updatedAt)).limit(100),
+  db.select().from(entityRelations).where(eq(entityRelations.userId,s.user.id)).orderBy(desc(entityRelations.createdAt)).limit(140)
+ ])}catch{return <AppShell><div className={C}>Graph needs intelligence activation. <Link href="/settings/intelligence" className="text-[#C9727E]">Activate →</Link></div></AppShell>}
+ const tc=count(entities.map(e=>e.entityType)),rc=count(relations.map(r=>r.relation));
+ const types=Object.entries(tc).sort((a,b)=>b[1]-a[1]).slice(0,5),rels=Object.entries(rc).sort((a,b)=>b[1]-a[1]).slice(0,7);
+ const connected=new Set(relations.flatMap(r=>[`${r.fromType}:${r.fromId}`,`${r.toType}:${r.toId}`])).size;
+ const density=entities.length?Math.min(100,Math.round(relations.length/entities.length*100)):0;
+ const stats=[['Entities',entities.length],['Relationships',relations.length],['Categories',Object.keys(tc).length],['Connected',connected],['Density',`${density}%`]];
+ return <AppShell><div className="mx-auto max-w-[1240px] space-y-4">
+  <header><div className="flex items-center gap-2"><Network size={16} className="text-[#C9727E]"/><h1 className="glow-display text-[46px] leading-none">Graph</h1><Sparkles size={14} className="text-[#D9A665]"/></div><p className="mt-2 text-[12px] text-[#92867E]">Visualize your patterns. Understand your progress. Elevate your day.</p></header>
+  <div className="flex justify-between gap-2"><div className="flex gap-2"><b className="rounded-[10px] border border-[#EEE3DE] bg-white px-3 py-2 text-[10px] font-normal">Live graph</b><b className="rounded-[10px] border border-[#EEE3DE] bg-white px-3 py-2 text-[10px] font-normal">All categories</b></div><div className="flex gap-2"><Link href="/intake" className="rounded-[10px] bg-[#F7D9DE] px-3 py-2 text-[10px] text-[#9F5260]">+ Add Data</Link><Link href="/inbox" className="rounded-[10px] border border-[#EEE3DE] bg-white px-3 py-2 text-[10px]">Route Inbox</Link></div></div>
+  <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">{stats.map(([a,b])=><div key={a} className={C}><p className="text-[11px]">{a}</p><p className="glow-display mt-2 text-[27px]">{b}</p><div className="mt-3 h-1.5 rounded-full bg-[#F1E7E3]"><div className="h-full rounded-full bg-[#D78694]" style={{width:`${typeof b==='number'?Math.min(100,b*8):density}%`}}/></div></div>)}</section>
+  <section className="grid gap-4 lg:grid-cols-2"><Panel title="Entity Overview" rows={types}/><Panel title="Relationship Mix" rows={rels}/></section>
+  <section className="grid gap-4 lg:grid-cols-3"><div className={C}><h2 className="glow-display text-[16px]">Graph Snapshot</h2><div className="mt-4 flex items-center gap-5"><div className="grid h-28 w-28 place-items-center rounded-full" style={{background:`conic-gradient(#D78694 0 ${density}%,#E8E1D7 ${density}% 100%)`}}><div className="grid h-20 w-20 place-items-center rounded-full bg-white"><span className="glow-display text-[22px]">{density}%</span></div></div><p className="text-[10.5px] leading-6">{entities.length} entities<br/>{relations.length} links<br/>{connected} connected</p></div></div><Panel title="Top Categories" rows={types}/><Panel title="Connection Flow" rows={rels.slice(0,5)}/></section>
+  <section className={`${C} flex flex-col gap-3 lg:flex-row lg:items-center`}><span className="glow-display flex items-center gap-2 text-[18px]"><Sparkles size={15} className="text-[#C9727E]"/>Glow Insight</span><p className="flex-1 glow-display text-[16px]">{rels[0]?`Your strongest connection pattern is “${rels[0][0].replaceAll('_',' ')},” with ${rels[0][1]} links.`:'Connect more rooms and Glow will surface your strongest pattern here.'}</p><Link href="/observations" className="text-[10.5px] text-[#C9727E]">View insights →</Link></section>
+ </div></AppShell>;
 }
+function count(v:string[]){return v.reduce<Record<string,number>>((a,x)=>(a[x]=(a[x]??0)+1,a),{})}
+function Panel({title,rows}:{title:string;rows:[string,number][]}){const m=Math.max(1,...rows.map(r=>r[1]));return <div className={C}><h2 className="glow-display text-[17px]">{title}</h2><div className="mt-4 space-y-3">{rows.length?rows.map(([n,v])=><div key={n}><div className="flex justify-between text-[10.5px]"><span className="capitalize">{n.replaceAll('_',' ')}</span><span>{v}</span></div><div className="mt-1 h-1.5 rounded-full bg-[#F1E7E3]"><div className="h-full rounded-full bg-[#9AAC8B]" style={{width:`${Math.round(v/m*100)}%`}}/></div></div>):<p className="text-[11px] text-[#92867E]">No data yet.</p>}</div></div>}
