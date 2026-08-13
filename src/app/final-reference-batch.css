@@ -1,71 +1,9 @@
 /* Glow OS V3 final reference batch polish */
-
-[data-room="memory"], [data-room="timeline"], [data-room="briefings"], [data-room="connections"],
-[data-room="import"], [data-room="gmail"], [data-room="reminders"], [data-room="home"],
-[data-room="work"], [data-room="graph"], [data-room="notices"], [data-room="all-rooms"],
-[data-room="brain"], [data-room="food"], [data-room="fitness"], [data-room="beauty"],
-[data-room="beauty-lab"], [data-room="hair"] {
-  --ref-line:#eee3de;
-  --ref-ink:#2b2420;
-  --ref-muted:#92867e;
-  --ref-rose:#c9727e;
-  background:#fdfaf8;
-  color:var(--ref-ink);
-}
-
-[data-room="memory"] main, [data-room="timeline"] main, [data-room="briefings"] main,
-[data-room="connections"] main, [data-room="import"] main, [data-room="gmail"] main,
-[data-room="reminders"] main, [data-room="home"] main, [data-room="work"] main,
-[data-room="graph"] main, [data-room="notices"] main, [data-room="all-rooms"] main,
-[data-room="brain"] main, [data-room="food"] main, [data-room="fitness"] main,
-[data-room="beauty"] main, [data-room="beauty-lab"] main, [data-room="hair"] main {
-  overflow-x:clip;
-}
-
-.reference-page-heading h1{max-width:18ch}
-
-[data-room="memory"] :is(.grid,.flex)>*, [data-room="timeline"] :is(.grid,.flex)>*,
-[data-room="briefings"] :is(.grid,.flex)>*, [data-room="connections"] :is(.grid,.flex)>*,
-[data-room="import"] :is(.grid,.flex)>*, [data-room="gmail"] :is(.grid,.flex)>*,
-[data-room="reminders"] :is(.grid,.flex)>*, [data-room="home"] :is(.grid,.flex)>*,
-[data-room="work"] :is(.grid,.flex)>*, [data-room="graph"] :is(.grid,.flex)>*,
-[data-room="notices"] :is(.grid,.flex)>*, [data-room="all-rooms"] :is(.grid,.flex)>*,
-[data-room="brain"] :is(.grid,.flex)>*, [data-room="food"] :is(.grid,.flex)>*,
-[data-room="fitness"] :is(.grid,.flex)>*, [data-room="beauty"] :is(.grid,.flex)>*,
-[data-room="beauty-lab"] :is(.grid,.flex)>*, [data-room="hair"] :is(.grid,.flex)>*{min-width:0}
-
-/* Large functional rooms retain their engines, but their visible page identity follows the newest references. */
-[data-room="fitness"] .reference-page-heading h1,
-[data-room="gmail"] .reference-page-heading h1{font-size:0!important;line-height:1!important}
-[data-room="fitness"] .reference-page-heading h1::before{content:'Fitness';font-size:60px;line-height:1.02}
-[data-room="gmail"] .reference-page-heading h1::before{content:'Gmail';font-size:60px;line-height:1.02}
-[data-room="fitness"] .reference-page-heading p:last-child,
-[data-room="gmail"] .reference-page-heading p:last-child{font-size:0}
-[data-room="fitness"] .reference-page-heading p:last-child::before{content:'Move intentionally. Live vibrantly.';font-size:14px;line-height:1.5}
-[data-room="gmail"] .reference-page-heading p:last-child::before{content:'Stay on top of what matters and keep your inbox working for you.';font-size:14px;line-height:1.5}
-
-[data-room="hair"] main h1{font-size:0!important;line-height:1!important}
-[data-room="hair"] main h1::before{content:'Hair ✧';font-size:54px;line-height:1.02}
-[data-room="hair"] main h1 + p{font-size:0}
-[data-room="hair"] main h1 + p::before{content:'Healthy hair. Confident you.';font-size:13px;line-height:1.5}
-
-[data-room="graph"] main header h1{font-size:0!important;line-height:1!important}
-[data-room="graph"] main header h1::before{content:'Graph';font-size:60px;line-height:1.02}
-[data-room="graph"] main header h1 + p{max-width:780px}
-
-@media(max-width:767px){
-  [data-room="memory"] main, [data-room="timeline"] main, [data-room="briefings"] main,
-  [data-room="connections"] main, [data-room="import"] main, [data-room="gmail"] main,
-  [data-room="reminders"] main, [data-room="home"] main, [data-room="work"] main,
-  [data-room="graph"] main, [data-room="notices"] main, [data-room="all-rooms"] main,
-  [data-room="brain"] main, [data-room="food"] main, [data-room="fitness"] main,
-  [data-room="beauty"] main, [data-room="beauty-lab"] main, [data-room="hair"] main{
-    padding-left:16px!important;
-    padding-right:16px!important;
-  }
-  .reference-page-heading h1{font-size:42px!important;line-height:1.02!important}
-  [data-room="fitness"] .reference-page-heading h1::before,
-  [data-room="gmail"] .reference-page-heading h1::before,
-  [data-room="graph"] main header h1::before,
-  [data-room="hair"] main h1::before{font-size:42px}
-}
+[data-room="memory"],[data-room="timeline"],[data-room="briefings"],[data-room="connections"],[data-room="import"],[data-room="gmail"],[data-room="reminders"],[data-room="home"],[data-room="work"],[data-room="graph"],[data-room="notices"],[data-room="all-rooms"],[data-room="brain"],[data-room="food"],[data-room="fitness"],[data-room="beauty"],[data-room="beauty-lab"],[data-room="hair"]{--ref-line:#eee3de;--ref-ink:#2b2420;--ref-muted:#92867e;--ref-rose:#c9727e;background:#fdfaf8;color:var(--ref-ink)}
+[data-room="memory"] main,[data-room="timeline"] main,[data-room="briefings"] main,[data-room="connections"] main,[data-room="import"] main,[data-room="gmail"] main,[data-room="reminders"] main,[data-room="home"] main,[data-room="work"] main,[data-room="graph"] main,[data-room="notices"] main,[data-room="all-rooms"] main,[data-room="brain"] main,[data-room="food"] main,[data-room="fitness"] main,[data-room="beauty"] main,[data-room="beauty-lab"] main,[data-room="hair"] main{overflow-x:clip}
+.reference-page-heading h1{max-width:18ch}.ey{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#443b36}
+[data-room="memory"] :is(.grid,.flex)>*,[data-room="timeline"] :is(.grid,.flex)>*,[data-room="briefings"] :is(.grid,.flex)>*,[data-room="connections"] :is(.grid,.flex)>*,[data-room="import"] :is(.grid,.flex)>*,[data-room="gmail"] :is(.grid,.flex)>*,[data-room="reminders"] :is(.grid,.flex)>*,[data-room="home"] :is(.grid,.flex)>*,[data-room="work"] :is(.grid,.flex)>*,[data-room="graph"] :is(.grid,.flex)>*,[data-room="notices"] :is(.grid,.flex)>*,[data-room="all-rooms"] :is(.grid,.flex)>*,[data-room="brain"] :is(.grid,.flex)>*,[data-room="food"] :is(.grid,.flex)>*,[data-room="fitness"] :is(.grid,.flex)>*,[data-room="beauty"] :is(.grid,.flex)>*,[data-room="beauty-lab"] :is(.grid,.flex)>*,[data-room="hair"] :is(.grid,.flex)>*{min-width:0}
+[data-room="gmail"] .reference-page-heading h1{font-size:0!important;line-height:1!important}[data-room="gmail"] .reference-page-heading h1::before{content:'Gmail';font-size:60px;line-height:1.02}[data-room="gmail"] .reference-page-heading p:last-child{font-size:0}[data-room="gmail"] .reference-page-heading p:last-child::before{content:'Stay on top of what matters and keep your inbox working for you.';font-size:14px;line-height:1.5}
+.evening-debrief-reference{max-width:1240px;margin:0 auto}.evening-debrief-reference>.space-y-5{gap:14px}.evening-debrief-reference>.space-y-5>div:nth-of-type(1){grid-template-columns:minmax(0,.9fr) minmax(420px,1.1fr);align-items:stretch}.evening-debrief-reference>.space-y-5>div:nth-of-type(1) h1{font-size:52px;letter-spacing:-.025em}.evening-debrief-reference>.space-y-5>div:nth-of-type(1)>div:last-child{border-radius:0;border:0}.evening-debrief-reference>.space-y-5>div:nth-of-type(1)>div:last-child>*{min-height:205px}.evening-debrief-reference>.space-y-5>div:nth-of-type(2){border-radius:12px;box-shadow:none}.evening-debrief-reference>.space-y-5>div:nth-of-type(2)::before{content:'☼  Morning      ◔  Evening      ▣  Weekly      □  Monthly      ⊞  Quarter      ⚑  Year      ◷  History';display:block;border-bottom:1px solid #f1e7e3;padding:12px 18px;text-align:center;font-size:11px;word-spacing:10px;color:#716963;background:#fff}.evening-debrief-reference .rounded-\[18px\]{border-color:#eee3de!important;border-radius:12px!important;box-shadow:none!important}.evening-debrief-reference .bg-\[\#FDF8F6\]{background:#fffaf8!important}.evening-debrief-reference textarea{background:#fffdfa}.evening-debrief-reference button,.evening-debrief-reference a{transition:background-color .18s ease,opacity .18s ease}.evening-debrief-reference button:hover,.evening-debrief-reference a:hover{opacity:.86}
+@media(max-width:900px){.evening-debrief-reference>.space-y-5>div:nth-of-type(1){grid-template-columns:1fr}.evening-debrief-reference>.space-y-5>div:nth-of-type(1)>div:last-child>*{min-height:160px}.evening-debrief-reference>.space-y-5>div:nth-of-type(2)::before{overflow-x:auto;white-space:nowrap;text-align:left;word-spacing:4px}}
+@media(max-width:767px){[data-room="memory"] main,[data-room="timeline"] main,[data-room="briefings"] main,[data-room="connections"] main,[data-room="import"] main,[data-room="gmail"] main,[data-room="reminders"] main,[data-room="home"] main,[data-room="work"] main,[data-room="graph"] main,[data-room="notices"] main,[data-room="all-rooms"] main,[data-room="brain"] main,[data-room="food"] main,[data-room="fitness"] main,[data-room="beauty"] main,[data-room="beauty-lab"] main,[data-room="hair"] main{padding-left:16px!important;padding-right:16px!important}.reference-page-heading h1{font-size:42px!important;line-height:1.02!important}[data-room="gmail"] .reference-page-heading h1::before{font-size:42px}.evening-debrief-reference>.space-y-5>div:nth-of-type(1) h1{font-size:42px}}
