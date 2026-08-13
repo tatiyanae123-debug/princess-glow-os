@@ -12,6 +12,7 @@ import { GlobalHeader } from '@/components/global-header';
 import { GlowActionButton } from '@/components/glow-action-button';
 import { UniversalCaptureDock } from '@/components/universal-capture-dock';
 import { RoomUpgradeDeck } from '@/components/room-upgrade-deck';
+import { ArchitecturalWorldLayer } from '@/components/architectural-world-layer';
 
 function roomFor(pathname: string) {
   if (pathname.startsWith('/beauty/lab')) return 'beauty-lab';
@@ -81,10 +82,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="room-canvas min-h-screen bg-[#FDFAF8] text-[#2B2420]" data-room={room} data-focus-mode={focus ? 'true' : 'false'}>
         <div className="mx-auto flex min-h-screen w-full max-w-[1920px] flex-col lg:flex-row">
           {!focus ? <div className="w-full lg:sticky lg:top-0 lg:h-screen lg:w-[236px] lg:shrink-0"><Sidebar /></div> : null}
-          <div className="min-w-0 flex-1 bg-[#FDFAF8]">
+          <div className="min-w-0 flex-1 bg-transparent">
             {!focus ? <GlobalHeader /> : null}
             <main className={focus ? 'min-h-screen px-4 py-8 sm:px-7 lg:px-10' : 'min-h-screen px-4 pb-20 pt-5 sm:px-7 lg:px-10 lg:pt-7'}>
-              <div key={pathname} className="glow-route-stage mx-auto w-full max-w-[1500px]">{children}{!focus?<RoomUpgradeDeck/>:null}</div>
+              <div key={pathname} className="glow-route-stage mx-auto w-full max-w-[1500px]">
+                {!focus ? <ArchitecturalWorldLayer /> : null}
+                {children}
+                {!focus ? <RoomUpgradeDeck /> : null}
+              </div>
             </main>
           </div>
         </div>
