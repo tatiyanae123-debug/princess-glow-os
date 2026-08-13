@@ -17,7 +17,7 @@ import { getRoutinesByUser, getStepsByUser } from '@/lib/data/routines';
 import { CalendarRange, PenLine } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
-const fieldClass = 'w-full border px-4 py-3 text-[10px]';
+const fieldClass = 'w-full rounded-lg border border-[#F1E7E3] px-3.5 py-2.5 text-[12px] text-[#2B2420] placeholder:text-[#B5ACA5] focus:border-[#C9727E] focus:outline-none';
 
 export default async function PlanningPage() {
   const session = await auth();
@@ -76,29 +76,29 @@ export default async function PlanningPage() {
 
         <BuildMyDay />
 
-        <div className="grid gap-5 lg:grid-cols-[.78fr_1.22fr]">
-          <Card className="paper-card">
+        <div className="grid gap-4 lg:grid-cols-[.78fr_1.22fr]">
+          <Card>
             <form action={createPlanningPeriodAction} className="space-y-3">
-              <div className="flex items-center gap-2"><PenLine size={14} className="text-[#a46d76]" /><div><p className="glow-eyebrow">Persistent planning</p><h2 className="glow-display mt-1 text-[20px] text-[#463833]">Create a planning layer</h2></div></div>
+              <div className="flex items-center gap-2"><PenLine size={14} className="text-[#C9727E]" /><div><p className="glow-eyebrow">Persistent planning</p><h2 className="glow-display mt-1 text-[20px] text-[#2B2420]">Create a planning layer</h2></div></div>
               <select name="level" defaultValue="week" className={fieldClass}><option value="today">Today</option><option value="week">Week</option><option value="quarter">Quarter</option><option value="year">Year</option><option value="book">Book</option><option value="bucket">Bucket list</option></select>
               <input name="title" required placeholder="Title, e.g. Strong August week" className={fieldClass} />
               <textarea name="focus" rows={4} placeholder="Focus, priorities, identity goal, reading note, or bucket-list detail" className={fieldClass} />
               <div className="grid gap-3 sm:grid-cols-2"><input name="startsAt" type="date" className={fieldClass} /><input name="endsAt" type="date" className={fieldClass} /></div>
-              <button type="submit" className="rounded-[6px] bg-[#3d302c] px-4 py-2 text-[9px] font-medium text-white">Save planning layer</button>
+              <button type="submit" className="rounded-full bg-[#2B2420] px-4 py-2.5 text-[12px] font-medium text-white">Save planning layer</button>
             </form>
           </Card>
 
           <Card className="p-0 overflow-hidden">
-            <div className="flex items-center gap-2 border-b border-[#e7dbd4] px-5 py-4"><CalendarRange size={14} className="text-[#9c7477]" /><div><p className="glow-eyebrow">Planning archive</p><h2 className="glow-display mt-1 text-[19px] text-[#473a35]">Saved planning layers</h2></div></div>
+            <div className="flex items-center gap-2 border-b border-[#F1E7E3] px-5 py-4"><CalendarRange size={14} className="text-[#C9727E]" /><div><p className="glow-eyebrow">Planning archive</p><h2 className="glow-display mt-1 text-[19px] text-[#2B2420]">Saved planning layers</h2></div></div>
             {periods.length === 0 ? (
-              <p className="p-8 text-center text-[9px] text-[#8e7b74]">Nothing saved yet. Add Today, Week, Quarter, Year, a book, or a bucket-list item.</p>
+              <p className="p-8 text-center text-[12px] text-[#8A8078]">Nothing saved yet. Add Today, Week, Quarter, Year, a book, or a bucket-list item.</p>
             ) : (
-              <div className="divide-y divide-[#eee3dc]">
+              <div className="divide-y divide-[#F1E7E3]">
                 {periods.map((period, index) => (
-                  <form key={period.id} action={updatePlanningPeriodAction.bind(null, period.id)} className={`p-4 ${index === 0 ? 'bg-[#f7eceb]/60' : ''}`}>
+                  <form key={period.id} action={updatePlanningPeriodAction.bind(null, period.id)} className={`p-4 ${index === 0 ? 'bg-[#FDF8F6]' : ''}`}>
                     <div className="flex items-start justify-between gap-3">
-                      <div><p className="glow-display text-[15px] text-[#4a3d38]">{period.title}</p><p className="mt-0.5 text-[7px] uppercase tracking-[.15em] text-[#9a847c]">{period.level}</p></div>
-                      <span className="rounded-full bg-[#efe4de] px-2 py-1 text-[7px] text-[#806d65]">{period.progress}%</span>
+                      <div><p className="glow-display text-[15px] text-[#2B2420]">{period.title}</p><p className="mt-0.5 text-[10px] uppercase tracking-[.1em] text-[#B5ACA5]">{period.level}</p></div>
+                      <span className="rounded-full bg-[#FDF3F2] px-2.5 py-1 text-[10.5px] text-[#B15A68]">{period.progress}%</span>
                     </div>
                     <div className="mt-3 grid gap-3">
                       <textarea name="focus" defaultValue={period.focus ?? ''} rows={2} placeholder="Focus" className={fieldClass} />
@@ -109,8 +109,8 @@ export default async function PlanningPage() {
                         <input name="endsAt" type="date" defaultValue={period.endsAt ? period.endsAt.toISOString().slice(0, 10) : ''} className={fieldClass} />
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        <button type="submit" className="rounded-[6px] bg-[#3d302c] px-3 py-2 text-[8px] text-white">Save changes</button>
-                        <button formAction={archivePlanningPeriodAction.bind(null, period.id)} className="rounded-[6px] border border-[#e0d2ca] px-3 py-2 text-[8px] text-[#6d5a53]">Archive</button>
+                        <button type="submit" className="rounded-full bg-[#2B2420] px-3.5 py-2 text-[11px] font-medium text-white">Save changes</button>
+                        <button formAction={archivePlanningPeriodAction.bind(null, period.id)} className="rounded-full border border-[#F1E7E3] bg-white px-3.5 py-2 text-[11px] text-[#4A4440] hover:bg-[#FDF8F6]">Archive</button>
                       </div>
                     </div>
                   </form>
