@@ -23,10 +23,10 @@ export function SectionPage({
           label={`${title} hero image`}
           className="min-h-[160px] sm:min-h-[200px]"
         >
-          <div className="relative z-10 flex h-full flex-col justify-end gap-2 bg-[linear-gradient(0deg,rgba(24,18,17,.68),rgba(24,18,17,.1)_70%,transparent)] p-6 sm:p-8">
-            <p className="text-[11px] font-semibold uppercase tracking-[.18em] text-white/85">{eyebrow}</p>
-            <h1 className="glow-display text-[34px] leading-[1.05] tracking-[-.02em] text-white sm:text-[42px]">{title}</h1>
-            <p className="max-w-xl text-[13px] leading-5 text-white/80">{description}</p>
+          <div className="relative z-10 flex h-full flex-col justify-end gap-2 bg-[linear-gradient(0deg,rgba(24,18,17,.50),rgba(24,18,17,.06)_72%,transparent)] p-6 sm:p-8">
+            <p className="text-[10px] font-semibold uppercase tracking-[.18em] text-white/90">{eyebrow}</p>
+            <h1 className="glow-display text-[38px] leading-[1.02] tracking-[-.025em] text-white sm:text-[50px]">{title}</h1>
+            <p className="max-w-2xl text-[13px] leading-5 text-white/85">{description}</p>
           </div>
         </EditableRoomImage>
       </div>
