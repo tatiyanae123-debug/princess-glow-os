@@ -2,7 +2,7 @@ import type { RoomUpgradeSet } from './types';
 
 export const CONCIERGE_UPGRADES: RoomUpgradeSet[]=[{key:'concierge',label:'Concierge',path:'/concierge',upgrades:[
 {id:'suggested',label:'Suggested Actions',description:'Use real AI proposals and contextual recommendations.',kind:'route',href:'/concierge'},
-{id:'pending',label:'Pending Approvals',description:'Review actions waiting for explicit approval.',kind:'approval'},
+{id:'pending',label:'Pending Approvals',description:'Review actions waiting for explicit approval.',kind:'planning',scope:['ai_proposal']},
 {id:'completed',label:'Completed Actions',description:'Review approved/rejected proposal history and audit events.',kind:'history',scope:['ai_proposal']},
 {id:'follow-ups',label:'Follow-Ups',description:'Save follow-up items and connect them to tasks, events or people.',kind:'entity',entityType:'concierge_followup',fields:[{key:'due',label:'Due date',type:'date'},{key:'context',label:'Context',type:'textarea'}]},
 {id:'scheduling',label:'Scheduling Proposals',description:'Build reviewable scheduling proposals rather than changing the calendar silently.',kind:'planning',scope:['calendar','tasks']},
