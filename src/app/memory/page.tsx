@@ -1,205 +1,56 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
 import { SectionPage } from '@/components/section-page';
 import { Card } from '@/components/ui/card';
-import {
-  createLifeMemoryAction,
-  setLifeMemoryArchivedAction,
-  setLifeMemoryPinnedAction,
-  updateLifeMemoryAction,
-} from '@/app/actions/intelligence-expansion';
+import { createLifeMemoryAction, setLifeMemoryArchivedAction, setLifeMemoryPinnedAction } from '@/app/actions/intelligence-expansion';
 import { getAllLifeMemoriesByUser, getProjectsByUser } from '@/lib/data/user-scope';
-import { Archive, BookMarked, Link2, LockKeyhole, Pencil, Pin, Search, ShieldCheck } from 'lucide-react';
+import { Archive, ArrowRight, BookMarked, Folder, Heart, Image as ImageIcon, Pin, Plus, Search, Sparkles } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
-const fieldClass = 'w-full rounded-lg border border-[#F1E7E3] bg-white px-3.5 py-2.5 text-[12px] text-[#2B2420] placeholder:text-[#B5ACA5] outline-none focus:border-[#9A7A3D]';
-const buttonClass = 'rounded-full bg-[#9A7A3D] px-4 py-2.5 text-[12px] font-medium text-white hover:bg-[#82652F]';
+const fieldClass = 'w-full rounded-[12px] border border-[#F1E7E3] bg-white px-3.5 py-2.5 text-[12px] text-[#2B2420] placeholder:text-[#B5ACA5] outline-none focus:border-[#C9727E]';
 
-type MemoryPageProps = {
-  searchParams: Promise<{ q?: string; category?: string; privacy?: string }>;
-};
-
-export default async function MemoryPage({ searchParams }: MemoryPageProps) {
+export default async function MemoryPage({ searchParams }: { searchParams: Promise<{ q?: string; category?: string }> }) {
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
-
-  const [{ q = '', category = 'all', privacy = 'all' }, memories, projects] = await Promise.all([
-    searchParams,
-    getAllLifeMemoriesByUser(session.user.id),
-    getProjectsByUser(session.user.id),
-  ]);
-
-  const normalizedQuery = q.trim().toLowerCase();
-  const categories = Array.from(new Set(memories.map((memory) => memory.category))).sort();
-  const activeMemories = memories
-    .filter((memory) => !memory.archived)
-    .filter((memory) => category === 'all' || memory.category === category)
-    .filter((memory) => privacy === 'all' || memory.privacyLevel === privacy)
-    .filter((memory) => {
-      if (!normalizedQuery) return true;
-      return [memory.title, memory.summary, memory.category, memory.relatedArea]
-        .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(normalizedQuery));
-    })
-    .sort((a, b) => Number(b.pinned) - Number(a.pinned) || b.createdAt.getTime() - a.createdAt.getTime());
-  const archivedMemories = memories.filter((memory) => memory.archived);
-  const projectNameById = new Map(projects.map((project) => [project.id, project.title]));
-  const filtersActive = Boolean(normalizedQuery || category !== 'all' || privacy !== 'all');
+  const [{ q = '', category = 'all' }, memories, projects] = await Promise.all([searchParams, getAllLifeMemoriesByUser(session.user.id), getProjectsByUser(session.user.id)]);
+  const query = q.trim().toLowerCase();
+  const active = memories.filter((m) => !m.archived).filter((m) => category === 'all' || m.category === category).filter((m) => !query || `${m.title} ${m.summary ?? ''} ${m.category}`.toLowerCase().includes(query));
+  const recent = [...active].sort((a,b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0,5);
+  const pinned = active.filter((m) => m.pinned).slice(0,4);
+  const categories = Array.from(new Set(memories.filter((m) => !m.archived).map((m) => m.category))).sort();
+  const categoryCounts = categories.map((name) => ({ name, count: memories.filter((m) => !m.archived && m.category === name).length }));
+  const projectMap = new Map(projects.map((p) => [p.id, p.title]));
+  const related = active.filter((m) => m.relatedProjectId || m.relatedArea).slice(0,4);
 
   return (
     <AppShell>
-      <SectionPage
-        eyebrow="Life Memory"
-        title="A searchable, correctable archive for your life"
-        description="Capture what Glow OS should remember, keep sensitive context private, connect memories to projects, and correct the record whenever life changes."
-      >
+      <SectionPage eyebrow="Memory" title="Memory" description="Your archive of meaningful moments, captured and cherished.">
         <div className="space-y-4">
-          <Card className="relative overflow-hidden bg-[linear-gradient(145deg,#F1E8D9,#FDF6F1)]">
-            <BookMarked size={55} strokeWidth={0.75} className="absolute right-5 top-4 text-[#9A7A3D]/22" />
-            <p className="glow-eyebrow">Private archive</p>
-            <p className="glow-display mt-2 text-[24px] text-[#2B2420]">Your life deserves a memory shelf you can trust.</p>
-            <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px] text-[#8A8078]">
-              <span className="flex items-center gap-1"><LockKeyhole size={11} />{memories.filter((memory) => !memory.archived).length} active</span>
-              <span className="flex items-center gap-1"><Pin size={11} />{memories.filter((memory) => memory.pinned && !memory.archived).length} pinned</span>
-              <span className="flex items-center gap-1"><Archive size={11} />{archivedMemories.length} archived</span>
-            </div>
-          </Card>
-
           <Card>
-            <form method="get" className="grid gap-3 md:grid-cols-[1fr_180px_180px_auto]">
-              <label className="relative">
-                <Search size={13} className="absolute left-3 top-3.5 text-[#9A9088]" />
-                <input name="q" defaultValue={q} placeholder="Search memories, areas, notes…" className={`${fieldClass} pl-9`} />
-              </label>
-              <select name="category" defaultValue={category} className={fieldClass}>
-                <option value="all">All categories</option>
-                {categories.map((item) => <option key={item} value={item}>{item}</option>)}
-              </select>
-              <select name="privacy" defaultValue={privacy} className={fieldClass}>
-                <option value="all">All privacy</option>
-                <option value="private">Private</option>
-                <option value="sensitive">Sensitive</option>
-              </select>
-              <button type="submit" className={buttonClass}>Search archive</button>
-            </form>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2"><BookMarked size={15} className="text-[#C9727E]"/><h2 className="glow-display text-[18px]">Recent Memories</h2></div>
+              <details className="relative"><summary className="list-none rounded-full bg-[#D86F83] px-4 py-2.5 text-[11px] font-medium text-white">+ New Memory</summary><form action={createLifeMemoryAction} className="absolute right-0 z-20 mt-2 w-[min(360px,80vw)] space-y-2 rounded-[16px] border border-[#F1E7E3] bg-white p-4 shadow-xl"><input name="title" required placeholder="Memory title" className={fieldClass}/><input name="category" placeholder="Category" className={fieldClass}/><textarea name="summary" rows={4} placeholder="What should Glow remember?" className={fieldClass}/><select name="relatedProjectId" defaultValue="" className={fieldClass}><option value="">No project</option>{projects.map((p)=><option key={p.id} value={p.id}>{p.title}</option>)}</select><input type="hidden" name="privacyLevel" value="private"/><button className="w-full rounded-full bg-[#2B2420] px-4 py-2.5 text-[11px] text-white">Save Memory</button></form></details>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">{recent.map((memory,index)=><article key={memory.id} className="overflow-hidden rounded-[14px] border border-[#F1E7E3] bg-[#FFFEFD]"><div className={`h-24 ${index%3===0?'bg-[linear-gradient(145deg,#E8D8CC,#F6EEE8)]':index%3===1?'bg-[linear-gradient(145deg,#D9D4C9,#F3EEE8)]':'bg-[linear-gradient(145deg,#E6D7CF,#F9F3EF)]'}`}/><div className="p-3"><p className="glow-display text-[13px] text-[#2B2420] line-clamp-1">{memory.title}</p><p className="mt-1 text-[9.5px] uppercase tracking-[.08em] text-[#C9727E]">{memory.category}</p><p className="mt-1 line-clamp-2 text-[10px] leading-4 text-[#8A8078]">{memory.summary || 'Saved memory'}</p></div></article>)}</div>
           </Card>
 
-          <div className="grid gap-4 lg:grid-cols-[.72fr_1.28fr]">
-            <Card className="self-start">
-              <form action={createLifeMemoryAction} className="space-y-3">
-                <div>
-                  <p className="glow-eyebrow">Private by default</p>
-                  <h2 className="glow-display mt-1 text-[20px] text-[#2B2420]">Add a memory</h2>
-                </div>
-                <input name="title" required placeholder="Title" className={fieldClass} />
-                <input name="category" placeholder="Category, e.g. travel, career, beauty" className={fieldClass} />
-                <textarea name="summary" placeholder="What should Glow OS remember?" rows={5} className={fieldClass} />
-                <input name="relatedArea" placeholder="Related area, person, or theme" className={fieldClass} />
-                <select name="relatedProjectId" defaultValue="" className={fieldClass}>
-                  <option value="">No connected project</option>
-                  {projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}
-                </select>
-                <select name="privacyLevel" defaultValue="private" className={fieldClass}>
-                  <option value="private">Private</option>
-                  <option value="sensitive">Sensitive</option>
-                </select>
-                <label className="flex items-center gap-2 text-[11px] text-[#8A8078]">
-                  <input type="checkbox" name="pinned" /> Pin this memory to the top
-                </label>
-                <button type="submit" className={buttonClass}>Save memory</button>
-              </form>
-            </Card>
+          <section className="grid gap-4 xl:grid-cols-[1fr_.85fr_1fr]">
+            <Card><div className="flex items-center gap-2"><Pin size={14} className="text-[#C9727E]"/><h2 className="glow-display text-[18px]">Saved Highlights</h2></div><div className="mt-4 space-y-3">{pinned.length? pinned.map((memory)=><div key={memory.id} className="flex items-start justify-between gap-2 border-b border-[#F4ECE8] pb-3"><div><p className="text-[11.5px] font-medium text-[#3A332E]">{memory.title}</p><p className="mt-1 text-[10px] text-[#9A9088]">{memory.summary || memory.category}</p></div><form action={setLifeMemoryPinnedAction.bind(null,memory.id,false)}><button className="text-[#C9727E]">♥</button></form></div>):<p className="text-[11px] text-[#9A9088]">Pin memories to keep them here.</p>}</div></Card>
+            <Card><div className="flex items-center gap-2"><Folder size={14} className="text-[#9A7A3D]"/><h2 className="glow-display text-[18px]">Memory Categories</h2></div><div className="mt-4 space-y-2">{categoryCounts.length? categoryCounts.map(({name,count})=><Link key={name} href={`/memory?category=${encodeURIComponent(name)}`} className="flex items-center justify-between rounded-[10px] px-2 py-2 text-[11.5px] hover:bg-[#FDF8F6]"><span className="capitalize text-[#4A4440]">{name}</span><span className="text-[#C9727E]">{count}</span></Link>):<p className="text-[11px] text-[#9A9088]">Categories appear as you save memories.</p>}</div></Card>
+            <Card><div className="flex items-center justify-between"><div className="flex items-center gap-2"><ImageIcon size={14} className="text-[#9A7A3D]"/><h2 className="glow-display text-[18px]">Photo Memories</h2></div><span className="text-[10px] text-[#C9727E]">View all photos →</span></div><div className="mt-4 grid grid-cols-3 gap-2">{recent.slice(0,6).map((memory,index)=><div key={memory.id} title={memory.title} className={`aspect-square rounded-[10px] ${index%2?'bg-[linear-gradient(145deg,#DED1C8,#F6EEE8)]':'bg-[linear-gradient(145deg,#E9DDD4,#D5C7BD)]'}`}/>)}</div></Card>
+          </section>
 
-            <div className="space-y-4">
-              <Card className="overflow-hidden p-0">
-                <div className="flex items-center justify-between border-b border-[#F1E7E3] px-5 py-4">
-                  <div>
-                    <p className="glow-eyebrow">Memory shelf</p>
-                    <h2 className="glow-display mt-1 text-[19px] text-[#2B2420]">Searchable life archive</h2>
-                  </div>
-                  <span className="text-[10.5px] text-[#B5ACA5]">{activeMemories.length} shown</span>
-                </div>
+          <section className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr]">
+            <Card><div className="flex items-center gap-2"><Heart size={14} className="text-[#C9727E]"/><h2 className="glow-display text-[18px]">Your Favorites</h2></div><div className="mt-4 space-y-3">{pinned.slice(0,3).map((m)=><div key={m.id}><p className="text-[11.5px] font-medium">{m.title}</p><p className="text-[10px] text-[#9A9088]">{m.category}</p></div>)}</div></Card>
+            <Card><div className="flex items-center gap-2"><Archive size={14} className="text-[#9A7A3D]"/><h2 className="glow-display text-[18px]">Related Memories</h2></div><div className="mt-4 space-y-3">{related.length?related.map((m)=><div key={m.id}><p className="text-[11.5px] font-medium">{m.title}</p><p className="text-[10px] text-[#9A9088]">{m.relatedProjectId ? projectMap.get(m.relatedProjectId) : m.relatedArea}</p></div>):<p className="text-[11px] text-[#9A9088]">Connected memories will appear here.</p>}</div></Card>
+            <Card><form method="get" className="space-y-3"><div className="flex items-center gap-2"><Search size={14} className="text-[#C9727E]"/><h2 className="glow-display text-[18px]">Find a Memory</h2></div><input name="q" defaultValue={q} placeholder="Search memories…" className={fieldClass}/><button className="inline-flex items-center gap-1 text-[11px] font-medium text-[#C9727E]">Search archive <ArrowRight size={11}/></button></form></Card>
+          </section>
 
-                {activeMemories.length === 0 ? (
-                  <div className="p-8 text-center">
-                    <p className="text-[13px] font-medium text-[#2B2420]">{filtersActive ? 'No memories match these filters.' : 'No active memories yet.'}</p>
-                    <p className="mt-2 text-[11.5px] text-[#8A8078]">{filtersActive ? 'Clear the search or adjust the category/privacy filter.' : 'Add the first memory so Glow OS can remember real context without inventing it.'}</p>
-                    {filtersActive ? <a href="/memory" className="mt-3 inline-block text-[11px] font-medium text-[#9A7A3D] underline-offset-4 hover:underline">Clear filters</a> : null}
-                  </div>
-                ) : (
-                  <div className="divide-y divide-[#F1E7E3]">
-                    {activeMemories.map((memory) => (
-                      <article key={memory.id} className="p-5">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                              {memory.pinned ? <span className="inline-flex items-center gap-1 rounded-full bg-[#F1E8D9] px-2.5 py-1 text-[10px] text-[#9A7A3D]"><Pin size={9} />Pinned</span> : null}
-                              <span className="rounded-full bg-[#FDF8F6] px-2.5 py-1 text-[10px] text-[#8A8078]">{memory.category}</span>
-                              <span className="inline-flex items-center gap-1 text-[10px] text-[#B5ACA5]"><ShieldCheck size={9} />{memory.privacyLevel}</span>
-                            </div>
-                            <p className="glow-display mt-2 text-[16px] text-[#2B2420]">{memory.title}</p>
-                            {memory.summary ? <p className="mt-2 text-[11.5px] leading-4 text-[#8A8078]">{memory.summary}</p> : null}
-                            <div className="mt-3 flex flex-wrap gap-3 text-[10.5px] text-[#B5ACA5]">
-                              <span>{memory.source}</span>
-                              {memory.relatedArea ? <span className="inline-flex items-center gap-1"><Link2 size={9} />{memory.relatedArea}</span> : null}
-                              {memory.relatedProjectId ? <span>Project: {projectNameById.get(memory.relatedProjectId) ?? 'Connected project'}</span> : null}
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <form action={setLifeMemoryPinnedAction.bind(null, memory.id, !memory.pinned)}>
-                              <button type="submit" className="rounded-full border border-[#F1E7E3] px-2.5 py-1.5 text-[10.5px] text-[#8A8078] hover:bg-[#FDF8F6]">{memory.pinned ? 'Unpin' : 'Pin'}</button>
-                            </form>
-                            <form action={setLifeMemoryArchivedAction.bind(null, memory.id, true)}>
-                              <button type="submit" className="rounded-full border border-[#F1E7E3] px-2.5 py-1.5 text-[10.5px] text-[#8A8078] hover:bg-[#FDF8F6]">Archive</button>
-                            </form>
-                          </div>
-                        </div>
+          <Card className="grid gap-4 bg-[linear-gradient(90deg,#FFF,#FFF8F5)] lg:grid-cols-[180px_1fr_auto] lg:items-center"><div className="flex items-center gap-2"><Sparkles size={15} className="text-[#C9727E]"/><span className="glow-display text-[18px]">Glow Insight</span></div><p className="glow-display text-[17px] italic text-[#4A4440]">The best memories aren’t just stored. They’re linked, loved, and carried forward.</p><span className="text-[10px] text-[#9A9088]">{active.length} active · {memories.filter(m=>m.archived).length} archived</span></Card>
 
-                        <details className="mt-4 rounded-[12px] border border-[#F1E7E3] bg-[#FDF8F6] p-3">
-                          <summary className="flex cursor-pointer list-none items-center gap-2 text-[11px] font-medium text-[#4A4440]"><Pencil size={11} />Correct or reconnect this memory</summary>
-                          <form action={updateLifeMemoryAction.bind(null, memory.id)} className="mt-3 grid gap-3 sm:grid-cols-2">
-                            <input name="title" required defaultValue={memory.title} className={fieldClass} />
-                            <input name="category" defaultValue={memory.category} className={fieldClass} />
-                            <textarea name="summary" defaultValue={memory.summary ?? ''} rows={4} className={`${fieldClass} sm:col-span-2`} />
-                            <input name="relatedArea" defaultValue={memory.relatedArea ?? ''} placeholder="Related area, person, or theme" className={fieldClass} />
-                            <select name="relatedProjectId" defaultValue={memory.relatedProjectId ?? ''} className={fieldClass}>
-                              <option value="">No connected project</option>
-                              {projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}
-                            </select>
-                            <select name="privacyLevel" defaultValue={memory.privacyLevel} className={fieldClass}>
-                              <option value="private">Private</option>
-                              <option value="sensitive">Sensitive</option>
-                            </select>
-                            <div className="sm:col-span-2"><button type="submit" className={buttonClass}>Save correction</button></div>
-                          </form>
-                        </details>
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </Card>
-
-              {archivedMemories.length > 0 ? (
-                <Card className="overflow-hidden p-0">
-                  <div className="border-b border-[#F1E7E3] px-5 py-3"><p className="glow-eyebrow">Archived memories</p></div>
-                  <div className="divide-y divide-[#F1E7E3]">
-                    {archivedMemories.map((memory) => (
-                      <div key={memory.id} className="flex items-center justify-between gap-3 px-5 py-3">
-                        <div>
-                          <p className="text-[12px] font-medium text-[#2B2420]">{memory.title}</p>
-                          <p className="text-[10.5px] text-[#B5ACA5]">{memory.category} · {memory.privacyLevel}</p>
-                        </div>
-                        <form action={setLifeMemoryArchivedAction.bind(null, memory.id, false)}>
-                          <button type="submit" className="text-[10.5px] font-medium text-[#9A7A3D] underline-offset-4 hover:underline">Restore</button>
-                        </form>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-              ) : null}
-            </div>
-          </div>
+          <details className="rounded-[16px] border border-[#F1E7E3] bg-white p-4"><summary className="cursor-pointer text-[11px] font-medium text-[#8A8078]">Manage archive</summary><div className="mt-3 space-y-2">{active.map((m)=><div key={m.id} className="flex items-center justify-between gap-3 text-[11px]"><span>{m.title}</span><form action={setLifeMemoryArchivedAction.bind(null,m.id,true)}><button className="text-[#C9727E]">Archive</button></form></div>)}</div></details>
         </div>
       </SectionPage>
     </AppShell>
