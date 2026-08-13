@@ -1,0 +1,171 @@
+:root {
+  --glow-pink-strong: #F7D1D8;
+  --glow-pink-soft: #FAE6E7;
+  --glow-pink-mist: #F7EEED;
+  --glow-bg: #F7EEED;
+  --glow-sidebar: #FAE6E7;
+  --glow-surface: rgba(255,255,255,.94);
+  --glow-surface-muted: #FAE6E7;
+  --glow-border: #F7D1D8;
+  --glow-accent-soft: rgba(247,209,216,.58);
+}
+
+html,
+body {
+  background: #F7EEED !important;
+  background-image: none !important;
+}
+
+body::before,
+body::after {
+  background: none !important;
+}
+
+.room-canvas,
+.glow-world-frame,
+.glow-world-primary-canvas {
+  background: #F7EEED !important;
+}
+
+.room-canvas::before {
+  background: radial-gradient(circle at 74% 9%, rgba(247,209,216,.42), transparent 30%) !important;
+}
+
+/* Global chrome */
+header.sticky,
+.glow-global-header,
+.glow-world-context,
+.glow-life-layers,
+.glow-world-depth-footer {
+  border-color: #F7D1D8 !important;
+}
+
+header.sticky,
+.glow-global-header {
+  background: rgba(250,230,231,.96) !important;
+}
+
+/* Sidebar and navigation surfaces */
+aside[class*="bg-[rgba(255,253,251"] {
+  background: rgba(250,230,231,.96) !important;
+  border-color: #F7D1D8 !important;
+}
+
+[class*="bg-[#FBF1EF]"],
+[class*="bg-[#F8F3F0]"],
+[class*="bg-[#F7F1EE]"],
+[class*="bg-[#FDF8F6]"],
+[class*="bg-[#FDFAF8]"],
+[class*="bg-[#FDF6F1]"],
+[class*="bg-[#FDF3F2]"],
+[class*="bg-[#FAF0F2]"],
+[class*="bg-[#FAEEF0]"],
+[class*="bg-[#FBE8E9]"],
+[class*="bg-[#FBE4E8]"],
+[class*="bg-[#FFF7F5]"] {
+  background-color: #FAE6E7 !important;
+}
+
+[class*="bg-[#F1E7E3]"],
+[class*="bg-[#EEE5E0]"],
+[class*="bg-[#EEE3DE]"],
+[class*="bg-[#F0EEEC]"],
+[class*="bg-[#F0ECEA]"],
+[class*="bg-[#EFECEA]"] {
+  background-color: #F7D1D8 !important;
+}
+
+[class*="border-[#F1E7E3]"],
+[class*="border-[#EEE5E0]"],
+[class*="border-[#EEE3DE]"],
+[class*="border-[#F0EEEC]"],
+[class*="border-[#F0ECEA]"],
+[class*="border-[#E6D9D2]"],
+[class*="border-[#F0DDDA]"],
+[class*="border-[#EBCFD5]"],
+[class*="border-[#EFD7DC]"] {
+  border-color: #F7D1D8 !important;
+}
+
+/* Editorial primitives */
+.editorial-surface,
+.paper-card,
+.board-card,
+.task-item,
+.moods button,
+.beauty-steps button {
+  border-color: #F7D1D8 !important;
+}
+
+.board-img {
+  background: linear-gradient(135deg,#F7EEED,#FAE6E7 58%,#F7D1D8) !important;
+}
+
+.tape::before {
+  background: rgba(247,209,216,.72) !important;
+  border-color: rgba(247,209,216,.92) !important;
+}
+
+.editorial-rule {
+  background: linear-gradient(90deg,rgba(247,209,216,.95),rgba(247,209,216,.08)) !important;
+}
+
+/* Forms and softer interaction states */
+.glow-editorial-page input,
+.glow-editorial-page textarea,
+.glow-editorial-page select {
+  background: rgba(255,255,255,.86) !important;
+  border-color: #F7D1D8 !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #E7A9B5 !important;
+}
+
+/* Keep category identity, but remove beige/ivory washes. */
+[data-room] {
+  --room-wash: rgba(247,209,216,.30);
+}
+
+/* Pink system for common selected/progress states. */
+.small-ring,
+.big-ring {
+  border-color: #FAE6E7 !important;
+  border-top-color: #D98798 !important;
+}
+
+.big-ring {
+  border-right-color: #D98798 !important;
+}
+
+.cal-event {
+  background: #FAE6E7 !important;
+  border-color: #F7D1D8 !important;
+}
+
+.step-strip button span {
+  background: #F7EEED !important;
+  border-color: #F7D1D8 !important;
+}
+
+/* Do not let legacy themes reintroduce beige while the new Pink system is active. */
+[data-theme='minimal-cream'],
+[data-theme='soft-nature'],
+[data-theme='blush-editorial'],
+[data-theme='seasonal'],
+[data-theme='low-stimulation'] {
+  --glow-bg: #F7EEED !important;
+  --glow-sidebar: #FAE6E7 !important;
+  --glow-surface-muted: #FAE6E7 !important;
+  --glow-border: #F7D1D8 !important;
+}
+
+/* Dark themes intentionally retain dark backgrounds for accessibility/user choice. */
+
+@media (max-width: 1023px) {
+  aside[class*="bg-[rgba(255,253,251"] {
+    background: #FAE6E7 !important;
+  }
+}
