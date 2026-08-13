@@ -75,7 +75,7 @@ export default async function ConciergePage() {
                 <div className="rounded-[12px] border border-[#F1E7E3] bg-[#FDF8F6] p-3">
                   <p className="glow-eyebrow">Optional executable task</p>
                   <p className="mb-3 mt-1 text-[10.5px] leading-4 text-[#8A8078]">
-                    Fill these fields when "Create a task" is selected. Nothing is written until you approve the proposal.
+                    Fill these fields when &ldquo;Create a task&rdquo; is selected. Nothing is written until you approve the proposal.
                   </p>
                   <div className="space-y-2">
                     <input name="taskTitle" placeholder="Task title" className={fieldClass} />
