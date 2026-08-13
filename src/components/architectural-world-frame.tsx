@@ -2,12 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ArrowUpRight, ChevronRight, Sparkles } from 'lucide-react';
+import { ArrowUpRight, ChevronRight, Focus, Network, Sparkles, Waypoints } from 'lucide-react';
 import { getWorldArchitecture } from '@/lib/world-architecture';
 
 export function ArchitecturalWorldFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const room = getWorldArchitecture(pathname);
+  const focusHref = `${pathname}?focus=1`;
+
   return (
     <div className="glow-world-frame" data-world={room.world}>
       <section className="glow-world-context" aria-label={`${room.title} context`}>
@@ -20,6 +22,13 @@ export function ArchitecturalWorldFrame({ children }: { children: React.ReactNod
             </div>
             <Link className="glow-world-context__action" href={room.actionHref}>{room.actionLabel}<ArrowUpRight size={14}/></Link>
           </div>
+          <nav className="glow-world-controls" aria-label="Spatial controls">
+            <Link href={focusHref}><Focus size={13}/>Focus Room</Link>
+            <Link href="/brain"><Sparkles size={13}/>Glow</Link>
+            <Link href="/graph"><Network size={13}/>Relationships</Link>
+            <Link href="/timeline"><Waypoints size={13}/>Timeline</Link>
+            <Link href="/world">World<ArrowUpRight size={12}/></Link>
+          </nav>
         </div>
         <aside className="glow-world-context__rail">
           <div className="glow-world-intelligence"><Sparkles size={14}/><span>{room.insight}</span></div>
