@@ -6,14 +6,92 @@ import { applyGlowNoticeAction, dismissGlowNoticeAction, setGlowNoticeFeedbackAc
 import { ensureGlowNotices } from '@/lib/intelligence/glow-notices';
 import { BellRing, Check, Clock3, Sparkles, ThumbsDown, ThumbsUp, WandSparkles, X } from 'lucide-react';
 
-export const dynamic='force-dynamic';
+export const dynamic = 'force-dynamic';
 
-export default async function NoticesPage(){
-  const session=await auth();if(!session?.user?.id)redirect('/sign-in');
+export default async function NoticesPage() {
+  const session = await auth();
+  if (!session?.user?.id) redirect('/sign-in');
   let notices;
-  try{notices=await ensureGlowNotices(session.user.id);}catch{return <AppShell><div className="mx-auto max-w-4xl rounded-[22px] border border-amber-200 bg-amber-50 p-6"><p className="text-sm font-semibold text-stone-900">Glow Notices need intelligence activation.</p><Link href="/settings/intelligence" className="mt-3 inline-block text-xs text-amber-900">Activate intelligence →</Link></div></AppShell>;}
-  const now=new Date();
-  const active=notices.filter(n=>n.status==='active'||(n.status==='snoozed'&&n.snoozedUntil&&n.snoozedUntil<=now));
-  const history=notices.filter(n=>!active.some(a=>a.id===n.id)).slice(0,8);
-  return <AppShell><div className="mx-auto max-w-5xl space-y-5"><header><div className="flex items-center gap-2 text-rose-700"><BellRing size={18}/><p className="text-[9px] font-bold uppercase tracking-[.2em]">What Glow noticed</p></div><h1 className="glow-display mt-2 text-[40px] leading-none text-[#392e2a]">Glow Notices</h1><p className="mt-2 max-w-2xl text-[10px] leading-5 text-[#7e6b64]">Evidence-based patterns from across your systems. Review the evidence and confidence, apply the safe next step, snooze or dismiss, and teach Glow what was useful.</p></header><section className="space-y-3">{active.length?active.map(n=>{const feedback=typeof n.actionPayload?.feedback==='string'?n.actionPayload.feedback:null;return <article key={n.id} className="rounded-[20px] border border-[#e5d8cf] bg-white/75 p-5 shadow-sm"><div className="flex flex-col gap-4"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><Sparkles size={13} className="text-[#b46f79]"/><span className="text-[7px] font-bold uppercase tracking-[.15em] text-[#9c7e76]">{n.domain}</span><span className="rounded-full bg-[#f7efea] px-2 py-1 text-[7px] font-semibold text-[#7b615c]">{Math.round(n.confidence*100)}% confidence</span></div><h2 className="glow-display mt-2 text-[21px] text-[#433631]">{n.title}</h2><div className="mt-3 rounded-xl border border-[#eee2da] bg-[#fffaf7] p-3"><p className="text-[7px] font-bold uppercase tracking-[.15em] text-[#9c7e76]">Evidence</p><p className="mt-1 text-[9px] leading-4 text-[#7f6c65]">{n.evidence}</p></div>{n.recommendation?<p className="mt-2 rounded-xl bg-[#f7efea] p-3 text-[9px] leading-4 text-[#69544f]"><strong>Glow suggests:</strong> {n.recommendation}</p>:null}</div><div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap gap-2"><form action={applyGlowNoticeAction.bind(null,n.id)}><button type="submit" className="inline-flex items-center gap-1.5 rounded-full bg-[#4e403b] px-3 py-2 text-[8px] font-semibold text-white"><WandSparkles size={11}/>Apply</button></form><form action={snoozeGlowNoticeAction.bind(null,n.id)}><button type="submit" title="Snooze 24 hours" className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-[8px] text-amber-700"><Clock3 size={11}/>Snooze</button></form><form action={dismissGlowNoticeAction.bind(null,n.id)}><button type="submit" title="Dismiss" className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3 py-2 text-[8px] text-stone-500"><X size={11}/>Dismiss</button></form></div><div className="flex items-center gap-2"><span className="text-[7px] uppercase tracking-[.12em] text-[#9c8b84]">Was this useful?</span><form action={setGlowNoticeFeedbackAction.bind(null,n.id,'helpful')}><button type="submit" aria-label="Mark helpful" className={`rounded-full border p-2 ${feedback==='helpful'?'border-emerald-300 bg-emerald-100 text-emerald-800':'border-emerald-200 bg-emerald-50 text-emerald-700'}`}><ThumbsUp size={11}/></button></form><form action={setGlowNoticeFeedbackAction.bind(null,n.id,'not_helpful')}><button type="submit" aria-label="Mark not helpful" className={`rounded-full border p-2 ${feedback==='not_helpful'?'border-rose-300 bg-rose-100 text-rose-800':'border-rose-200 bg-rose-50 text-rose-700'}`}><ThumbsDown size={11}/></button></form>{feedback?<Check size={11} className="text-emerald-700"/>:null}</div></div></div></article>}):<div className="rounded-[20px] border border-emerald-100 bg-emerald-50/60 p-8 text-center"><p className="glow-display text-[20px] text-[#3c463d]">Nothing needs your attention.</p><p className="mt-2 text-[9px] text-[#718073]">Glow will add a notice when cross-system evidence is strong enough to be useful.</p></div>}</section>{history.length?<section className="rounded-[20px] border border-[#eadfd8] bg-white/50 p-5"><p className="text-[8px] font-bold uppercase tracking-[.18em] text-[#9c7e76]">Recent decisions</p><div className="mt-3 space-y-2">{history.map(n=><div key={n.id} className="flex flex-wrap items-center justify-between gap-2 border-t border-[#eee5df] pt-2 first:border-t-0 first:pt-0"><div><p className="text-[9px] font-semibold text-[#51433e]">{n.title}</p><p className="text-[7px] text-[#9a8881]">{n.domain} · {Math.round(n.confidence*100)}% confidence</p></div><span className="rounded-full bg-[#f5eeea] px-2 py-1 text-[7px] uppercase tracking-[.1em] text-[#806d66]">{n.status}</span></div>)}</div></section>:null}<Link href="/observations" className="inline-flex text-[9px] text-[#9d626b]">Open full Observations workspace →</Link></div></AppShell>;
+  try {
+    notices = await ensureGlowNotices(session.user.id);
+  } catch {
+    return (
+      <AppShell>
+        <div className="mx-auto max-w-4xl rounded-[20px] border border-[#F1E7E3] bg-white p-6">
+          <p className="text-[13px] font-semibold text-[#2B2420]">Glow Notices need intelligence activation.</p>
+          <Link href="/settings/intelligence" className="mt-3 inline-block text-[12px] font-medium text-[#C9727E]">Activate intelligence →</Link>
+        </div>
+      </AppShell>
+    );
+  }
+  const now = new Date();
+  const active = notices.filter((n) => n.status === 'active' || (n.status === 'snoozed' && n.snoozedUntil && n.snoozedUntil <= now));
+  const history = notices.filter((n) => !active.some((a) => a.id === n.id)).slice(0, 8);
+  return (
+    <AppShell>
+      <div className="mx-auto max-w-5xl space-y-5">
+        <header>
+          <div className="flex items-center gap-2 text-[#C9727E]"><BellRing size={18} /><p className="text-[11px] font-semibold uppercase tracking-[.16em]">What Glow noticed</p></div>
+          <h1 className="glow-display mt-2 text-[38px] leading-none text-[#2B2420] sm:text-[40px]">Glow Notices</h1>
+          <p className="mt-2 max-w-2xl text-[13px] leading-5 text-[#8A8078]">Evidence-based patterns from across your systems. Review the evidence and confidence, apply the safe next step, snooze or dismiss, and teach Glow what was useful.</p>
+        </header>
+        <section className="space-y-3">
+          {active.length ? active.map((n) => {
+            const feedback = typeof n.actionPayload?.feedback === 'string' ? n.actionPayload.feedback : null;
+            return (
+              <article key={n.id} className="rounded-[20px] border border-[#F1E7E3] bg-white p-5">
+                <div className="flex flex-col gap-4">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Sparkles size={13} className="text-[#C9727E]" />
+                      <span className="text-[10px] font-semibold uppercase tracking-[.12em] text-[#8A8078]">{n.domain}</span>
+                      <span className="rounded-full bg-[#FDF3F2] px-2.5 py-1 text-[10px] font-semibold text-[#B15A68]">{Math.round(n.confidence * 100)}% confidence</span>
+                    </div>
+                    <h2 className="glow-display mt-2 text-[21px] text-[#2B2420]">{n.title}</h2>
+                    <div className="mt-3 rounded-[14px] border border-[#F1E7E3] bg-[#FDF8F6] p-3">
+                      <p className="text-[10px] font-semibold uppercase tracking-[.12em] text-[#8A8078]">Evidence</p>
+                      <p className="mt-1 text-[11.5px] leading-5 text-[#4A4440]">{n.evidence}</p>
+                    </div>
+                    {n.recommendation ? <p className="mt-2 rounded-[14px] bg-[#FDF3F2] p-3 text-[11.5px] leading-5 text-[#4A4440]"><strong>Glow suggests:</strong> {n.recommendation}</p> : null}
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap gap-2">
+                      <form action={applyGlowNoticeAction.bind(null, n.id)}><button type="submit" className="inline-flex items-center gap-1.5 rounded-full bg-[#2B2420] px-3.5 py-2 text-[11px] font-semibold text-white"><WandSparkles size={12} />Apply</button></form>
+                      <form action={snoozeGlowNoticeAction.bind(null, n.id)}><button type="submit" title="Snooze 24 hours" className="inline-flex items-center gap-1.5 rounded-full border border-[#F1E8D9] bg-[#FDF6F1] px-3.5 py-2 text-[11px] text-[#9A7A3D]"><Clock3 size={12} />Snooze</button></form>
+                      <form action={dismissGlowNoticeAction.bind(null, n.id)}><button type="submit" title="Dismiss" className="inline-flex items-center gap-1.5 rounded-full border border-[#F1E7E3] bg-white px-3.5 py-2 text-[11px] text-[#8A8078]"><X size={12} />Dismiss</button></form>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] uppercase tracking-[.1em] text-[#B5ACA5]">Was this useful?</span>
+                      <form action={setGlowNoticeFeedbackAction.bind(null, n.id, 'helpful')}><button type="submit" aria-label="Mark helpful" className={`rounded-full border p-2 ${feedback === 'helpful' ? 'border-[#5A6E52] bg-[#E4EBDD] text-[#5A6E52]' : 'border-[#E4EBDD] bg-[#F3F6F0] text-[#5A6E52]'}`}><ThumbsUp size={12} /></button></form>
+                      <form action={setGlowNoticeFeedbackAction.bind(null, n.id, 'not_helpful')}><button type="submit" aria-label="Mark not helpful" className={`rounded-full border p-2 ${feedback === 'not_helpful' ? 'border-[#C9727E] bg-[#FBE4E8] text-[#B15A68]' : 'border-[#F1E7E3] bg-white text-[#B15A68]'}`}><ThumbsDown size={12} /></button></form>
+                      {feedback ? <Check size={12} className="text-[#5A6E52]" /> : null}
+                    </div>
+                  </div>
+                </div>
+              </article>
+            );
+          }) : (
+            <div className="rounded-[20px] border border-[#E4EBDD] bg-[#F3F6F0] p-8 text-center">
+              <p className="glow-display text-[20px] text-[#2B2420]">Nothing needs your attention.</p>
+              <p className="mt-2 text-[11.5px] text-[#8A8078]">Glow will add a notice when cross-system evidence is strong enough to be useful.</p>
+            </div>
+          )}
+        </section>
+        {history.length ? (
+          <section className="rounded-[20px] border border-[#F1E7E3] bg-white p-5">
+            <p className="text-[10.5px] font-semibold uppercase tracking-[.14em] text-[#8A8078]">Recent decisions</p>
+            <div className="mt-3 space-y-2">
+              {history.map((n) => (
+                <div key={n.id} className="flex flex-wrap items-center justify-between gap-2 border-t border-[#F1E7E3] pt-2 first:border-t-0 first:pt-0">
+                  <div><p className="text-[11.5px] font-semibold text-[#2B2420]">{n.title}</p><p className="text-[10px] text-[#B5ACA5]">{n.domain} · {Math.round(n.confidence * 100)}% confidence</p></div>
+                  <span className="rounded-full bg-[#FDF8F6] px-2.5 py-1 text-[10px] uppercase tracking-[.08em] text-[#8A8078]">{n.status}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
+        <Link href="/observations" className="inline-flex text-[12px] font-medium text-[#C9727E]">Open full Observations workspace →</Link>
+      </div>
+    </AppShell>
+  );
 }

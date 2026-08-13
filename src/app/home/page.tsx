@@ -129,20 +129,20 @@ export default async function HomePage() {
         description="Keep resets, cleaning, laundry, groceries, maintenance and supplies visible in one calm place, using the same task system that already powers Glow OS."
       >
         <div className="space-y-4">
-          <Card className="relative min-h-[220px] overflow-hidden bg-[linear-gradient(145deg,#ebeee4,#f6eee7)] p-5">
-            <HomeIcon size={64} strokeWidth={0.75} className="absolute right-5 top-3 text-[#74806b]/16" />
-            <Flower2 size={90} strokeWidth={0.65} className="absolute -bottom-5 left-3 text-[#8e9b81]/20" />
+          <Card className="relative min-h-[220px] overflow-hidden bg-[linear-gradient(145deg,#E4EBDD,#FDF8F6)]">
+            <HomeIcon size={64} strokeWidth={0.75} className="absolute right-5 top-4 text-[#5A6E52]/20" />
+            <Flower2 size={90} strokeWidth={0.65} className="absolute -bottom-5 left-3 text-[#5A6E52]/16" />
             <div className="relative ml-auto max-w-[76%]">
               <p className="glow-eyebrow">Living space</p>
-              <p className="glow-display mt-2 text-[26px] text-[#414b3d]">Your home should tell you what needs attention before it becomes overwhelming.</p>
-              <p className="mt-2 text-[9px] leading-4 text-[#727d6e]">
+              <p className="glow-display mt-2 text-[26px] text-[#2B2420]">Your home should tell you what needs attention before it becomes overwhelming.</p>
+              <p className="mt-2 text-[12px] leading-5 text-[#8A8078]">
                 Home now reads your existing Glow OS tasks and turns household work into six practical lanes, without creating a second task system or duplicating data.
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
-                <Link href="/tasks" className="rounded-full bg-[#52604d] px-4 py-2 text-[8px] font-semibold uppercase tracking-[0.18em] text-white">
+                <Link href="/tasks" className="rounded-full bg-[#5A6E52] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[.1em] text-white hover:opacity-90">
                   Open tasks
                 </Link>
-                <Link href="/planning" className="rounded-full border border-[#adb7a6] bg-white/55 px-4 py-2 text-[8px] font-semibold uppercase tracking-[0.18em] text-[#5b6756]">
+                <Link href="/planning" className="rounded-full border border-[#F1E7E3] bg-white px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[.1em] text-[#5A6E52] hover:bg-[#FDF8F6]">
                   Plan the reset
                 </Link>
               </div>
@@ -150,61 +150,61 @@ export default async function HomePage() {
           </Card>
 
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <Card className="p-4">
+            <Card>
               <p className="glow-eyebrow">Open home work</p>
-              <p className="glow-display mt-2 text-[28px] text-[#465142]">{homeTasks.length}</p>
-              <p className="mt-1 text-[8px] text-[#7d8778]">household tasks currently active</p>
+              <p className="glow-display mt-2 text-[28px] text-[#2B2420]">{homeTasks.length}</p>
+              <p className="mt-1 text-[10.5px] text-[#8A8078]">household tasks currently active</p>
             </Card>
-            <Card className="p-4">
+            <Card>
               <p className="glow-eyebrow">Due this week</p>
-              <p className="glow-display mt-2 text-[28px] text-[#465142]">{dueSoonHomeTasks.length}</p>
-              <p className="mt-1 text-[8px] text-[#7d8778]">home items worth scheduling now</p>
+              <p className="glow-display mt-2 text-[28px] text-[#2B2420]">{dueSoonHomeTasks.length}</p>
+              <p className="mt-1 text-[10.5px] text-[#8A8078]">home items worth scheduling now</p>
             </Card>
-            <Card className="p-4">
+            <Card>
               <p className="glow-eyebrow">Needs attention</p>
-              <p className="glow-display mt-2 text-[28px] text-[#7b5d50]">{overdueHomeTasks.length}</p>
-              <p className="mt-1 text-[8px] text-[#8a766c]">overdue household items</p>
+              <p className="glow-display mt-2 text-[28px] text-[#B15A68]">{overdueHomeTasks.length}</p>
+              <p className="mt-1 text-[10.5px] text-[#8A8078]">overdue household items</p>
             </Card>
-            <Card className="p-4">
+            <Card>
               <p className="glow-eyebrow">Home appointments</p>
-              <p className="glow-display mt-2 text-[28px] text-[#465142]">{maintenanceAppointments.length}</p>
-              <p className="mt-1 text-[8px] text-[#7d8778]">service or home-related appointments</p>
+              <p className="glow-display mt-2 text-[28px] text-[#2B2420]">{maintenanceAppointments.length}</p>
+              <p className="mt-1 text-[10.5px] text-[#8A8078]">service or home-related appointments</p>
             </Card>
           </div>
 
           <div className="grid gap-4 xl:grid-cols-[1.2fr_.8fr]">
             <Card className="overflow-hidden p-0">
-              <div className="flex items-center justify-between border-b border-[#dfe4da] px-5 py-4">
+              <div className="flex items-center justify-between border-b border-[#F1E7E3] px-5 py-4">
                 <div>
                   <p className="glow-eyebrow">Household rhythm</p>
-                  <h2 className="glow-display mt-1 text-[20px] text-[#414b3d]">Six lanes that keep the home moving</h2>
+                  <h2 className="glow-display mt-1 text-[20px] text-[#2B2420]">Six lanes that keep the home moving</h2>
                 </div>
-                <Link href="/tasks" className="flex items-center gap-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-[#6a7665]">
-                  Manage all <ArrowRight size={11} />
+                <Link href="/tasks" className="flex items-center gap-1 text-[10.5px] font-semibold uppercase tracking-[.1em] text-[#5A6E52]">
+                  Manage all <ArrowRight size={12} />
                 </Link>
               </div>
-              <div className="grid gap-px bg-[#e3e7df] sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-px bg-[#F1E7E3] sm:grid-cols-2 lg:grid-cols-3">
                 {HOME_ZONES.map((zone) => {
                   const Icon = zone.icon;
                   const matching = homeTasks.filter((task) => taskMatchesZone(task, zone));
                   return (
-                    <div key={zone.key} className="bg-[#fafbf8] p-4">
+                    <div key={zone.key} className="bg-white p-4">
                       <div className="flex items-start justify-between gap-3">
-                        <div className="rounded-full border border-[#dfe5da] bg-white p-2 text-[#667160]"><Icon size={14} /></div>
-                        <span className="rounded-full bg-[#edf1e8] px-2 py-1 text-[7px] font-semibold uppercase tracking-[0.14em] text-[#667160]">{matching.length} open</span>
+                        <div className="rounded-full border border-[#F1E7E3] bg-[#FDF8F6] p-2 text-[#5A6E52]"><Icon size={14} /></div>
+                        <span className="rounded-full bg-[#E4EBDD] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[.08em] text-[#5A6E52]">{matching.length} open</span>
                       </div>
-                      <p className="glow-display mt-3 text-[16px] text-[#465142]">{zone.title}</p>
-                      <p className="mt-1 min-h-[42px] text-[8px] leading-4 text-[#7c8778]">{zone.description}</p>
+                      <p className="glow-display mt-3 text-[16px] text-[#2B2420]">{zone.title}</p>
+                      <p className="mt-1 min-h-[42px] text-[11px] leading-4 text-[#8A8078]">{zone.description}</p>
                       {matching.length === 0 ? (
-                        <Link href="/tasks" className="mt-3 inline-flex items-center gap-1 text-[8px] font-semibold text-[#6a7665]">
-                          Add in Tasks <ArrowRight size={10} />
+                        <Link href="/tasks" className="mt-3 inline-flex items-center gap-1 text-[10.5px] font-semibold text-[#5A6E52]">
+                          Add in Tasks <ArrowRight size={11} />
                         </Link>
                       ) : (
                         <div className="mt-3 space-y-2">
                           {matching.slice(0, 2).map((task) => (
-                            <div key={task.id} className="rounded-[7px] border border-[#e1e6dd] bg-white px-3 py-2">
-                              <p className="text-[9px] font-medium text-[#53604f]">{task.title}</p>
-                              <p className="mt-1 text-[7px] uppercase tracking-[0.12em] text-[#929b8f]">{formatDueDate(task.dueDate)} · {task.priority}</p>
+                            <div key={task.id} className="rounded-[10px] border border-[#F1E7E3] bg-[#FDF8F6] px-3 py-2">
+                              <p className="text-[11.5px] font-medium text-[#2B2420]">{task.title}</p>
+                              <p className="mt-1 text-[10px] uppercase tracking-[.08em] text-[#B5ACA5]">{formatDueDate(task.dueDate)} · {task.priority}</p>
                             </div>
                           ))}
                         </div>
@@ -216,48 +216,48 @@ export default async function HomePage() {
             </Card>
 
             <div className="space-y-4">
-              <Card className="p-5">
+              <Card>
                 <div className="flex items-center gap-2">
-                  {overdueHomeTasks.length > 0 ? <AlertTriangle size={14} className="text-[#8b6455]" /> : <CircleCheckBig size={14} className="text-[#6c7966]" />}
+                  {overdueHomeTasks.length > 0 ? <AlertTriangle size={14} className="text-[#B15A68]" /> : <CircleCheckBig size={14} className="text-[#5A6E52]" />}
                   <p className="glow-eyebrow">Next best home action</p>
                 </div>
                 {priorityTask ? (
                   <>
-                    <p className="glow-display mt-3 text-[21px] text-[#465142]">{priorityTask.title}</p>
-                    <p className="mt-2 text-[8px] leading-4 text-[#7d8778]">
+                    <p className="glow-display mt-3 text-[21px] text-[#2B2420]">{priorityTask.title}</p>
+                    <p className="mt-2 text-[11.5px] leading-4 text-[#8A8078]">
                       {priorityTask.dueDate ? `Due ${formatDueDate(priorityTask.dueDate)}.` : 'No due date yet.'} Priority is {priorityTask.priority}. Finish this first to reduce home-admin pressure.
                     </p>
-                    <Link href="/tasks" className="mt-4 inline-flex items-center gap-1 rounded-full bg-[#566451] px-4 py-2 text-[8px] font-semibold uppercase tracking-[0.16em] text-white">
-                      Work from Tasks <ArrowRight size={10} />
+                    <Link href="/tasks" className="mt-4 inline-flex items-center gap-1 rounded-full bg-[#5A6E52] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[.1em] text-white">
+                      Work from Tasks <ArrowRight size={11} />
                     </Link>
                   </>
                 ) : (
                   <>
-                    <p className="glow-display mt-3 text-[20px] text-[#465142]">The home queue is clear.</p>
-                    <p className="mt-2 text-[8px] leading-4 text-[#7d8778]">Add the next reset, grocery run, laundry load, repair, cleaning job or supply restock in Tasks and it will appear here automatically.</p>
+                    <p className="glow-display mt-3 text-[20px] text-[#2B2420]">The home queue is clear.</p>
+                    <p className="mt-2 text-[11.5px] leading-4 text-[#8A8078]">Add the next reset, grocery run, laundry load, repair, cleaning job or supply restock in Tasks and it will appear here automatically.</p>
                   </>
                 )}
               </Card>
 
               <Card className="overflow-hidden p-0">
-                <div className="flex items-center gap-2 border-b border-[#dfe4da] px-5 py-4">
-                  <CalendarDays size={13} className="text-[#74806b]" />
+                <div className="flex items-center gap-2 border-b border-[#F1E7E3] px-5 py-4">
+                  <CalendarDays size={13} className="text-[#5A6E52]" />
                   <div>
                     <p className="glow-eyebrow">Coming home with you</p>
-                    <h2 className="glow-display mt-1 text-[18px] text-[#414b3d]">Upcoming appointments</h2>
+                    <h2 className="glow-display mt-1 text-[18px] text-[#2B2420]">Upcoming appointments</h2>
                   </div>
                 </div>
                 {appointments.length === 0 ? (
                   <div className="p-6">
-                    <p className="text-[9px] text-[#7d8778]">No appointments scheduled.</p>
-                    <Link href="/calendar" className="mt-2 inline-flex items-center gap-1 text-[8px] font-semibold text-[#697565]">Open Calendar <ArrowRight size={10} /></Link>
+                    <p className="text-[12px] text-[#8A8078]">No appointments scheduled.</p>
+                    <Link href="/calendar" className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-[#5A6E52]">Open Calendar <ArrowRight size={11} /></Link>
                   </div>
                 ) : (
-                  <div className="divide-y divide-[#e6e9e2]">
+                  <div className="divide-y divide-[#F1E7E3]">
                     {appointments.slice(0, 5).map((appointment, index) => (
-                      <div key={appointment.id} className={`px-5 py-4 ${index === 0 ? 'bg-[#edf1e8]/60' : ''}`}>
-                        <p className="glow-display text-[13px] text-[#465142]">{appointment.title}</p>
-                        <p className="mt-1 text-[7px] text-[#84907f]">
+                      <div key={appointment.id} className={`px-5 py-4 ${index === 0 ? 'bg-[#FDF8F6]' : ''}`}>
+                        <p className="glow-display text-[13px] text-[#2B2420]">{appointment.title}</p>
+                        <p className="mt-1 text-[10.5px] text-[#B5ACA5]">
                           {appointment.startAt.toLocaleString('en', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
                           {appointment.location ? ` · ${appointment.location}` : ''}
                         </p>
@@ -270,24 +270,24 @@ export default async function HomePage() {
           </div>
 
           <Card className="overflow-hidden p-0">
-            <div className="flex items-center gap-2 border-b border-[#e5ddd7] px-5 py-4">
-              <ExternalLink size={13} className="text-[#7b7069]" />
+            <div className="flex items-center gap-2 border-b border-[#F1E7E3] px-5 py-4">
+              <ExternalLink size={13} className="text-[#C9727E]" />
               <div>
                 <p className="glow-eyebrow">Household admin shelf</p>
-                <h2 className="glow-display mt-1 text-[18px] text-[#49413a]">Important links</h2>
+                <h2 className="glow-display mt-1 text-[18px] text-[#2B2420]">Important links</h2>
               </div>
             </div>
             {links.length === 0 ? (
               <div className="p-6">
-                <p className="text-[9px] text-[#857970]">No saved links yet.</p>
-                <Link href="/connections" className="mt-2 inline-flex items-center gap-1 text-[8px] font-semibold text-[#75665f]">Open Connections <ArrowRight size={10} /></Link>
+                <p className="text-[12px] text-[#8A8078]">No saved links yet.</p>
+                <Link href="/connections" className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-[#C9727E]">Open Connections <ArrowRight size={11} /></Link>
               </div>
             ) : (
               <div className="grid gap-2 p-4 sm:grid-cols-2 lg:grid-cols-4">
                 {links.slice(0, 8).map((link) => (
-                  <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-[7px] border border-[#e7ddd5] bg-[#faf5f0] px-3 py-3 text-[9px] font-medium text-[#705e56] hover:bg-white">
+                  <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-[10px] border border-[#F1E7E3] bg-[#FDF8F6] px-3 py-3 text-[11.5px] font-medium text-[#4A4440] hover:bg-white">
                     <span>{link.title}</span>
-                    <ExternalLink size={9} />
+                    <ExternalLink size={11} />
                   </a>
                 ))}
               </div>
