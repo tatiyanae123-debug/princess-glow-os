@@ -42,7 +42,7 @@ const PRIMARY: Array<{ label: string; href: string; icon: LucideIcon }> = [
 ];
 
 const GROUPS: Array<{ label: string; paths: string[] }> = [
-  { label: 'PLAN', paths: ['/tasks', '/calendar', '/planning', '/routines', '/habits', '/reminders', '/today', '/tomorrow'] },
+  { label: 'PLAN', paths: ['/tasks', '/calendar', '/planning', '/routines', '/habits', '/reminders', '/today', '/tomorrow', '/work'] },
   { label: 'HEALTH & CARE', paths: ['/fitness', '/wellness', '/food', '/beauty', '/beauty/lab', '/hair', '/maintenance'] },
   { label: 'MONEY & GROWTH', paths: ['/finance', '/finance/brain', '/goals'] },
   { label: 'GLOW', paths: ['/brain', '/concierge', '/briefings', '/observations', '/inbox', '/memory', '/timeline', '/intake', '/rules'] },
