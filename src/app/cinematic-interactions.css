@@ -19,14 +19,14 @@
   transform-origin: 50% 12%;
 }
 
-/* Controls feel physical without turning the interface into a motion demo. */
+/* Controls feel responsive without overriding transforms that components use
+   for positioning, dragging, or spatial layouts. */
 .room-canvas :where(button, a, [role='button']) {
   -webkit-tap-highlight-color: transparent;
 }
 
-.room-canvas :where(button:not(:disabled), [role='button']):active,
-.room-canvas a:active {
-  transform: scale(.985);
+.room-canvas :where(button:not(:disabled), a, [role='button']):active {
+  opacity: .82;
 }
 
 .room-canvas :where(button, a, input, textarea, select):focus-visible {
@@ -42,13 +42,9 @@
 
 @media (hover: hover) and (pointer: fine) {
   .room-canvas :where(button:not(:disabled), a, [role='button']) {
-    transition-property: transform, box-shadow, background-color, border-color, color, opacity;
+    transition-property: box-shadow, background-color, border-color, color, opacity;
     transition-duration: 200ms;
     transition-timing-function: cubic-bezier(.22,.8,.3,1);
-  }
-
-  .room-canvas :where(button:not(:disabled), [role='button']):hover {
-    transform: translateY(-1px);
   }
 
   .room-canvas :where(a, button):hover img {
@@ -77,6 +73,9 @@
   .room-canvas :where(button, a, [role='button']),
   .room-canvas img {
     transition: none !important;
+  }
+
+  .room-canvas img {
     transform: none !important;
   }
 }
