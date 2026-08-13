@@ -1,6 +1,14 @@
 import type { Recommendation, ScheduleProposal } from './domain';
 import { getGlowDayMode, type GlowDayMode } from '@/lib/day-mode';
 
+type ScheduleModeInput = GlowDayMode | 'standard' | 'lighter';
+
+function normalizeMode(mode?: ScheduleModeInput): GlowDayMode {
+  if (mode === 'standard') return 'productive';
+  if (mode === 'lighter') return 'bare-minimum';
+  return mode ?? 'productive';
+}
+
 function overlaps(start: Date, end: Date, fixed: { startAt: Date; endAt: Date | null }[]) {
   return fixed.some((item) => {
     const fixedEnd = item.endAt ?? new Date(item.startAt.getTime() + 60 * 60000);
@@ -13,11 +21,11 @@ export function buildScheduleProposal(input: {
   commitments: { id: string; title: string; startAt: Date; endAt: Date | null }[];
   now?: Date;
   dayEnd?: Date;
-  mode?: GlowDayMode;
+  mode?: ScheduleModeInput;
 }): ScheduleProposal {
   const now = input.now ?? new Date();
   const dayEnd = input.dayEnd ?? new Date(new Date(now).setHours(22, 0, 0, 0));
-  const mode = input.mode ?? 'productive';
+  const mode = normalizeMode(input.mode);
   const profile = getGlowDayMode(mode);
   const ranked = input.recommendations.slice(0, profile.maxSuggestions);
   const fixed = [...input.commitments].sort((a, b) => a.startAt.getTime() - b.startAt.getTime());
