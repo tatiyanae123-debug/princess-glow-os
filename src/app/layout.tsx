@@ -3,6 +3,7 @@ import './globals.css';
 import './reference-rooms.css';
 import './glow-os-3.css';
 import './final-reference-batch.css';
+import './cinematic-interactions.css';
 
 export const metadata: Metadata = {
   title: 'Glow OS',
