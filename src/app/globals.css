@@ -40,24 +40,21 @@ body {
 
 .glow-display { font-family: var(--glow-font-display); }
 .glow-hand { font-family: var(--glow-font-hand); }
-.glow-eyebrow { font-size: 9px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: #98746f; }
+.glow-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #C9727E; }
 .glow-editorial-page { position: relative; }
 
 .editorial-surface {
-  border: 1px solid var(--glow-border);
-  border-radius: var(--glow-radius);
-  background: linear-gradient(145deg,rgba(255,252,249,.88),rgba(249,241,235,.76));
-  box-shadow: var(--glow-shadow);
+  border: 1px solid #F1E7E3;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: none;
 }
 
 .paper-card {
-  border: 1px solid rgba(135,106,94,.14);
-  border-radius: 4px;
-  background:
-    linear-gradient(rgba(255,255,255,.18),rgba(255,255,255,.18)),
-    repeating-linear-gradient(0deg,rgba(111,89,79,.025) 0,rgba(111,89,79,.025) 1px,transparent 1px,transparent 4px),
-    #eadbd1;
-  box-shadow: 0 12px 24px rgba(83,61,52,.08);
+  border: 1px solid #F1E7E3;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: none;
 }
 
 .tape { position: relative; }

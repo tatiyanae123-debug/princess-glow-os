@@ -16,17 +16,17 @@ export function SectionPage({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-5">
-      <div className="overflow-hidden rounded-[20px] border border-[var(--glow-border)]">
+    <div className="space-y-6">
+      <div className="overflow-hidden rounded-[20px] border border-[#F1E7E3]">
         <EditableRoomImage
           slot={`hero:${slug(eyebrow || title)}`}
           label={`${title} hero image`}
-          className="min-h-[128px] sm:min-h-[148px]"
+          className="min-h-[160px] sm:min-h-[200px]"
         >
-          <div className="relative z-10 flex h-full flex-col justify-end gap-1.5 bg-[linear-gradient(0deg,rgba(24,18,17,.62),rgba(24,18,17,.08)_70%,transparent)] p-5 sm:p-6">
-            <p className="text-[9px] font-semibold uppercase tracking-[.18em] text-white/85">{eyebrow}</p>
-            <h1 className="glow-display text-[26px] leading-none tracking-[-.02em] text-white sm:text-[32px]">{title}</h1>
-            <p className="max-w-xl text-[10px] leading-4 text-white/80 sm:text-[10.5px]">{description}</p>
+          <div className="relative z-10 flex h-full flex-col justify-end gap-2 bg-[linear-gradient(0deg,rgba(24,18,17,.68),rgba(24,18,17,.1)_70%,transparent)] p-6 sm:p-8">
+            <p className="text-[11px] font-semibold uppercase tracking-[.18em] text-white/85">{eyebrow}</p>
+            <h1 className="glow-display text-[34px] leading-[1.05] tracking-[-.02em] text-white sm:text-[42px]">{title}</h1>
+            <p className="max-w-xl text-[13px] leading-5 text-white/80">{description}</p>
           </div>
         </EditableRoomImage>
       </div>
