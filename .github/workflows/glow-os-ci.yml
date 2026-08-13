@@ -1,6 +1,8 @@
 name: Glow OS CI
 
 on:
+  push:
+    branches: [codex/glow-world-phase1]
   pull_request:
     branches: [main, feat/glow-os-completion-sprint]
   workflow_dispatch:
@@ -37,4 +39,5 @@ jobs:
       - name: Production build
         run: npm run build
       - name: Diff whitespace check
+        if: github.event_name == 'pull_request'
         run: git diff --check origin/${{ github.base_ref }}...HEAD
