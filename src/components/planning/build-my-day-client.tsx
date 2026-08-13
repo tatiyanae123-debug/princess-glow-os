@@ -16,9 +16,10 @@ export function BuildMyDayClient({ initialProposal }: { initialProposal: Schedul
   const [accepted, setAccepted] = useState<string[]>([]);
   const [pending, startTransition] = useTransition();
 
-  function rebuild(mode: 'standard' | 'lighter') {
+  function rebuild(mode: 'standard' | 'lighter' | ScheduleProposal['mode']) {
+    const legacyMode = mode === 'bare-minimum' || mode === 'clear-schedule' ? 'lighter' : 'standard';
     startTransition(async () => {
-      const next = await buildMyDayAction(mode);
+      const next = await buildMyDayAction(legacyMode);
       setProposal(next);
       setDismissed([]);
       setAccepted([]);
