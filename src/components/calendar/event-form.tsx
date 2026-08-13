@@ -23,9 +23,9 @@ function toLocalInput(date: Date | null | undefined) {
   return local.toISOString().slice(0, 16);
 }
 
-function toFormValues(event?: CalendarEvent | null): EventFormValues {
+function toFormValues(event?: CalendarEvent | null, initialTitle?: string | null): EventFormValues {
   return {
-    title: event?.title ?? '',
+    title: event?.title ?? initialTitle ?? '',
     description: event?.description ?? '',
     startAt: toLocalInput(event?.startAt),
     endAt: toLocalInput(event?.endAt),
@@ -36,14 +36,16 @@ function toFormValues(event?: CalendarEvent | null): EventFormValues {
 
 export function EventForm({
   event,
+  initialTitle,
   onSaved,
   onCancel,
 }: {
   event?: CalendarEvent | null;
+  initialTitle?: string | null;
   onSaved: (event: CalendarEvent) => void;
   onCancel: () => void;
 }) {
-  const [values, setValues] = useState<EventFormValues>(() => toFormValues(event));
+  const [values, setValues] = useState<EventFormValues>(() => toFormValues(event, initialTitle));
   const create = useServerAction(createCalendarEventAction);
   const update = useServerAction((input: Record<string, unknown>) => updateCalendarEventAction(event?.id ?? '', input));
   const active = event ? update : create;
@@ -67,6 +69,9 @@ export function EventForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {!event && initialTitle ? (
+        <p className="rounded-[12px] bg-[#FDF8F6] px-3 py-2 text-[11px] leading-4 text-[#8A8078]">Pre-filled from Gmail. Review the details before saving — nothing is created until you submit.</p>
+      ) : null}
       <FieldWrapper label="Title">
         <TextInput
           value={values.title}

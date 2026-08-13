@@ -18,7 +18,7 @@ export function GmailMessageActions({
   snippet: string;
 }) {
   const calendarHref = `/calendar?source=gmail&subject=${encodeURIComponent(subject)}&messageId=${encodeURIComponent(messageId)}`;
-  const projectHref = `/projects?source=gmail&subject=${encodeURIComponent(subject)}&messageId=${encodeURIComponent(messageId)}`;
+  const projectHref = `/projects?source=gmail&subject=${encodeURIComponent(subject)}&messageId=${encodeURIComponent(messageId)}#all-projects`;
 
   return (
     <div className="mt-3 flex flex-wrap items-center gap-2">

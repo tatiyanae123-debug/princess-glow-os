@@ -98,8 +98,10 @@ export function EventManager({ initialEvents }: { initialEvents: CalendarEvent[]
   const searchParams = useSearchParams();
   const requestedView = searchParams.get('view');
   const initialView: ViewMode = requestedView && CALENDAR_VIEWS.has(requestedView as ViewMode) ? (requestedView as ViewMode) : 'week';
+  const gmailSubject = searchParams.get('source') === 'gmail' ? searchParams.get('subject') : null;
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents);
-  const [dialogEvent, setDialogEvent] = useState<CalendarEvent | 'new' | null>(null);
+  const [dialogEvent, setDialogEvent] = useState<CalendarEvent | 'new' | null>(() => (gmailSubject ? 'new' : null));
+  const [prefillTitle, setPrefillTitle] = useState<string | null>(() => gmailSubject);
   const [deleteTarget, setDeleteTarget] = useState<CalendarEvent | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [view, setView] = useState<ViewMode>(initialView);
@@ -139,13 +141,23 @@ export function EventManager({ initialEvents }: { initialEvents: CalendarEvent[]
     return 'Today is tightly packed. Avoid adding another fixed commitment unless it replaces something else.';
   }, [todayEvents]);
 
+  function closeDialog() {
+    setDialogEvent(null);
+    setPrefillTitle(null);
+  }
+
+  function openNewEvent() {
+    setPrefillTitle(null);
+    setDialogEvent('new');
+  }
+
   function handleSaved(event: CalendarEvent) {
     setEvents((current) => {
       const exists = current.some((item) => item.id === event.id);
       const next = exists ? current.map((item) => (item.id === event.id ? event : item)) : [event, ...current];
       return [...next].sort((a, b) => a.startAt.getTime() - b.startAt.getTime());
     });
-    setDialogEvent(null);
+    closeDialog();
   }
 
   function handleDelete() {
@@ -203,7 +215,7 @@ export function EventManager({ initialEvents }: { initialEvents: CalendarEvent[]
         <div className="mt-3 flex items-baseline gap-2"><p className="glow-display text-[22px] text-[#2B2420]">{openTimeThisWeek.open} hrs</p><p className="text-[11px] text-[#9A9088]">Open time</p></div>
         <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#F4ECE8]"><div className="h-full rounded-full bg-[#C9727E]" style={{ width: `${Math.min(100, openTimeThisWeek.percent)}%` }} /></div>
         <p className="mt-1 text-[10.5px] text-[#9A9088]">{openTimeThisWeek.percent}% of week</p>
-        <button type="button" onClick={() => setDialogEvent('new')} className="mt-3 w-full rounded-full bg-[#4A4440] py-2 text-[11.5px] font-medium text-white">Find Time</button>
+        <button type="button" onClick={openNewEvent} className="mt-3 w-full rounded-full bg-[#4A4440] py-2 text-[11.5px] font-medium text-white">Find Time</button>
       </div>
 
       <div className="relative overflow-hidden rounded-[18px] border border-[#F1E7E3] bg-[#FDF8F6] p-4">
@@ -233,7 +245,7 @@ export function EventManager({ initialEvents }: { initialEvents: CalendarEvent[]
           ))}
         </div>
         <button type="button" onClick={() => setView('flow')} aria-label="Daily flow view" className={`rounded-full border p-2 ${view === 'flow' ? 'border-[#C9727E] text-[#C9727E]' : 'border-[#F1E7E3] text-[#8A8078]'}`}><MoreHorizontal size={14} /></button>
-        <button type="button" onClick={() => setDialogEvent('new')} className="flex items-center gap-1.5 rounded-full bg-[#C9727E] px-3.5 py-1.5 text-[12px] font-medium text-white"><Plus size={13} />Add event</button>
+        <button type="button" onClick={openNewEvent} className="flex items-center gap-1.5 rounded-full bg-[#C9727E] px-3.5 py-1.5 text-[12px] font-medium text-white"><Plus size={13} />Add event</button>
       </div>
 
       <div className="flex flex-col gap-4 xl:flex-row">
@@ -348,8 +360,8 @@ export function EventManager({ initialEvents }: { initialEvents: CalendarEvent[]
         {rightRail}
       </div>
 
-      <Dialog open={dialogEvent !== null} onClose={() => setDialogEvent(null)} title={dialogEvent === 'new' ? 'Add event' : 'Edit event'}>
-        <EventForm event={dialogEvent === 'new' ? null : dialogEvent} onSaved={handleSaved} onCancel={() => setDialogEvent(null)} />
+      <Dialog open={dialogEvent !== null} onClose={closeDialog} title={dialogEvent === 'new' ? 'Add event' : 'Edit event'}>
+        <EventForm event={dialogEvent === 'new' ? null : dialogEvent} initialTitle={dialogEvent === 'new' ? prefillTitle : undefined} onSaved={handleSaved} onCancel={closeDialog} />
       </Dialog>
       <ConfirmDialog open={deleteTarget !== null} title="Delete this event?" description={deleteTarget ? `"${deleteTarget.title}" will be removed.` : undefined} pending={del.isPending} onCancel={() => setDeleteTarget(null)} onConfirm={handleDelete} />
     </div>
