@@ -1,0 +1,121 @@
+:root {
+  --glow-ivory: #f8f3ed;
+  --glow-paper: #fffdf9;
+  --glow-graphite: #2d2a27;
+  --glow-muted: #7f756e;
+  --glow-hairline: rgba(64, 50, 43, .10);
+  --glow-glass: rgba(255, 253, 249, .74);
+  --glow-shadow: 0 18px 60px rgba(70, 54, 45, .08);
+}
+
+.room-canvas {
+  background:
+    radial-gradient(circle at 88% 4%, rgba(255,255,255,.82), transparent 28rem),
+    linear-gradient(180deg, var(--world-bg, #f8f3ed), #fbf8f4 42%, #f8f3ed 100%);
+  transition: background-color 220ms ease, color 220ms ease;
+}
+
+.room-canvas[data-room="brain"],
+.room-canvas[data-room="memory"],
+.room-canvas[data-room="observations"],
+.room-canvas[data-room="graph"] { --world-bg: #f2f3f4; }
+.room-canvas[data-room="wellness"],
+.room-canvas[data-room="fitness"],
+.room-canvas[data-room="food"] { --world-bg: #f3f5ef; }
+.room-canvas[data-room="beauty"],
+.room-canvas[data-room="beauty-lab"],
+.room-canvas[data-room="hair"] { --world-bg: #f7f0ec; }
+.room-canvas[data-room="finance"],
+.room-canvas[data-room="financial-brain"] { --world-bg: #f2f3ed; }
+.room-canvas[data-room="projects"],
+.room-canvas[data-room="work"] { --world-bg: #f7f3ed; }
+.room-canvas[data-room="home"],
+.room-canvas[data-room="all-rooms"],
+.room-canvas[data-room="world"] { --world-bg: #f4eee6; }
+.room-canvas[data-room="briefings"] { --world-bg: #f6f0ee; }
+
+.glow-architectural-layer {
+  position: relative;
+  overflow: hidden;
+  margin: 0 0 2rem;
+  border-bottom: 1px solid var(--glow-hairline);
+  padding: clamp(1.25rem, 2.5vw, 2.25rem) clamp(.25rem, 1vw, .75rem) clamp(1.6rem, 3vw, 2.8rem);
+  isolation: isolate;
+}
+
+.glow-architectural-layer::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto auto;
+  width: min(42vw, 31rem);
+  height: 18rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, var(--world-glow, rgba(212,169,154,.22)), transparent 68%);
+  filter: blur(10px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.glow-architectural-layer[data-world="mind"] { --world-glow: rgba(167, 178, 194, .22); }
+.glow-architectural-layer[data-world="wellness"] { --world-glow: rgba(170, 190, 164, .24); }
+.glow-architectural-layer[data-world="beauty"] { --world-glow: rgba(221, 183, 174, .28); }
+.glow-architectural-layer[data-world="money"] { --world-glow: rgba(155, 177, 150, .24); }
+.glow-architectural-layer[data-world="work"] { --world-glow: rgba(205, 180, 147, .22); }
+.glow-architectural-layer[data-world="home"] { --world-glow: rgba(197, 172, 143, .24); }
+
+.glow-architectural-layer__topline,
+.glow-architectural-layer__body,
+.glow-architectural-layer__actions,
+.glow-architectural-layer__related,
+.glow-architectural-layer__crumbs,
+.glow-architectural-layer__world-link {
+  display: flex;
+  align-items: center;
+}
+
+.glow-architectural-layer__topline { justify-content: space-between; gap: 1rem; }
+.glow-architectural-layer__crumbs { gap: .35rem; font-size: .67rem; color: #8f847c; letter-spacing: .06em; }
+.glow-architectural-layer__crumbs a:hover { color: #342d29; }
+.glow-architectural-layer__world-link { gap: .3rem; font-size: .72rem; color: #6f655f; }
+.glow-architectural-layer__body { align-items: end; justify-content: space-between; gap: clamp(1.5rem, 4vw, 5rem); margin-top: clamp(1.4rem, 3vw, 2.75rem); }
+.glow-architectural-layer__hero { max-width: 54rem; }
+.glow-architectural-layer__eyebrow,
+.glow-architectural-layer__rail-label { margin: 0; font-size: .63rem; font-weight: 700; letter-spacing: .18em; color: #a06f68; }
+.glow-architectural-layer h1 { margin: .45rem 0 0; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2.6rem, 6vw, 6.2rem); font-weight: 400; line-height: .92; letter-spacing: -.045em; color: var(--glow-graphite); }
+.glow-architectural-layer__statement { max-width: 48rem; margin: 1rem 0 0; font-size: clamp(.95rem, 1.4vw, 1.15rem); line-height: 1.7; color: #625954; }
+.glow-architectural-layer__actions { flex-wrap: wrap; gap: .65rem; margin-top: 1.35rem; }
+.glow-architectural-layer__primary,
+.glow-architectural-layer__secondary { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: .4rem; padding: .7rem 1rem; border-radius: 999px; font-size: .78rem; transition: transform 160ms ease, background 160ms ease, border-color 160ms ease; }
+.glow-architectural-layer__primary { background: #322b27; color: #fffdf9; }
+.glow-architectural-layer__secondary { border: 1px solid rgba(56,44,38,.14); background: rgba(255,255,255,.52); color: #4c433e; backdrop-filter: blur(16px); }
+.glow-architectural-layer__primary:hover,
+.glow-architectural-layer__secondary:hover { transform: translateY(-1px); }
+.glow-architectural-layer__rail { width: min(100%, 21rem); border: 1px solid rgba(68,53,46,.10); background: var(--glow-glass); box-shadow: var(--glow-shadow); backdrop-filter: blur(20px); padding: 1.1rem 1.15rem; }
+.glow-architectural-layer__insight { margin: .55rem 0 0; font-family: Georgia, 'Times New Roman', serif; font-size: 1rem; line-height: 1.55; color: #4d4540; }
+.glow-architectural-layer__related { flex-wrap: wrap; gap: .45rem; margin-top: 1rem; }
+.glow-architectural-layer__related a { display: inline-flex; align-items: center; gap: .25rem; min-height: 34px; padding: .45rem .65rem; border-top: 1px solid rgba(72,56,49,.10); font-size: .7rem; color: #746961; }
+
+.glow-route-stage { animation: glowRoomEnter 220ms cubic-bezier(.2,.8,.2,1) both; }
+@keyframes glowRoomEnter { from { opacity: 0; transform: translateY(5px) scale(.997); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 900px) {
+  .glow-architectural-layer__body { align-items: stretch; flex-direction: column; }
+  .glow-architectural-layer__rail { width: 100%; }
+  .glow-architectural-layer h1 { font-size: clamp(2.5rem, 13vw, 5rem); }
+}
+
+@media (max-width: 640px) {
+  .glow-architectural-layer { margin-bottom: 1.2rem; padding-top: 1rem; }
+  .glow-architectural-layer__world-link { display: none; }
+  .glow-architectural-layer__statement { font-size: .92rem; }
+  .glow-architectural-layer__rail { padding: .95rem; }
+  .glow-architectural-layer__primary,
+  .glow-architectural-layer__secondary { min-height: 44px; flex: 1 1 auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-route-stage { animation: none; }
+  .glow-architectural-layer__primary,
+  .glow-architectural-layer__secondary { transition: none; }
+  .room-canvas { transition: none; }
+}
