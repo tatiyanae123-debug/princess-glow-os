@@ -14,53 +14,6 @@ import { getFinanceEntriesByUser } from '@/lib/data/finance-entries';
 import { getMedicationsByUser, getSupplementsByUser } from '@/lib/data/health-intelligence';
 import { getNotesByUser } from '@/lib/data/notes';
 import { getBriefings } from '@/lib/data/completion-v1';
-
-export const dynamic = 'force-dynamic';
-
-function dateKey(date: Date) {
-  return date.toISOString().slice(0, 10);
-}
-
-export default async function EveningDebriefPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/sign-in');
-  const userId = session.user.id;
-
-  const now = new Date();
-  const yearAgo = new Date(now);
-  yearAgo.setDate(yearAgo.getDate() - 365);
-
-  const [tasks, events, habits, habitLogs, routines, wellnessEntries, financeEntries, medications, supplements, notes, briefings, focusToday] = await Promise.all([
-    getTasksByUser(userId),
-    getCalendarEventsByUser(userId),
-    getHabitsByUser(userId),
-    getHabitLogsForUser(userId, dateKey(yearAgo), dateKey(now)),
-    getRoutinesByUser(userId),
-    getWellnessEntriesByUser(userId),
-    getFinanceEntriesByUser(userId),
-    getMedicationsByUser(userId),
-    getSupplementsByUser(userId),
-    getNotesByUser(userId),
-    getBriefings(userId),
-    db.select().from(focusSessions).where(eq(focusSessions.userId, userId)).orderBy(desc(focusSessions.startedAt)).limit(20).catch(() => []),
-  ]);
-
-  return (
-    <AppShell>
-      <EveningDebriefExperience
-        tasks={tasks}
-        events={events}
-        habits={habits}
-        habitLogs={habitLogs}
-        routines={routines}
-        wellnessEntries={wellnessEntries}
-        financeEntries={financeEntries}
-        medications={medications}
-        supplements={supplements}
-        notes={notes}
-        briefings={briefings}
-        focusSessions={focusToday}
-      />
-    </AppShell>
-  );
-}
+export const dynamic='force-dynamic';
+const dateKey=(d:Date)=>d.toISOString().slice(0,10);
+export default async function EveningDebriefPage(){const s=await auth();if(!s?.user?.id)redirect('/sign-in');const id=s.user.id,now=new Date(),ago=new Date(now);ago.setDate(ago.getDate()-365);const[tasks,events,habits,habitLogs,routines,wellnessEntries,financeEntries,medications,supplements,notes,briefings,focus]=await Promise.all([getTasksByUser(id),getCalendarEventsByUser(id),getHabitsByUser(id),getHabitLogsForUser(id,dateKey(ago),dateKey(now)),getRoutinesByUser(id),getWellnessEntriesByUser(id),getFinanceEntriesByUser(id),getMedicationsByUser(id),getSupplementsByUser(id),getNotesByUser(id),getBriefings(id),db.select().from(focusSessions).where(eq(focusSessions.userId,id)).orderBy(desc(focusSessions.startedAt)).limit(20).catch(()=>[])]);return <AppShell><div className="evening-debrief-reference"><EveningDebriefExperience tasks={tasks} events={events} habits={habits} habitLogs={habitLogs} routines={routines} wellnessEntries={wellnessEntries} financeEntries={financeEntries} medications={medications} supplements={supplements} notes={notes} briefings={briefings} focusSessions={focus}/></div></AppShell>}
