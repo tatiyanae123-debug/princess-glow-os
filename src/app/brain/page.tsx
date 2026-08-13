@@ -5,32 +5,139 @@ import { AppShell } from '@/components/app-shell';
 import { buildPersonalContext } from '@/lib/intelligence/context';
 import { BrainCircuit, Sparkles, CalendarDays, CheckCircle2, Crown, ArrowRight, AlertTriangle, Activity, Network, Target } from 'lucide-react';
 
-export const dynamic='force-dynamic';
+export const dynamic = 'force-dynamic';
 
-export default async function BrainPage(){
-  const session=await auth();if(!session?.user?.id)redirect('/sign-in');
-  let context:Awaited<ReturnType<typeof buildPersonalContext>>|null=null;
-  try{context=await buildPersonalContext(session.user.id);}catch(error){console.error('[Glow OS] Brain context unavailable',error);}
+export default async function BrainPage() {
+  const session = await auth();
+  if (!session?.user?.id) redirect('/sign-in');
+  let context: Awaited<ReturnType<typeof buildPersonalContext>> | null = null;
+  try {
+    context = await buildPersonalContext(session.user.id);
+  } catch (error) {
+    console.error('[Glow OS] Brain context unavailable', error);
+  }
 
-  if(!context){return <AppShell><section className="paper-card mx-auto max-w-4xl p-6"><p className="glow-eyebrow">Glow Brain</p><h1 className="glow-display mt-2 text-[30px] text-[#493c4a]">Your life, interpreted clearly.</h1><p className="mt-3 text-[10px] leading-5 text-[#796d78]">Glow Brain is available, but one connected data source could not be read right now. Your other rooms still work.</p><div className="mt-5 flex gap-2"><Link href="/dashboard" className="rounded-[6px] bg-[#433841] px-4 py-2 text-[9px] text-white">Command Center</Link><Link href="/connections" className="rounded-[6px] border border-[#ddd2dc] px-4 py-2 text-[9px] text-[#6e626d]">Connections</Link></div></section></AppShell>;}
+  if (!context) {
+    return (
+      <AppShell>
+        <section className="mx-auto max-w-4xl rounded-[20px] border border-[#F1E7E3] bg-white p-6">
+          <p className="glow-eyebrow">Glow Brain</p>
+          <h1 className="glow-display mt-2 text-[30px] text-[#2B2420]">Your life, interpreted clearly.</h1>
+          <p className="mt-3 text-[12.5px] leading-5 text-[#8A8078]">Glow Brain is available, but one connected data source could not be read right now. Your other rooms still work.</p>
+          <div className="mt-5 flex gap-2">
+            <Link href="/dashboard" className="rounded-full bg-[#C9727E] px-4 py-2.5 text-[12px] font-medium text-white hover:bg-[#B15A68]">Command Center</Link>
+            <Link href="/connections" className="rounded-full border border-[#F1E7E3] px-4 py-2.5 text-[12px] text-[#8A8078] hover:bg-[#FDF8F6]">Connections</Link>
+          </div>
+        </section>
+      </AppShell>
+    );
+  }
 
-  return <AppShell><div className="space-y-4">
-    <section className="relative overflow-hidden rounded-[12px] border border-[#ded2df] bg-[linear-gradient(130deg,#eee7f0,#f7efeb)] p-6 shadow-[0_10px_30px_rgba(72,55,74,.05)]"><BrainCircuit size={76} strokeWidth={.65} className="absolute right-6 top-4 text-[#7e6b83]/16"/><Crown size={25} strokeWidth={1} className="absolute bottom-5 right-16 text-[#b59666]/30"/><p className="glow-eyebrow">Central intelligence</p><h1 className="glow-display mt-2 max-w-3xl text-[31px] leading-9 text-[#493c4a]">Your life, interpreted clearly.</h1><p className="mt-3 max-w-3xl text-[11px] leading-5 text-[#716570]">{context.dailyBrief}</p><p className="mt-4 text-[7px] uppercase tracking-[.12em] text-[#958793]">Updated {context.generatedAt.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})} · {context.todayLabel}</p></section>
+  return (
+    <AppShell>
+      <div className="space-y-4">
+        <section className="relative overflow-hidden rounded-[20px] border border-[#F1E7E3] bg-[linear-gradient(130deg,#FBE4E8,#F1E8D9)] p-7">
+          <BrainCircuit size={80} strokeWidth={0.6} className="absolute right-6 top-4 text-[#C9727E]/18" />
+          <Crown size={26} strokeWidth={1} className="absolute bottom-5 right-16 text-[#9A7A3D]/35" />
+          <p className="glow-eyebrow">Central intelligence</p>
+          <h1 className="glow-display mt-2 max-w-3xl text-[36px] leading-[1.05] text-[#2B2420] sm:text-[42px]">Your life, interpreted clearly.</h1>
+          <p className="mt-3 max-w-3xl text-[13px] leading-5 text-[#4A4440]">{context.dailyBrief}</p>
+          <p className="mt-4 text-[10.5px] uppercase tracking-[.1em] text-[#8A8078]">Updated {context.generatedAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} · {context.todayLabel}</p>
+        </section>
 
-    <section className="grid gap-3 md:grid-cols-4"><div className="editorial-surface p-4"><p className="text-[8px] text-[#837783]">Focus score</p><p className="glow-display mt-2 text-[28px] text-[#4f4350]">{context.focusScore}</p><p className="mt-1 text-[7px] text-[#998d98]">A snapshot, not a judgment.</p></div><div className="editorial-surface p-4"><p className="text-[8px] text-[#837783]">Unfinished tasks</p><p className="glow-display mt-2 text-[28px] text-[#4f4350]">{context.unfinishedTasks.length}</p><p className="mt-1 text-[7px] text-[#998d98]">{context.overdueTasks.length} overdue</p></div><div className="editorial-surface p-4"><p className="text-[8px] text-[#837783]">Today&apos;s events</p><p className="glow-display mt-2 text-[28px] text-[#4f4350]">{context.todaysEvents.length}</p><p className="mt-1 text-[7px] text-[#998d98]">Calendar-aware context</p></div><div className="editorial-surface p-4"><p className="text-[8px] text-[#837783]">Active goals</p><p className="glow-display mt-2 text-[28px] text-[#4f4350]">{context.activeGoals.length}</p><p className="mt-1 text-[7px] text-[#998d98]">Available for next-action reasoning</p></div></section>
+        <section className="grid gap-3 md:grid-cols-4">
+          <div className="rounded-[18px] border border-[#F1E7E3] bg-white p-4"><p className="text-[10.5px] text-[#8A8078]">Focus score</p><p className="glow-display mt-2 text-[28px] text-[#2B2420]">{context.focusScore}</p><p className="mt-1 text-[10px] text-[#B5ACA5]">A snapshot, not a judgment.</p></div>
+          <div className="rounded-[18px] border border-[#F1E7E3] bg-white p-4"><p className="text-[10.5px] text-[#8A8078]">Unfinished tasks</p><p className="glow-display mt-2 text-[28px] text-[#2B2420]">{context.unfinishedTasks.length}</p><p className="mt-1 text-[10px] text-[#B5ACA5]">{context.overdueTasks.length} overdue</p></div>
+          <div className="rounded-[18px] border border-[#F1E7E3] bg-white p-4"><p className="text-[10.5px] text-[#8A8078]">Today&apos;s events</p><p className="glow-display mt-2 text-[28px] text-[#2B2420]">{context.todaysEvents.length}</p><p className="mt-1 text-[10px] text-[#B5ACA5]">Calendar-aware context</p></div>
+          <div className="rounded-[18px] border border-[#F1E7E3] bg-white p-4"><p className="text-[10.5px] text-[#8A8078]">Active goals</p><p className="glow-display mt-2 text-[28px] text-[#2B2420]">{context.activeGoals.length}</p><p className="mt-1 text-[10px] text-[#B5ACA5]">Available for next-action reasoning</p></div>
+        </section>
 
-    <section className="grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
-      <div className="editorial-surface overflow-hidden"><div className="flex items-center gap-2 border-b border-[#e3d9e3] px-5 py-4"><Sparkles size={13} className="text-[#806b85]"/><div><p className="glow-eyebrow">Attention queue</p><p className="glow-display mt-1 text-[18px] text-[#4d414d]">Next best actions</p></div></div><div className="p-3">{context.recommendations.length===0?<p className="p-5 text-[9px] text-[#8a7e88]">You are clear for now.</p>:context.recommendations.map((item,index)=><Link key={item.id} href={item.href} className={`block rounded-[7px] p-3 ${index===0?'bg-[#efe3ec]':'hover:bg-[#f5eff3]'}`}><div className="flex items-start justify-between gap-3"><div><p className="glow-display text-[14px] text-[#4a3e4a]">{item.title}</p><p className="mt-1 text-[8px] leading-4 text-[#796d78]">{item.reason}</p></div><span className="rounded-full bg-white/55 px-2 py-1 text-[7px] uppercase text-[#837683]">{item.priority}</span></div></Link>)}</div></div>
-      <div className="relative overflow-hidden rounded-[12px] bg-[#403741] p-5 text-white shadow-[0_12px_30px_rgba(50,40,51,.12)]"><CalendarDays size={50} strokeWidth={.8} className="absolute right-4 top-4 text-white/10"/><p className="text-[7px] font-semibold uppercase tracking-[.15em] text-[#cfbecf]">Next event</p>{context.nextEvent?<div className="mt-4"><p className="glow-display text-[20px]">{context.nextEvent.title}</p><p className="mt-2 text-[8px] text-[#d2c8d1]">{context.nextEvent.allDay?'All day':context.nextEvent.startAt.toLocaleString([],{weekday:'short',hour:'numeric',minute:'2-digit'})}</p><Link href="/calendar" className="mt-4 inline-flex items-center gap-1 text-[8px] text-[#f0dce9]">Open Calendar <ArrowRight size={9}/></Link></div>:<p className="mt-4 text-[9px] text-[#d2c8d1]">No upcoming event found.</p>}</div>
-    </section>
+        <section className="grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
+          <div className="overflow-hidden rounded-[18px] border border-[#F1E7E3] bg-white">
+            <div className="flex items-center gap-2 border-b border-[#F1E7E3] px-5 py-4"><Sparkles size={13} className="text-[#C9727E]" /><div><p className="glow-eyebrow">Attention queue</p><p className="glow-display mt-1 text-[18px] text-[#2B2420]">Next best actions</p></div></div>
+            <div className="p-3">
+              {context.recommendations.length === 0 ? (
+                <p className="p-5 text-[12px] text-[#8A8078]">You are clear for now.</p>
+              ) : context.recommendations.map((item, index) => (
+                <Link key={item.id} href={item.href} className={`block rounded-[12px] p-3 ${index === 0 ? 'bg-[#FBE4E8]' : 'hover:bg-[#FDF8F6]'}`}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div><p className="glow-display text-[14px] text-[#2B2420]">{item.title}</p><p className="mt-1 text-[11px] leading-4 text-[#8A8078]">{item.reason}</p></div>
+                    <span className="rounded-full bg-white/70 px-2.5 py-1 text-[10px] uppercase text-[#B15A68]">{item.priority}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div className="relative overflow-hidden rounded-[18px] bg-[#2B2420] p-5 text-white">
+            <CalendarDays size={50} strokeWidth={0.8} className="absolute right-4 top-4 text-white/10" />
+            <p className="text-[10px] font-semibold uppercase tracking-[.12em] text-[#E4C9C0]">Next event</p>
+            {context.nextEvent ? (
+              <div className="mt-4">
+                <p className="glow-display text-[20px]">{context.nextEvent.title}</p>
+                <p className="mt-2 text-[11px] text-white/70">{context.nextEvent.allDay ? 'All day' : context.nextEvent.startAt.toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })}</p>
+                <Link href="/calendar" className="mt-4 inline-flex items-center gap-1 text-[11px] text-[#F0DCE9]">Open Calendar <ArrowRight size={9} /></Link>
+              </div>
+            ) : <p className="mt-4 text-[12px] text-white/70">No upcoming event found.</p>}
+          </div>
+        </section>
 
-    <section className="grid gap-4 lg:grid-cols-2">
-      <div className="editorial-surface overflow-hidden"><div className="flex items-center gap-2 border-b border-[#e4dce3] px-5 py-4"><AlertTriangle size={13} className="text-[#8a6d77]"/><div><p className="glow-eyebrow">What needs attention</p><p className="glow-display mt-1 text-[18px] text-[#4d414d]">Pressure signals</p></div></div><div className="p-3">{context.attentionSignals.map((signal)=><Link key={signal.id} href={signal.href} className="block rounded-[8px] border border-[#ece4eb] p-3 hover:bg-[#f8f4f7]"><div className="flex items-start justify-between gap-3"><div><p className="text-[9px] font-semibold text-[#554955]">{signal.label}</p><p className="mt-1 text-[8px] leading-4 text-[#7d717b]">{signal.detail}</p></div><span className="rounded-full bg-[#f2e9ef] px-2 py-1 text-[7px] uppercase text-[#846f7e]">{signal.level}</span></div></Link>)}</div></div>
-      <div className="editorial-surface overflow-hidden"><div className="flex items-center gap-2 border-b border-[#e4dce3] px-5 py-4"><Network size={13} className="text-[#6f7585]"/><div><p className="glow-eyebrow">Cross-system reasoning</p><p className="glow-display mt-1 text-[18px] text-[#4d414d]">Patterns Glow Brain sees</p></div></div><div className="p-3">{context.patterns.map((pattern)=><Link key={pattern.id} href={pattern.href} className="block rounded-[8px] p-3 hover:bg-[#f5eff3]"><div className="flex items-start gap-3"><Activity size={12} className="mt-1 shrink-0 text-[#8b798a]"/><div><p className="glow-display text-[13px] text-[#554955]">{pattern.title}</p><p className="mt-1 text-[8px] leading-4 text-[#7d717b]">{pattern.detail}</p></div></div></Link>)}</div></div>
-    </section>
+        <section className="grid gap-4 lg:grid-cols-2">
+          <div className="overflow-hidden rounded-[18px] border border-[#F1E7E3] bg-white">
+            <div className="flex items-center gap-2 border-b border-[#F1E7E3] px-5 py-4"><AlertTriangle size={13} className="text-[#9A7A3D]" /><div><p className="glow-eyebrow">What needs attention</p><p className="glow-display mt-1 text-[18px] text-[#2B2420]">Pressure signals</p></div></div>
+            <div className="p-3">{context.attentionSignals.map((signal) => (
+              <Link key={signal.id} href={signal.href} className="block rounded-[14px] border border-[#F1E7E3] p-3 hover:bg-[#FDF8F6]">
+                <div className="flex items-start justify-between gap-3">
+                  <div><p className="text-[12px] font-semibold text-[#2B2420]">{signal.label}</p><p className="mt-1 text-[11px] leading-4 text-[#8A8078]">{signal.detail}</p></div>
+                  <span className="rounded-full bg-[#F1E8D9] px-2.5 py-1 text-[10px] uppercase text-[#9A7A3D]">{signal.level}</span>
+                </div>
+              </Link>
+            ))}</div>
+          </div>
+          <div className="overflow-hidden rounded-[18px] border border-[#F1E7E3] bg-white">
+            <div className="flex items-center gap-2 border-b border-[#F1E7E3] px-5 py-4"><Network size={13} className="text-[#7C6B9C]" /><div><p className="glow-eyebrow">Cross-system reasoning</p><p className="glow-display mt-1 text-[18px] text-[#2B2420]">Patterns Glow Brain sees</p></div></div>
+            <div className="p-3">{context.patterns.map((pattern) => (
+              <Link key={pattern.id} href={pattern.href} className="block rounded-[12px] p-3 hover:bg-[#FDF8F6]">
+                <div className="flex items-start gap-3"><Activity size={12} className="mt-1 shrink-0 text-[#7C6B9C]" /><div><p className="glow-display text-[13px] text-[#2B2420]">{pattern.title}</p><p className="mt-1 text-[11px] leading-4 text-[#8A8078]">{pattern.detail}</p></div></div>
+              </Link>
+            ))}</div>
+          </div>
+        </section>
 
-    <section className="grid gap-4 lg:grid-cols-2"><div className="editorial-surface overflow-hidden"><div className="border-b border-[#e4dce3] px-5 py-4"><p className="glow-eyebrow">Habits today</p></div><div className="p-3">{context.habits.length===0?<p className="p-4 text-[9px] text-[#8a7e88]">No habits scheduled yet.</p>:context.habits.slice(0,8).map((habit)=><div key={habit.id} className="flex items-center justify-between border-b border-[#eee7ed] px-2 py-3 last:border-0"><span className="text-[9px] text-[#655a65]">{habit.name}</span><span className={`flex items-center gap-1 text-[7px] ${habit.completedToday?'text-[#6f866b]':'text-[#9a8e98]'}`}>{habit.completedToday?<CheckCircle2 size={10}/>:null}{habit.completedToday?'Done':'Not logged'}</span></div>)}</div></div><div className="editorial-surface overflow-hidden"><div className="border-b border-[#e4dce3] px-5 py-4"><p className="glow-eyebrow">Routines for today</p></div><div className="p-3">{context.routinesForToday.length===0?<p className="p-4 text-[9px] text-[#8a7e88]">No routines scheduled yet.</p>:context.routinesForToday.slice(0,8).map((routine)=><div key={routine.id} className="border-b border-[#eee7ed] px-2 py-3 last:border-0"><p className="glow-display text-[12px] text-[#554955]">{routine.name}</p><p className="mt-1 text-[7px] capitalize text-[#948793]">{routine.timeOfDay}</p></div>)}</div></div></section>
+        <section className="grid gap-4 lg:grid-cols-2">
+          <div className="overflow-hidden rounded-[18px] border border-[#F1E7E3] bg-white">
+            <div className="border-b border-[#F1E7E3] px-5 py-4"><p className="glow-eyebrow">Habits today</p></div>
+            <div className="p-3">{context.habits.length === 0 ? <p className="p-4 text-[12px] text-[#8A8078]">No habits scheduled yet.</p> : context.habits.slice(0, 8).map((habit) => (
+              <div key={habit.id} className="flex items-center justify-between border-b border-[#F1E7E3] px-2 py-3 last:border-0">
+                <span className="text-[12px] text-[#4A4440]">{habit.name}</span>
+                <span className={`flex items-center gap-1 text-[10.5px] ${habit.completedToday ? 'text-[#5A6E52]' : 'text-[#B5ACA5]'}`}>{habit.completedToday ? <CheckCircle2 size={10} /> : null}{habit.completedToday ? 'Done' : 'Not logged'}</span>
+              </div>
+            ))}</div>
+          </div>
+          <div className="overflow-hidden rounded-[18px] border border-[#F1E7E3] bg-white">
+            <div className="border-b border-[#F1E7E3] px-5 py-4"><p className="glow-eyebrow">Routines for today</p></div>
+            <div className="p-3">{context.routinesForToday.length === 0 ? <p className="p-4 text-[12px] text-[#8A8078]">No routines scheduled yet.</p> : context.routinesForToday.slice(0, 8).map((routine) => (
+              <div key={routine.id} className="border-b border-[#F1E7E3] px-2 py-3 last:border-0">
+                <p className="glow-display text-[12px] text-[#2B2420]">{routine.name}</p>
+                <p className="mt-1 text-[10px] capitalize text-[#B5ACA5]">{routine.timeOfDay}</p>
+              </div>
+            ))}</div>
+          </div>
+        </section>
 
-    <section className="editorial-surface p-5"><div className="flex items-center gap-2"><Target size={13} className="text-[#817184]"/><div><p className="glow-eyebrow">Goal context</p><p className="glow-display mt-1 text-[18px] text-[#4d414d]">What the system is aiming toward</p></div></div>{context.activeGoals.length===0?<div className="mt-4 rounded-[8px] border border-dashed border-[#ddd3dd] p-4"><p className="text-[9px] text-[#817681]">No active goals are available to guide prioritization yet.</p><Link href="/goals" className="mt-3 inline-flex items-center gap-1 text-[8px] text-[#6f5c70]">Add a goal <ArrowRight size={9}/></Link></div>:<div className="mt-4 flex flex-wrap gap-2">{context.activeGoals.map((goal)=><Link key={goal.id} href="/goals" className="rounded-full border border-[#ded3df] bg-[#faf7f9] px-3 py-2 text-[8px] text-[#665965]">{goal.title}</Link>)}</div>}</section>
-  </div></AppShell>;
+        <section className="rounded-[18px] border border-[#F1E7E3] bg-white p-5">
+          <div className="flex items-center gap-2"><Target size={13} className="text-[#C9727E]" /><div><p className="glow-eyebrow">Goal context</p><p className="glow-display mt-1 text-[18px] text-[#2B2420]">What the system is aiming toward</p></div></div>
+          {context.activeGoals.length === 0 ? (
+            <div className="mt-4 rounded-[12px] border border-dashed border-[#F1E7E3] p-4">
+              <p className="text-[12px] text-[#8A8078]">No active goals are available to guide prioritization yet.</p>
+              <Link href="/goals" className="mt-3 inline-flex items-center gap-1 text-[11px] font-medium text-[#C9727E]">Add a goal <ArrowRight size={9} /></Link>
+            </div>
+          ) : (
+            <div className="mt-4 flex flex-wrap gap-2">{context.activeGoals.map((goal) => (
+              <Link key={goal.id} href="/goals" className="rounded-full border border-[#F1E7E3] bg-[#FDF8F6] px-3.5 py-2 text-[11px] text-[#4A4440] hover:bg-[#FBE4E8]">{goal.title}</Link>
+            ))}</div>
+          )}
+        </section>
+      </div>
+    </AppShell>
+  );
 }
