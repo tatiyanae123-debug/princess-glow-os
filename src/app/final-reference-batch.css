@@ -1,0 +1,48 @@
+/* Glow OS V3 final reference batch polish */
+
+[data-room="memory"], [data-room="timeline"], [data-room="briefings"], [data-room="connections"],
+[data-room="import"], [data-room="gmail"], [data-room="reminders"], [data-room="home"],
+[data-room="work"], [data-room="graph"], [data-room="notices"], [data-room="all-rooms"],
+[data-room="brain"], [data-room="food"], [data-room="fitness"], [data-room="beauty"],
+[data-room="beauty-lab"], [data-room="hair"] {
+  --ref-line:#eee3de;
+  --ref-ink:#2b2420;
+  --ref-muted:#92867e;
+  --ref-rose:#c9727e;
+  background:#fdfaf8;
+  color:var(--ref-ink);
+}
+
+[data-room="memory"] main, [data-room="timeline"] main, [data-room="briefings"] main,
+[data-room="connections"] main, [data-room="import"] main, [data-room="gmail"] main,
+[data-room="reminders"] main, [data-room="home"] main, [data-room="work"] main,
+[data-room="graph"] main, [data-room="notices"] main, [data-room="all-rooms"] main,
+[data-room="brain"] main, [data-room="food"] main, [data-room="fitness"] main,
+[data-room="beauty"] main, [data-room="beauty-lab"] main, [data-room="hair"] main {
+  overflow-x:clip;
+}
+
+.reference-page-heading h1{max-width:18ch}
+
+[data-room="memory"] :is(.grid,.flex)>*, [data-room="timeline"] :is(.grid,.flex)>*,
+[data-room="briefings"] :is(.grid,.flex)>*, [data-room="connections"] :is(.grid,.flex)>*,
+[data-room="import"] :is(.grid,.flex)>*, [data-room="gmail"] :is(.grid,.flex)>*,
+[data-room="reminders"] :is(.grid,.flex)>*, [data-room="home"] :is(.grid,.flex)>*,
+[data-room="work"] :is(.grid,.flex)>*, [data-room="graph"] :is(.grid,.flex)>*,
+[data-room="notices"] :is(.grid,.flex)>*, [data-room="all-rooms"] :is(.grid,.flex)>*,
+[data-room="brain"] :is(.grid,.flex)>*, [data-room="food"] :is(.grid,.flex)>*,
+[data-room="fitness"] :is(.grid,.flex)>*, [data-room="beauty"] :is(.grid,.flex)>*,
+[data-room="beauty-lab"] :is(.grid,.flex)>*, [data-room="hair"] :is(.grid,.flex)>*{min-width:0}
+
+@media(max-width:767px){
+  [data-room="memory"] main, [data-room="timeline"] main, [data-room="briefings"] main,
+  [data-room="connections"] main, [data-room="import"] main, [data-room="gmail"] main,
+  [data-room="reminders"] main, [data-room="home"] main, [data-room="work"] main,
+  [data-room="graph"] main, [data-room="notices"] main, [data-room="all-rooms"] main,
+  [data-room="brain"] main, [data-room="food"] main, [data-room="fitness"] main,
+  [data-room="beauty"] main, [data-room="beauty-lab"] main, [data-room="hair"] main{
+    padding-left:16px!important;
+    padding-right:16px!important;
+  }
+  .reference-page-heading h1{font-size:42px!important;line-height:1.02!important}
+}
