@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { buildMyDayV3Action } from '@/app/actions/build-my-day-v3';
+import { activateDayModeV3Action } from '@/app/actions/build-my-day-v3';
 import { acceptPlanningSuggestionAction } from '@/app/actions/intelligence-expansion';
 import { GLOW_DAY_MODES, GLOW_DAY_MODE_ORDER, type GlowDayMode } from '@/lib/day-mode';
 import type { ScheduleProposal } from '@/lib/intelligence/domain';
@@ -18,7 +18,7 @@ export function BuildMyDayV3Client({ initialProposal }: { initialProposal: Sched
     localStorage.setItem('glow-os:day-mode', mode);
     document.documentElement.dataset.dayMode = mode;
     document.dispatchEvent(new CustomEvent('glow:day-mode', { detail: { mode } }));
-    startTransition(async () => { setProposal(await buildMyDayV3Action(mode)); setAccepted([]); });
+    startTransition(async () => { setProposal(await activateDayModeV3Action(mode)); setAccepted([]); });
   }
 
   function accept(item: ScheduleProposal['suggestions'][number]) {
