@@ -11,7 +11,7 @@ import { GlowVoiceCommand } from '@/components/voice/glow-voice-command';
 import { GlobalHeader } from '@/components/global-header';
 import { GlowActionButton } from '@/components/glow-action-button';
 import { UniversalCaptureDock } from '@/components/universal-capture-dock';
-import { UpgradeDock } from '@/components/upgrade-dock';
+import { RoomUpgradeDeck } from '@/components/room-upgrade-deck';
 
 function roomFor(pathname: string) {
   if (pathname.startsWith('/beauty/lab')) return 'beauty-lab';
@@ -30,7 +30,7 @@ function roomFor(pathname: string) {
   if (pathname.startsWith('/wellness') || pathname.startsWith('/maintenance')) return 'wellness';
   if (pathname.startsWith('/finance')) return 'finance';
   if (pathname.startsWith('/goals')) return 'goals';
-  if (pathname.startsWith('/projects')) return 'projects';
+  if (pathname.startsWith('/projects') || pathname.startsWith('/creative-studio')) return 'projects';
   if (pathname.startsWith('/brain') || pathname.startsWith('/inbox') || pathname.startsWith('/intake') || pathname.startsWith('/rules')) return 'brain';
   if (pathname.startsWith('/concierge')) return 'concierge';
   if (pathname.startsWith('/observations')) return 'observations';
@@ -84,7 +84,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="min-w-0 flex-1 bg-[#FDFAF8]">
             {!focus ? <GlobalHeader /> : null}
             <main className={focus ? 'min-h-screen px-4 py-8 sm:px-7 lg:px-10' : 'min-h-screen px-4 pb-20 pt-5 sm:px-7 lg:px-10 lg:pt-7'}>
-              <div key={pathname} className="glow-route-stage mx-auto w-full max-w-[1500px]">{children}{!focus?<UpgradeDock/>:null}</div>
+              <div key={pathname} className="glow-route-stage mx-auto w-full max-w-[1500px]">{children}{!focus?<RoomUpgradeDeck/>:null}</div>
             </main>
           </div>
         </div>
