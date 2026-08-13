@@ -163,13 +163,13 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
   return (
     <div className="space-y-4">
       <div className="grid gap-3 md:grid-cols-[1.3fr_.7fr]">
-        <Card className="relative overflow-hidden p-5">
-          <Star size={42} strokeWidth={1} className="absolute right-5 top-4 text-[#c5848d]/20" />
+        <Card className="relative overflow-hidden">
+          <Star size={42} strokeWidth={1} className="absolute right-5 top-4 text-[#C9727E]/20" />
           <p className="glow-eyebrow">Execution desk</p>
-          <p className="glow-display mt-2 text-[23px] text-[#3b302c]">
+          <p className="glow-display mt-2 text-[23px] text-[#2B2420]">
             {focusTask?.title ?? 'Your list is clear'}
           </p>
-          <p className="mt-2 max-w-xl text-[9px] leading-4 text-[#7d6a63]">
+          <p className="mt-2 max-w-xl text-[12px] leading-4 text-[#8A8078]">
             {urgent.length
               ? `${urgent.length} high-priority item${urgent.length === 1 ? '' : 's'} deserve attention before the rest.`
               : open.length
@@ -177,10 +177,10 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
                 : 'Use the quiet space for planning, recovery, or something creative.'}
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <span className="rounded-full bg-[#f2dcde] px-2.5 py-1 text-[8px] text-[#8e5d64]">{open.length} open</span>
-            <span className="rounded-full bg-[#e8eee4] px-2.5 py-1 text-[8px] text-[#667361]">{done.length} complete</span>
+            <span className="rounded-full bg-[#FBE4E8] px-2.5 py-1 text-[10.5px] text-[#B15A68]">{open.length} open</span>
+            <span className="rounded-full bg-[#E4EBDD] px-2.5 py-1 text-[10.5px] text-[#5A6E52]">{done.length} complete</span>
             {focusTask ? (
-              <span className="rounded-full bg-[#eee7f2] px-2.5 py-1 text-[8px] text-[#6d5d77]">
+              <span className="rounded-full bg-[#E9E4F2] px-2.5 py-1 text-[10.5px] text-[#7C6B9C]">
                 ~{estimateMinutes(focusTask)} min suggested effort
               </span>
             ) : null}
@@ -196,7 +196,7 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
               </Button>
               <Link
                 href={`/focus?task=${encodeURIComponent(focusTask.id)}`}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#d8c7c0] px-3 py-2 text-[8px] font-semibold uppercase tracking-[.08em] text-[#6e5c55] hover:bg-[#f7efeb]"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[#F1E7E3] bg-white px-3.5 py-2 text-[11px] font-medium text-[#4A4440] hover:bg-[#FDF8F6]"
               >
                 <Focus size={11} /> Focus session
               </Link>
@@ -204,10 +204,10 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
           ) : null}
         </Card>
 
-        <Card className="flex flex-col justify-between bg-[linear-gradient(145deg,#f2e3dc,#ead2d4)] p-5">
+        <Card className="flex flex-col justify-between bg-[linear-gradient(145deg,#FBE4E8,#FDF8F6)]">
           <div>
-            <p className="glow-display text-[16px] text-[#4b3b36]">Capture, then continue.</p>
-            <p className="mt-2 text-[9px] leading-4 text-[#7c6861]">New tasks should enter quickly without interrupting the rest of your day.</p>
+            <p className="glow-display text-[16px] text-[#2B2420]">Capture, then continue.</p>
+            <p className="mt-2 text-[12px] leading-4 text-[#8A8078]">New tasks should enter quickly without interrupting the rest of your day.</p>
           </div>
           <Button onClick={() => setDialogTask('new')} className="mt-4 flex items-center gap-1.5 self-start">
             <Plus size={12} /> Add task
@@ -216,8 +216,8 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
       </div>
 
       <Card className="overflow-hidden p-0">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#e8dcd4] px-4 py-3">
-          <div className="flex items-center gap-1.5 text-[8px] font-semibold uppercase tracking-[.12em] text-[#7b6861]">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#F1E7E3] px-4 py-3">
+          <div className="flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[.1em] text-[#8A8078]">
             <ListFilter size={12} /> Views
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -231,8 +231,8 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
                 key={value}
                 type="button"
                 onClick={() => setView(value)}
-                className={`rounded-full px-2.5 py-1 text-[8px] transition ${
-                  view === value ? 'bg-[#4f403a] text-white' : 'bg-[#f3ebe6] text-[#77645d] hover:bg-[#eadfd8]'
+                className={`rounded-full px-3 py-1.5 text-[11px] font-medium transition ${
+                  view === value ? 'bg-[#2B2420] text-white' : 'bg-[#FDF8F6] text-[#8A8078] hover:bg-[#F1E7E3]'
                 }`}
               >
                 {label}
@@ -241,7 +241,7 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-[24px_minmax(0,1fr)_auto] border-b border-[#e8dcd4] px-4 py-2 text-[7px] font-semibold uppercase tracking-[.13em] text-[#947f77]">
+        <div className="grid grid-cols-[24px_minmax(0,1fr)_auto] border-b border-[#F1E7E3] px-4 py-2 text-[10px] font-semibold uppercase tracking-[.1em] text-[#B5ACA5]">
           <span />
           <span>{view === 'now' ? 'Ready to execute' : view === 'upcoming' ? 'Coming next' : view === 'done' ? 'Completed' : 'Task library'}</span>
           <span>Actions</span>
@@ -249,8 +249,8 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
 
         {visibleTasks.length === 0 ? (
           <div className="px-5 py-10 text-center">
-            <p className="text-[10px] font-medium text-[#685750]">Nothing is waiting in this view.</p>
-            <p className="mt-1 text-[8px] text-[#907d75]">Add a task, switch views, or use the space for focused work.</p>
+            <p className="text-[13px] font-medium text-[#2B2420]">Nothing is waiting in this view.</p>
+            <p className="mt-1 text-[11.5px] text-[#8A8078]">Add a task, switch views, or use the space for focused work.</p>
             <Button onClick={() => setDialogTask('new')} className="mt-4 inline-flex items-center gap-1.5">
               <Plus size={11} /> Add task
             </Button>
@@ -262,8 +262,8 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
             return (
               <div
                 key={task.id}
-                className={`grid grid-cols-[24px_minmax(0,1fr)_auto] items-center gap-2 border-b border-[#eee4de] px-4 py-3 last:border-0 ${
-                  index === 0 && !isDone ? 'bg-[#f9eceb]/70' : ''
+                className={`grid grid-cols-[24px_minmax(0,1fr)_auto] items-center gap-2 border-b border-[#F1E7E3] px-4 py-3 last:border-0 ${
+                  index === 0 && !isDone ? 'bg-[#FDF8F6]' : ''
                 }`}
               >
                 <button
@@ -273,20 +273,20 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
                   onClick={() =>
                     updateTask(task, isDone ? { status: 'pending' } : { status: 'done', completedAt: new Date() })
                   }
-                  className="text-[#8a746c] disabled:opacity-50"
+                  className="text-[#8A8078] disabled:opacity-50"
                 >
-                  {isDone ? <CheckCircle2 size={14} className="text-[#7e9479]" /> : <Circle size={14} className="text-[#c7b5ad]" />}
+                  {isDone ? <CheckCircle2 size={14} className="text-[#5A6E52]" /> : <Circle size={14} className="text-[#D9CFC9]" />}
                 </button>
 
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <p className={`truncate text-[10px] font-medium ${isDone ? 'text-[#9c8d87] line-through' : 'text-[#4f413c]'}`}>{task.title}</p>
+                    <p className={`truncate text-[12.5px] font-medium ${isDone ? 'text-[#B5ACA5] line-through' : 'text-[#2B2420]'}`}>{task.title}</p>
                     {task.status === 'in_progress' ? (
-                      <span className="rounded-full bg-[#eee7f2] px-1.5 py-0.5 text-[6px] uppercase tracking-[.08em] text-[#675872]">in focus</span>
+                      <span className="rounded-full bg-[#E9E4F2] px-1.5 py-0.5 text-[9px] uppercase tracking-[.06em] text-[#7C6B9C]">in focus</span>
                     ) : null}
                   </div>
-                  {task.description ? <p className="mt-0.5 truncate text-[8px] text-[#907d75]">{task.description}</p> : null}
-                  <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[7px] text-[#8f7b73]">
+                  {task.description ? <p className="mt-0.5 truncate text-[11px] text-[#8A8078]">{task.description}</p> : null}
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[10.5px] text-[#B5ACA5]">
                     <span className="inline-flex items-center gap-1"><CalendarClock size={9} /> {formatDueDate(task.dueDate)}</span>
                     <span className="inline-flex items-center gap-1"><Clock3 size={9} /> ~{estimate} min</span>
                     {task.source ? <span>{task.source.replaceAll('_', ' ')}</span> : null}
@@ -294,12 +294,12 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
                 </div>
 
                 <div className="flex max-w-[210px] flex-wrap items-center justify-end gap-1">
-                  <span className={`rounded-full px-2 py-1 text-[7px] ${
+                  <span className={`rounded-full px-2.5 py-1 text-[10px] font-medium ${
                     isDone
-                      ? 'bg-[#e8eee4] text-[#65705f]'
+                      ? 'bg-[#E4EBDD] text-[#5A6E52]'
                       : task.priority === 'urgent' || task.priority === 'high'
-                        ? 'bg-[#f2d9dc] text-[#9d5e68]'
-                        : 'bg-[#f0e9e3] text-[#76655e]'
+                        ? 'bg-[#FBE4E8] text-[#B15A68]'
+                        : 'bg-[#FDF8F6] text-[#8A8078]'
                   }`}>{isDone ? 'done' : task.priority}</span>
 
                   {!isDone ? (
@@ -309,7 +309,7 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
                       disabled={quickUpdate.isPending}
                       aria-label="Start task"
                       title="Start"
-                      className="rounded-full p-1.5 text-[#8d7a73] hover:bg-[#f2e6e1] disabled:opacity-50"
+                      className="rounded-full p-1.5 text-[#8A8078] hover:bg-[#FDF8F6] disabled:opacity-50"
                     ><Play size={11} /></button>
                   ) : (
                     <button
@@ -318,7 +318,7 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
                       disabled={quickUpdate.isPending}
                       aria-label="Reopen task"
                       title="Reopen"
-                      className="rounded-full p-1.5 text-[#8d7a73] hover:bg-[#f2e6e1] disabled:opacity-50"
+                      className="rounded-full p-1.5 text-[#8A8078] hover:bg-[#FDF8F6] disabled:opacity-50"
                     ><RotateCcw size={11} /></button>
                   )}
 
@@ -329,7 +329,7 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
                       disabled={quickUpdate.isPending}
                       aria-label="Move task to tomorrow"
                       title="Move to tomorrow"
-                      className="rounded-full p-1.5 text-[#8d7a73] hover:bg-[#f2e6e1] disabled:opacity-50"
+                      className="rounded-full p-1.5 text-[#8A8078] hover:bg-[#FDF8F6] disabled:opacity-50"
                     ><CalendarClock size={11} /></button>
                   ) : null}
 
@@ -338,7 +338,7 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
                       href={`/focus?task=${encodeURIComponent(task.id)}`}
                       aria-label="Open focus session"
                       title="Focus"
-                      className="rounded-full p-1.5 text-[#8d7a73] hover:bg-[#f2e6e1]"
+                      className="rounded-full p-1.5 text-[#8A8078] hover:bg-[#FDF8F6]"
                     ><Focus size={11} /></Link>
                   ) : null}
 
@@ -347,14 +347,14 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
                     onClick={() => setDialogTask(task)}
                     aria-label="Edit task"
                     title="Edit"
-                    className="rounded-full p-1.5 text-[#8d7a73] hover:bg-[#f2e6e1]"
+                    className="rounded-full p-1.5 text-[#8A8078] hover:bg-[#FDF8F6]"
                   ><Pencil size={11} /></button>
                   <button
                     type="button"
                     onClick={() => setDeleteTarget(task)}
                     aria-label="Delete task"
                     title="Delete"
-                    className="rounded-full p-1.5 text-[#8d7a73] hover:bg-[#f2e6e1]"
+                    className="rounded-full p-1.5 text-[#8A8078] hover:bg-[#FDF8F6]"
                   ><Trash2 size={11} /></button>
                 </div>
               </div>
@@ -363,8 +363,8 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
         )}
       </Card>
 
-      {quickUpdate.error ? <p className="text-[9px] text-[#a15f68]">{quickUpdate.error}</p> : null}
-      {del.error ? <p className="text-[9px] text-[#a15f68]">{del.error}</p> : null}
+      {quickUpdate.error ? <p className="text-[11.5px] text-[#B15A68]">{quickUpdate.error}</p> : null}
+      {del.error ? <p className="text-[11.5px] text-[#B15A68]">{del.error}</p> : null}
 
       <Dialog open={dialogTask !== null} onClose={() => setDialogTask(null)} title={dialogTask === 'new' ? 'Add task' : 'Edit task'}>
         <TaskForm task={dialogTask === 'new' ? null : dialogTask} onSaved={handleSaved} onCancel={() => setDialogTask(null)} />

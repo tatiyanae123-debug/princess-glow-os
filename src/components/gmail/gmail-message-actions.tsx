@@ -31,14 +31,14 @@ export function GmailMessageActions({
       />
       <Link
         href={calendarHref}
-        className="flex items-center gap-1 rounded-full border border-[#d9cdc5] bg-white/65 px-2 py-1 text-[7px] text-[#6f625a] transition hover:bg-white"
+        className="flex items-center gap-1 rounded-full border border-[#F1E7E3] bg-white px-2.5 py-1.5 text-[10.5px] text-[#8A8078] transition hover:bg-[#FDF8F6]"
         aria-label={`Plan ${subject} on calendar`}
       >
         <CalendarPlus size={11} /> Plan on calendar
       </Link>
       <Link
         href={projectHref}
-        className="flex items-center gap-1 rounded-full border border-[#d9cdc5] bg-white/65 px-2 py-1 text-[7px] text-[#6f625a] transition hover:bg-white"
+        className="flex items-center gap-1 rounded-full border border-[#F1E7E3] bg-white px-2.5 py-1.5 text-[10.5px] text-[#8A8078] transition hover:bg-[#FDF8F6]"
         aria-label={`Route ${subject} to projects`}
       >
         <FolderKanban size={11} /> Route to project
