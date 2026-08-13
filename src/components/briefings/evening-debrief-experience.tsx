@@ -138,7 +138,7 @@ export function EveningDebriefExperience({
 
   return (
     <div className="space-y-5">
-      <Link href="/dashboard" className="inline-flex items-center gap-1 text-[12px] font-medium text-[#8A8078]">← Back to Today</Link>
+      <Link href="/today" className="inline-flex items-center gap-1 text-[12px] font-medium text-[#8A8078]">← Back to Today</Link>
 
       <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
         <div>

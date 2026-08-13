@@ -30,7 +30,7 @@ import {
 export type NavItem = { label:string; href:string; icon:LucideIcon; description:string };
 
 export const navItems: NavItem[] = [
-  { label:'Dashboard', href:'/dashboard', icon:LayoutGrid, description:'Plan the day with elegance' },
+  { label:'Home', href:'/dashboard', icon:LayoutGrid, description:'Plan the day with elegance' },
   { label:'Today', href:'/today', icon:Sparkles, description:'Act on what matters now' },
   { label:'Tomorrow', href:'/tomorrow', icon:CalendarClock, description:'Prepare the next day before it begins' },
   { label:'Brain', href:'/brain', icon:BrainCircuit, description:'See what matters next' },

@@ -27,7 +27,7 @@ import { cn } from '@/lib/utils';
 import { useMemo, useState } from 'react';
 
 const PRIMARY: Array<{ label: string; href: string; icon: LucideIcon }> = [
-  { label: 'Today', href: '/dashboard', icon: CircleDot },
+  { label: 'Home', href: '/dashboard', icon: CircleDot },
   { label: 'Plan', href: '/planning', icon: CalendarRange },
   { label: 'Tasks', href: '/tasks', icon: SquarePen },
   { label: 'Calendar', href: '/calendar', icon: CalendarDays },
