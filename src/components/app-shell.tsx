@@ -1,5 +1,6 @@
 'use client';
 
+import '@/app/architectural-world.css';
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
