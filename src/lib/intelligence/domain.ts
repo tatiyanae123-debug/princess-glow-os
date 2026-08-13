@@ -1,3 +1,5 @@
+import type { GlowDayMode } from '@/lib/day-mode';
+
 export type Recommendation = {
   id: string;
   sourceType: 'task' | 'apple_reminder' | 'routine' | 'habit';
@@ -13,7 +15,7 @@ export type ScheduleItem = Recommendation & { startAt: Date; endAt: Date };
 
 export type ScheduleProposal = {
   id: string;
-  mode: 'standard' | 'lighter';
+  mode: GlowDayMode;
   generatedAt: Date;
   fixedCommitments: { id: string; title: string; startAt: Date; endAt: Date | null }[];
   suggestions: ScheduleItem[];
