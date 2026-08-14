@@ -127,7 +127,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <GlowProvider>
       <div className="room-canvas min-h-screen overflow-x-clip bg-white text-[#2B2420]" data-room={room} data-focus-mode={focus ? 'true' : 'false'}>
         <div className="mx-auto flex min-h-screen w-full max-w-[1920px] flex-col md:flex-row">
-          {!focus ? <div className="w-full md:sticky md:top-0 md:h-screen md:w-[220px] md:shrink-0"><Sidebar /></div> : null}
+          {!focus ? (
+            <>
+              <div className="w-full md:hidden"><Sidebar /></div>
+              <div className="hidden md:sticky md:top-0 md:block md:h-screen md:w-[238px] md:shrink-0 md:overflow-y-auto md:overflow-x-hidden">
+                <Sidebar variant="dashboard-reference" />
+              </div>
+            </>
+          ) : null}
           <div className="min-w-0 flex-1 bg-transparent">
             {!focus ? <GlobalHeader /> : null}
             <main className={focus ? 'min-h-screen px-4 py-8 sm:px-7 lg:px-10' : 'min-h-screen min-w-0 px-4 pb-20 pt-5 sm:px-6 md:px-7 lg:px-10 lg:pt-7'}>
