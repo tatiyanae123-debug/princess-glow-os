@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { NoteManager } from '@/components/notes/note-manager';
+import { NotesRouteExperience } from '@/components/notes/notes-route-experience';
 import { getNotesByUser } from '@/lib/data/notes';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +14,7 @@ export default async function NotesPage() {
 
   return (
     <AppShell>
-      <NoteManager initialNotes={notes} />
+      <NotesRouteExperience initialNotes={notes} />
     </AppShell>
   );
 }
