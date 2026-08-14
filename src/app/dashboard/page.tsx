@@ -1,6 +1,5 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/app-shell';
 import { LivingDashboard } from '@/components/dashboard/living-dashboard';
 import type { LivingDashboardData } from '@/lib/dashboard/types';
 
@@ -47,7 +46,7 @@ export default async function DashboardPage() {
   const userId = session.user.id;
 
   if (!process.env.DATABASE_URL) {
-    return <AppShell><LivingDashboard data={getFallbackData()} error="DATABASE_URL is not configured." /></AppShell>;
+    return <LivingDashboard data={getFallbackData()} error="DATABASE_URL is not configured." userName={session.user.name?.split(' ')[0] ?? 'Tatiyana'} />;
   }
 
   try {
@@ -56,9 +55,9 @@ export default async function DashboardPage() {
       getLivingDashboardData(userId),
       getDashboardInsight(userId),
     ]);
-    return <AppShell><LivingDashboard data={data} insight={insight} userName={session.user.name?.split(' ')[0] ?? 'there'} /></AppShell>;
+    return <LivingDashboard data={data} insight={insight} userName={session.user.name?.split(' ')[0] ?? 'Tatiyana'} />;
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    return <AppShell><LivingDashboard data={getFallbackData()} error={message} userName={session.user.name?.split(' ')[0] ?? 'there'} /></AppShell>;
+    return <LivingDashboard data={getFallbackData()} error={message} userName={session.user.name?.split(' ')[0] ?? 'Tatiyana'} />;
   }
 }
