@@ -50,6 +50,9 @@ function roomFor(pathname: string) {
   return 'dashboard';
 }
 
+const DASHBOARD_WIDTH = 1536;
+const DASHBOARD_HEIGHT = 1024;
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -71,10 +74,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isReferenceDashboard) return;
-    const resize = () => setDashboardScale(Math.min(1, window.innerWidth / 1536));
+    const resize = () => {
+      const width = Math.max(320, window.innerWidth);
+      setDashboardScale(Math.min(1, width / DASHBOARD_WIDTH));
+    };
     resize();
     window.addEventListener('resize', resize);
-    return () => window.removeEventListener('resize', resize);
+    window.addEventListener('orientationchange', resize);
+    return () => {
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('orientationchange', resize);
+    };
   }, [isReferenceDashboard]);
 
   function exitFocus() {
@@ -94,10 +104,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (isReferenceDashboard && !focus) {
     return (
       <GlowProvider>
-        <div className="min-h-screen overflow-x-hidden bg-[#f6efec] text-[#25211f]" data-room="dashboard" data-focus-mode="false">
-          <div style={{ width: 1536, zoom: dashboardScale }} className="flex min-h-[1024px] bg-[#f8f4f2]">
-            <div className="h-[1024px] w-[238px] shrink-0"><Sidebar variant="dashboard-reference" /></div>
-            <main className="min-h-[1024px] w-[1298px] shrink-0 p-0">{content}</main>
+        <div className="min-h-screen overflow-x-hidden bg-white text-[#25211f]" data-room="dashboard" data-focus-mode="false">
+          <div
+            aria-label="Glow OS dashboard reference canvas"
+            style={{ width: DASHBOARD_WIDTH * dashboardScale, height: DASHBOARD_HEIGHT * dashboardScale }}
+          >
+            <div
+              className="flex h-[1024px] w-[1536px] bg-[#f8f4f2]"
+              style={{ transform: `scale(${dashboardScale})`, transformOrigin: 'top left' }}
+            >
+              <div className="h-[1024px] w-[238px] shrink-0"><Sidebar variant="dashboard-reference" /></div>
+              <main className="h-[1024px] w-[1298px] shrink-0 overflow-hidden p-0">{content}</main>
+            </div>
           </div>
         </div>
       </GlowProvider>
