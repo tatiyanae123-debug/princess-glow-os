@@ -16,7 +16,7 @@ const WORLDS: World[] = [
   {label:'Life',href:'/calendar',icon:Sparkles,paths:['/calendar','/tasks','/planning','/reminders','/routines','/habits','/timeline','/goals']},
   {label:'Mind',href:'/brain',icon:BrainCircuit,paths:['/brain','/memory','/observations','/graph','/notes','/resources','/rules']},
   {label:'Wellness',href:'/wellness',icon:HeartPulse,paths:['/wellness','/fitness','/food','/maintenance']},
-  {label:'Beauty',href:'/beauty',icon:WandSparkles,paths:['/beauty','/beauty/lab','/hair','/closet']},
+  {label:'Beauty',href:'/beauty',icon:WandSparkles,paths:['/beauty','/beauty/lab','/skincare','/makeup','/hair','/closet']},
   {label:'Money',href:'/finance/brain',icon:WalletCards,paths:['/finance','/finance/brain']},
   {label:'Work + Create',href:'/work',icon:BriefcaseBusiness,paths:['/work','/projects','/creative-studio','/concierge']},
   {label:'Home',href:'/home',icon:HomeIcon,paths:['/home','/all-rooms','/world','/life-world']},
@@ -27,7 +27,7 @@ const UTILITIES = [
 ] as const;
 
 const LABELS: Record<string,string> = {
-  '/dashboard':'Dashboard','/today':'Today','/briefings':'Briefings','/tomorrow':'Tomorrow','/calendar':'Calendar','/tasks':'Tasks','/planning':'Planning','/reminders':'Reminders','/routines':'Routines','/habits':'Habits','/timeline':'Timeline','/goals':'Goals','/brain':'Brain','/memory':'Memory','/observations':'Observations','/graph':'Graph','/notes':'Notes','/resources':'Resources','/rules':'Personal Rules','/wellness':'Wellness','/fitness':'Fitness','/food':'Food','/maintenance':'Medications','/beauty':'Beauty','/beauty/lab':'Beauty Lab','/hair':'Hair','/closet':'Closet','/finance':'Finance','/finance/brain':'Financial Brain','/work':'Work','/projects':'Projects','/creative-studio':'Creative Studio','/concierge':'Concierge','/home':'Home','/all-rooms':'All Rooms','/world':'Glow World','/life-world':'Life World',
+  '/dashboard':'Dashboard','/today':'Today','/briefings':'Briefings','/tomorrow':'Tomorrow','/calendar':'Calendar','/tasks':'Tasks','/planning':'Planning','/reminders':'Reminders','/routines':'Routines','/habits':'Habits','/timeline':'Timeline','/goals':'Goals','/brain':'Brain','/memory':'Memory','/observations':'Observations','/graph':'Graph','/notes':'Notes','/resources':'Resources','/rules':'Personal Rules','/wellness':'Wellness','/fitness':'Fitness','/food':'Food','/maintenance':'Medications','/beauty':'Beauty','/beauty/lab':'Beauty Lab','/skincare':'Skincare','/makeup':'Makeup','/hair':'Hair','/closet':'Closet','/finance':'Finance','/finance/brain':'Financial Brain','/work':'Work','/projects':'Projects','/creative-studio':'Creative Studio','/concierge':'Concierge','/home':'Home','/all-rooms':'All Rooms','/world':'Glow World','/life-world':'Life World',
 };
 
 function isActive(pathname:string,path:string){return pathname===path||pathname.startsWith(`${path}/`)}
