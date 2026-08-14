@@ -49,10 +49,23 @@ export function GlobalCommandSurface() {
       }
       if (event.key === 'Escape') setOpen(false);
     };
+    const captureDashboardSearch = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const button = target.closest('button');
+      if (!button) return;
+      const text = button.textContent?.replace(/\s+/g, ' ').trim().toLowerCase() ?? '';
+      if (!text.includes('ask glow anything')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      setOpen(true);
+    };
     document.addEventListener('glow:search-open', openSearch);
+    document.addEventListener('click', captureDashboardSearch, true);
     window.addEventListener('keydown', keydown);
     return () => {
       document.removeEventListener('glow:search-open', openSearch);
+      document.removeEventListener('click', captureDashboardSearch, true);
       window.removeEventListener('keydown', keydown);
     };
   }, []);
@@ -96,7 +109,7 @@ export function GlobalCommandSurface() {
             <Sparkles size={15} />
             <span className="text-[10px] font-semibold uppercase tracking-[.15em]">Ask Your Life</span>
           </div>
-          <button type="button" onClick={() => setOpen(false)} className="flex h-9 w-9 items-center justify-center rounded-full text-[#776e69] transition hover:bg-[#f7eeed] active:scale-[.97]" aria-label="Close search">
+          <button type="button" onClick={() => setOpen(false)} className="flex h-9 w-9 items-center justify-center rounded-full text-[#776e69] transition hover:bg-[#f7eeed] active:scale-[.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7D1D8]" aria-label="Close search">
             <X size={16} />
           </button>
         </div>
