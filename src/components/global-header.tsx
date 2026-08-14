@@ -15,50 +15,31 @@ export function GlobalHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 flex h-[68px] w-full max-w-full min-w-0 items-center gap-2 overflow-x-clip border-b border-[#F1E7E3] bg-[#FDFAF8]/95 px-4 backdrop-blur-xl sm:h-[64px] sm:gap-3 sm:px-7 lg:px-10">
+    <header className="sticky top-0 z-40 flex h-[56px] w-full max-w-full min-w-0 items-center gap-2 overflow-x-clip border-b border-[#EEE9E6] bg-white/95 px-3 backdrop-blur-xl sm:h-[60px] sm:gap-3 sm:px-6 lg:h-[64px] lg:px-10">
       <button
         type="button"
         onClick={() => router.push('/search')}
-        className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-full border border-[#F1E7E3] bg-white px-3.5 text-left text-[13px] text-[#9A9088] shadow-[0_1px_3px_rgba(60,40,30,.03)] transition hover:border-[#E6D9D2] sm:h-10 sm:max-w-[420px] sm:px-4"
+        className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-[12px] border border-[#EEE9E6] bg-[#FCFBFA] px-3 text-left text-[12px] text-[#98908B] shadow-[0_1px_2px_rgba(60,40,30,.02)] transition hover:border-[#E5DDD9] sm:h-10 sm:max-w-[380px] sm:rounded-full sm:px-4 sm:text-[13px]"
         aria-label="Search Glow OS"
       >
-        <Search size={16} className="shrink-0 text-[#B5ACA5]" />
-        <span className="min-w-0 truncate">Search Glow OS...</span>
+        <Search size={15} className="shrink-0 text-[#AAA29D]" />
+        <span className="min-w-0 truncate">Search Glow OS</span>
       </button>
 
-      <div className="flex min-w-0 shrink-0 items-center gap-1.5 sm:gap-2">
-        <button
-          type="button"
-          onClick={() => router.push('/settings?section=appearance')}
-          className="hidden h-10 w-10 items-center justify-center rounded-full text-[#8A8078] transition hover:bg-white sm:inline-flex"
-          aria-label="Appearance settings"
-        >
-          <Sun size={17} strokeWidth={1.6} />
+      <div className="flex min-w-0 shrink-0 items-center gap-1 sm:gap-2">
+        <button type="button" onClick={() => router.push('/settings?section=appearance')} className="hidden h-9 w-9 items-center justify-center rounded-full text-[#8A8078] transition hover:bg-[#FBF8F7] sm:inline-flex" aria-label="Appearance settings">
+          <Sun size={16} strokeWidth={1.6} />
         </button>
-        <button
-          type="button"
-          onClick={() => router.push('/notices')}
-          className="relative inline-flex h-10 w-9 shrink-0 items-center justify-center rounded-full text-[#8A8078] transition hover:bg-white sm:w-10"
-          aria-label="Open notifications"
-        >
-          <Bell size={18} strokeWidth={1.6} />
+        <button type="button" onClick={() => router.push('/notices')} className="relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#8A8078] transition hover:bg-[#FBF8F7]" aria-label="Open notifications">
+          <Bell size={17} strokeWidth={1.6} />
         </button>
-        <button
-          type="button"
-          onClick={() => router.push('/settings?section=profile')}
-          className="hidden h-9 w-9 items-center justify-center rounded-full bg-[#F1E0D9] text-[#8A5A56] transition hover:opacity-85 sm:inline-flex"
-          aria-label="Open profile"
-        >
-          <UserRound size={15} />
+        <button type="button" onClick={() => router.push('/settings?section=profile')} className="hidden h-8 w-8 items-center justify-center rounded-full bg-[#FBE8EC] text-[#B96070] transition hover:opacity-85 sm:inline-flex" aria-label="Open profile">
+          <UserRound size={14} />
         </button>
-        <button
-          type="button"
-          onClick={openCreate}
-          className="inline-flex h-11 shrink-0 items-center gap-1 rounded-full bg-[#C9727E] px-3.5 text-[13px] font-medium text-white shadow-[0_6px_16px_rgba(201,114,126,.24)] transition hover:bg-[#BD6672] sm:h-10 sm:gap-1.5 sm:pl-4 sm:pr-3"
-        >
-          <Plus size={16} strokeWidth={2} />
-          <span className="whitespace-nowrap">{createLabel}</span>
-          <ChevronDown size={13} className="opacity-80" />
+        <button type="button" onClick={openCreate} className="inline-flex h-9 shrink-0 items-center gap-1 rounded-[12px] bg-[#C96F7F] px-3 text-[12px] font-medium text-white shadow-[0_4px_12px_rgba(201,111,127,.16)] transition hover:bg-[#B95F70] sm:rounded-full sm:px-3.5 sm:text-[12.5px]">
+          <Plus size={15} strokeWidth={2} />
+          <span className="hidden whitespace-nowrap xs:inline sm:inline">{createLabel}</span>
+          <ChevronDown size={12} className="hidden opacity-75 sm:block" />
         </button>
       </div>
     </header>
