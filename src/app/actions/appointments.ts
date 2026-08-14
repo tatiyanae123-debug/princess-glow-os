@@ -14,6 +14,7 @@ export async function createAppointmentAction(formData: unknown) {
   if (!parsed.success) return { error: parsed.error.flatten() };
   const appointment = await data.createAppointment(userId, parsed.data);
   revalidatePath('/calendar');
+  revalidatePath('/home');
   return { data: appointment };
 }
 
@@ -25,7 +26,13 @@ export async function updateAppointmentAction(id: string, formData: unknown) {
   if (!parsed.success) return { error: parsed.error.flatten() };
   const appointment = await data.updateAppointment(id, userId, parsed.data);
   revalidatePath('/calendar');
+  revalidatePath('/home');
   return { data: appointment };
+}
+
+export async function updateAppointmentFormAction(id: string, formData: FormData): Promise<void> {
+  const payload = Object.fromEntries(formData.entries());
+  await updateAppointmentAction(id, payload);
 }
 
 export async function deleteAppointmentAction(id: string) {
@@ -34,5 +41,6 @@ export async function deleteAppointmentAction(id: string) {
   const userId = session.user.id;
   const appointment = await data.deleteAppointment(id, userId);
   revalidatePath('/calendar');
+  revalidatePath('/home');
   return { data: appointment };
 }
