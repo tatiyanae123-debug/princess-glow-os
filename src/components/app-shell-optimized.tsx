@@ -57,7 +57,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const room = roomFor(pathname);
-  const isReferenceDashboard = pathname === '/dashboard';
+  const isReferenceDashboard = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
   const [focus, setFocus] = useState(false);
   const [dashboardScale, setDashboardScale] = useState(1);
 
@@ -101,7 +101,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 
-  if (isReferenceDashboard && !focus) {
+  if (isReferenceDashboard) {
     return (
       <GlowProvider>
         <div className="min-h-screen w-full overflow-x-clip bg-white text-[#25211f]" data-room="dashboard" data-focus-mode="false">
