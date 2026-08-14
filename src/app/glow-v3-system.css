@@ -1,0 +1,142 @@
+:root {
+  --v3-white: #ffffff;
+  --v3-blush: #F7D1D8;
+  --v3-blush-soft: #FAE6E7;
+  --v3-ivory-rose: #F7EEED;
+  --v3-ink: #25211f;
+  --v3-muted: #827974;
+  --v3-hairline: rgba(83, 62, 52, .12);
+  --v3-sidebar-width: 238px;
+  --v3-header-height: 64px;
+  --v3-page-gutter: clamp(16px, 2.35vw, 40px);
+  --v3-radius-sm: 10px;
+  --v3-radius-md: 14px;
+  --v3-radius-lg: 20px;
+  --v3-radius-xl: 28px;
+  --v3-control-height: 40px;
+  --v3-shadow-1: 0 2px 10px rgba(61, 43, 35, .035);
+  --v3-shadow-2: 0 10px 30px rgba(61, 43, 35, .06);
+  --v3-shadow-3: 0 24px 64px rgba(61, 43, 35, .10);
+  --v3-inner-highlight: inset 0 1px 0 rgba(255,255,255,.88);
+  --v3-display: 'Playfair Display', Georgia, serif;
+  --v3-ui: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* V3 is the application contract. Older room CSS may decorate content but cannot replace the shell. */
+[data-glow-shell='v3'] {
+  --glow-bg: var(--v3-white);
+  --glow-sidebar: var(--v3-white);
+  --glow-surface: var(--v3-white);
+  --glow-surface-muted: #fffaf9;
+  --glow-border: var(--v3-hairline);
+  --glow-text: var(--v3-ink);
+  --glow-text-muted: var(--v3-muted);
+  --glow-accent: #C45F76;
+  --glow-accent-soft: rgba(247, 209, 216, .48);
+  --glow-shadow: var(--v3-shadow-2);
+  --glow-radius: var(--v3-radius-md);
+  min-height: 100vh;
+  background: var(--v3-white) !important;
+  color: var(--v3-ink);
+  font-family: var(--v3-ui);
+}
+
+[data-glow-shell='v3'] .glow-display,
+[data-glow-shell='v3'] h1,
+[data-glow-shell='v3'] h2.glow-display,
+[data-glow-shell='v3'] h3.glow-display {
+  font-family: var(--v3-display);
+}
+
+[data-glow-shell='v3'] .glow-v3-route-stage {
+  position: relative;
+  isolation: isolate;
+}
+
+[data-glow-shell='v3'] .glow-v3-route-stage::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -18px -12px auto;
+  height: 190px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 78% 18%, rgba(247,209,216,.18), transparent 33%),
+    radial-gradient(circle at 16% 4%, rgba(250,230,231,.22), transparent 30%);
+  filter: blur(2px);
+}
+
+[data-glow-shell='v3'] :where(button, a, input, textarea, select) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-glow-shell='v3'] :where(button, a):focus-visible,
+[data-glow-shell='v3'] :where(input, textarea, select):focus-visible {
+  outline: 2px solid rgba(196,95,118,.32);
+  outline-offset: 2px;
+}
+
+[data-glow-shell='v3'] :where(button, a) {
+  transition-property: transform, background-color, border-color, box-shadow, color, opacity;
+  transition-duration: 160ms;
+  transition-timing-function: ease;
+}
+
+[data-glow-shell='v3'] button:active,
+[data-glow-shell='v3'] a:active {
+  transform: scale(.985);
+}
+
+[data-glow-shell='v3'] :where(input, textarea, select) {
+  min-height: 40px;
+  border-color: var(--v3-hairline);
+  background: rgba(255,255,255,.96);
+  color: var(--v3-ink);
+  box-shadow: var(--v3-inner-highlight);
+}
+
+[data-glow-shell='v3'] :where(.editorial-surface, .paper-card) {
+  border-color: var(--v3-hairline);
+  background: var(--v3-white);
+  box-shadow: var(--v3-shadow-1), var(--v3-inner-highlight);
+}
+
+/* Standard surface helpers for pages migrating off one-off legacy values. */
+.v3-surface {
+  border: 1px solid var(--v3-hairline);
+  border-radius: var(--v3-radius-lg);
+  background: rgba(255,255,255,.96);
+  box-shadow: var(--v3-shadow-1), var(--v3-inner-highlight);
+}
+.v3-surface-floating {
+  border: 1px solid rgba(255,255,255,.88);
+  border-radius: var(--v3-radius-xl);
+  background: rgba(255,255,255,.86);
+  box-shadow: var(--v3-shadow-3), var(--v3-inner-highlight);
+  backdrop-filter: blur(18px) saturate(1.08);
+}
+.v3-hairline { border-color: var(--v3-hairline); }
+.v3-accent-soft { background: var(--v3-blush-soft); }
+.v3-depth-1 { box-shadow: var(--v3-shadow-1), var(--v3-inner-highlight); }
+.v3-depth-2 { box-shadow: var(--v3-shadow-2), var(--v3-inner-highlight); }
+.v3-depth-3 { box-shadow: var(--v3-shadow-3), var(--v3-inner-highlight); }
+
+/* Light spatial depth only. Content stays on a stable readable foreground plane. */
+.v3-depth-plane {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+.v3-depth-plane:hover {
+  transform: translate3d(0,-1px,0) scale(1.002);
+}
+
+@media (max-width: 767px) {
+  :root { --v3-header-height: 58px; --v3-page-gutter: 14px; }
+  [data-glow-shell='v3'] button,
+  [data-glow-shell='v3'] a { min-height: 40px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v3-depth-plane,
+  .v3-depth-plane:hover { transform: none !important; }
+}
