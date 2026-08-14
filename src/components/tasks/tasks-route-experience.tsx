@@ -19,7 +19,7 @@ export function TasksRouteExperience({
   blockedTaskIds,
 }: {
   initialTasks: Task[];
-  blockedTaskIds: string[];
+  blockedTaskIds: Record<string, string[]>;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
