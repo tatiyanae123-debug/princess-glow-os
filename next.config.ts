@@ -12,8 +12,6 @@ const nextConfig: NextConfig = {
       { source: '/command', destination: '/search', permanent: false },
       { source: '/add-anything', destination: '/intake', permanent: false },
       { source: '/medications', destination: '/maintenance', permanent: false },
-      { source: '/sleep', destination: '/wellness?view=sleep', permanent: false },
-      { source: '/symptoms', destination: '/wellness?view=symptoms', permanent: false },
       { source: '/applications', destination: '/work?view=applications', permanent: false },
       { source: '/interviews', destination: '/work?view=interviews', permanent: false },
       { source: '/interview-prep', destination: '/work?mode=interview-prep', permanent: false },
