@@ -13,7 +13,7 @@ const PRIMARY_DAY_MODES = [
   { slug: 'deep-work', label: 'Most Highly Productive Day', short: 'Maximum focus', note: 'Protect deep work, surface the highest-value priorities, and keep optional noise low.' },
   { slug: 'normal', label: 'Productive Day', short: 'Balanced progress', note: 'A realistic full day with priorities, routines, meals, movement, and normal commitments.' },
   { slug: 'low-energy', label: 'Bare Minimum Day', short: 'Protect essentials', note: 'Keep true essentials, reduce optional effort, and choose low-energy versions of routines and habits.' },
-  { slug: 'emergency', label: 'Clear Everything Day', short: 'Clear flexible load', note: 'Protect immovable commitments and essentials while Glow proposes what flexible work can move.' },
+  { slug: 'sick', label: 'Clear Everything Day', short: 'Clear flexible load', note: 'Protect immovable commitments and essentials while Glow proposes what flexible work can move.' },
 ] as const;
 
 export async function AdaptiveTodayPanel({ userId }: { userId: string }) {
