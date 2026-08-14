@@ -3,29 +3,44 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  CalendarDays, CalendarRange, ChevronDown, CircleDot, CircleEllipsis, Gem, Heart, HeartPulse, Hexagon,
-  Menu, Puzzle, RefreshCw, Sparkles, SquarePen, Tag, UserRound, X, type LucideIcon,
+  CalendarDays, CalendarRange, ChevronDown, CircleDot, CircleEllipsis, Gem, HeartPulse, Hexagon,
+  Menu, Puzzle, RefreshCw, Sparkles, SquarePen, UserRound, X, type LucideIcon,
 } from 'lucide-react';
 import { navItems, type NavItem } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 import { useMemo, useState } from 'react';
 
 const PRIMARY:Array<{label:string;href:string;icon:LucideIcon}>=[
-  {label:'Home',href:'/dashboard',icon:CircleDot},{label:'Plan',href:'/planning',icon:CalendarRange},{label:'Tasks',href:'/tasks',icon:SquarePen},
-  {label:'Calendar',href:'/calendar',icon:CalendarDays},{label:'Routines',href:'/routines',icon:RefreshCw},{label:'Habits',href:'/habits',icon:Heart},
-  {label:'Health & Care',href:'/wellness',icon:HeartPulse},{label:'Beauty',href:'/beauty',icon:Sparkles},{label:'Money & Growth',href:'/finance',icon:Hexagon},
-  {label:'Projects',href:'/projects',icon:Tag},{label:'Glow',href:'/brain',icon:Gem},{label:'Life World',href:'/world',icon:Puzzle},
+  {label:'Home',href:'/dashboard',icon:CircleDot},
+  {label:'Plan',href:'/planning',icon:CalendarRange},
+  {label:'Calendar',href:'/calendar',icon:CalendarDays},
+  {label:'Tasks',href:'/tasks',icon:SquarePen},
+  {label:'Routines',href:'/routines',icon:RefreshCw},
+  {label:'Wellness',href:'/wellness',icon:HeartPulse},
+  {label:'Beauty',href:'/beauty',icon:Sparkles},
+  {label:'Money',href:'/finance',icon:Hexagon},
+  {label:'Projects',href:'/projects',icon:SquarePen},
+  {label:'Glow Brain',href:'/brain',icon:Gem},
+  {label:'Life World',href:'/world',icon:Puzzle},
 ];
+
 const GROUPS=[
-  {label:'PLAN',paths:['/tasks','/calendar','/planning','/routines','/habits','/reminders','/today','/tomorrow','/work']},
-  {label:'HEALTH & CARE',paths:['/fitness','/wellness','/food','/beauty','/beauty/lab','/hair','/maintenance']},
-  {label:'MONEY & GROWTH',paths:['/finance','/finance/brain','/goals']},
-  {label:'GLOW',paths:['/brain','/concierge','/briefings','/observations','/inbox','/memory','/timeline','/intake','/rules']},
-  {label:'LIBRARY & SYSTEM',paths:['/notes','/closet','/gmail','/resources','/connections','/import','/settings','/home']},
+  {label:'TODAY',paths:['/dashboard','/today','/briefings']},
+  {label:'LIFE',paths:['/calendar','/tasks','/reminders','/timeline','/goals','/planning','/tomorrow']},
+  {label:'MIND',paths:['/brain','/concierge','/memory','/observations','/graph','/notes']},
+  {label:'WELLNESS',paths:['/wellness','/fitness','/food','/maintenance','/habits','/routines']},
+  {label:'BEAUTY',paths:['/beauty','/beauty/lab','/hair']},
+  {label:'MONEY',paths:['/finance/brain','/finance','/goals']},
+  {label:'WORK + CREATE',paths:['/projects','/creative-studio','/work']},
+  {label:'HOME + WORLD',paths:['/home','/all-rooms','/world','/closet']},
+  {label:'TOOLS + MODES',paths:['/focus','/intake','/inbox','/rules']},
+  {label:'SYSTEM',paths:['/gmail','/connections','/import','/notices','/resources','/settings']},
 ];
 
 export function Sidebar(){
-  const pathname=usePathname();const[mobileOpen,setMobileOpen]=useState(false);const[roomsOpen,setRoomsOpen]=useState(false);
+  const pathname=usePathname();
+  const[mobileOpen,setMobileOpen]=useState(false);
+  const[roomsOpen,setRoomsOpen]=useState(false);
   const byHref=useMemo(()=>new Map(navItems.map(item=>[item.href,item])),[]);
   const roomItem=(item:NavItem)=>{const Icon=item.icon;const active=pathname===item.href||pathname.startsWith(`${item.href}/`);return <Link key={item.href} href={item.href} onClick={()=>setMobileOpen(false)} className={cn('flex min-h-9 items-center gap-2.5 rounded-[10px] px-3 text-[12.5px] transition',active?'bg-[#FBE4E8] font-medium text-[#B15A68]':'text-[#726B67] hover:bg-[#FAF6F4] hover:text-[#2B2420]')}><Icon size={14} strokeWidth={1.6}/><span>{item.label}</span></Link>};
   return <aside className="flex h-full w-full flex-col border-b border-[#F1E7E3] bg-white px-4 py-4 lg:min-h-screen lg:w-[236px] lg:border-b-0 lg:border-r lg:px-5 lg:py-7">
@@ -34,7 +49,7 @@ export function Sidebar(){
       <nav aria-label="Primary Glow OS navigation" className="space-y-1">{PRIMARY.map(item=>{const active=pathname===item.href||pathname.startsWith(`${item.href}/`);const Icon=item.icon;return <Link key={item.label} href={item.href} onClick={()=>setMobileOpen(false)} className={cn('flex min-h-[42px] items-center gap-3 rounded-[12px] px-3.5 text-[13.5px] font-medium transition',active?'bg-[#FBE4E8] text-[#B15A68]':'text-[#4A4440] hover:bg-[#FAF6F4]')}><Icon size={16} strokeWidth={1.7}/><span>{item.label}</span></Link>})}</nav>
       <div className="my-4 h-px bg-[#F1E7E3]"/>
       <div className={cn('flex min-h-[38px] items-center rounded-[10px]',pathname==='/all-rooms'?'bg-[#FBE4E8] text-[#B15A68]':'text-[#8A8078] hover:bg-[#FAF6F4]')}><Link href="/all-rooms" onClick={()=>setMobileOpen(false)} className="flex min-h-[38px] min-w-0 flex-1 items-center gap-2.5 px-3.5 text-[12px] font-medium"><CircleEllipsis size={14}/><span>All Rooms</span></Link><button type="button" onClick={()=>setRoomsOpen(v=>!v)} className="flex h-[38px] w-9 items-center justify-center" aria-label="Expand room list" aria-expanded={roomsOpen}><ChevronDown size={13} className={cn('transition-transform',roomsOpen?'rotate-180':'')}/></button></div>
-      {roomsOpen?<div className="mt-3 max-h-[42vh] space-y-4 overflow-y-auto pr-1">{GROUPS.map(group=><section key={group.label}><p className="mb-1 px-3.5 text-[9px] font-semibold uppercase tracking-[.14em] text-[#B5ACA5]">{group.label}</p><div className="space-y-0.5">{group.paths.map(path=>byHref.get(path)).filter(Boolean).map(item=>roomItem(item as NavItem))}</div></section>)}</div>:null}
+      {roomsOpen?<div className="mt-3 max-h-[50vh] space-y-4 overflow-y-auto pr-1">{GROUPS.map(group=><section key={group.label}><p className="mb-1 px-3.5 text-[9px] font-semibold uppercase tracking-[.14em] text-[#B5ACA5]">{group.label}</p><div className="space-y-0.5">{group.paths.map(path=>byHref.get(path)).filter(Boolean).map(item=>roomItem(item as NavItem))}</div></section>)}</div>:null}
     </div>
     <Link href="/settings?section=profile" className="hidden items-center gap-2.5 rounded-[14px] border border-[#F1E7E3] bg-[#FDF8F6] px-3 py-2.5 lg:flex"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F1E0D9] text-[#8A5A56]"><UserRound size={15}/></span><span className="min-w-0 flex-1"><span className="block truncate text-[12px] font-medium text-[#3A332E]">Tatiyana</span><span className="block text-[10px] text-[#9A9088]">Glow Member</span></span><ChevronDown size={13} className="shrink-0 text-[#9A9088]"/></Link>
   </aside>;
