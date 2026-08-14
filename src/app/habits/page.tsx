@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { HabitsExperience } from '@/components/habits/habits-experience';
+import { HabitsRouteExperience } from '@/components/habits/habits-route-experience';
 import { getHabitLogsForUser, getHabitsByUser } from '@/lib/data/habits';
 
 export const dynamic = 'force-dynamic';
@@ -24,7 +24,7 @@ export default async function HabitsPage() {
 
   return (
     <AppShell>
-      <HabitsExperience initialHabits={habits} initialLogs={logs} />
+      <HabitsRouteExperience initialHabits={habits} initialLogs={logs} />
     </AppShell>
   );
 }
