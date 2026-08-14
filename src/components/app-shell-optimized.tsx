@@ -12,6 +12,7 @@ import { DeferredGlobalControls } from '@/components/deferred-global-controls';
 
 function roomFor(pathname: string) {
   if (pathname.startsWith('/beauty/lab')) return 'beauty-lab';
+  if (pathname.startsWith('/skincare') || pathname.startsWith('/makeup')) return 'beauty';
   if (pathname.startsWith('/finance/brain')) return 'financial-brain';
   if (pathname.startsWith('/calendar')) return 'calendar';
   if (pathname.startsWith('/reminders')) return 'reminders';
