@@ -93,4 +93,25 @@ describe('interactive control audit',()=>{
     expect(text).toContain('CUSTOM_DESTINATIONS');
     expect(text).toContain("candidate.href?.startsWith('/')");
   });
+
+  it('all non-dashboard routes stay inside the Glow V3 shell instead of the legacy architectural wrapper',()=>{
+    const file=path.join(SRC,'components','app-shell-optimized.tsx');
+    const text=fs.readFileSync(file,'utf8');
+    expect(text).toContain('data-glow-shell="v3"');
+    expect(text).toContain("pathname.startsWith('/search')");
+    expect(text).not.toContain("import { ArchitecturalWorldFrame }");
+    expect(text).not.toContain("import { RoomUpgradeDeck }");
+    expect(text).not.toContain('<ArchitecturalWorldFrame>');
+    expect(text).toContain('<Sidebar variant="dashboard-reference" />');
+    expect(text).toContain('<GlobalHeader />');
+  });
+
+  it('universal Search renders inside the shared AppShell and never mounts a competing legacy shell',()=>{
+    const file=path.join(SRC,'app','search','page.tsx');
+    const text=fs.readFileSync(file,'utf8');
+    expect(text).toContain('<AppShell>');
+    expect(text).toContain('Ask your life anything.');
+    expect(text).toContain('Results open the real connected room and never drop you into an older interface.');
+    expect(text).not.toContain('ArchitecturalWorldFrame');
+  });
 });
