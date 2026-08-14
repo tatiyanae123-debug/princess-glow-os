@@ -7,6 +7,7 @@ import './cinematic-interactions.css';
 import './architectural-world.css';
 import './pink-system.css';
 import './apple-reference-final.css';
+import './dashboard-reference-3d.css';
 
 export const metadata: Metadata = {
   title: 'Glow OS',
