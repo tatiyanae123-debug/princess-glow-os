@@ -4,10 +4,17 @@ import { addInboxItemFormAction, finishDayFormAction, finishFocusSessionFormActi
 import { getActiveFocusSession, getAdaptiveState, getLifeModes, getTodayReview } from '@/lib/intelligence/adaptive-os';
 
 function Surface({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <section className={`rounded-[18px] border border-[#F1E7E3] bg-white ${className}`}>{children}</section>;
+  return <section className={`v3-surface rounded-[18px] border border-[#F1E7E3] bg-white ${className}`}>{children}</section>;
 }
 
 const fieldClass = 'rounded-lg border border-[#F1E7E3] px-3 py-2.5 text-[12px] text-[#2B2420] placeholder:text-[#B5ACA5] outline-none focus:border-[#C9727E]';
+
+const PRIMARY_DAY_MODES = [
+  { slug: 'deep-work', label: 'Most Highly Productive Day', short: 'Maximum focus', note: 'Protect deep work, surface the highest-value priorities, and keep optional noise low.' },
+  { slug: 'normal', label: 'Productive Day', short: 'Balanced progress', note: 'A realistic full day with priorities, routines, meals, movement, and normal commitments.' },
+  { slug: 'low-energy', label: 'Bare Minimum Day', short: 'Protect essentials', note: 'Keep true essentials, reduce optional effort, and choose low-energy versions of routines and habits.' },
+  { slug: 'emergency', label: 'Clear Everything Day', short: 'Clear flexible load', note: 'Protect immovable commitments and essentials while Glow proposes what flexible work can move.' },
+] as const;
 
 export async function AdaptiveTodayPanel({ userId }: { userId: string }) {
   let state; let modes; let activeFocus; let dayReview;
@@ -25,21 +32,38 @@ export async function AdaptiveTodayPanel({ userId }: { userId: string }) {
   }
   const primary = state.now.primary;
   const nextEvent = state.context.nextEvent;
+  const coreModes = PRIMARY_DAY_MODES.flatMap((definition) => {
+    const mode = modes.find((candidate) => candidate.slug === definition.slug);
+    return mode ? [{ ...mode, displayName: definition.label, short: definition.short, note: definition.note }] : [];
+  });
+  const activeCoreMode = coreModes.find((mode) => mode.isActive) ?? coreModes.find((mode) => mode.slug === 'normal') ?? coreModes[0];
 
   return (
     <div className="space-y-4">
       <Surface className="overflow-hidden">
-        <div className="flex items-center justify-between border-b border-[#F1E7E3] px-5 py-3">
-          <p className="text-[10.5px] font-semibold uppercase tracking-[.12em] text-[#8A8078]">Life Mode</p>
-          <Link href="/settings/intelligence" className="text-[10.5px] text-[#C9727E]">Intelligence settings</Link>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#F1E7E3] px-5 py-3">
+          <div>
+            <p className="text-[10.5px] font-semibold uppercase tracking-[.12em] text-[#8A8078]">Four Day Modes</p>
+            <p className="mt-1 text-[10.5px] text-[#A79D96]">Your selected mode changes how Glow prioritizes the day. It never silently moves protected commitments.</p>
+          </div>
+          <Link href="/day-mode" className="text-[10.5px] font-medium text-[#C9727E]">Open Day Mode planner</Link>
         </div>
-        <div className="flex gap-2 overflow-x-auto p-4">
-          {modes.map((mode) => (
-            <form action={setLifeModeAction.bind(null, mode.id)} key={mode.id}>
-              <button type="submit" className={`min-w-max rounded-full border px-4 py-2 text-[11.5px] font-medium transition ${mode.isActive ? 'border-[#C9727E] bg-[#FBE4E8] text-[#B15A68]' : 'border-[#F1E7E3] bg-white text-[#8A8078] hover:bg-[#FDF8F6]'}`}>{mode.name}</button>
+        <div className="grid gap-2 p-4 sm:grid-cols-2 xl:grid-cols-4">
+          {coreModes.map((mode) => (
+            <form action={setLifeModeAction.bind(null, mode.id)} key={mode.id} className="min-w-0">
+              <button type="submit" aria-pressed={mode.isActive} className={`v3-depth-plane min-h-[76px] w-full rounded-[16px] border px-3 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7D1D8] ${mode.isActive ? 'border-[#DDA9B5] bg-[#FAE6E7] text-[#A94D63] shadow-[0_8px_22px_rgba(186,82,107,.09)]' : 'border-[#F1E7E3] bg-white text-[#655D58] hover:border-[#E8D8D4] hover:bg-[#FFFDFC]'}`}>
+                <span className="block text-[11.5px] font-semibold leading-4">{mode.displayName}</span>
+                <span className="mt-1 block text-[9.5px] uppercase tracking-[.08em] text-[#9B918B]">{mode.short}</span>
+              </button>
             </form>
           ))}
         </div>
+        {activeCoreMode ? (
+          <div className="border-t border-[#F1E7E3] bg-[#FFFDFC] px-5 py-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[.1em] text-[#B55F70]">Active throughout Glow · {activeCoreMode.displayName}</p>
+            <p className="mt-1 text-[11px] leading-4 text-[#817771]">{activeCoreMode.note}</p>
+          </div>
+        ) : null}
       </Surface>
 
       <div className="grid gap-4 xl:grid-cols-[1.45fr_.9fr]">
