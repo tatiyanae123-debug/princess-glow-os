@@ -56,6 +56,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const room = roomFor(pathname);
   const isReferenceDashboard = pathname === '/dashboard';
   const [focus, setFocus] = useState(false);
+  const [dashboardScale, setDashboardScale] = useState(1);
 
   useEffect(() => {
     const sync = () => setFocus(new URLSearchParams(window.location.search).get('focus') === '1');
@@ -67,6 +68,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       document.removeEventListener('glow:focus-changed', sync);
     };
   }, [pathname]);
+
+  useEffect(() => {
+    if (!isReferenceDashboard) return;
+    const resize = () => setDashboardScale(Math.min(1, window.innerWidth / 1536));
+    resize();
+    window.addEventListener('resize', resize);
+    return () => window.removeEventListener('resize', resize);
+  }, [isReferenceDashboard]);
 
   function exitFocus() {
     const params = new URLSearchParams(window.location.search);
@@ -82,15 +91,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 
+  if (isReferenceDashboard && !focus) {
+    return (
+      <GlowProvider>
+        <div className="min-h-screen overflow-x-hidden bg-[#f6efec] text-[#25211f]" data-room="dashboard" data-focus-mode="false">
+          <div style={{ width: 1536, zoom: dashboardScale }} className="flex min-h-[1024px] bg-[#f8f4f2]">
+            <div className="h-[1024px] w-[238px] shrink-0"><Sidebar variant="dashboard-reference" /></div>
+            <main className="min-h-[1024px] w-[1298px] shrink-0 p-0">{content}</main>
+          </div>
+        </div>
+      </GlowProvider>
+    );
+  }
+
   return (
     <GlowProvider>
-      <div className={isReferenceDashboard ? 'min-h-screen bg-[#F7EEED] text-[#25211F]' : 'room-canvas min-h-screen bg-[#FDFAF8] text-[#2B2420]'} data-room={room} data-focus-mode={focus ? 'true' : 'false'}>
-        <div className={isReferenceDashboard ? 'flex min-h-screen w-full' : 'mx-auto flex min-h-screen w-full max-w-[1920px] flex-col lg:flex-row'}>
-          {!focus ? <div className={isReferenceDashboard ? 'hidden w-[238px] shrink-0 lg:block' : 'w-full lg:sticky lg:top-0 lg:h-screen lg:w-[236px] lg:shrink-0'}><Sidebar variant={isReferenceDashboard ? 'dashboard-reference' : 'default'} /></div> : null}
+      <div className="room-canvas min-h-screen bg-[#FDFAF8] text-[#2B2420]" data-room={room} data-focus-mode={focus ? 'true' : 'false'}>
+        <div className="mx-auto flex min-h-screen w-full max-w-[1920px] flex-col lg:flex-row">
+          {!focus ? <div className="w-full lg:sticky lg:top-0 lg:h-screen lg:w-[236px] lg:shrink-0"><Sidebar /></div> : null}
           <div className="min-w-0 flex-1 bg-transparent">
-            {!focus && !isReferenceDashboard ? <GlobalHeader /> : null}
-            <main className={isReferenceDashboard ? 'min-h-screen p-0' : focus ? 'min-h-screen px-4 py-8 sm:px-7 lg:px-10' : 'min-h-screen px-4 pb-20 pt-5 sm:px-7 lg:px-10 lg:pt-7'}>
-              {focus || isReferenceDashboard ? content : <ArchitecturalWorldFrame>{content}</ArchitecturalWorldFrame>}
+            {!focus ? <GlobalHeader /> : null}
+            <main className={focus ? 'min-h-screen px-4 py-8 sm:px-7 lg:px-10' : 'min-h-screen px-4 pb-20 pt-5 sm:px-7 lg:px-10 lg:pt-7'}>
+              {focus ? content : <ArchitecturalWorldFrame>{content}</ArchitecturalWorldFrame>}
             </main>
           </div>
         </div>
