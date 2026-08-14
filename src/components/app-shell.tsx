@@ -25,32 +25,44 @@ function roomFor(pathname: string) {
   if (pathname.startsWith('/routines')) return 'routines';
   if (pathname.startsWith('/today') || pathname.startsWith('/dashboard')) return 'dashboard';
   if (pathname.startsWith('/habits')) return 'habits';
+  if (pathname.startsWith('/workout-studio')) return 'fitness';
   if (pathname.startsWith('/fitness')) return 'fitness';
   if (pathname.startsWith('/food')) return 'food';
+  if (pathname.startsWith('/medications')) return 'medications';
+  if (pathname.startsWith('/sleep')) return 'sleep';
+  if (pathname.startsWith('/symptoms')) return 'symptoms';
   if (pathname.startsWith('/beauty')) return 'beauty';
   if (pathname.startsWith('/hair')) return 'hair';
   if (pathname.startsWith('/wellness') || pathname.startsWith('/maintenance')) return 'wellness';
+  if (pathname.startsWith('/spending')) return 'spending';
+  if (pathname.startsWith('/subscriptions')) return 'subscriptions';
+  if (pathname.startsWith('/forecast')) return 'forecast';
+  if (pathname.startsWith('/transactions')) return 'transactions';
   if (pathname.startsWith('/finance')) return 'finance';
   if (pathname.startsWith('/goals')) return 'goals';
-  if (pathname.startsWith('/projects') || pathname.startsWith('/creative-studio')) return 'projects';
-  if (pathname.startsWith('/brain') || pathname.startsWith('/inbox') || pathname.startsWith('/intake') || pathname.startsWith('/rules')) return 'brain';
+  if (pathname.startsWith('/creative-studio')) return 'creative-studio';
+  if (pathname.startsWith('/projects')) return 'projects';
+  if (pathname.startsWith('/brain') || pathname.startsWith('/inbox') || pathname.startsWith('/intake') || pathname.startsWith('/rules') || pathname.startsWith('/command')) return 'brain';
   if (pathname.startsWith('/concierge')) return 'concierge';
   if (pathname.startsWith('/observations')) return 'observations';
   if (pathname.startsWith('/memory')) return 'memory';
   if (pathname.startsWith('/timeline')) return 'timeline';
   if (pathname.startsWith('/briefings')) return 'briefings';
   if (pathname.startsWith('/closet')) return 'closet';
+  if (pathname.startsWith('/travel')) return 'travel';
   if (pathname.startsWith('/world') || pathname.startsWith('/life-world')) return 'world';
   if (pathname.startsWith('/home')) return 'home';
+  if (pathname.startsWith('/interview-prep') || pathname.startsWith('/applications') || pathname.startsWith('/interviews')) return 'interview-prep';
   if (pathname.startsWith('/work')) return 'work';
   if (pathname.startsWith('/graph')) return 'graph';
   if (pathname.startsWith('/notices')) return 'notices';
   if (pathname.startsWith('/all-rooms')) return 'all-rooms';
   if (pathname.startsWith('/notes') || pathname.startsWith('/resources')) return 'notes';
-  if (pathname.startsWith('/connections')) return 'connections';
+  if (pathname.startsWith('/connections') || pathname.startsWith('/brain-connection')) return 'connections';
   if (pathname.startsWith('/gmail')) return 'gmail';
-  if (pathname.startsWith('/import')) return 'import';
-  if (pathname.startsWith('/settings')) return 'settings';
+  if (pathname.startsWith('/import') || pathname.startsWith('/add-anything')) return 'import';
+  if (pathname.startsWith('/focus') || pathname.startsWith('/ambient')) return 'focus';
+  if (pathname.startsWith('/system-overview') || pathname.startsWith('/settings')) return 'settings';
   return 'dashboard';
 }
 
@@ -81,12 +93,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <GlowProvider>
       <div className="room-canvas min-h-screen bg-[#FDFAF8] text-[#2B2420]" data-room={room} data-focus-mode={focus ? 'true' : 'false'}>
-        <div className="mx-auto flex min-h-screen w-full max-w-[1920px] flex-col lg:flex-row">
+        <div className="mx-auto flex min-h-screen w-full max-w-[2100px] flex-col lg:flex-row">
           {!focus ? <div className="w-full lg:sticky lg:top-0 lg:h-screen lg:w-[236px] lg:shrink-0"><Sidebar /></div> : null}
           <div className="min-w-0 flex-1 bg-transparent">
             {!focus ? <GlobalHeader /> : null}
-            <main className={focus ? 'min-h-screen px-4 py-8 sm:px-7 lg:px-10' : 'min-h-screen px-4 pb-20 pt-5 sm:px-7 lg:px-10 lg:pt-7'}>
-              <div key={pathname} className="glow-route-stage mx-auto w-full max-w-[1500px]">
+            <main className={focus ? 'min-h-screen px-4 py-8 sm:px-7 lg:px-10' : 'min-h-screen px-4 pb-20 pt-5 sm:px-7 lg:px-8 lg:pt-6 xl:px-10'}>
+              <div key={pathname} className="glow-route-stage mx-auto w-full max-w-[1560px]">
                 {!focus ? <ArchitecturalWorldLayer /> : null}
                 {children}
                 {!focus ? <RoomUpgradeDeck /> : null}
