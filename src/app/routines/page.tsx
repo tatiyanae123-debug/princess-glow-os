@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { RoutinesExperience } from '@/components/routines/routines-experience';
+import { RoutinesRouteExperience } from '@/components/routines/routines-route-experience';
 import { getRoutinesByUser, getStepsByUser } from '@/lib/data/routines';
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +17,7 @@ export default async function RoutinesPage() {
 
   return (
     <AppShell>
-      <RoutinesExperience initialRoutines={routines} initialSteps={steps} />
+      <RoutinesRouteExperience initialRoutines={routines} initialSteps={steps} />
     </AppShell>
   );
 }
