@@ -7,6 +7,7 @@ import { Sidebar } from '@/components/ui/sidebar';
 import { GlowProvider } from '@/lib/context/glow-provider';
 import { GlobalHeader } from '@/components/global-header';
 import { DeferredGlobalControls } from '@/components/deferred-global-controls';
+import { GlobalCommandSurface } from '@/components/global-command-surface';
 
 function roomFor(pathname: string) {
   if (pathname.startsWith('/beauty/lab')) return 'beauty-lab';
@@ -116,6 +117,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <main className="h-[1024px] w-[1298px] shrink-0 overflow-hidden p-0">{content}</main>
             </div>
           </div>
+          <GlobalCommandSurface />
+          <DeferredGlobalControls />
         </div>
       </GlowProvider>
     );
@@ -159,6 +162,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       ) : null}
 
       {!focus ? <DeferredGlobalControls /> : null}
+      {!focus ? <GlobalCommandSurface /> : null}
     </GlowProvider>
   );
 }
