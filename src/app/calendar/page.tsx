@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { EventManager } from '@/components/calendar/event-manager';
+import { CalendarRouteExperience } from '@/components/calendar/calendar-route-experience';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +14,7 @@ export default async function CalendarPage() {
 
   return (
     <AppShell>
-      <EventManager initialEvents={events} />
+      <CalendarRouteExperience initialEvents={events} />
     </AppShell>
   );
 }
