@@ -1,0 +1,71 @@
+/* Final reference pass: white-first Apple app language with a restrained pink accent. */
+.room-canvas main{background:#FCFBFA}
+.room-canvas main>div{max-width:1500px}
+
+/* Today should feel like an app dashboard, not a poster. */
+.room-canvas[data-room='dashboard'] main header:first-of-type{
+  background:#fff !important;
+  border:1px solid #EEE9E6 !important;
+  border-radius:16px !important;
+  padding:18px !important;
+  box-shadow:0 8px 26px rgba(57,43,38,.025) !important;
+}
+.room-canvas[data-room='dashboard'] main header:first-of-type h1{
+  font-size:clamp(26px,4vw,36px) !important;
+  line-height:1.04 !important;
+}
+.room-canvas[data-room='dashboard'] main header:first-of-type p{max-width:680px}
+.room-canvas[data-room='dashboard'] [class*="bg-[#2B2420]"]{
+  background:#fff !important;
+  color:#2D2927 !important;
+  border-color:#EEE9E6 !important;
+}
+.room-canvas[data-room='dashboard'] [class*="bg-[#2B2420]"] [class*="text-white"]{color:#2D2927 !important}
+.room-canvas[data-room='dashboard'] [class*="bg-[#2B2420]"] [class*="text-white/"]{color:#8D8580 !important}
+
+/* Clean card geometry like the references. */
+.room-canvas section[class*="rounded-[18px]"],
+.room-canvas section[class*="rounded-[20px]"],
+.room-canvas article[class*="rounded-[18px]"],
+.room-canvas div[class*="rounded-[18px]"][class*="border"]{
+  border-radius:15px !important;
+  box-shadow:0 6px 22px rgba(55,42,36,.02);
+}
+
+/* Refined page titles. */
+.room-canvas h1.glow-display{font-size:clamp(30px,4vw,42px) !important;line-height:1.02 !important}
+.room-canvas h2.glow-display{letter-spacing:-.018em}
+
+/* Tab systems should look like the reference pages: underline / quiet selection, not heavy pills. */
+.room-canvas [role='tablist'],
+.room-canvas nav[aria-label*='view' i]{background:#fff !important;border-color:#EEE9E6 !important}
+.room-canvas button[class*="rounded-full"]{box-shadow:none}
+
+/* Multicolor is secondary and soft. */
+.room-canvas[data-room='food']{--room-accent:#93A487;--room-soft:#F3F7F1}
+.room-canvas[data-room='wellness']{--room-accent:#7E9A94;--room-soft:#F1F6F4}
+.room-canvas[data-room='fitness']{--room-accent:#8094A7;--room-soft:#F1F5F8}
+.room-canvas[data-room='beauty'],.room-canvas[data-room='beauty-lab'],.room-canvas[data-room='hair']{--room-accent:#C86F80;--room-soft:#FFF7F8}
+.room-canvas[data-room='finance'],.room-canvas[data-room='financial-brain']{--room-accent:#76907C;--room-soft:#F3F7F3}
+.room-canvas[data-room='brain'],.room-canvas[data-room='memory'],.room-canvas[data-room='observations']{--room-accent:#867B9F;--room-soft:#F6F4F9}
+
+/* Forms and controls. */
+.room-canvas input,.room-canvas textarea,.room-canvas select{border-radius:10px !important;background:#fff !important}
+.room-canvas button,.room-canvas a{touch-action:manipulation}
+
+/* Photo-driven beauty + food. */
+.room-canvas[data-room='food'] img,
+.room-canvas[data-room='beauty'] img,
+.room-canvas[data-room='beauty-lab'] img,
+.room-canvas[data-room='hair'] img{
+  object-fit:cover;
+}
+
+@media(max-width:767px){
+  .room-canvas main{padding-left:14px !important;padding-right:14px !important;padding-top:14px !important}
+  .room-canvas[data-room='dashboard'] main header:first-of-type{padding:15px !important}
+  .room-canvas[data-room='dashboard'] main header:first-of-type h1{font-size:28px !important}
+  .glow-world-context__rail{display:none !important}
+  .glow-world-context{margin-bottom:12px !important}
+  .room-canvas h1.glow-display{font-size:30px !important}
+}
