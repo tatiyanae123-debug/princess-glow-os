@@ -26,10 +26,17 @@ import {
   lifeTimelineEvents,
   planningPeriods,
 } from '@/db/schema/completion-v1';
-import { Search, Sparkles } from 'lucide-react';
+import { ArrowRight, Command, Search, Sparkles } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 type Result = { id:string; type:string; title:string; subtitle?:string|null; href:string };
+
+const SUGGESTED = [
+  'What needs my attention this week?',
+  'Show my upcoming appointments',
+  'Find my recent Terrain Design notes',
+  'What have I been putting off lately?',
+];
 
 export default async function SearchPage({searchParams}:{searchParams:Promise<{q?:string}>}){
   const session=await auth();
@@ -41,31 +48,7 @@ export default async function SearchPage({searchParams}:{searchParams:Promise<{q
   if(term){
     const like=`%${term}%`;
     const userId=session.user.id;
-    const [
-      taskRows,
-      noteRows,
-      goalRows,
-      projectRows,
-      memoryRows,
-      productRows,
-      linkRows,
-      calendarRows,
-      habitRows,
-      financeRows,
-      planningRows,
-      hairRows,
-      fitnessRows,
-      closetRows,
-      financeGoalRows,
-      timelineRows,
-      observationRows,
-      routineRows,
-      routineStepRows,
-      appointmentRows,
-      beautyRoutineRows,
-      medicationRows,
-      supplementRows,
-    ]=await Promise.all([
+    const [taskRows,noteRows,goalRows,projectRows,memoryRows,productRows,linkRows,calendarRows,habitRows,financeRows,planningRows,hairRows,fitnessRows,closetRows,financeGoalRows,timelineRows,observationRows,routineRows,routineStepRows,appointmentRows,beautyRoutineRows,medicationRows,supplementRows]=await Promise.all([
       db.select().from(tasks).where(and(eq(tasks.userId,userId),or(ilike(tasks.title,like),ilike(tasks.description,like)))).limit(8),
       db.select().from(notes).where(and(eq(notes.userId,userId),or(ilike(notes.title,like),ilike(notes.content,like)))).limit(8),
       db.select().from(goals).where(and(eq(goals.userId,userId),or(ilike(goals.title,like),ilike(goals.description,like)))).limit(8),
@@ -112,11 +95,56 @@ export default async function SearchPage({searchParams}:{searchParams:Promise<{q
       ...financeRows.map(x=>({id:x.id,type:'Finance',title:x.title,subtitle:x.notes??x.category,href:'/finance'})),
       ...financeGoalRows.map(x=>({id:x.id,type:'Finance Goal',title:x.name,subtitle:x.notes,href:'/finance/brain'})),
       ...planningRows.map(x=>({id:x.id,type:'Planning',title:x.title,subtitle:x.focus,href:'/planning'})),
-      ...medicationRows.map(x=>({id:x.id,type:'Medication',title:x.name,subtitle:x.dosage??x.instructions??x.notes,href:'/wellness'})),
-      ...supplementRows.map(x=>({id:x.id,type:'Supplement',title:x.name,subtitle:x.dosage??x.instructions??x.notes,href:'/wellness'})),
+      ...medicationRows.map(x=>({id:x.id,type:'Medication',title:x.name,subtitle:x.dosage??x.instructions??x.notes,href:'/maintenance'})),
+      ...supplementRows.map(x=>({id:x.id,type:'Supplement',title:x.name,subtitle:x.dosage??x.instructions??x.notes,href:'/maintenance'})),
       ...linkRows.map(x=>({id:x.id,type:'Link',title:x.title,subtitle:x.category,href:'/resources'})),
     ];
   }
 
-  return <AppShell><div className="mx-auto max-w-5xl space-y-5"><header className="rounded-[20px] border border-[#F1E7E3] bg-[linear-gradient(120deg,#FBE4E8,#FDF8F6_55%,#F1E8D9)] p-6"><div className="flex items-center gap-2 text-[#C9727E]"><Sparkles size={17}/><p className="text-[11px] font-semibold uppercase tracking-[.16em]">Universal Search</p></div><h1 className="glow-display mt-2 text-[38px] leading-none tracking-[-.02em] text-[#2B2420] sm:text-[42px]">Find anything in your world.</h1><p className="mt-2 text-[13px] leading-5 text-[#8A8078]">Search tasks, calendar events, appointments, habits, routines, notes, goals, projects, memories, notices, beauty, hair, fitness, closet, finances, planning, medications, supplements and saved resources from one place.</p></header><form action="/search" className="flex gap-2 rounded-[18px] border border-[#F1E7E3] bg-white p-3"><Search className="ml-2 mt-2.5 text-[#B5ACA5]" size={18}/><input name="q" defaultValue={term} autoFocus placeholder="Search a task, appointment, routine, product, project, memory, outfit…" className="min-w-0 flex-1 bg-transparent px-2 py-2 text-[13px] text-[#2B2420] outline-none"/><button className="rounded-full bg-[#2B2420] px-5 py-2 text-[12px] font-medium text-white">Search</button></form>{term?<section className="overflow-hidden rounded-[20px] border border-[#F1E7E3] bg-white"><div className="border-b border-[#F1E7E3] px-5 py-4 text-[10.5px] font-semibold uppercase tracking-[.12em] text-[#8A8078]">{results.length} result{results.length===1?'':'s'} for &ldquo;{term}&rdquo;</div><div className="divide-y divide-[#F1E7E3]">{results.length?results.map(result=><Link key={`${result.type}-${result.id}`} href={result.href} className="grid gap-2 px-5 py-4 transition hover:bg-[#FDF8F6] md:grid-cols-[100px_1fr_140px]"><span className="text-[10px] font-semibold uppercase tracking-[.1em] text-[#C9727E]">{result.type}</span><div><p className="text-[13px] font-medium text-[#2B2420]">{result.title}</p>{result.subtitle?<p className="mt-1 line-clamp-1 text-[11px] text-[#8A8078]">{result.subtitle}</p>:null}</div><span className="text-[11px] text-[#B5ACA5] md:text-right">Open system →</span></Link>):<div className="p-10 text-center"><p className="text-[13px] text-[#8A8078]">Nothing matched yet.</p><Link href="/brain" className="mt-3 inline-flex rounded-full border border-[#F1E7E3] bg-white px-3.5 py-2 text-[11px] font-medium text-[#C9727E] hover:bg-[#FDF8F6]">Ask Glow Brain for a broader interpretation →</Link></div>}</div></section>:null}</div></AppShell>;
+  return (
+    <AppShell>
+      <div className="mx-auto w-full max-w-[1180px] pb-12 pt-2">
+        <section className="relative overflow-hidden rounded-[28px] border border-[#EEE7E4] bg-white px-6 py-9 shadow-[0_18px_60px_rgba(63,45,38,.055)] sm:px-9 lg:px-12 lg:py-12">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-28 h-72 w-72 rounded-full bg-[#FAE6E7]/70 blur-3xl" />
+          <div aria-hidden="true" className="pointer-events-none absolute bottom-[-120px] left-[18%] h-64 w-64 rounded-full bg-[#F7EEED] blur-3xl" />
+          <div className="relative max-w-[760px]">
+            <div className="flex items-center gap-2 text-[#BD6075]"><Sparkles size={16}/><p className="text-[10px] font-semibold uppercase tracking-[.18em]">Glow Search</p></div>
+            <h1 className="glow-display mt-3 text-[42px] leading-[.98] tracking-[-.025em] text-[#292421] sm:text-[54px]">Ask your life anything.</h1>
+            <p className="mt-4 max-w-[660px] text-[13px] leading-6 text-[#817771]">Search across the same Glow OS you are already in. Results open the real connected room and never drop you into an older interface.</p>
+          </div>
+
+          <form action="/search" className="relative mt-7 flex min-h-[54px] items-center gap-2 rounded-full border border-[#E9E1DE] bg-white/95 p-1.5 pl-4 shadow-[0_10px_32px_rgba(56,38,31,.06)] backdrop-blur-xl">
+            <Search className="shrink-0 text-[#948A84]" size={18}/>
+            <input name="q" defaultValue={term} autoFocus placeholder="Search tasks, events, notes, memories, projects, products…" className="min-w-0 flex-1 bg-transparent px-2 py-2 text-[13px] text-[#292421] outline-none placeholder:text-[#AAA09A]"/>
+            <div className="hidden items-center gap-1 rounded-full bg-[#F7EEED] px-2.5 py-1.5 text-[10px] text-[#8D827C] sm:flex"><Command size={11}/>K</div>
+            <button className="inline-flex h-10 items-center gap-1.5 rounded-full bg-[#C65F76] px-5 text-[12px] font-medium text-white shadow-[0_8px_22px_rgba(198,95,118,.18)] transition hover:bg-[#B6556B]">Search<ArrowRight size={13}/></button>
+          </form>
+        </section>
+
+        {!term ? (
+          <section className="mt-5 grid gap-4 lg:grid-cols-[1.15fr_.85fr]">
+            <div className="rounded-[22px] border border-[#EEE7E4] bg-white p-5 shadow-[0_12px_36px_rgba(63,45,38,.035)]">
+              <p className="text-[10px] font-semibold uppercase tracking-[.15em] text-[#8C837D]">Suggested questions</p>
+              <div className="mt-3 divide-y divide-[#F1EBE8]">{SUGGESTED.map(item=><Link key={item} href={`/search?q=${encodeURIComponent(item)}`} className="flex items-center justify-between gap-4 py-3 text-[12.5px] text-[#38322E] transition hover:text-[#B9586E]"><span>{item}</span><ArrowRight size={13} className="shrink-0 text-[#C56B7E]"/></Link>)}</div>
+            </div>
+            <div className="rounded-[22px] border border-[#F0E4E3] bg-[#F7EEED]/55 p-5">
+              <p className="text-[10px] font-semibold uppercase tracking-[.15em] text-[#B55D70]">Ask Glow</p>
+              <p className="glow-display mt-3 text-[24px] leading-[1.15] text-[#302925]">Exact matches when you know what you want. Connected intelligence when you do not.</p>
+              <Link href="/brain" className="mt-5 inline-flex items-center gap-2 text-[11.5px] font-medium text-[#B9586E]">Open Brain <ArrowRight size={13}/></Link>
+            </div>
+          </section>
+        ) : (
+          <section className="mt-5 overflow-hidden rounded-[22px] border border-[#EEE7E4] bg-white shadow-[0_14px_42px_rgba(63,45,38,.04)]">
+            <div className="flex items-center justify-between gap-3 border-b border-[#F1EBE8] px-5 py-4">
+              <p className="text-[10.5px] font-semibold uppercase tracking-[.12em] text-[#817771]">{results.length} result{results.length===1?'':'s'} for &ldquo;{term}&rdquo;</p>
+              <Link href="/search" className="text-[11px] font-medium text-[#BF6074]">Clear</Link>
+            </div>
+            <div className="divide-y divide-[#F1EBE8]">
+              {results.length?results.map(result=><Link key={`${result.type}-${result.id}`} href={result.href} className="grid gap-2 px-5 py-4 transition hover:bg-[#F7EEED]/45 md:grid-cols-[120px_minmax(0,1fr)_110px]"><span className="text-[9.5px] font-semibold uppercase tracking-[.12em] text-[#C36A7C]">{result.type}</span><div className="min-w-0"><p className="truncate text-[13px] font-medium text-[#2B2622]">{result.title}</p>{result.subtitle?<p className="mt-1 line-clamp-1 text-[11px] text-[#8B817B]">{result.subtitle}</p>:null}</div><span className="flex items-center gap-1 text-[11px] text-[#AF656F] md:justify-end">Open <ArrowRight size={12}/></span></Link>):<div className="p-10 text-center"><p className="text-[13px] text-[#817771]">Nothing matched exactly.</p><Link href="/brain" className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#E8DEDA] bg-white px-4 py-2.5 text-[11px] font-medium text-[#B85C70] hover:bg-[#F7EEED]">Ask Glow for a broader interpretation <ArrowRight size={12}/></Link></div>}
+            </div>
+          </section>
+        )}
+      </div>
+    </AppShell>
+  );
 }
