@@ -30,10 +30,14 @@ function parseDateTime(dateText: unknown, timeText: unknown) {
   return date;
 }
 
-export async function routeInboxItem(userId: string, itemId: string, requestedDestination?: InboxRouteDestination) {
+export type InboxRouteResult =
+  | { ok: true; routedEntityType: string; routedEntityId: string | undefined }
+  | { ok: false; reason: 'not_available' | 'calendar_needs_date' | 'finance_needs_amount' };
+
+export async function routeInboxItem(userId: string, itemId: string, requestedDestination?: InboxRouteDestination): Promise<InboxRouteResult> {
   const rows = await db.select().from(glowInboxItems).where(and(eq(glowInboxItems.id, itemId), eq(glowInboxItems.userId, userId))).limit(1);
   const item = rows[0];
-  if (!item || item.status !== 'unprocessed') return null;
+  if (!item || item.status !== 'unprocessed') return { ok: false, reason: 'not_available' };
 
   const suggestedType = item.suggestedType ?? 'note';
   const destination = requestedDestination ?? getSuggestedInboxDestination(suggestedType);
@@ -44,7 +48,23 @@ export async function routeInboxItem(userId: string, itemId: string, requestedDe
   let routedEntityId: string | undefined;
   let routedTitle = title;
 
-  if (destination === 'task') {
+  if (destination === 'calendar') {
+    const startAt = parseDateTime(extracted.dateText, extracted.timeText);
+    if (!startAt) return { ok: false, reason: 'calendar_needs_date' };
+    const endAt = new Date(startAt.getTime() + 60 * 60 * 1000);
+    const [created] = await db.insert(calendarEvents).values({ userId, title, description: item.rawText, startAt, endAt, source: 'glow_inbox' }).returning();
+    routedEntityType = 'calendar_event';
+    routedEntityId = created.id;
+  } else if (destination === 'finance') {
+    if (typeof extracted.amount !== 'number' || !Number.isFinite(extracted.amount)) return { ok: false, reason: 'finance_needs_amount' };
+    const date = typeof extracted.dateText === 'string' ? new Date(extracted.dateText) : new Date();
+    const entryDate = Number.isNaN(date.getTime()) ? new Date().toISOString().slice(0, 10) : date.toISOString().slice(0, 10);
+    const lower = item.rawText.toLowerCase();
+    const category = /beauty|sephora|ulta|skincare|makeup|hair/.test(lower) ? 'beauty' : /food|restaurant|grocery/.test(lower) ? 'food' : 'shopping';
+    const [created] = await db.insert(financeEntries).values({ userId, title, amount: extracted.amount.toFixed(2), type: 'expense', category, entryDate, notes: item.rawText }).returning();
+    routedEntityType = 'finance_entry';
+    routedEntityId = created.id;
+  } else if (destination === 'task') {
     const [created] = await db.insert(tasks).values({
       userId,
       title,
@@ -54,19 +74,6 @@ export async function routeInboxItem(userId: string, itemId: string, requestedDe
     }).returning();
     routedEntityType = 'task';
     routedEntityId = created.id;
-  } else if (destination === 'calendar') {
-    const startAt = parseDateTime(extracted.dateText, extracted.timeText);
-    if (startAt) {
-      const endAt = new Date(startAt.getTime() + 60 * 60 * 1000);
-      const [created] = await db.insert(calendarEvents).values({ userId, title, description: item.rawText, startAt, endAt, source: 'glow_inbox' }).returning();
-      routedEntityType = 'calendar_event';
-      routedEntityId = created.id;
-    } else {
-      const [created] = await db.insert(tasks).values({ userId, title: `Schedule: ${title}`, description: item.rawText, priority: 'high', source: 'glow_inbox' }).returning();
-      routedEntityType = 'task';
-      routedEntityId = created.id;
-      routedTitle = `Schedule: ${title}`;
-    }
   } else if (destination === 'goal') {
     const [created] = await db.insert(goals).values({ userId, title, description: item.rawText, category: 'personal', status: 'not_started' }).returning();
     routedEntityType = 'goal';
@@ -75,14 +82,6 @@ export async function routeInboxItem(userId: string, itemId: string, requestedDe
     const [created] = await db.insert(projects).values({ userId, title, area: suggestedType === 'career' ? 'Career' : 'Universal Intake', status: 'active', priority: 'medium', progress: 0, nextAction: item.rawText }).returning();
     routedEntityType = 'project';
     routedEntityId = created.id;
-  } else if (destination === 'finance' && typeof extracted.amount === 'number' && Number.isFinite(extracted.amount)) {
-    const date = typeof extracted.dateText === 'string' ? new Date(extracted.dateText) : new Date();
-    const entryDate = Number.isNaN(date.getTime()) ? new Date().toISOString().slice(0, 10) : date.toISOString().slice(0, 10);
-    const lower = item.rawText.toLowerCase();
-    const category = /beauty|sephora|ulta|skincare|makeup|hair/.test(lower) ? 'beauty' : /food|restaurant|grocery/.test(lower) ? 'food' : 'shopping';
-    const [created] = await db.insert(financeEntries).values({ userId, title, amount: extracted.amount.toFixed(2), type: 'expense', category, entryDate, notes: item.rawText }).returning();
-    routedEntityType = 'finance_entry';
-    routedEntityId = created.id;
   } else {
     const tags = ['glow-inbox', suggestedType, requestedDestination ? `reviewed-${requestedDestination}` : 'auto-routed'];
     const [created] = await db.insert(notes).values({ userId, title, content: item.rawText, tags }).returning();
@@ -90,7 +89,7 @@ export async function routeInboxItem(userId: string, itemId: string, requestedDe
     routedEntityId = created.id;
   }
 
-  const [processed] = await db.update(glowInboxItems).set({ status: 'processed', routedEntityType, routedEntityId, processedAt: new Date() }).where(and(eq(glowInboxItems.id, itemId), eq(glowInboxItems.userId, userId))).returning();
+  await db.update(glowInboxItems).set({ status: 'processed', routedEntityType, routedEntityId, processedAt: new Date() }).where(and(eq(glowInboxItems.id, itemId), eq(glowInboxItems.userId, userId)));
 
   if (routedEntityId) {
     const [entity] = await db.insert(glowEntities).values({
@@ -122,5 +121,5 @@ export async function routeInboxItem(userId: string, itemId: string, requestedDe
     void entity;
   }
 
-  return processed;
+  return { ok: true, routedEntityType, routedEntityId };
 }
