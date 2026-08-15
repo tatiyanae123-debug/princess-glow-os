@@ -13,6 +13,76 @@
   overflow-x: hidden !important;
 }
 
+/* Desktop/tablet hero guardrails: keep Search, Weather, Date, and action widgets in
+   separate protected lanes so they can never overlap each other. */
+@media (min-width: 1024px) {
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(1) {
+    left: auto !important;
+    right: 500px !important;
+    width: min(274px, 23vw) !important;
+    max-width: 274px !important;
+    min-width: 190px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(1) > span:nth-of-type(1) {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) {
+    right: 18px !important;
+    left: auto !important;
+    max-width: 465px !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) > * {
+    flex-shrink: 0 !important;
+  }
+}
+
+/* On narrower landscape iPads, keep the primary actions and remove the two text-heavy
+   utility readouts instead of letting them collide with Search. */
+@media (min-width: 1024px) and (max-width: 1240px) {
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(1) {
+    right: 190px !important;
+    width: min(300px, 34vw) !important;
+    max-width: 300px !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) > :nth-child(1),
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) > :nth-child(2) {
+    display: none !important;
+  }
+}
+
+/* At medium desktop widths, slightly compress the informational widgets while preserving
+   a visible gap before the Search pill. */
+@media (min-width: 1241px) and (max-width: 1450px) {
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(1) {
+    right: 492px !important;
+    width: min(250px, 20vw) !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) {
+    gap: 8px !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) > :nth-child(1) {
+    padding-right: 10px !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) > :nth-child(2) {
+    width: 92px !important;
+    padding-right: 10px !important;
+  }
+}
+
 @media (max-width: 1023px) {
   [data-room="dashboard"] .glow-dashboard-reference-shell > div {
     min-height: 100vh !important;
