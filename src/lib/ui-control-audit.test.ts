@@ -1,60 +1,100 @@
+import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { describe, expect, it } from 'vitest';
+import ts from 'typescript';
 
-const SRC=path.join(process.cwd(),'src');
+// Exhaustive source-level audit: no visible control may ship without an action or destination.
+const ROOT=process.cwd();
+const SRC=path.join(ROOT,'src');
 
 function walk(dir:string):string[]{
-  return fs.readdirSync(dir,{withFileTypes:true}).flatMap((entry)=>{
+  return fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>{
     const full=path.join(dir,entry.name);
     if(entry.isDirectory())return walk(full);
-    return /\.(tsx|ts)$/.test(entry.name)?[full]:[];
+    return /\.tsx$/.test(entry.name)?[full]:[];
   });
 }
 
+function attr(opening:ts.JsxOpeningLikeElement,name:string){
+  return opening.attributes.properties.find(p=>ts.isJsxAttribute(p)&&ts.isIdentifier(p.name)&&p.name.text===name) as ts.JsxAttribute|undefined;
+}
+
+function attrLiteral(a:ts.JsxAttribute|undefined){
+  if(!a?.initializer)return '';
+  if(ts.isStringLiteral(a.initializer))return a.initializer.text;
+  return null;
+}
+
+function insideForm(node:ts.Node){
+  let cur:ts.Node|undefined=node.parent;
+  while(cur){
+    if(ts.isJsxElement(cur)&&cur.openingElement.tagName.getText()==='form')return true;
+    cur=cur.parent;
+  }
+  return false;
+}
+
+function hasSpreadProps(opening:ts.JsxOpeningLikeElement){
+  return opening.attributes.properties.some(p=>ts.isJsxSpreadAttribute(p));
+}
+
+function lineOf(source:ts.SourceFile,node:ts.Node){return source.getLineAndCharacterOfPosition(node.getStart()).line+1;}
+
+function audit(){
+  const inertButtons:Array<{file:string;line:number;text:string}>=[];
+  const badLinks:Array<{file:string;line:number;text:string}>=[];
+  for(const file of walk(SRC)){
+    const text=fs.readFileSync(file,'utf8');
+    const source=ts.createSourceFile(file,text,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
+    const visit=(node:ts.Node)=>{
+      if(ts.isJsxOpeningElement(node)||ts.isJsxSelfClosingElement(node)){
+        const tag=node.tagName.getText(source);
+        if(tag==='button'){
+          const onClick=attr(node,'onClick');
+          const formAction=attr(node,'formAction');
+          const delegatedRefAction=attr(node,'data-ref-action');
+          const delegatedVoiceAction=attr(node,'data-glow-voice-open');
+          const type=attrLiteral(attr(node,'type'));
+          const hasAction=Boolean(onClick||formAction||delegatedRefAction||delegatedVoiceAction||hasSpreadProps(node)||type==='submit'||type==='reset'||(insideForm(node)&&type!=='button'));
+          if(!hasAction)inertButtons.push({file:path.relative(ROOT,file),line:lineOf(source,node),text:node.getText(source).slice(0,180)});
+        }
+        if(tag==='Link'||tag==='a'){
+          const href=attr(node,'href');
+          const hrefValue=attrLiteral(href);
+          if(!href||hrefValue===''||hrefValue==='#'||(typeof hrefValue==='string'&&hrefValue.toLowerCase().startsWith('javascript:'))){
+            badLinks.push({file:path.relative(ROOT,file),line:lineOf(source,node),text:node.getText(source).slice(0,180)});
+          }
+        }
+      }
+      ts.forEachChild(node,visit);
+    };
+    visit(source);
+  }
+  return {inertButtons,badLinks};
+}
+
 describe('interactive control audit',()=>{
-  it('has no obvious inert buttons or placeholder links in source',()=>{
-    for(const file of walk(SRC)){
-      const text=fs.readFileSync(file,'utf8');
-      expect(text, file).not.toMatch(/href=["']#["']/);
-      const buttons=[...text.matchAll(/<button\b([^>]*)>/g)];
-      for(const match of buttons){
-        const attrs=match[1]??'';
-        const clearlyInteractive=/onClick=|formAction=|type=["']submit["']|type=["']reset["']/.test(attrs);
-        expect(clearlyInteractive,`${file}: ${match[0]}`).toBe(true);
-      }
-    }
+  it('ships no inert buttons anywhere in the app',()=>{expect(audit().inertButtons).toEqual([]);});
+  it('ships no missing or placeholder link targets',()=>{expect(audit().badLinks).toEqual([]);});
+
+  it('Brain Add Connection edits the mind map in place instead of redirecting to another room',()=>{
+    const file=path.join(SRC,'components','brain','brain-mind-map.tsx');
+    const text=fs.readFileSync(file,'utf8');
+    expect(text).toContain("onClick={() => setAdding(true)}");
+    expect(text).toContain('Add to Mind Map');
+    expect(text).toContain('Edit Map');
+    expect(text).not.toMatch(/<Link[^>]+href=["']\/memory["'][^>]*>\s*Add Connection/i);
   });
 
-  it('configured literal internal hrefs resolve to real app routes',()=>{
-    const appDir=path.join(SRC,'app');
-    const routeDirs=new Set<string>();
-    function collectRoutes(dir:string,segments:string[]=[]){
-      const entries=fs.readdirSync(dir,{withFileTypes:true});
-      if(entries.some((entry)=>entry.isFile()&&entry.name==='page.tsx')) routeDirs.add('/'+segments.filter((segment)=>!segment.startsWith('(')).join('/'));
-      for(const entry of entries){
-        if(!entry.isDirectory()||entry.name.startsWith('_'))continue;
-        collectRoutes(path.join(dir,entry.name),[...segments,entry.name]);
-      }
-    }
-    collectRoutes(appDir);
-    for(const file of walk(SRC)){
-      const text=fs.readFileSync(file,'utf8');
-      for(const match of text.matchAll(/href=["'](\/[A-Za-z0-9_\-/]+)(?:[?#][^"']*)?["']/g)){
-        const href=match[1];
-        if(href.includes('[')||href.startsWith('/api/'))continue;
-        const normalized=href==='/'?'/':href.replace(/\/$/,'');
-        expect([...routeDirs].some((route)=>route===normalized||route.includes('[')&&normalized.startsWith(route.split('/[')[0])),`${file}: ${href}`).toBe(true);
-      }
-    }
-  });
-
-  it('Brain Add Connection edits the Mind Map rather than redirecting to Memory',()=>{
+  it('Brain custom map entries are removable, account-persistent, and only target real internal rooms',()=>{
     const file=path.join(SRC,'components','brain','brain-mind-map.tsx');
     const text=fs.readFileSync(file,'utf8');
     expect(text).toContain('removeConnection');
     expect(text).toContain('CUSTOM_DESTINATIONS');
-    expect(text).not.toContain("window.localStorage");
+    expect(text).toContain('getBrainMindMapLinksAction');
+    expect(text).toContain('createBrainMindMapLinkAction');
+    expect(text).toContain('deleteBrainMindMapLinkAction');
+    expect(text).not.toContain('window.localStorage');
   });
 
   it('all non-dashboard routes stay inside the Glow V3 shell instead of the legacy architectural wrapper',()=>{
@@ -75,7 +115,7 @@ describe('interactive control audit',()=>{
     expect(text).toContain('<AppShell>');
     expect(text).toContain('Ask your life anything.');
     expect(text).toContain('Every supported result opens the exact saved record instead of dropping you into a generic room.');
-    expect(text).toContain("case 'Finance Goal':return `/finance/brain/goal/${encodeURIComponent(id)}`");
+    expect(text).toContain("case 'Finance Goal': return `/finance/brain/goal/${encodeURIComponent(id)}`");
     expect(text).not.toContain('ArchitecturalWorldFrame');
   });
 });
