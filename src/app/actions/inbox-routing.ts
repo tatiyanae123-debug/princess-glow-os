@@ -13,7 +13,11 @@ export async function routeInboxItemAction(itemId:string,formData:FormData):Prom
   const userId=await requireUserId();
   const destination=formData.get('destination');
   if(!isInboxRouteDestination(destination))return;
-  await routeInboxItem(userId,itemId,destination);
+  const result=await routeInboxItem(userId,itemId,destination);
+  if(!result.ok){
+    const params=new URLSearchParams({routeError:result.reason,itemId});
+    redirect(`/inbox?${params.toString()}`);
+  }
   for(const path of ['/inbox','/today','/tasks','/notes','/goals','/calendar','/finance','/projects'])revalidatePath(path);
 }
 export async function dismissInboxItemAction(itemId:string):Promise<void>{const userId=await requireUserId();await markInboxProcessed(userId,itemId);revalidatePath('/inbox');revalidatePath('/today');}
