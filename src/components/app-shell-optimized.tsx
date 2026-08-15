@@ -69,8 +69,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const room = roomFor(pathname);
-  const isReferenceDashboard = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
+  const isDashboardRoute = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
   const [focus, setFocus] = useState(false);
+  const [desktopReference, setDesktopReference] = useState(false);
   const [dashboardScale, setDashboardScale] = useState(1);
 
   useEffect(() => {
@@ -85,10 +86,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   useEffect(() => {
-    if (!isReferenceDashboard) return;
+    if (!isDashboardRoute) {
+      setDesktopReference(false);
+      return;
+    }
     const resize = () => {
       const width = Math.max(320, document.documentElement.clientWidth || window.innerWidth);
-      setDashboardScale(Math.min(1, width / DASHBOARD_WIDTH));
+      const useReferenceCanvas = width >= 1024;
+      setDesktopReference(useReferenceCanvas);
+      if (useReferenceCanvas) setDashboardScale(Math.min(1, width / DASHBOARD_WIDTH));
     };
     resize();
     window.addEventListener('resize', resize);
@@ -97,7 +103,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       window.removeEventListener('resize', resize);
       window.removeEventListener('orientationchange', resize);
     };
-  }, [isReferenceDashboard]);
+  }, [isDashboardRoute]);
 
   function exitFocus() {
     const params = new URLSearchParams(window.location.search);
@@ -107,12 +113,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   const content = (
-    <div key={pathname} className={isReferenceDashboard ? 'w-full' : 'glow-v3-route-stage mx-auto w-full max-w-[1560px]'}>
+    <div key={pathname} className={desktopReference ? 'w-full' : 'glow-v3-route-stage mx-auto w-full max-w-[1560px]'}>
       {children}
     </div>
   );
 
-  if (isReferenceDashboard) {
+  if (desktopReference) {
     return (
       <GlowProvider>
         <div className="min-h-screen w-full overflow-x-clip bg-white text-[#25211f]" data-room="dashboard" data-glow-shell="v4-reference" data-focus-mode="false">
@@ -143,8 +149,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           ) : null}
 
           <div className="min-w-0 flex-1 bg-white">
-            {!focus ? <GlobalHeader /> : null}
-            <main className={focus ? 'min-h-screen px-4 py-8 sm:px-7 lg:px-10' : 'min-h-screen min-w-0 bg-white px-4 pb-24 pt-5 sm:px-6 md:px-7 lg:px-8 lg:pt-6 xl:px-10'}>
+            {!focus && !isDashboardRoute ? <GlobalHeader /> : null}
+            <main className={focus ? 'min-h-screen px-4 py-8 sm:px-7 lg:px-10' : isDashboardRoute ? 'min-h-screen min-w-0 bg-white p-0' : 'min-h-screen min-w-0 bg-white px-4 pb-24 pt-5 sm:px-6 md:px-7 lg:px-8 lg:pt-6 xl:px-10'}>
               {content}
             </main>
           </div>
