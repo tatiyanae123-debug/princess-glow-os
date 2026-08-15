@@ -1,0 +1,1 @@
+This branch snapshots the latest functional Glow OS fixes before consolidation with the batch-reference visual upgrade.

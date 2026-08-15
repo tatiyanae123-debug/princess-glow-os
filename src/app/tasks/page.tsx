@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { taskDependencies } from '@/db/schema/adaptive-os';
 import { AppShell } from '@/components/app-shell';
-import { TasksExperience } from '@/components/tasks/tasks-experience';
+import { TasksRouteExperience } from '@/components/tasks/tasks-route-experience';
 import { TaskDependencyPanel } from '@/components/tasks/task-dependency-panel';
 import { getTasksByUser } from '@/lib/data/tasks';
 
@@ -30,7 +30,7 @@ export default async function TasksPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <TasksExperience initialTasks={tasks} blockedTaskIds={blockedTaskIds} />
+        <TasksRouteExperience initialTasks={tasks} blockedTaskIds={blockedTaskIds} />
         <TaskDependencyPanel userId={userId} tasks={tasks.map((task) => ({ id: task.id, title: task.title, status: task.status }))} />
       </div>
     </AppShell>
