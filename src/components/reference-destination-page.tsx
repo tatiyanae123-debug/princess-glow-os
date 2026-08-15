@@ -30,7 +30,7 @@ export function ReferenceDestinationPage({
       </header>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {primary.map((item,index)=><Link key={item.href+item.label} href={item.href} className="group rounded-[20px] border border-[#eee7e3] bg-white p-5 transition hover:-translate-y-0.5 hover:border-[#e3d3cf] hover:shadow-[0_14px_36px_rgba(67,45,36,.06)]">
+        {primary.map(item=><Link key={item.href+item.label} href={item.href} className="group rounded-[20px] border border-[#eee7e3] bg-white p-5 transition hover:-translate-y-0.5 hover:border-[#e3d3cf] hover:shadow-[0_14px_36px_rgba(67,45,36,.06)]">
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#fae7ea] text-[#bf5a71]"><Sparkles size={14}/></span>
           <p className="glow-display mt-4 text-[19px] leading-tight text-[#302825]">{item.label}</p>
           <p className="mt-2 min-h-[36px] text-[10.5px] leading-5 text-[#938781]">{item.note ?? 'Open the connected Glow OS room.'}</p>
