@@ -76,3 +76,15 @@ export const projects = pgTable('projects', {
   createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).notNull().defaultNow(),
 }, (p) => ({ userIdx: index('projects_user_idx').on(p.userId) }));
+
+export const brainMindMapLinks = pgTable('brain_mind_map_links', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  label: text('label').notNull(),
+  href: text('href').notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).notNull().defaultNow(),
+}, (link) => ({
+  userIdx: index('brain_mind_map_links_user_idx').on(link.userId),
+  userTargetUnique: uniqueIndex('brain_mind_map_links_user_target_uidx').on(link.userId, link.href, link.label),
+}));
