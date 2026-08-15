@@ -25,8 +25,13 @@ export default async function SettingsPage() {
     getConnectionsOverview(session.user.id),
     getAppleReminderConnection(session.user.id),
   ]);
-  const googleHealthy = overview.connected && overview.calendarState === 'connected';
+  const googleHealthy = overview.connected && overview.calendarState === 'connected' && overview.hasCalendarScope && overview.hasGmailScope;
   const appleHealthy = appleConnection?.status === 'connected';
+  const googleStatus = googleHealthy
+    ? 'Calendar + Gmail ready'
+    : overview.connected && overview.calendarState === 'connected'
+      ? `Partial · Calendar ${overview.hasCalendarScope ? '✓' : '—'} · Gmail ${overview.hasGmailScope ? '✓' : '—'}`
+      : `${stateLabel(overview.calendarState)} · Calendar ${overview.hasCalendarScope ? '✓' : '—'} · Gmail ${overview.hasGmailScope ? '✓' : '—'}`;
 
   return (
     <AppShell>
@@ -58,14 +63,14 @@ export default async function SettingsPage() {
             <Link href="/connections" className="text-[11px] font-medium text-[#C9727E]">Manage connections →</Link>
           </div>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[14px] border border-[#F1E7E3] p-3.5">
+            <Link href="/connections#google-connection" className="rounded-[14px] border border-[#F1E7E3] p-3.5 transition hover:bg-[#FDFAF8]">
               <div className="flex items-center gap-2 text-[12px] font-medium text-[#2B2420]">{googleHealthy ? <CheckCircle2 size={13} className="text-[#5A6E52]" /> : <RefreshCw size={13} className="text-[#9A7A3D]" />}Google Calendar + Gmail</div>
-              <p className="mt-1 text-[10.5px] text-[#9A9088]">{stateLabel(overview.calendarState)} · Calendar {overview.hasCalendarScope ? '✓' : '—'} · Gmail {overview.hasGmailScope ? '✓' : '—'}</p>
-            </div>
-            <div className="rounded-[14px] border border-[#F1E7E3] p-3.5">
+              <p className="mt-1 text-[10.5px] text-[#9A9088]">{googleStatus}</p>
+            </Link>
+            <Link href="/connections#apple-reminders" className="rounded-[14px] border border-[#F1E7E3] p-3.5 transition hover:bg-[#FDFAF8]">
               <div className="flex items-center gap-2 text-[12px] font-medium text-[#2B2420]"><Smartphone size={13} className={appleHealthy ? 'text-[#5A6E52]' : 'text-[#9A7A3D]'} />Apple Reminders</div>
               <p className="mt-1 text-[10.5px] text-[#9A9088]">{appleHealthy ? 'Connected' : 'Shortcut setup required'}</p>
-            </div>
+            </Link>
           </div>
         </div>
       </div>
