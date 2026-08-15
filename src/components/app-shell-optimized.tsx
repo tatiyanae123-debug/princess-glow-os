@@ -8,6 +8,7 @@ import { GlowProvider } from '@/lib/context/glow-provider';
 import { GlobalHeader } from '@/components/global-header';
 import { DeferredGlobalControls } from '@/components/deferred-global-controls';
 import { GlobalCommandSurface } from '@/components/global-command-surface';
+import { DashboardHeroBackgroundEditor } from '@/components/dashboard/dashboard-hero-background-editor';
 
 function roomFor(pathname: string) {
   if (pathname.startsWith('/beauty/lab')) return 'beauty-lab';
@@ -103,6 +104,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </aside>
             <main className="min-w-0 flex-1 overflow-x-hidden bg-[#f8f4f2] p-0">{content}</main>
           </div>
+          <DashboardHeroBackgroundEditor />
           <GlobalCommandSurface />
           <DeferredGlobalControls />
         </div>
