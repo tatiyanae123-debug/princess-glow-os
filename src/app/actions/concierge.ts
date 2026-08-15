@@ -77,7 +77,7 @@ export async function createConciergeProposalAction(formData: FormData) {
   const candidate = actionType === 'create_task'
     ? {
         ...base,
-        taskTitle: value(formData, 'taskTitle'),
+        taskTitle: value(formData, 'taskTitle') || base.summary,
         taskPriority: value(formData, 'taskPriority') || 'medium',
         taskDueDate: value(formData, 'taskDueDate') || undefined,
       }
@@ -124,7 +124,16 @@ export async function decideConciergeProposalAction(id: string, decision: 'appro
   if (decision === 'approved') {
     const executable = executableTaskPayloadSchema.safeParse(proposal.payload);
     if (executable.success && !executable.data.execution) {
-      const [createdTask] = await db
+      const [existingTask] = await db
+        .select({ id: tasks.id })
+        .from(tasks)
+        .where(and(
+          eq(tasks.userId, userId),
+          eq(tasks.source, 'ai_concierge'),
+          eq(tasks.sourceVersion, proposal.id),
+        ))
+        .limit(1);
+      const entityId = existingTask?.id ?? (await db
         .insert(tasks)
         .values({
           userId,
@@ -134,14 +143,14 @@ export async function decideConciergeProposalAction(id: string, decision: 'appro
           source: 'ai_concierge',
           sourceVersion: proposal.id,
         })
-        .returning({ id: tasks.id });
-      if (!createdTask) return;
-      executedEntity = { entityType: 'task', entityId: createdTask.id };
+        .returning({ id: tasks.id }))[0]?.id;
+      if (!entityId) return;
+      executedEntity = { entityType: 'task', entityId };
       nextPayload = {
         ...executable.data,
         execution: {
           entityType: 'task',
-          entityId: createdTask.id,
+          entityId,
           executedAt: now.toISOString(),
         },
       };
