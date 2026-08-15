@@ -1,0 +1,167 @@
+/* Mobile fidelity pass for the uploaded Glow OS reference boards.
+   The dashboard now reflows instead of scaling a 1536px desktop canvas. */
+
+.glow-dashboard-reference-shell {
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.glow-dashboard-reference-shell > div {
+  width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: hidden !important;
+}
+
+@media (max-width: 1023px) {
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div {
+    min-height: 100vh !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header {
+    height: 320px !important;
+    min-height: 320px !important;
+  }
+
+  /* Hide the desktop search pill on mobile. The floating command control remains available. */
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(1) {
+    display: none !important;
+  }
+
+  /* Keep the four utility buttons in one protected row. Weather and date move out on mobile. */
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) {
+    top: 12px !important;
+    right: 14px !important;
+    left: auto !important;
+    width: auto !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    flex-wrap: nowrap !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) > :nth-child(1),
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) > :nth-child(2) {
+    display: none !important;
+  }
+
+  /* Greeting receives its own protected area below the utility row. */
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(3) {
+    left: 22px !important;
+    right: 22px !important;
+    top: 70px !important;
+    width: auto !important;
+    max-width: 560px !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header h1 {
+    max-width: 100% !important;
+    margin: 0 !important;
+    font-size: clamp(42px, 10vw, 64px) !important;
+    line-height: .94 !important;
+    letter-spacing: -.035em !important;
+    overflow-wrap: normal !important;
+    word-break: keep-all !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header p {
+    max-width: min(88vw, 540px) !important;
+    margin-top: 14px !important;
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header a[href="/briefings"] {
+    min-height: 44px !important;
+    margin-top: 16px !important;
+    padding-inline: 18px !important;
+    border-radius: 7px !important;
+    font-size: 12px !important;
+  }
+
+  /* Dashboard body should fill the actual device width and stack naturally. */
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > div.grid {
+    width: 100% !important;
+    grid-template-columns: minmax(0,1fr) !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    gap: 10px !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell main,
+  [data-room="dashboard"] .glow-dashboard-reference-shell section,
+  [data-room="dashboard"] .glow-dashboard-reference-shell div,
+  [data-room="dashboard"] .glow-dashboard-reference-shell a,
+  [data-room="dashboard"] .glow-dashboard-reference-shell button {
+    min-width: 0;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell a,
+  [data-room="dashboard"] .glow-dashboard-reference-shell button {
+    touch-action: manipulation;
+  }
+
+  /* First dashboard metric deck remains a compact 2x2 grid, matching the phone reference. */
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > div.grid > main > section:first-child {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+    min-height: 0 !important;
+    border-radius: 22px !important;
+    overflow: hidden !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > div.grid > main > section:first-child > a {
+    height: auto !important;
+    min-height: 176px !important;
+    padding: 20px 18px !important;
+    border-bottom: 1px solid #ece7e4 !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > div.grid > main > section:first-child > a:nth-child(odd) {
+    border-right: 1px solid #ece7e4 !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > div.grid > main > section:first-child > a:nth-child(even) {
+    border-right: 0 !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > div.grid > main > section:first-child > a > p {
+    min-height: 0 !important;
+    margin-top: 18px !important;
+    font-size: 22px !important;
+    line-height: 1.18 !important;
+  }
+
+  /* Every remaining multi-column board becomes a single clean phone column. */
+  [data-room="dashboard"] .glow-dashboard-reference-shell main > div.grid {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell main > div.grid > section {
+    border-radius: 22px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header {
+    height: 304px !important;
+    min-height: 304px !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(3) {
+    left: 18px !important;
+    right: 18px !important;
+    top: 68px !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header h1 {
+    font-size: clamp(40px, 12.5vw, 54px) !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > div.grid > main > section:first-child > a {
+    min-height: 168px !important;
+    padding: 18px 16px !important;
+  }
+
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > div.grid > main > section:first-child > a > p {
+    font-size: 20px !important;
+  }
+}
