@@ -19,6 +19,12 @@ import {
   X,
 } from 'lucide-react';
 import type { BrainMapDomain } from '@/lib/intelligence/brain-connections';
+import { useServerAction } from '@/lib/hooks/use-server-action';
+import {
+  createBrainMindMapLinkAction,
+  deleteBrainMindMapLinkAction,
+  getBrainMindMapLinksAction,
+} from '@/app/actions/brain-mind-map';
 
 const ICONS: Record<string, typeof Target> = {
   goals: Target,
@@ -41,23 +47,23 @@ const POSITIONS: Record<string, { x: number; y: number }> = {
 };
 
 const CUSTOM_DESTINATIONS = [
-  { label: 'Tasks', href: '/tasks', icon: Target },
-  { label: 'Calendar', href: '/calendar', icon: CalendarDays },
-  { label: 'Projects', href: '/projects', icon: Briefcase },
-  { label: 'Goals', href: '/goals', icon: Target },
-  { label: 'Beauty', href: '/beauty', icon: Sparkles },
-  { label: 'Beauty Lab', href: '/beauty/lab', icon: Sparkles },
-  { label: 'Hair', href: '/hair', icon: Sparkles },
-  { label: 'Wellness', href: '/wellness', icon: HeartPulse },
-  { label: 'Fitness', href: '/fitness', icon: Dumbbell },
-  { label: 'Food & Nutrition', href: '/food', icon: HeartPulse },
-  { label: 'Finance', href: '/finance', icon: BadgeDollarSign },
-  { label: 'Financial Brain', href: '/finance/brain', icon: BadgeDollarSign },
-  { label: 'Work', href: '/work', icon: Briefcase },
-  { label: 'Creative Studio', href: '/projects', icon: Lightbulb },
-  { label: 'Memory', href: '/memory', icon: BookOpen },
-  { label: 'Timeline', href: '/timeline', icon: BookOpen },
-  { label: 'Notes', href: '/notes', icon: BookOpen },
+  { label: 'Tasks', href: '/tasks' },
+  { label: 'Calendar', href: '/calendar' },
+  { label: 'Projects', href: '/projects' },
+  { label: 'Goals', href: '/goals' },
+  { label: 'Beauty', href: '/beauty' },
+  { label: 'Beauty Lab', href: '/beauty/lab' },
+  { label: 'Hair', href: '/hair' },
+  { label: 'Wellness', href: '/wellness' },
+  { label: 'Fitness', href: '/fitness' },
+  { label: 'Food & Nutrition', href: '/food' },
+  { label: 'Finance', href: '/finance' },
+  { label: 'Financial Brain', href: '/finance/brain' },
+  { label: 'Work', href: '/work' },
+  { label: 'Creative Studio', href: '/projects' },
+  { label: 'Memory', href: '/memory' },
+  { label: 'Timeline', href: '/timeline' },
+  { label: 'Notes', href: '/notes' },
 ] as const;
 
 type CustomMindMapLink = {
@@ -66,25 +72,6 @@ type CustomMindMapLink = {
   href: string;
 };
 
-const STORAGE_KEY = 'glow-os:brain-mind-map-custom-links:v1';
-
-function readSavedLinks(): CustomMindMapLink[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((item): item is CustomMindMapLink => {
-      if (!item || typeof item !== 'object') return false;
-      const candidate = item as Partial<CustomMindMapLink>;
-      return Boolean(candidate.id && candidate.label && candidate.href?.startsWith('/'));
-    });
-  } catch {
-    return [];
-  }
-}
-
 export function BrainMindMap({ domains }: { domains: BrainMapDomain[] }) {
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -92,15 +79,15 @@ export function BrainMindMap({ domains }: { domains: BrainMapDomain[] }) {
   const [selectedHref, setSelectedHref] = useState('/tasks');
   const [customLabel, setCustomLabel] = useState('');
   const [customLinks, setCustomLinks] = useState<CustomMindMapLink[]>([]);
+  const loadLinks = useServerAction(getBrainMindMapLinksAction);
+  const createLink = useServerAction(createBrainMindMapLinkAction);
+  const deleteLink = useServerAction(deleteBrainMindMapLinkAction);
 
   useEffect(() => {
-    setCustomLinks(readSavedLinks());
+    loadLinks.run(undefined, (rows) => setCustomLinks(rows));
+    // Server action identity is stable for this client module; this should only hydrate once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(customLinks));
-  }, [customLinks]);
 
   const destination = useMemo(
     () => CUSTOM_DESTINATIONS.find((item) => item.href === selectedHref) ?? CUSTOM_DESTINATIONS[0],
@@ -109,19 +96,19 @@ export function BrainMindMap({ domains }: { domains: BrainMapDomain[] }) {
 
   function addConnection() {
     const label = customLabel.trim() || destination.label;
-    const duplicate = customLinks.some((item) => item.href === destination.href && item.label.toLowerCase() === label.toLowerCase());
-    if (!duplicate) {
-      setCustomLinks((current) => [
-        ...current,
-        { id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, label, href: destination.href },
-      ]);
-    }
-    setCustomLabel('');
-    setAdding(false);
+    createLink.run({ label, href: destination.href }, (created) => {
+      if (!customLinks.some((item) => item.id === created.id)) {
+        setCustomLinks((current) => [...current, created]);
+      }
+      setCustomLabel('');
+      setAdding(false);
+    });
   }
 
   function removeConnection(id: string) {
-    setCustomLinks((current) => current.filter((item) => item.id !== id));
+    deleteLink.run(id, () => {
+      setCustomLinks((current) => current.filter((item) => item.id !== id));
+    });
   }
 
   return (
@@ -140,6 +127,9 @@ export function BrainMindMap({ domains }: { domains: BrainMapDomain[] }) {
           </button>
         </div>
       </div>
+
+      {loadLinks.isPending ? <p className="mt-3 text-[10.5px] text-[#A79D96]">Loading your saved map…</p> : null}
+      {loadLinks.error ? <p className="mt-3 text-[10.5px] text-rose-500">{loadLinks.error}</p> : null}
 
       <div className={`relative mx-auto mt-6 hidden w-full sm:block ${expanded ? 'aspect-[3/2] max-w-[760px]' : 'aspect-[16/10] max-w-[640px]'}`}>
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full" aria-hidden="true">
@@ -201,13 +191,14 @@ export function BrainMindMap({ domains }: { domains: BrainMapDomain[] }) {
                   <Sparkles size={12} className="text-[#C9727E]" />{item.label}
                 </Link>
                 {editing ? (
-                  <button type="button" onClick={() => removeConnection(item.id)} className="mr-1 flex h-8 w-8 items-center justify-center rounded-full text-[#B5ACA5] transition hover:bg-[#FBE4E8] hover:text-[#B15A68]" aria-label={`Remove ${item.label} from mind map`}>
+                  <button type="button" disabled={deleteLink.isPending} onClick={() => removeConnection(item.id)} className="mr-1 flex h-8 w-8 items-center justify-center rounded-full text-[#B5ACA5] transition hover:bg-[#FBE4E8] hover:text-[#B15A68] disabled:opacity-50" aria-label={`Remove ${item.label} from mind map`}>
                     <Trash2 size={12} />
                   </button>
                 ) : null}
               </div>
             ))}
           </div>
+          {deleteLink.error ? <p className="mt-2 text-[10.5px] text-rose-500">{deleteLink.error}</p> : null}
         </div>
       ) : null}
 
@@ -240,9 +231,10 @@ export function BrainMindMap({ domains }: { domains: BrainMapDomain[] }) {
             <label className="mt-4 block text-[10.5px] font-semibold uppercase tracking-[.1em] text-[#8A8078]" htmlFor="brain-connection-label">Label on your map</label>
             <input id="brain-connection-label" value={customLabel} onChange={(event) => setCustomLabel(event.target.value)} placeholder={destination.label} maxLength={40} className="mt-2 min-h-12 w-full rounded-[14px] border border-[#EDE2DD] bg-white px-3 text-[13px] text-[#2B2420] outline-none transition placeholder:text-[#B5ACA5] focus:border-[#DDAEB4] focus:ring-2 focus:ring-[#FBE4E8]" />
 
+            {createLink.error ? <p className="mt-3 text-[10.5px] text-rose-500">{createLink.error}</p> : null}
             <div className="mt-5 flex gap-2">
               <button type="button" onClick={() => setAdding(false)} className="min-h-11 flex-1 rounded-full border border-[#EDE2DD] bg-white px-4 text-[12px] font-medium text-[#6F655E] transition hover:bg-[#FDF8F6]">Cancel</button>
-              <button type="button" onClick={addConnection} className="min-h-11 flex-1 rounded-full bg-[#C9727E] px-4 text-[12px] font-medium text-white shadow-[0_6px_18px_rgba(201,114,126,.18)] transition hover:bg-[#B15A68] active:scale-[.98]">Add to Mind Map</button>
+              <button type="button" disabled={createLink.isPending} onClick={addConnection} className="min-h-11 flex-1 rounded-full bg-[#C9727E] px-4 text-[12px] font-medium text-white shadow-[0_6px_18px_rgba(201,114,126,.18)] transition hover:bg-[#B15A68] active:scale-[.98] disabled:opacity-50">{createLink.isPending ? 'Saving…' : 'Add to Mind Map'}</button>
             </div>
           </div>
         </div>
