@@ -1,160 +1,97 @@
-/* Mobile fidelity pass for the uploaded Glow OS reference boards.
-   The dashboard now reflows instead of scaling a 1536px desktop canvas. */
+/* Responsive fidelity rules for the reference dashboard. */
 
-.glow-dashboard-reference-shell {
+.glow-dashboard-reference-shell,
+.glow-dashboard-reference-shell > div {
   width: 100%;
   min-width: 0;
   overflow-x: hidden;
 }
 
-.glow-dashboard-reference-shell > div {
-  width: 100% !important;
-  min-width: 0 !important;
-  overflow-x: hidden !important;
+[data-room="dashboard"] .dashboard-hero-tools > * {
+  flex-shrink: 0;
 }
 
-/* Desktop/tablet hero guardrails: keep Search, Weather, Date, and action widgets in
-   separate protected lanes so they can never overlap each other. */
-@media (min-width: 1024px) {
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(1) {
-    left: auto !important;
-    right: 500px !important;
-    width: min(274px, 23vw) !important;
-    max-width: 274px !important;
-    min-width: 190px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-  }
-
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(1) > span:nth-of-type(1) {
-    min-width: 0 !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-  }
-
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) {
-    right: 18px !important;
-    left: auto !important;
-    max-width: 465px !important;
-    flex-wrap: nowrap !important;
-    white-space: nowrap !important;
-  }
-
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) > * {
-    flex-shrink: 0 !important;
-  }
+@media (min-width: 1280px) and (max-width: 1450px) {
+  [data-room="dashboard"] .dashboard-search { width: 220px !important; }
+  [data-room="dashboard"] .dashboard-date { width: 82px !important; }
+  [data-room="dashboard"] .dashboard-hero-tools { gap: 7px !important; right: 12px !important; }
 }
 
-/* On narrower landscape iPads, keep the primary actions and remove the two text-heavy
-   utility readouts instead of letting them collide with Search. */
-@media (min-width: 1024px) and (max-width: 1240px) {
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(1) {
-    right: 190px !important;
-    width: min(300px, 34vw) !important;
-    max-width: 300px !important;
-  }
-
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) > :nth-child(1),
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) > :nth-child(2) {
-    display: none !important;
-  }
-}
-
-/* At medium desktop widths, slightly compress the informational widgets while preserving
-   a visible gap before the Search pill. */
-@media (min-width: 1241px) and (max-width: 1450px) {
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(1) {
-    right: 492px !important;
-    width: min(250px, 20vw) !important;
-  }
-
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) {
-    gap: 8px !important;
-  }
-
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) > :nth-child(1) {
-    padding-right: 10px !important;
-  }
-
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) > :nth-child(2) {
-    width: 92px !important;
-    padding-right: 10px !important;
-  }
+@media (min-width: 1024px) and (max-width: 1279px) {
+  [data-room="dashboard"] .dashboard-search { width: 230px !important; }
+  [data-room="dashboard"] .dashboard-weather,
+  [data-room="dashboard"] .dashboard-date { display: none !important; }
+  [data-room="dashboard"] .dashboard-primary-grid { grid-template-columns: 1fr 1fr !important; }
+  [data-room="dashboard"] .dashboard-primary-grid > section:last-child { grid-column: 1 / -1; }
+  [data-room="dashboard"] .dashboard-wellness-row { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+  [data-room="dashboard"] .dashboard-right-rail { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 
 @media (max-width: 1023px) {
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div {
-    min-height: 100vh !important;
-  }
-
   [data-room="dashboard"] .glow-dashboard-reference-shell > div > header {
-    height: 320px !important;
-    min-height: 320px !important;
+    height: 300px !important;
+    min-height: 300px !important;
   }
 
-  /* Hide the desktop search pill on mobile. The floating command control remains available. */
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(1) {
-    display: none !important;
-  }
-
-  /* Keep the four utility buttons in one protected row. Weather and date move out on mobile. */
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) {
+  [data-room="dashboard"] .dashboard-hero-tools {
     top: 12px !important;
     right: 14px !important;
     left: auto !important;
-    width: auto !important;
-    justify-content: flex-end !important;
-    gap: 8px !important;
-    flex-wrap: nowrap !important;
+    gap: 7px !important;
   }
 
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) > :nth-child(1),
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(2) > :nth-child(2) {
+  [data-room="dashboard"] .dashboard-search,
+  [data-room="dashboard"] .dashboard-weather,
+  [data-room="dashboard"] .dashboard-date {
     display: none !important;
   }
 
-  /* Greeting receives its own protected area below the utility row. */
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(3) {
+  [data-room="dashboard"] .dashboard-greeting {
     left: 22px !important;
     right: 22px !important;
-    top: 70px !important;
-    width: auto !important;
+    top: 66px !important;
     max-width: 560px !important;
   }
 
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header h1 {
-    max-width: 100% !important;
-    margin: 0 !important;
-    font-size: clamp(42px, 10vw, 64px) !important;
+  [data-room="dashboard"] .dashboard-greeting h1 {
+    font-size: clamp(42px, 9vw, 58px) !important;
     line-height: .94 !important;
-    letter-spacing: -.035em !important;
-    overflow-wrap: normal !important;
-    word-break: keep-all !important;
   }
 
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header p {
-    max-width: min(88vw, 540px) !important;
-    margin-top: 14px !important;
-    font-size: 13px !important;
-    line-height: 1.5 !important;
-  }
-
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header a[href="/briefings"] {
-    min-height: 44px !important;
-    margin-top: 16px !important;
-    padding-inline: 18px !important;
-    border-radius: 7px !important;
+  [data-room="dashboard"] .dashboard-greeting p {
+    max-width: 520px !important;
     font-size: 12px !important;
+    line-height: 1.45 !important;
   }
 
-  /* Dashboard body should fill the actual device width and stack naturally. */
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > div.grid {
-    width: 100% !important;
+  [data-room="dashboard"] .dashboard-greeting a[href="/briefings"] {
+    min-height: 40px !important;
+    padding-inline: 17px !important;
+    font-size: 11px !important;
+  }
+
+  [data-room="dashboard"] .dashboard-page-grid {
     grid-template-columns: minmax(0,1fr) !important;
     padding-left: 8px !important;
     padding-right: 8px !important;
-    gap: 10px !important;
+  }
+
+  [data-room="dashboard"] .dashboard-right-rail {
+    display: grid !important;
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  }
+
+  [data-room="dashboard"] .dashboard-primary-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  }
+
+  [data-room="dashboard"] .dashboard-primary-grid > section:last-child {
+    grid-column: 1 / -1 !important;
+  }
+
+  [data-room="dashboard"] .dashboard-wellness-row,
+  [data-room="dashboard"] .dashboard-bottom-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
   }
 
   [data-room="dashboard"] .glow-dashboard-reference-shell main,
@@ -164,74 +101,52 @@
   [data-room="dashboard"] .glow-dashboard-reference-shell button {
     min-width: 0;
   }
+}
 
-  [data-room="dashboard"] .glow-dashboard-reference-shell a,
-  [data-room="dashboard"] .glow-dashboard-reference-shell button {
-    touch-action: manipulation;
+@media (max-width: 640px) {
+  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header {
+    height: 286px !important;
+    min-height: 286px !important;
   }
 
-  /* First dashboard metric deck remains a compact 2x2 grid, matching the phone reference. */
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > div.grid > main > section:first-child {
+  [data-room="dashboard"] .dashboard-greeting {
+    left: 18px !important;
+    right: 18px !important;
+    top: 62px !important;
+  }
+
+  [data-room="dashboard"] .dashboard-greeting h1 {
+    font-size: clamp(39px, 12vw, 52px) !important;
+  }
+
+  [data-room="dashboard"] .dashboard-greeting p {
+    font-size: 11px !important;
+  }
+
+  [data-room="dashboard"] .dashboard-metrics {
     grid-template-columns: repeat(2,minmax(0,1fr)) !important;
-    min-height: 0 !important;
-    border-radius: 22px !important;
-    overflow: hidden !important;
+    border-radius: 18px !important;
   }
 
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > div.grid > main > section:first-child > a {
-    height: auto !important;
-    min-height: 176px !important;
-    padding: 20px 18px !important;
+  [data-room="dashboard"] .dashboard-metrics > a {
+    min-height: 150px !important;
+    padding: 17px 15px !important;
     border-bottom: 1px solid #ece7e4 !important;
   }
 
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > div.grid > main > section:first-child > a:nth-child(odd) {
-    border-right: 1px solid #ece7e4 !important;
-  }
+  [data-room="dashboard"] .dashboard-metrics > a:nth-child(even) { border-right: 0 !important; }
+  [data-room="dashboard"] .dashboard-metrics > a p { font-size: 18px !important; }
 
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > div.grid > main > section:first-child > a:nth-child(even) {
-    border-right: 0 !important;
-  }
-
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > div.grid > main > section:first-child > a > p {
-    min-height: 0 !important;
-    margin-top: 18px !important;
-    font-size: 22px !important;
-    line-height: 1.18 !important;
-  }
-
-  /* Every remaining multi-column board becomes a single clean phone column. */
-  [data-room="dashboard"] .glow-dashboard-reference-shell main > div.grid {
+  [data-room="dashboard"] .dashboard-primary-grid,
+  [data-room="dashboard"] .dashboard-wellness-row,
+  [data-room="dashboard"] .dashboard-bottom-grid,
+  [data-room="dashboard"] .dashboard-right-rail {
     grid-template-columns: minmax(0,1fr) !important;
   }
 
-  [data-room="dashboard"] .glow-dashboard-reference-shell main > div.grid > section {
-    border-radius: 22px !important;
-  }
-}
+  [data-room="dashboard"] .dashboard-primary-grid > section:last-child { grid-column: auto !important; }
 
-@media (max-width: 520px) {
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header {
-    height: 304px !important;
-    min-height: 304px !important;
-  }
-
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header > .relative > :nth-child(3) {
-    left: 18px !important;
-    right: 18px !important;
-    top: 68px !important;
-  }
-
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > header h1 {
-    font-size: clamp(40px, 12.5vw, 54px) !important;
-  }
-
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > div.grid > main > section:first-child > a {
-    min-height: 168px !important;
-    padding: 18px 16px !important;
-  }
-
-  [data-room="dashboard"] .glow-dashboard-reference-shell > div > div.grid > main > section:first-child > a > p {
-    font-size: 20px !important;
+  [data-room="dashboard"] .dashboard-bottom-grid section:first-child .grid-cols-5 {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
   }
 }
