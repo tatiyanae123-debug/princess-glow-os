@@ -46,7 +46,7 @@ export async function routeInboxItem(userId: string, itemId: string, requestedDe
   const extracted = parseExtracted(metadata);
   let routedEntityType = 'note';
   let routedEntityId: string | undefined;
-  let routedTitle = title;
+  const routedTitle = title;
 
   if (destination === 'calendar') {
     const startAt = parseDateTime(extracted.dateText, extracted.timeText);
@@ -65,13 +65,7 @@ export async function routeInboxItem(userId: string, itemId: string, requestedDe
     routedEntityType = 'finance_entry';
     routedEntityId = created.id;
   } else if (destination === 'task') {
-    const [created] = await db.insert(tasks).values({
-      userId,
-      title,
-      description: item.rawText,
-      priority: suggestedType === 'reminder' ? 'high' : 'medium',
-      source: 'glow_inbox',
-    }).returning();
+    const [created] = await db.insert(tasks).values({ userId, title, description: item.rawText, priority: suggestedType === 'reminder' ? 'high' : 'medium', source: 'glow_inbox' }).returning();
     routedEntityType = 'task';
     routedEntityId = created.id;
   } else if (destination === 'goal') {
@@ -92,26 +86,9 @@ export async function routeInboxItem(userId: string, itemId: string, requestedDe
   await db.update(glowInboxItems).set({ status: 'processed', routedEntityType, routedEntityId, processedAt: new Date() }).where(and(eq(glowInboxItems.id, itemId), eq(glowInboxItems.userId, userId)));
 
   if (routedEntityId) {
-    const [entity] = await db.insert(glowEntities).values({
-      userId,
-      entityType: routedEntityType,
-      sourceTable: routedEntityType,
-      sourceId: routedEntityId,
-      title: routedTitle,
-      summary: item.rawText.slice(0, 500),
-      searchableText: item.rawText,
-      metadata: { createdFrom: 'glow_inbox', inboxItemId: item.id, suggestedType, requestedDestination: requestedDestination ?? null },
-    }).onConflictDoNothing().returning();
+    const [entity] = await db.insert(glowEntities).values({ userId, entityType: routedEntityType, sourceTable: routedEntityType, sourceId: routedEntityId, title: routedTitle, summary: item.rawText.slice(0, 500), searchableText: item.rawText, metadata: { createdFrom: 'glow_inbox', inboxItemId: item.id, suggestedType, requestedDestination: requestedDestination ?? null } }).onConflictDoNothing().returning();
 
-    await db.insert(entityRelations).values({
-      userId,
-      fromType: 'glow_inbox_item',
-      fromId: item.id,
-      relation: 'created_from',
-      toType: routedEntityType,
-      toId: routedEntityId,
-      metadata: { confidence: item.confidence, requestedDestination: requestedDestination ?? null },
-    });
+    await db.insert(entityRelations).values({ userId, fromType: 'glow_inbox_item', fromId: item.id, relation: 'created_from', toType: routedEntityType, toId: routedEntityId, metadata: { confidence: item.confidence, requestedDestination: requestedDestination ?? null } });
 
     const artifacts = await db.select({ id: universalIntakeArtifacts.id }).from(universalIntakeArtifacts).where(and(eq(universalIntakeArtifacts.userId, userId), eq(universalIntakeArtifacts.inboxItemId, item.id))).limit(1);
     if (artifacts[0]) {

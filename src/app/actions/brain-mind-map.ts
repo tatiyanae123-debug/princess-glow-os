@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { auth } from '@/auth';
 import { db } from '@/db';
 import { brainMindMapLinks } from '@/db/schema/intelligence-expansion';
+import { getNotesByUser } from '@/lib/data/notes';
 
 const allowedHrefs = new Set([
   '/tasks',
@@ -22,6 +23,7 @@ const allowedHrefs = new Set([
   '/finance',
   '/finance/brain',
   '/work',
+  '/creative-studio',
   '/memory',
   '/timeline',
   '/notes',
@@ -46,6 +48,17 @@ export async function getBrainMindMapLinksAction() {
     .where(eq(brainMindMapLinks.userId, userId))
     .orderBy(asc(brainMindMapLinks.createdAt));
   return { data: rows };
+}
+
+export async function getBrainMindMapNotesAction() {
+  const userId = await requireUser();
+  const notes = await getNotesByUser(userId);
+  return {
+    data: notes
+      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+      .slice(0, 40)
+      .map((note) => ({ id: note.id, title: note.title, content: note.content })),
+  };
 }
 
 export async function createBrainMindMapLinkAction(input: { label: string; href: string }) {
