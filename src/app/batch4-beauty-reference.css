@@ -1,0 +1,82 @@
+/* Batch 4 — Beauty. Forensic reference mapping for Beauty OS, Beauty Lab and Hair Studio. */
+:root{--b4-ink:#211d1b;--b4-muted:#81766f;--b4-line:#eee6e1;--b4-line-soft:#f3ece8;--b4-rose:#8f3f56;--b4-blush:#f8eeec;--b4-cream:#fcfaf7;--b4-sage:#76846d;--b4-shadow:0 8px 28px rgba(64,43,34,.045);--b4-float:0 15px 42px rgba(72,49,39,.065)}
+[data-room='beauty'],[data-room='beauty-lab'],[data-room='hair']{background:#fdfbf9!important;color:var(--b4-ink)}
+[data-room='beauty'] .glow-reference-route-stage,[data-room='beauty-lab'] .glow-reference-route-stage,[data-room='hair'] .glow-reference-route-stage{max-width:1120px!important;margin-inline:auto!important}
+[data-room='beauty'] main,[data-room='beauty-lab'] main,[data-room='hair'] main{background:linear-gradient(180deg,#fffdfb 0,#fdfbf9 100%)!important}
+[data-room='beauty'] .glow-reference-route-stage [class*='rounded-[18px]'],[data-room='beauty'] .glow-reference-route-stage [class*='rounded-[20px]'],[data-room='beauty-lab'] .glow-reference-route-stage [class*='rounded-[18px]'],[data-room='beauty-lab'] .glow-reference-route-stage [class*='rounded-[20px]'],[data-room='hair'] .glow-reference-route-stage [class*='rounded-[16px]'],[data-room='hair'] .glow-reference-route-stage [class*='rounded-[18px]']{border-radius:9px!important;border-color:var(--b4-line)!important;box-shadow:var(--b4-shadow)!important}
+[data-room='beauty'] .glow-reference-route-stage .glow-display,[data-room='beauty-lab'] .glow-reference-route-stage .glow-display,[data-room='hair'] .glow-reference-route-stage .glow-display{font-weight:400!important;letter-spacing:-.035em!important;color:var(--b4-ink)!important}
+[data-room='beauty'] .glow-reference-route-stage a,[data-room='beauty-lab'] .glow-reference-route-stage a,[data-room='hair'] .glow-reference-route-stage a{transition:background .18s ease,border-color .18s ease,transform .18s ease}
+
+/* Beauty OS — reference panel 1 */
+[data-room='beauty'] .glow-reference-route-stage>.space-y-6{display:grid;gap:12px!important}
+[data-room='beauty'] .glow-reference-route-stage>.space-y-6>div:first-child{display:grid;gap:10px!important}
+[data-room='beauty'] .glow-reference-route-stage header{position:relative;min-height:245px!important;display:grid!important;grid-template-columns:minmax(0,.88fr) minmax(320px,1.12fr)!important;align-items:center!important;overflow:hidden;border-radius:10px;background:radial-gradient(circle at 76% 38%,#f5e5dc 0 11%,transparent 12%),linear-gradient(108deg,#fffdfb 0 43%,#f3dfd4 44% 100%);border:1px solid var(--b4-line);padding:26px 28px!important;box-shadow:var(--b4-float)}
+[data-room='beauty'] .glow-reference-route-stage header:after{content:'';position:absolute;right:5%;top:12%;width:38%;height:78%;border:1px solid rgba(155,119,100,.18);border-radius:48% 48% 12% 12%;background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.85),rgba(238,213,200,.32) 55%,transparent 56%);pointer-events:none}
+[data-room='beauty'] .glow-reference-route-stage header>div:first-child{position:relative;z-index:2;max-width:350px}
+[data-room='beauty'] .glow-reference-route-stage header>div:last-child{position:relative;z-index:2;align-self:end;justify-self:start;max-width:250px!important;background:rgba(255,255,255,.62)!important;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.7);box-shadow:0 8px 28px rgba(75,51,40,.06)!important}
+[data-room='beauty'] .glow-reference-route-stage header h1{font-size:40px!important;line-height:.98!important;margin-top:4px!important}
+[data-room='beauty'] .glow-reference-route-stage header .glow-eyebrow{font-size:9px!important;letter-spacing:.1em!important;text-transform:uppercase!important;color:#615953!important}
+[data-room='beauty'] .glow-reference-route-stage header p{font-size:10.5px!important}
+[data-room='beauty'] .glow-reference-route-stage header+section{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
+[data-room='beauty'] .glow-reference-route-stage header+section>div{min-height:86px!important;padding:12px!important;border-radius:8px!important}
+[data-room='beauty'] .glow-reference-route-stage header+section+section{grid-template-columns:1.18fr .82fr 1fr .72fr!important;gap:8px!important}
+[data-room='beauty'] .glow-reference-route-stage header+section+section>div{padding:13px!important;border-radius:9px!important;min-height:250px}
+[data-room='beauty'] .glow-reference-route-stage header+section+section [class*='h-44'][class*='w-44']{width:132px!important;height:132px!important;margin-top:18px!important}
+[data-room='beauty'] .glow-reference-route-stage header+section+section+section{grid-template-columns:1.2fr .72fr .86fr!important;gap:8px!important}
+[data-room='beauty'] .glow-reference-route-stage header+section+section+section>div{padding:13px!important;border-radius:9px!important}
+[data-room='beauty'] .glow-reference-route-stage>.space-y-6>div:first-child~div{border-radius:9px!important;border-color:var(--b4-line)!important;box-shadow:var(--b4-shadow)!important}
+[data-room='beauty'] .glow-reference-route-stage>.space-y-6>div:nth-child(n+2){font-size:10px}
+
+/* Beauty Lab — reference panel 2. Keep live product actions, transform hierarchy into library-first layout. */
+[data-room='beauty-lab'] .glow-reference-route-stage{display:grid;gap:10px}
+[data-room='beauty-lab'] .glow-reference-route-stage>.mb-4:first-child{margin-bottom:8px!important}
+[data-room='beauty-lab'] .glow-reference-route-stage>.space-y-6{display:grid;gap:10px!important}
+[data-room='beauty-lab'] .glow-reference-route-stage>.space-y-6>div:first-child{grid-template-columns:1fr!important;gap:8px!important;min-height:88px}
+[data-room='beauty-lab'] .glow-reference-route-stage>.space-y-6>div:first-child>div:first-child{justify-content:flex-start!important}
+[data-room='beauty-lab'] .glow-reference-route-stage>.space-y-6>div:first-child>div:last-child{display:none!important}
+[data-room='beauty-lab'] .glow-reference-route-stage>.space-y-6>div:first-child h1{font-size:40px!important;line-height:.98!important}
+[data-room='beauty-lab'] .glow-reference-route-stage>.space-y-6>div:first-child h1 br{display:none}
+[data-room='beauty-lab'] .glow-reference-route-stage>.space-y-6>div:first-child p:first-child{font-size:9px!important;color:#615953!important}
+[data-room='beauty-lab'] .glow-reference-route-stage>.space-y-6>div:nth-child(2){padding:13px!important;border-radius:8px!important;background:#fbf6f3!important}
+[data-room='beauty-lab'] .glow-reference-route-stage>.space-y-6>div:nth-child(3){grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
+[data-room='beauty-lab'] .glow-reference-route-stage>.space-y-6>div:nth-child(3)>div{padding:11px!important;border-radius:8px!important}
+[data-room='beauty-lab'] .glow-reference-route-stage details{border-radius:8px!important;border-color:var(--b4-line)!important}
+[data-room='beauty-lab'] .glow-reference-route-stage button,[data-room='beauty-lab'] .glow-reference-route-stage summary{border-radius:7px!important}
+[data-room='beauty-lab'] .glow-reference-route-stage [class*='lg:grid-cols-3']{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:8px!important}
+[data-room='beauty-lab'] .glow-reference-route-stage [class*='lg:grid-cols-3']>details{min-height:178px!important}
+[data-room='beauty-lab'] .glow-reference-route-stage [class*='lg:grid-cols-3']>details>summary{padding:12px!important}
+[data-room='beauty-lab'] .glow-reference-route-stage input,[data-room='beauty-lab'] .glow-reference-route-stage textarea,[data-room='beauty-lab'] .glow-reference-route-stage select{border-color:var(--b4-line)!important;border-radius:7px!important;background:#fff!important}
+
+/* Hair Studio — reference panel 3 */
+[data-room='hair'] .glow-reference-route-stage>.mx-auto{max-width:1120px!important;display:grid!important;gap:9px!important}
+[data-room='hair'] .glow-reference-route-stage>.mx-auto>header{min-height:86px!important;align-items:center!important;position:relative;overflow:hidden;border-radius:10px;background:linear-gradient(90deg,#fff 0 43%,#f3dfd3 43% 100%);border:1px solid var(--b4-line);padding:17px 18px!important}
+[data-room='hair'] .glow-reference-route-stage>.mx-auto>header:after{content:'';position:absolute;right:4%;top:-35%;width:31%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#8a5b43 0 4%,#c08a6b 5% 18%,#684634 19% 24%,#d1a082 25% 34%,transparent 35%);opacity:.5;filter:blur(.3px)}
+[data-room='hair'] .glow-reference-route-stage>.mx-auto>header h1{font-size:40px!important;line-height:.98!important;position:relative;z-index:2}
+[data-room='hair'] .glow-reference-route-stage>.mx-auto>header p{position:relative;z-index:2}
+[data-room='hair'] .glow-reference-route-stage>.mx-auto>section:first-of-type{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:7px!important}
+[data-room='hair'] .glow-reference-route-stage>.mx-auto>section:first-of-type>div{padding:10px!important;min-height:78px!important;border-radius:8px!important}
+[data-room='hair'] .glow-reference-route-stage>.mx-auto>section:nth-of-type(2){grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
+[data-room='hair'] .glow-reference-route-stage>.mx-auto>section:nth-of-type(2)>div{padding:12px!important;border-radius:9px!important;min-height:176px}
+[data-room='hair'] .glow-reference-route-stage>.mx-auto>section:nth-of-type(3){grid-template-columns:.78fr 1.48fr .92fr!important;gap:8px!important}
+[data-room='hair'] .glow-reference-route-stage>.mx-auto>section:nth-of-type(3)>div{padding:12px!important;border-radius:9px!important;min-height:154px}
+[data-room='hair'] .glow-reference-route-stage>.mx-auto [class*='h-24']{height:82px!important}
+[data-room='hair'] .glow-reference-route-stage>.mx-auto>details{border-radius:8px!important;padding:12px!important}
+
+/* Batch 4 responsive: preserve board proportions on iPad landscape, reflow only when truly narrow. */
+@media(min-width:768px) and (max-width:1180px){
+ [data-room='beauty'] .glow-reference-route-stage header{grid-template-columns:.9fr 1.1fr!important;min-height:220px!important}
+ [data-room='beauty'] .glow-reference-route-stage header+section{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ [data-room='beauty'] .glow-reference-route-stage header+section+section{grid-template-columns:1.18fr .82fr 1fr .72fr!important}
+ [data-room='beauty-lab'] .glow-reference-route-stage [class*='lg:grid-cols-3']{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+ [data-room='hair'] .glow-reference-route-stage>.mx-auto>section:nth-of-type(2){grid-template-columns:repeat(4,minmax(0,1fr))!important}
+}
+@media(max-width:767px){
+ [data-room='beauty'] .glow-reference-route-stage header{grid-template-columns:1fr!important;min-height:280px!important;padding:22px!important}
+ [data-room='beauty'] .glow-reference-route-stage header:after{width:65%;height:58%;right:-10%;top:40%}
+ [data-room='beauty'] .glow-reference-route-stage header+section{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ [data-room='beauty'] .glow-reference-route-stage header+section+section,[data-room='beauty'] .glow-reference-route-stage header+section+section+section{grid-template-columns:1fr!important}
+ [data-room='beauty-lab'] .glow-reference-route-stage>.space-y-6>div:nth-child(3){grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ [data-room='beauty-lab'] .glow-reference-route-stage [class*='lg:grid-cols-3']{grid-template-columns:1fr 1fr!important}
+ [data-room='hair'] .glow-reference-route-stage>.mx-auto>section:first-of-type{grid-template-columns:1fr 1fr!important}
+ [data-room='hair'] .glow-reference-route-stage>.mx-auto>section:nth-of-type(2),[data-room='hair'] .glow-reference-route-stage>.mx-auto>section:nth-of-type(3){grid-template-columns:1fr!important}
+}
