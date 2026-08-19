@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { createNote } from '@/lib/data/notes';
 import { generateExpandedBriefingAction } from '@/app/actions/briefings';
+import { updateTaskAction } from '@/app/actions/tasks';
 
 async function requireUser() {
   const session = await auth();
@@ -39,6 +40,19 @@ export async function saveEveningReflectionAction(formData: FormData): Promise<v
   });
 
   revalidatePath('/briefings/evening');
+}
+
+export async function moveTaskToTomorrowAction(formData: FormData): Promise<void> {
+  await requireUser();
+  const taskId = String(formData.get('taskId') ?? '').trim();
+  if (!taskId) return;
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(9, 0, 0, 0);
+  await updateTaskAction(taskId, { dueDate: tomorrow });
+  revalidatePath('/briefings/evening');
+  revalidatePath('/tomorrow');
+  revalidatePath('/dashboard');
 }
 
 export async function closeEveningAction(): Promise<void> {
