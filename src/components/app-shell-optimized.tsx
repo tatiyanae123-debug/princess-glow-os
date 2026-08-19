@@ -59,7 +59,10 @@ function isReferenceRoute(pathname: string) {
     pathname.startsWith('/timeline') || pathname.startsWith('/brain') ||
     pathname.startsWith('/concierge') || pathname.startsWith('/memory') ||
     pathname.startsWith('/observations') || pathname.startsWith('/graph') ||
-    pathname.startsWith('/notes');
+    pathname.startsWith('/notes') || pathname.startsWith('/wellness') ||
+    pathname.startsWith('/maintenance') || pathname.startsWith('/fitness') ||
+    pathname.startsWith('/food') || pathname.startsWith('/habits') ||
+    pathname.startsWith('/routines');
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
