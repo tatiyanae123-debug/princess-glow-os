@@ -1,0 +1,121 @@
+/* Final lower-grid calibration for the approved Dashboard reference. */
+
+/* Recently Opened — convert the old gradient World strip into the reference's
+   photographic destination rail without changing the real destinations. */
+[data-room='dashboard'] main main > section:last-child {
+  min-height:186px !important;
+  height:186px !important;
+  padding:16px !important;
+  border-radius:13px !important;
+}
+[data-room='dashboard'] main main > section:last-child > div:first-child h2 {
+  font-size:0 !important;
+}
+[data-room='dashboard'] main main > section:last-child > div:first-child h2::before {
+  content:'Recently Opened';
+  font-size:13px;
+  font-weight:600;
+  color:#342d29;
+}
+[data-room='dashboard'] main main > section:last-child > div:first-child a {
+  font-size:9px !important;
+}
+[data-room='dashboard'] main main > section:last-child > div:nth-child(2) {
+  margin-top:12px !important;
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  gap:11px !important;
+}
+[data-room='dashboard'] main main > section:last-child > div:nth-child(2) > a:nth-child(n+6) {
+  display:none !important;
+}
+[data-room='dashboard'] main main > section:last-child > div:nth-child(2) > a > div {
+  height:105px !important;
+  border-radius:9px !important;
+  border:1px solid rgba(91,68,57,.08) !important;
+  background-size:cover !important;
+  background-position:center !important;
+  box-shadow:0 8px 20px rgba(69,49,40,.055),inset 0 1px 0 rgba(255,255,255,.6) !important;
+}
+[data-room='dashboard'] main main > section:last-child > div:nth-child(2) > a:nth-child(1) > div {
+  background-image:linear-gradient(rgba(255,255,255,.05),rgba(255,255,255,.05)),url('https://media.licdn.com/dms/image/v2/C4E1BAQFxkCCuXBf1rw/company-background_10000/company-background_10000/0/1651792059318/fantastic_frank_lisbon_cover?e=2147483647&t=hrd5Ip8w0WIhE0spIuRyw1zfC7k4faJJF8OXpOD8dKA&v=beta') !important;
+}
+[data-room='dashboard'] main main > section:last-child > div:nth-child(2) > a:nth-child(2) > div {
+  background-image:linear-gradient(135deg,rgba(212,226,216,.12),rgba(91,116,98,.08)),url('https://comportahouse.pt/wp-content/uploads/2024/03/1825-2204J-SAMA-T4-LIVING-02.jpg') !important;
+}
+[data-room='dashboard'] main main > section:last-child > div:nth-child(2) > a:nth-child(3) > div {
+  background-image:linear-gradient(135deg,rgba(250,232,233,.10),rgba(214,182,171,.07)),url('https://media.licdn.com/dms/image/v2/C4E1BAQFxkCCuXBf1rw/company-background_10000/company-background_10000/0/1651792059318/fantastic_frank_lisbon_cover?e=2147483647&t=hrd5Ip8w0WIhE0spIuRyw1zfC7k4faJJF8OXpOD8dKA&v=beta') !important;
+}
+[data-room='dashboard'] main main > section:last-child > div:nth-child(2) > a:nth-child(4) > div {
+  background-image:linear-gradient(135deg,rgba(64,57,53,.14),rgba(255,255,255,.03)),url('https://comportahouse.pt/wp-content/uploads/2024/03/1825-2204J-SAMA-T4-LIVING-02.jpg') !important;
+}
+[data-room='dashboard'] main main > section:last-child > div:nth-child(2) > a:nth-child(5) > div {
+  background-image:linear-gradient(135deg,rgba(241,229,221,.12),rgba(181,147,127,.08)),url('https://media.licdn.com/dms/image/v2/C4E1BAQFxkCCuXBf1rw/company-background_10000/company-background_10000/0/1651792059318/fantastic_frank_lisbon_cover?e=2147483647&t=hrd5Ip8w0WIhE0spIuRyw1zfC7k4faJJF8OXpOD8dKA&v=beta') !important;
+}
+[data-room='dashboard'] main main > section:last-child > div:nth-child(2) > a p:first-of-type {
+  margin-top:7px !important;
+  font-size:9.5px !important;
+  font-weight:600 !important;
+}
+[data-room='dashboard'] main main > section:last-child > div:nth-child(2) > a p:last-of-type {
+  margin-top:2px !important;
+  font-size:8px !important;
+  color:#91867f !important;
+}
+
+/* Secondary cards — stronger reference typography and diagrams. */
+[data-room='dashboard'] main main > div:nth-of-type(2) > section:nth-child(2) p[class*='text-[20px]'] {
+  font-size:26px !important;
+  letter-spacing:-.025em !important;
+}
+[data-room='dashboard'] main main > div:nth-of-type(2) > section:nth-child(3) p[class*='text-[20px]'] {
+  font-family:'Playfair Display',Georgia,serif !important;
+  font-size:27px !important;
+  letter-spacing:-.025em !important;
+}
+[data-room='dashboard'] main main > div:nth-of-type(2) > section:nth-child(3) [class*='bg-[#9a83c2]'] {
+  width:5px !important;
+  border-radius:4px 4px 1px 1px !important;
+  box-shadow:0 2px 4px rgba(113,92,159,.08);
+}
+[data-room='dashboard'] main main > div:nth-of-type(2) > section:nth-child(4) a > span:first-child {
+  width:72px !important;
+  height:72px !important;
+  font-size:32px !important;
+  background:linear-gradient(145deg,#eeeaf6,#ded7ec) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 9px 22px rgba(112,94,145,.08) !important;
+}
+
+/* Right rail link/button hit areas match the reference's more substantial controls. */
+[data-room='dashboard'] main aside > section button,
+[data-room='dashboard'] main aside > section a:not([href='/calendar']) {
+  min-height:38px !important;
+}
+
+/* Tiny labels are the strongest visual tell of the old miniature build. */
+[data-room='dashboard'] main [class*='text-[6px]'],
+[data-room='dashboard'] main [class*='text-[6.4px]'],
+[data-room='dashboard'] main [class*='text-[6.5px]'],
+[data-room='dashboard'] main [class*='text-[6.8px]'] {
+  font-size:8.5px !important;
+}
+[data-room='dashboard'] main [class*='text-[7px]'],
+[data-room='dashboard'] main [class*='text-[7.2px]'],
+[data-room='dashboard'] main [class*='text-[7.3px]'],
+[data-room='dashboard'] main [class*='text-[7.5px]'] {
+  font-size:9px !important;
+}
+[data-room='dashboard'] main [class*='text-[8px]'],
+[data-room='dashboard'] main [class*='text-[8.5px]'] {
+  font-size:10px !important;
+}
+
+@media (min-width:1024px) and (max-width:1366px) {
+  [data-room='dashboard'] main main > section:last-child {
+    height:170px !important;
+    min-height:170px !important;
+    padding:14px !important;
+  }
+  [data-room='dashboard'] main main > section:last-child > div:nth-child(2) > a > div {
+    height:90px !important;
+  }
+}
