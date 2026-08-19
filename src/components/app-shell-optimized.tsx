@@ -53,16 +53,12 @@ function roomFor(pathname: string) {
   return 'dashboard';
 }
 
-const DASHBOARD_WIDTH = 1536;
-const DASHBOARD_HEIGHT = 1024;
-
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const room = roomFor(pathname);
   const isReferenceDashboard = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
   const [focus, setFocus] = useState(false);
-  const [dashboardScale, setDashboardScale] = useState(1);
 
   useEffect(() => {
     const sync = () => setFocus(new URLSearchParams(window.location.search).get('focus') === '1');
@@ -75,21 +71,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     };
   }, [pathname]);
 
-  useEffect(() => {
-    if (!isReferenceDashboard) return;
-    const resize = () => {
-      const width = Math.max(320, document.documentElement.clientWidth || window.innerWidth);
-      setDashboardScale(Math.min(1, width / DASHBOARD_WIDTH));
-    };
-    resize();
-    window.addEventListener('resize', resize);
-    window.addEventListener('orientationchange', resize);
-    return () => {
-      window.removeEventListener('resize', resize);
-      window.removeEventListener('orientationchange', resize);
-    };
-  }, [isReferenceDashboard]);
-
   function exitFocus() {
     const params = new URLSearchParams(window.location.search);
     params.delete('focus');
@@ -98,7 +79,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   const content = (
-    <div key={pathname} className={isReferenceDashboard ? 'w-full' : 'glow-v3-route-stage mx-auto w-full max-w-[1500px]'}>
+    <div key={pathname} className={isReferenceDashboard ? 'w-full min-w-0' : 'glow-v3-route-stage mx-auto w-full max-w-[1500px]'}>
       {children}
     </div>
   );
@@ -107,18 +88,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return (
       <GlowProvider>
         <div className="min-h-screen w-full overflow-x-clip bg-white text-[#25211f]" data-room="dashboard" data-glow-shell="v3" data-focus-mode="false">
-          <div
-            aria-label="Glow OS dashboard reference canvas"
-            className="relative"
-            style={{ width: DASHBOARD_WIDTH * dashboardScale, height: DASHBOARD_HEIGHT * dashboardScale, maxWidth: '100vw' }}
-          >
-            <div
-              className="flex h-[1024px] w-[1536px] bg-white"
-              style={{ transform: `scale(${dashboardScale})`, transformOrigin: 'top left', willChange: 'transform' }}
-            >
-              <div className="h-[1024px] w-[238px] shrink-0"><Sidebar variant="dashboard-reference" /></div>
-              <main className="h-[1024px] w-[1298px] shrink-0 overflow-hidden p-0">{content}</main>
+          <div className="flex min-h-screen w-full bg-white">
+            <div className="sticky top-0 hidden h-screen w-[238px] shrink-0 overflow-y-auto overflow-x-hidden border-r border-[#ebe6e3] bg-white md:block">
+              <Sidebar variant="dashboard-reference" />
             </div>
+            <div className="w-full md:hidden"><Sidebar /></div>
+            <main className="min-w-0 flex-1 overflow-x-clip bg-white p-0">{content}</main>
           </div>
           <GlobalCommandSurface />
           <DeferredGlobalControls />
