@@ -12,6 +12,7 @@ import './glow-v3-system.css';
 import './batch1-today-planning-reference.css';
 import './batch2-mind-reference.css';
 import './dashboard-apple-lock.css';
+import './dashboard-apple-details.css';
 
 export const metadata: Metadata = {
   title: 'Glow OS',
