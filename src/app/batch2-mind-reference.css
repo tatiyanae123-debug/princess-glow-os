@@ -1,0 +1,49 @@
+/* Batch 2 — Mind. Locked visual reference: Brain, Concierge, Memory, Timeline,
+   Observations, Graph, Journal and Briefings. Keep the V3 shell and real data/actions. */
+:root{--b2-paper:#fffdfb;--b2-ink:#292320;--b2-muted:#8b8079;--b2-line:#eee6e2;--b2-rose:#b85269;--b2-blush:#fae9e9;--b2-soft:#f8f2ef;--b2-shadow:0 8px 26px rgba(69,48,40,.04)}
+[data-room='brain'],[data-room='concierge'],[data-room='memory'],[data-room='observations'],[data-room='graph'],[data-room='notes'],[data-room='briefings'],[data-room='timeline']{background:var(--b2-paper)}
+[data-room='brain'] main,[data-room='concierge'] main,[data-room='memory'] main,[data-room='observations'] main,[data-room='graph'] main,[data-room='notes'] main,[data-room='briefings'] main,[data-room='timeline'] main{background:linear-gradient(180deg,#fffdfb 0,#fff 72%)}
+.batch2-page{max-width:1280px;margin:0 auto;color:var(--b2-ink)}
+.batch2-kicker{font-size:8.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#4f4742}
+.batch2-title{font-family:var(--font-display,Georgia,serif);font-size:38px;line-height:.98;letter-spacing:-.035em;color:var(--b2-ink)}
+.batch2-subtitle{margin-top:5px;font-size:10.5px;color:var(--b2-muted)}
+.batch2-tabs{display:flex;gap:22px;border-bottom:1px solid var(--b2-line);font-size:9px;color:#8f837c}
+.batch2-tabs>a,.batch2-tabs>button{position:relative;padding:10px 0}
+.batch2-tabs .active{color:#9c4e60}.batch2-tabs .active:after{content:'';position:absolute;height:1.5px;left:0;right:0;bottom:-1px;background:#b65a70}
+.batch2-card{border:1px solid var(--b2-line);background:rgba(255,255,255,.97);border-radius:10px;box-shadow:var(--b2-shadow);position:relative}
+.batch2-card:before{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;box-shadow:inset 0 1px rgba(255,255,255,.95)}
+.batch2-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--b2-line);background:#fff;border-radius:7px;padding:8px 12px;font-size:9px;color:#4a423e}
+.batch2-btn-primary{background:#ad455e;color:#fff;border-color:#ad455e}
+.batch2-row{border:1px solid var(--b2-line);background:#fff;border-radius:8px;min-height:52px}
+.batch2-mini{font-size:8px;color:#a0958e}.batch2-body{font-size:9.5px;line-height:1.55;color:#5a514c}
+.batch2-media{background:linear-gradient(145deg,#efe3dd,#d7c7bc);overflow:hidden}
+.batch2-media img{width:100%;height:100%;object-fit:cover;display:block}
+.batch2-grid-shadow{box-shadow:0 10px 35px rgba(78,56,45,.045)}
+/* Mind pages are deliberately denser than the rest of the app. */
+.batch2-page [class*='rounded-[18px]'],.batch2-page [class*='rounded-[20px]']{border-radius:10px!important}
+.batch2-page [class*='border-[#F1E7E3]']{border-color:var(--b2-line)!important}
+.batch2-page .glow-display{letter-spacing:-.025em}
+/* Brain */
+.batch2-brain-stage{display:grid;grid-template-columns:165px minmax(280px,1fr) 165px;gap:12px;align-items:center;min-height:280px}
+.batch2-brain-orb{width:245px;height:245px;border-radius:50%;margin:auto;background:radial-gradient(circle at 48% 47%,#fff 0 5%,#f8cfe1 7%,#c784ad 20%,#6f5378 36%,#392f42 55%,#c6ae9e 57%,#efe2d7 61%,#fff 64%);box-shadow:0 18px 42px rgba(88,55,73,.14),inset 0 0 45px rgba(255,255,255,.8);position:relative}
+.batch2-brain-orb:before{content:'';position:absolute;inset:13%;border-radius:50%;background:conic-gradient(from 20deg,transparent,#f9d5e2,transparent,#fff1f5,transparent);filter:blur(8px);opacity:.9}
+.batch2-brain-stack{display:grid;gap:8px}.batch2-brain-stack .batch2-row{padding:10px 11px}
+/* Concierge */
+.batch2-request-list{display:grid;gap:8px}.batch2-request-item{display:grid;grid-template-columns:24px 1fr auto auto;align-items:center;gap:10px;padding:11px 12px}
+/* Memory */
+.batch2-memory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.batch2-memory-tile{overflow:hidden}.batch2-memory-thumb{height:145px;background:linear-gradient(145deg,#ede2da,#cfc0b6)}
+/* Observations */
+.batch2-observation-list{display:grid;gap:12px}.batch2-observation{display:grid;grid-template-columns:30px 1fr auto;gap:12px;align-items:center;padding:16px}
+/* Graph */
+.batch2-graph-stage{position:relative;min-height:560px;background:radial-gradient(circle at 50% 50%,rgba(250,230,231,.5),transparent 38%)}
+.batch2-graph-center{position:absolute;left:50%;top:50%;width:170px;height:170px;transform:translate(-50%,-50%);border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 45% 35%,#f4e6dc,#bca58f 46%,#7d6757 100%);box-shadow:0 16px 35px rgba(83,62,48,.15)}
+.batch2-node{position:absolute;width:88px;min-height:64px;border:1px solid var(--b2-line);border-radius:50%;background:#fff;display:grid;place-items:center;text-align:center;padding:8px;font-size:8px;box-shadow:0 8px 20px rgba(66,48,40,.05)}
+/* Journal */
+.batch2-journal-pinned{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.batch2-note-tile{padding:15px;min-height:150px}
+/* Briefings */
+.batch2-brief-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(220px,.75fr);gap:14px}.batch2-brief-feature{display:grid;grid-template-columns:1fr 42%;min-height:270px;overflow:hidden}.batch2-past{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+/* Timeline */
+.batch2-timeline-hero{min-height:470px;position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(60,45,38,.08)),linear-gradient(145deg,#eee4d9,#a89680 62%,#6e675c)}
+.batch2-timeline-hero:after{content:'';position:absolute;inset:22% 0 0;background:linear-gradient(165deg,transparent 0 34%,rgba(81,75,67,.55) 35% 48%,transparent 49%),linear-gradient(195deg,transparent 0 38%,rgba(111,96,76,.45) 39% 54%,transparent 55%);opacity:.8}
+@media(max-width:1100px){.batch2-brain-stage{grid-template-columns:145px 1fr 145px}.batch2-brain-orb{width:210px;height:210px}.batch2-memory-thumb{height:120px}}
+@media(max-width:767px){.batch2-title{font-size:34px}.batch2-brain-stage{grid-template-columns:1fr}.batch2-brain-stack{grid-template-columns:1fr 1fr}.batch2-brain-orb{order:-1;width:190px;height:190px}.batch2-memory-grid,.batch2-journal-pinned,.batch2-past,.batch2-brief-grid{grid-template-columns:1fr}.batch2-memory-thumb{height:180px}.batch2-request-item{grid-template-columns:24px 1fr}.batch2-request-item>*:nth-last-child(-n+2){grid-column:2}.batch2-graph-stage{min-height:500px;overflow:hidden}.batch2-node{transform:scale(.82)} }
