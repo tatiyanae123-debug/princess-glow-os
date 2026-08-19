@@ -1,0 +1,102 @@
+/* Batch 3 — WELLNESS reference lock
+   Visual authority: uploaded Wellness / Fitness / Food & Nutrition / Medications & Supplements / Habits / Routines / Sleep / Symptoms & Recovery board.
+   Real Glow data/actions remain authoritative; this sheet reconstructs geometry, material, typography and responsive behavior. */
+:root{
+  --b3-paper:#fffdfb;
+  --b3-paper-soft:#fbf8f5;
+  --b3-ink:#29231f;
+  --b3-muted:#887e77;
+  --b3-line:rgba(104,79,67,.105);
+  --b3-line-soft:rgba(104,79,67,.07);
+  --b3-sage:#77866c;
+  --b3-sage-soft:#e8eee2;
+  --b3-rose:#b8566d;
+  --b3-blush:#fae6e7;
+  --b3-lav:#8d82a7;
+  --b3-warm:#b88969;
+  --b3-shadow:0 9px 28px rgba(67,48,40,.04),0 1px 2px rgba(67,48,40,.03);
+  --b3-float:0 18px 44px rgba(67,48,40,.065),0 2px 5px rgba(67,48,40,.035);
+}
+[data-room='wellness'],[data-room='fitness'],[data-room='food'],[data-room='habits'],[data-room='routines']{background:var(--b3-paper)!important}
+[data-room='wellness'] main,[data-room='fitness'] main,[data-room='food'] main,[data-room='habits'] main,[data-room='routines'] main{background:linear-gradient(180deg,#fffdfb 0%,#fff 76%)!important}
+[data-room='wellness'] .glow-reference-route-stage,[data-room='fitness'] .glow-reference-route-stage,[data-room='food'] .glow-reference-route-stage,[data-room='habits'] .glow-reference-route-stage,[data-room='routines'] .glow-reference-route-stage{width:min(100%,1180px);max-width:1180px;margin-inline:auto}
+.batch3-page{width:100%;margin:0 auto;color:var(--b3-ink)}
+.batch3-page .glow-display{font-family:var(--font-display,Georgia,serif);letter-spacing:-.035em;font-weight:400}
+.batch3-page .glow-eyebrow,.batch3-page .ey{text-transform:none!important;letter-spacing:.01em!important;font-size:9px!important;color:#57504b!important}
+.batch3-page :is(.v3-surface,[class*='rounded-[18px]'],[class*='rounded-[22px]']){border-color:var(--b3-line-soft)!important;box-shadow:var(--b3-shadow)!important}
+.batch3-page :is(button,a,input,textarea,summary){transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background-color .16s ease}
+.batch3-page button:active,.batch3-page summary:active{transform:scale(.985)}
+
+/* WELLNESS — editorial hero plus compact overview, matching panel 1. */
+.batch3-wellness-reference{display:grid;gap:13px}
+.batch3-wellness-reference>div:first-child{gap:13px!important}
+.batch3-wellness-reference>div:first-child>div:first-child{gap:13px!important}
+.batch3-wellness-reference [class*='lg:grid-cols-[1fr_300px]']{grid-template-columns:1fr!important}
+.batch3-wellness-reference [class*='lg:grid-cols-[1fr_300px]']>div:last-child{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px!important}
+.batch3-wellness-reference [class*='lg:grid-cols-[1fr_300px]']>div:first-child>div:first-child{min-height:220px;border-radius:10px!important;box-shadow:var(--b3-float)!important;position:relative}
+.batch3-wellness-reference [class*='lg:grid-cols-[1fr_300px]']>div:first-child>div:first-child .glow-display{font-size:38px!important}
+.batch3-wellness-reference [class*='grid-cols-2'][class*='sm:grid-cols-5']{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:8px!important}
+.batch3-wellness-reference [class*='grid-cols-2'][class*='sm:grid-cols-5']>div{min-height:86px!important;padding:11px!important;border-radius:8px!important}
+.batch3-wellness-reference [class*='sm:grid-cols-2'][class*='lg:grid-cols-4']{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
+.batch3-wellness-reference [class*='sm:grid-cols-2'][class*='lg:grid-cols-4']>a{border-radius:9px!important;box-shadow:none!important}
+.batch3-wellness-reference [class*='sm:grid-cols-2'][class*='lg:grid-cols-4'] [class*='h-24']{height:82px!important}
+.batch3-wellness-reference #medications-supplements{margin-top:6px;padding-top:2px;border-top:1px solid var(--b3-line-soft)}
+.batch3-wellness-reference #medications-supplements~.grid{gap:10px!important}
+.batch3-wellness-reference #medications-supplements~.grid>.v3-surface,.batch3-wellness-reference #medications-supplements~.grid>[class*='rounded']{border-radius:10px!important}
+
+/* FITNESS — reference panel 2: image-led hero, two-column workout/readiness, weekly split and compact stats. */
+.batch3-fitness-reference{max-width:1120px!important;display:grid;gap:12px!important}
+.batch3-fitness-reference>header{min-height:66px;align-items:end!important}.batch3-fitness-reference>header h1{font-size:42px!important;line-height:.95!important}.batch3-fitness-reference>header p{margin-top:6px;font-size:10.5px!important}
+.batch3-fitness-reference>section{gap:10px!important}
+.batch3-fitness-reference>section:first-of-type{grid-template-columns:1fr .82fr 1.08fr!important}
+.batch3-fitness-reference>section:first-of-type>div,.batch3-fitness-reference>section:first-of-type>.v3-surface{min-height:235px!important;border-radius:10px!important}
+.batch3-fitness-reference>section:first-of-type [class*='min-h-[300px]']{min-height:235px!important}
+.batch3-fitness-reference>section:nth-of-type(2)>*{min-height:175px!important;border-radius:10px!important}
+.batch3-fitness-reference>section:nth-of-type(3)>*{min-height:130px!important;border-radius:10px!important}
+.batch3-fitness-reference [class*='h-32'][class*='w-32']{height:112px!important;width:112px!important;border-width:7px!important}
+.batch3-fitness-reference [class*='h-28']{height:104px!important}
+.batch3-fitness-reference details>summary{border-radius:7px!important;background:#77866c!important;padding:9px 15px!important;font-size:10px!important}
+
+/* FOOD — soften SectionPage shell; gallery/room become the approved editorial board rather than giant SaaS cards. */
+.batch3-food-reference{display:grid;gap:11px}
+.batch3-food-reference>section>header,.batch3-food-reference header{min-height:64px}
+.batch3-food-reference h1{font-size:39px!important;line-height:.96!important}
+.batch3-food-reference [class*='rounded-[18px]'],.batch3-food-reference [class*='rounded-[20px]'],.batch3-food-reference [class*='rounded-[22px]']{border-radius:9px!important;border-color:var(--b3-line-soft)!important;box-shadow:var(--b3-shadow)!important}
+.batch3-food-reference [class*='grid']{gap:9px}
+.batch3-food-reference img{filter:saturate(.88) contrast(.98) brightness(1.015)}
+
+/* MEDICATIONS + SUPPLEMENTS inside the Wellness data system. */
+.batch3-wellness-reference #medications-supplements .glow-eyebrow{font-family:var(--font-display,Georgia,serif)!important;font-size:28px!important;line-height:1!important;color:var(--b3-ink)!important}
+.batch3-wellness-reference #medications-supplements>p:last-child{max-width:720px;font-size:10.5px!important;line-height:1.5!important}
+.batch3-wellness-reference #medications-supplements~.grid details{border-radius:9px!important;border-color:var(--b3-line-soft)!important;box-shadow:0 5px 16px rgba(64,45,37,.025)}
+.batch3-wellness-reference #medications-supplements~.grid summary{padding:11px!important}
+.batch3-wellness-reference #medications-supplements~.grid input,.batch3-wellness-reference #medications-supplements~.grid textarea{border-color:var(--b3-line)!important;border-radius:7px!important}
+
+/* HABITS — table-like density, restrained sage progress and a single insight footer. */
+.batch3-habits-reference{max-width:1120px;margin-inline:auto}
+.batch3-habits-reference :is(h1,.glow-display){letter-spacing:-.035em}
+.batch3-habits-reference [class*='rounded-[18px]'],.batch3-habits-reference [class*='rounded-[20px]']{border-radius:9px!important;border-color:var(--b3-line-soft)!important;box-shadow:var(--b3-shadow)!important}
+.batch3-habits-reference [role='tablist'],.batch3-habits-reference nav{border-color:var(--b3-line-soft)!important}
+.batch3-habits-reference button{border-radius:7px!important}
+
+/* ROUTINES — reference panel 6: image grid as primary content. */
+.batch3-routines-reference{max-width:1120px;margin-inline:auto}
+.batch3-routines-reference [class*='rounded-[18px]'],.batch3-routines-reference [class*='rounded-[20px]']{border-radius:9px!important;border-color:var(--b3-line-soft)!important;box-shadow:var(--b3-shadow)!important}
+.batch3-routines-reference img{filter:saturate(.82) contrast(.97) brightness(1.02)}
+.batch3-routines-reference [class*='grid']{gap:10px}
+
+/* Reference-specific typography/material polish across Batch 3. */
+[data-reference-shell='true'][data-room='wellness'] header.sticky,[data-reference-shell='true'][data-room='fitness'] header.sticky,[data-reference-shell='true'][data-room='food'] header.sticky,[data-reference-shell='true'][data-room='habits'] header.sticky,[data-reference-shell='true'][data-room='routines'] header.sticky{height:50px!important;min-height:50px!important;background:rgba(255,253,251,.95)!important;border-color:var(--b3-line-soft)!important}
+[data-reference-shell='true'][data-room='wellness'] header.sticky>button:first-child,[data-reference-shell='true'][data-room='fitness'] header.sticky>button:first-child,[data-reference-shell='true'][data-room='food'] header.sticky>button:first-child,[data-reference-shell='true'][data-room='habits'] header.sticky>button:first-child,[data-reference-shell='true'][data-room='routines'] header.sticky>button:first-child{height:33px!important;max-width:360px!important;font-size:10px!important}
+
+@media (min-width:768px) and (max-width:1180px){
+  [data-room='wellness'] main,[data-room='fitness'] main,[data-room='food'] main,[data-room='habits'] main,[data-room='routines'] main{padding:11px 13px 72px!important}
+  [data-room='wellness'] .glow-reference-route-stage,[data-room='fitness'] .glow-reference-route-stage,[data-room='food'] .glow-reference-route-stage,[data-room='habits'] .glow-reference-route-stage,[data-room='routines'] .glow-reference-route-stage{max-width:100%!important}
+  .batch3-wellness-reference [class*='lg:grid-cols-[1fr_300px]']>div:last-child{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .batch3-fitness-reference>section:first-of-type,.batch3-fitness-reference>section:nth-of-type(2),.batch3-fitness-reference>section:nth-of-type(3){display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:767px){
+  .batch3-wellness-reference [class*='lg:grid-cols-[1fr_300px]']>div:last-child,.batch3-wellness-reference [class*='grid-cols-2'][class*='sm:grid-cols-5'],.batch3-wellness-reference [class*='sm:grid-cols-2'][class*='lg:grid-cols-4'],.batch3-fitness-reference>section:first-of-type{grid-template-columns:1fr!important}
+  .batch3-wellness-reference [class*='grid-cols-2'][class*='sm:grid-cols-5']{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .batch3-fitness-reference>header h1{font-size:38px!important}
+}
