@@ -18,6 +18,7 @@ import './batch4-beauty-reference.css';
 import './batch4-tweaks.css';
 import './batch5-money-goals-reference.css';
 import './batch5-tweaks.css';
+import './batch5-interaction-tweaks.css';
 import './dashboard-apple-lock.css';
 import './dashboard-apple-details.css';
 
