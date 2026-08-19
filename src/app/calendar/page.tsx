@@ -14,7 +14,9 @@ export default async function CalendarPage() {
 
   return (
     <AppShell>
-      <CalendarRouteExperience initialEvents={events} />
+      <div className="batch1-calendar-reference">
+        <CalendarRouteExperience initialEvents={events} />
+      </div>
     </AppShell>
   );
 }
