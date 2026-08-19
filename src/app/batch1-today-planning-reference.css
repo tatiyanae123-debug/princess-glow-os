@@ -1,0 +1,192 @@
+/* Batch 1 — Today + Planning visual reconstruction.
+   The supplied collage is the locked reference for Dashboard, Morning Brief,
+   Evening Debrief, Calendar Day/Week/Month and Timeline. */
+
+:root {
+  --b1-ink: #2b2522;
+  --b1-muted: #8f837d;
+  --b1-rose: #bb5d72;
+  --b1-rose-strong: #aa445e;
+  --b1-blush: #f7e8e8;
+  --b1-paper: #fffdfb;
+  --b1-line: #ece4e0;
+  --b1-shadow: 0 8px 28px rgba(73, 53, 44, .045);
+}
+
+/* Shared shell for the seven Batch 1 screens. */
+[data-room='briefings'],
+[data-room='calendar'],
+[data-room='timeline'] {
+  background: #fffdfb;
+}
+
+[data-room='briefings'] .glow-v3-route-stage,
+[data-room='calendar'] .glow-v3-route-stage,
+[data-room='timeline'] .glow-v3-route-stage {
+  max-width: 1288px;
+}
+
+[data-room='briefings'] main,
+[data-room='calendar'] main,
+[data-room='timeline'] main {
+  background:
+    radial-gradient(circle at 20% 0%, rgba(247,209,216,.11), transparent 27%),
+    linear-gradient(180deg, #fffdfb 0%, #fff 64%);
+}
+
+[data-room='briefings'] .v3-surface,
+[data-room='calendar'] .v3-surface,
+[data-room='timeline'] .v3-surface,
+[data-room='briefings'] [class*='rounded-[18px]'][class*='border'],
+[data-room='calendar'] [class*='rounded-[18px]'][class*='border'],
+[data-room='timeline'] [class*='rounded-[18px]'][class*='border'] {
+  border-color: var(--b1-line) !important;
+  box-shadow: var(--b1-shadow);
+}
+
+/* Morning Brief */
+.batch1-morning-reference {
+  color: var(--b1-ink);
+}
+.batch1-brief-hero {
+  box-shadow: 0 12px 34px rgba(66, 47, 40, .06);
+}
+.batch1-brief-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0) 55%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+}
+.batch1-morning-reference .v3-surface {
+  border-radius: 13px !important;
+  background: rgba(255,255,255,.96) !important;
+}
+.batch1-your-day {
+  transform: translateY(-12px);
+  margin-bottom: -12px;
+  box-shadow: 0 14px 35px rgba(65,47,39,.055) !important;
+}
+
+/* Calendar: match the dense reference rather than an oversized SaaS calendar. */
+.batch1-calendar-reference > .space-y-5 {
+  gap: 12px;
+}
+.batch1-calendar-reference h1.glow-display {
+  font-size: 28px !important;
+  letter-spacing: -.025em;
+}
+.batch1-calendar-reference [class*='rounded-[18px]'] {
+  border-radius: 10px !important;
+}
+.batch1-calendar-reference [class*='p-4'] {
+  --tw-space-y-reverse: 0;
+}
+.batch1-calendar-reference .grid.grid-cols-7 > button {
+  min-height: 76px !important;
+}
+.batch1-calendar-reference .grid.grid-cols-7,
+.batch1-calendar-reference .grid.grid-cols-\[52px_repeat\(7\,1fr\)\] {
+  font-size: 10px;
+}
+.batch1-calendar-reference button {
+  letter-spacing: -.005em;
+}
+.batch1-calendar-reference [class*='bg-[#FBE4E8]'],
+.batch1-calendar-reference [class*='bg-[#E9E4F2]'],
+.batch1-calendar-reference [class*='bg-[#F1E8D9]'],
+.batch1-calendar-reference [class*='bg-[#E4EBDD]'] {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
+}
+
+/* Evening Debrief: denser numbered editorial board from the reference. */
+.evening-debrief-reference > div {
+  gap: 12px !important;
+}
+.evening-debrief-reference [class*='rounded-[18px]'] {
+  border-radius: 10px !important;
+  border-color: var(--b1-line) !important;
+  box-shadow: 0 6px 20px rgba(66,47,39,.035);
+}
+.evening-debrief-reference h1.glow-display {
+  font-size: 38px !important;
+  letter-spacing: -.03em;
+}
+.evening-debrief-reference [class*='lg:grid-cols-4'] {
+  gap: 10px !important;
+}
+.evening-debrief-reference [class*='p-4'] {
+  padding: 13px !important;
+}
+
+/* Timeline reference: narrow chronological spine + compact detail rail. */
+[data-room='timeline'] .reference-page-heading {
+  margin-bottom: -4px;
+}
+[data-room='timeline'] .reference-page-heading h1 {
+  font-size: 42px !important;
+}
+[data-room='timeline'] .reference-page-heading + div {
+  gap: 12px !important;
+}
+[data-room='timeline'] .v3-surface {
+  border-radius: 11px !important;
+}
+[data-room='timeline'] [class*='rounded-[14px]'] {
+  border-radius: 9px !important;
+}
+[data-room='timeline'] [class*='space-y-3'] {
+  row-gap: 7px !important;
+}
+
+/* Reference-style dimensionality: still quiet, but not flat. */
+[data-room='briefings'] .v3-surface,
+[data-room='calendar'] [class*='bg-white'][class*='border'],
+[data-room='timeline'] .v3-surface,
+.evening-debrief-reference [class*='bg-white'][class*='border'] {
+  position: relative;
+  background-image: linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,253,251,.96));
+}
+[data-room='briefings'] .v3-surface::before,
+[data-room='timeline'] .v3-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+/* iPad keeps a desktop-like information hierarchy; phone becomes a deliberate single rail. */
+@media (min-width: 768px) and (max-width: 1180px) {
+  [data-room='briefings'] main,
+  [data-room='calendar'] main,
+  [data-room='timeline'] main {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+  .batch1-morning-reference .lg\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0,1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .batch1-brief-hero {
+    min-height: 260px !important;
+  }
+  .batch1-brief-hero > div:nth-child(3) {
+    top: 12px !important;
+    right: 12px !important;
+  }
+  .batch1-morning-reference .grid {
+    min-width: 0;
+  }
+  .batch1-calendar-reference {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+  .batch1-calendar-reference [class*='grid-cols-7'] {
+    min-width: 690px;
+  }
+}
