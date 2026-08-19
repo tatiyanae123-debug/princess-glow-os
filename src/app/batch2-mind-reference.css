@@ -1,49 +1,117 @@
-/* Batch 2 — Mind. Locked visual reference: Brain, Concierge, Memory, Timeline,
-   Observations, Graph, Journal and Briefings. Keep the V3 shell and real data/actions. */
-:root{--b2-paper:#fffdfb;--b2-ink:#292320;--b2-muted:#8b8079;--b2-line:#eee6e2;--b2-rose:#b85269;--b2-blush:#fae9e9;--b2-soft:#f8f2ef;--b2-shadow:0 8px 26px rgba(69,48,40,.04)}
-[data-room='brain'],[data-room='concierge'],[data-room='memory'],[data-room='observations'],[data-room='graph'],[data-room='notes'],[data-room='briefings'],[data-room='timeline']{background:var(--b2-paper)}
-[data-room='brain'] main,[data-room='concierge'] main,[data-room='memory'] main,[data-room='observations'] main,[data-room='graph'] main,[data-room='notes'] main,[data-room='briefings'] main,[data-room='timeline'] main{background:linear-gradient(180deg,#fffdfb 0,#fff 72%)}
-.batch2-page{max-width:1280px;margin:0 auto;color:var(--b2-ink)}
-.batch2-kicker{font-size:8.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#4f4742}
-.batch2-title{font-family:var(--font-display,Georgia,serif);font-size:38px;line-height:.98;letter-spacing:-.035em;color:var(--b2-ink)}
-.batch2-subtitle{margin-top:5px;font-size:10.5px;color:var(--b2-muted)}
-.batch2-tabs{display:flex;gap:22px;border-bottom:1px solid var(--b2-line);font-size:9px;color:#8f837c}
-.batch2-tabs>a,.batch2-tabs>button{position:relative;padding:10px 0}
-.batch2-tabs .active{color:#9c4e60}.batch2-tabs .active:after{content:'';position:absolute;height:1.5px;left:0;right:0;bottom:-1px;background:#b65a70}
-.batch2-card{border:1px solid var(--b2-line);background:rgba(255,255,255,.97);border-radius:10px;box-shadow:var(--b2-shadow);position:relative}
-.batch2-card:before{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;box-shadow:inset 0 1px rgba(255,255,255,.95)}
-.batch2-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--b2-line);background:#fff;border-radius:7px;padding:8px 12px;font-size:9px;color:#4a423e}
-.batch2-btn-primary{background:#ad455e;color:#fff;border-color:#ad455e}
-.batch2-row{border:1px solid var(--b2-line);background:#fff;border-radius:8px;min-height:52px}
-.batch2-mini{font-size:8px;color:#a0958e}.batch2-body{font-size:9.5px;line-height:1.55;color:#5a514c}
+/* Batch 2 — MIND reference lock
+   Visual authority: Brain, Concierge, Memory, Timeline, Observations, Graph, Journal, Briefings.
+   Preserve real data/actions; this file controls shared visual geometry/material only. */
+:root{
+  --b2-paper:#fffdfc;
+  --b2-paper-2:#fffaf8;
+  --b2-ink:#27211f;
+  --b2-muted:#887d76;
+  --b2-soft-muted:#a79c95;
+  --b2-line:rgba(99,72,61,.12);
+  --b2-line-soft:rgba(99,72,61,.075);
+  --b2-rose:#ae5066;
+  --b2-rose-dark:#923e55;
+  --b2-blush:#fae6e7;
+  --b2-blush-2:#f7eeed;
+  --b2-champagne:#eadfd5;
+  --b2-sage:#899a7d;
+  --b2-shadow:0 10px 30px rgba(64,45,37,.045),0 1px 2px rgba(64,45,37,.035);
+  --b2-float:0 18px 46px rgba(70,48,39,.07),0 2px 5px rgba(70,48,39,.04);
+}
+
+[data-room='brain'],[data-room='concierge'],[data-room='memory'],[data-room='observations'],[data-room='graph'],[data-room='notes'],[data-room='briefings'],[data-room='timeline']{background:var(--b2-paper)!important}
+[data-room='brain'] main,[data-room='concierge'] main,[data-room='memory'] main,[data-room='observations'] main,[data-room='graph'] main,[data-room='notes'] main,[data-room='briefings'] main,[data-room='timeline'] main{
+  background:
+    radial-gradient(circle at 78% 8%,rgba(247,209,216,.13),transparent 28%),
+    linear-gradient(180deg,#fffdfc 0%,#fff 74%)!important;
+}
+
+.batch2-page{width:min(100%,1280px);margin:0 auto;color:var(--b2-ink);padding:2px 4px 18px}
+.batch2-page>header{min-height:76px;padding-top:2px}
+.batch2-kicker{font-size:9px;font-weight:650;letter-spacing:.105em;text-transform:uppercase;color:#4b433f}
+.batch2-title{font-family:var(--font-display,Georgia,serif);font-size:42px;line-height:.96;letter-spacing:-.043em;font-weight:400;color:var(--b2-ink)}
+.batch2-subtitle{margin-top:8px;font-size:11px;line-height:1.45;color:var(--b2-muted)}
+.batch2-body{font-size:10px;line-height:1.58;color:#554c47}
+.batch2-mini{font-size:8.25px;line-height:1.35;color:var(--b2-soft-muted)}
+
+.batch2-tabs{display:flex;gap:26px;min-height:38px;border-bottom:1px solid var(--b2-line-soft);font-size:9.25px;color:#8d817a}
+.batch2-tabs>a,.batch2-tabs>button,.batch2-tabs>span{position:relative;display:inline-flex;align-items:center;padding:10px 0 11px;white-space:nowrap}
+.batch2-tabs .active{color:var(--b2-rose-dark);font-weight:550}
+.batch2-tabs .active:after{content:'';position:absolute;height:2px;left:0;right:0;bottom:-1px;border-radius:999px;background:var(--b2-rose)}
+
+.batch2-card,.batch2-row{
+  border:1px solid var(--b2-line-soft);
+  background:rgba(255,255,255,.95);
+  box-shadow:var(--b2-shadow);
+  position:relative;
+}
+.batch2-card{border-radius:12px}
+.batch2-row{border-radius:9px;min-height:56px}
+.batch2-card:before,.batch2-row:before{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;box-shadow:inset 0 1px rgba(255,255,255,.96)}
+.batch2-card:hover,.batch2-row:hover{border-color:rgba(174,80,102,.18);box-shadow:0 13px 32px rgba(64,45,37,.055),0 1px 2px rgba(64,45,37,.035)}
+
+.batch2-btn{display:inline-flex;min-height:34px;align-items:center;justify-content:center;gap:7px;border:1px solid var(--b2-line);background:rgba(255,255,255,.92);border-radius:8px;padding:8px 13px;font-size:9.25px;color:#49413d;box-shadow:0 4px 14px rgba(65,45,37,.025);transition:.18s ease}
+.batch2-btn:hover{transform:translateY(-1px);border-color:rgba(174,80,102,.22);box-shadow:0 8px 18px rgba(65,45,37,.05)}
+.batch2-btn-primary{background:linear-gradient(180deg,#b8586d,#a6475e);color:#fff;border-color:#a84960;box-shadow:0 7px 18px rgba(166,71,94,.16)}
 .batch2-media{background:linear-gradient(145deg,#efe3dd,#d7c7bc);overflow:hidden}
 .batch2-media img{width:100%;height:100%;object-fit:cover;display:block}
-.batch2-grid-shadow{box-shadow:0 10px 35px rgba(78,56,45,.045)}
-/* Mind pages are deliberately denser than the rest of the app. */
-.batch2-page [class*='rounded-[18px]'],.batch2-page [class*='rounded-[20px]']{border-radius:10px!important}
-.batch2-page [class*='border-[#F1E7E3]']{border-color:var(--b2-line)!important}
-.batch2-page .glow-display{letter-spacing:-.025em}
-/* Brain */
-.batch2-brain-stage{display:grid;grid-template-columns:165px minmax(280px,1fr) 165px;gap:12px;align-items:center;min-height:280px}
-.batch2-brain-orb{width:245px;height:245px;border-radius:50%;margin:auto;background:radial-gradient(circle at 48% 47%,#fff 0 5%,#f8cfe1 7%,#c784ad 20%,#6f5378 36%,#392f42 55%,#c6ae9e 57%,#efe2d7 61%,#fff 64%);box-shadow:0 18px 42px rgba(88,55,73,.14),inset 0 0 45px rgba(255,255,255,.8);position:relative}
-.batch2-brain-orb:before{content:'';position:absolute;inset:13%;border-radius:50%;background:conic-gradient(from 20deg,transparent,#f9d5e2,transparent,#fff1f5,transparent);filter:blur(8px);opacity:.9}
-.batch2-brain-stack{display:grid;gap:8px}.batch2-brain-stack .batch2-row{padding:10px 11px}
-/* Concierge */
-.batch2-request-list{display:grid;gap:8px}.batch2-request-item{display:grid;grid-template-columns:24px 1fr auto auto;align-items:center;gap:10px;padding:11px 12px}
-/* Memory */
-.batch2-memory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.batch2-memory-tile{overflow:hidden}.batch2-memory-thumb{height:145px;background:linear-gradient(145deg,#ede2da,#cfc0b6)}
-/* Observations */
-.batch2-observation-list{display:grid;gap:12px}.batch2-observation{display:grid;grid-template-columns:30px 1fr auto;gap:12px;align-items:center;padding:16px}
-/* Graph */
-.batch2-graph-stage{position:relative;min-height:560px;background:radial-gradient(circle at 50% 50%,rgba(250,230,231,.5),transparent 38%)}
-.batch2-graph-center{position:absolute;left:50%;top:50%;width:170px;height:170px;transform:translate(-50%,-50%);border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 45% 35%,#f4e6dc,#bca58f 46%,#7d6757 100%);box-shadow:0 16px 35px rgba(83,62,48,.15)}
-.batch2-node{position:absolute;width:88px;min-height:64px;border:1px solid var(--b2-line);border-radius:50%;background:#fff;display:grid;place-items:center;text-align:center;padding:8px;font-size:8px;box-shadow:0 8px 20px rgba(66,48,40,.05)}
-/* Journal */
-.batch2-journal-pinned{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.batch2-note-tile{padding:15px;min-height:150px}
-/* Briefings */
-.batch2-brief-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(220px,.75fr);gap:14px}.batch2-brief-feature{display:grid;grid-template-columns:1fr 42%;min-height:270px;overflow:hidden}.batch2-past{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-/* Timeline */
-.batch2-timeline-hero{min-height:470px;position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(60,45,38,.08)),linear-gradient(145deg,#eee4d9,#a89680 62%,#6e675c)}
-.batch2-timeline-hero:after{content:'';position:absolute;inset:22% 0 0;background:linear-gradient(165deg,transparent 0 34%,rgba(81,75,67,.55) 35% 48%,transparent 49%),linear-gradient(195deg,transparent 0 38%,rgba(111,96,76,.45) 39% 54%,transparent 55%);opacity:.8}
-@media(max-width:1100px){.batch2-brain-stage{grid-template-columns:145px 1fr 145px}.batch2-brain-orb{width:210px;height:210px}.batch2-memory-thumb{height:120px}}
-@media(max-width:767px){.batch2-title{font-size:34px}.batch2-brain-stage{grid-template-columns:1fr}.batch2-brain-stack{grid-template-columns:1fr 1fr}.batch2-brain-orb{order:-1;width:190px;height:190px}.batch2-memory-grid,.batch2-journal-pinned,.batch2-past,.batch2-brief-grid{grid-template-columns:1fr}.batch2-memory-thumb{height:180px}.batch2-request-item{grid-template-columns:24px 1fr}.batch2-request-item>*:nth-last-child(-n+2){grid-column:2}.batch2-graph-stage{min-height:500px;overflow:hidden}.batch2-node{transform:scale(.82)} }
+.batch2-grid-shadow{box-shadow:0 12px 38px rgba(78,56,45,.05)}
+
+/* Keep the MIND pages deliberately editorial and dense, not generic SaaS. */
+.batch2-page [class*='rounded-[18px]'],.batch2-page [class*='rounded-[20px]']{border-radius:12px!important}
+.batch2-page [class*='border-[#F1E7E3]']{border-color:var(--b2-line-soft)!important}
+.batch2-page .glow-display{letter-spacing:-.034em}
+
+/* 1. Brain — luminous intelligence chamber */
+.batch2-brain-stage{display:grid;grid-template-columns:180px minmax(320px,1fr) 180px;gap:18px;align-items:center;min-height:330px;padding:6px 0 2px}
+.batch2-brain-orb{width:278px;height:278px;border-radius:50%;margin:auto;position:relative;isolation:isolate;
+  background:
+    radial-gradient(circle at 50% 49%,rgba(255,255,255,.98) 0 3%,rgba(255,215,230,.92) 9%,rgba(208,141,177,.90) 19%,rgba(118,79,123,.92) 32%,rgba(51,42,58,.97) 46%,rgba(112,89,103,.85) 53%,rgba(222,195,181,.92) 57%,rgba(250,243,237,.96) 62%,rgba(255,255,255,.98) 66%),
+    #f7eee9;
+  box-shadow:0 26px 58px rgba(92,57,76,.17),0 7px 18px rgba(84,56,48,.08),inset 0 0 54px rgba(255,255,255,.88),inset 0 -14px 26px rgba(108,71,92,.11)}
+.batch2-brain-orb:before{content:'';position:absolute;z-index:1;inset:11%;border-radius:50%;background:conic-gradient(from 10deg,transparent 0 8%,rgba(255,220,234,.9) 12%,transparent 22%,rgba(255,244,249,.95) 34%,transparent 47%,rgba(225,166,198,.8) 61%,transparent 72%,rgba(255,255,255,.9) 87%,transparent);filter:blur(7px);opacity:.95;mix-blend-mode:screen}
+.batch2-brain-orb:after{content:'';position:absolute;z-index:2;left:17%;right:17%;bottom:-8%;height:18%;border-radius:50%;background:radial-gradient(ellipse,rgba(114,79,67,.22),transparent 70%);filter:blur(8px)}
+.batch2-brain-stack{display:grid;gap:9px}.batch2-brain-stack .batch2-row{padding:11px 12px;box-shadow:0 7px 18px rgba(65,46,39,.035)}
+
+/* 2. Concierge */
+.batch2-request-list{display:grid;gap:9px}.batch2-request-item{display:grid;grid-template-columns:26px 1fr auto auto;align-items:center;gap:11px;padding:12px 13px;min-height:58px}
+
+/* 3. Memory */
+.batch2-memory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.batch2-memory-tile{overflow:hidden}.batch2-memory-thumb{height:158px;background:linear-gradient(145deg,#eee4dd,#cfc0b6)}
+.batch2-memory-tile .batch2-media,.batch2-memory-thumb{filter:saturate(.84) contrast(.98) brightness(1.02)}
+
+/* 4. Timeline */
+.batch2-timeline-hero{min-height:500px;position:relative;overflow:hidden;border-radius:12px;
+  background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(47,36,31,.16)),linear-gradient(145deg,#ece1d5 0%,#b7a28e 46%,#70675c 74%,#46433f 100%);
+  box-shadow:inset 0 1px rgba(255,255,255,.55),var(--b2-shadow)}
+.batch2-timeline-hero:before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,250,247,.22),transparent 26% 75%,rgba(255,248,244,.10));pointer-events:none}
+.batch2-timeline-hero:after{content:'';position:absolute;inset:19% 0 0;background:linear-gradient(165deg,transparent 0 34%,rgba(74,67,59,.56) 35% 48%,transparent 49%),linear-gradient(195deg,transparent 0 38%,rgba(107,91,75,.46) 39% 54%,transparent 55%);opacity:.83}
+
+/* 5. Observations */
+.batch2-observation-list{display:grid;gap:13px}.batch2-observation{display:grid;grid-template-columns:32px 1fr auto;gap:13px;align-items:center;padding:17px 18px;min-height:88px}
+
+/* 6. Graph */
+.batch2-graph-stage{position:relative;min-height:600px;overflow:hidden;border-radius:14px;background:radial-gradient(circle at 50% 50%,rgba(250,230,231,.72),rgba(255,253,252,.72) 30%,transparent 54%)}
+.batch2-graph-stage:before{content:'';position:absolute;inset:10%;border-radius:50%;border:1px solid rgba(174,80,102,.08);box-shadow:0 0 0 72px rgba(247,238,237,.12),0 0 0 144px rgba(247,238,237,.07)}
+.batch2-graph-center{position:absolute;left:50%;top:50%;width:188px;height:188px;transform:translate(-50%,-50%);border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 43% 30%,#f5e9df 0 18%,#c7ad97 43%,#8e745f 69%,#5e4f45 100%);box-shadow:0 23px 48px rgba(83,62,48,.17),inset 0 1px rgba(255,255,255,.55)}
+.batch2-node{position:absolute;width:96px;min-height:70px;border:1px solid var(--b2-line-soft);border-radius:50%;background:rgba(255,255,255,.96);display:grid;place-items:center;text-align:center;padding:9px;font-size:8.25px;box-shadow:0 10px 24px rgba(66,48,40,.055),inset 0 1px rgba(255,255,255,.95)}
+
+/* 7. Journal */
+.batch2-journal-pinned{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.batch2-note-tile{padding:16px;min-height:165px;background:linear-gradient(180deg,#fff,#fffaf8)}
+
+/* 8. Briefings */
+.batch2-brief-grid{display:grid;grid-template-columns:minmax(0,1.16fr) minmax(240px,.72fr);gap:16px}.batch2-brief-feature{display:grid;grid-template-columns:1fr 43%;min-height:294px;overflow:hidden}.batch2-past{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+
+@media(min-width:1280px){
+  .batch2-page{padding-inline:8px}
+  .batch2-title{font-size:44px}
+}
+@media(max-width:1100px){
+  .batch2-page{width:100%}
+  .batch2-brain-stage{grid-template-columns:155px 1fr 155px;gap:12px}.batch2-brain-orb{width:230px;height:230px}.batch2-memory-thumb{height:130px}.batch2-title{font-size:38px}
+}
+@media(max-width:767px){
+  .batch2-page{padding-inline:2px}.batch2-page>header{min-height:68px}.batch2-title{font-size:36px}.batch2-subtitle{font-size:10.5px}
+  .batch2-tabs{gap:17px;overflow-x:auto;scrollbar-width:none}.batch2-tabs::-webkit-scrollbar{display:none}
+  .batch2-brain-stage{grid-template-columns:1fr;min-height:0;padding-top:4px}.batch2-brain-stack{grid-template-columns:1fr 1fr}.batch2-brain-orb{order:-1;width:205px;height:205px}.batch2-memory-grid,.batch2-journal-pinned,.batch2-past,.batch2-brief-grid{grid-template-columns:1fr}.batch2-memory-thumb{height:190px}.batch2-request-item{grid-template-columns:26px 1fr}.batch2-request-item>*:nth-last-child(-n+2){grid-column:2}.batch2-graph-stage{min-height:520px}.batch2-node{transform:scale(.84)}.batch2-brief-feature{grid-template-columns:1fr;min-height:auto}
+}
