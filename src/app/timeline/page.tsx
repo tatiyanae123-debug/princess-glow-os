@@ -2,55 +2,28 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
-import { Card } from '@/components/ui/card';
 import { createTimelineEventAction } from '@/app/actions/completion-v1';
-import { updateTimelineEventAction } from '@/app/actions/detail-records';
 import { getFitnessSessions, getHairLogs, getTimelineEvents } from '@/lib/data/completion-v1';
-import { Dumbbell, Filter, Scissors, Sparkles } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
-const fieldClass='w-full rounded-[10px] border border-[#eadfdb] bg-white px-3 py-2.5 text-[11px] text-[#2B2420] outline-none focus:border-[#C9727E]';
-type Story={id:string;rawId:string;title:string;category:string;occurredAt:Date;summary:string|null;source:'timeline'|'fitness'|'hair';href:string};
-const dateTimeLocal=(value:Date)=>{const offset=value.getTimezoneOffset();return new Date(value.getTime()-offset*60000).toISOString().slice(0,16);};
-const scene=['#f7e7e4','#efe6df','#e7ded5','#f6eeee','#eee3dd','#f4e7df'];
+export const dynamic='force-dynamic';
+const field='w-full rounded-[8px] border border-[#eee4e0] px-3 py-2 text-[9px] outline-none';
+type Story={id:string;title:string;category:string;occurredAt:Date;href:string};
+const thumbs=['linear-gradient(145deg,#e8ddd4,#fff8f3)','linear-gradient(145deg,#ead7c8,#c2a58d)','linear-gradient(145deg,#d4c1ae,#e9ddd2)','linear-gradient(145deg,#b8aa9a,#e8ddd2)'];
 
-export default async function TimelinePage({ searchParams }: { searchParams: Promise<{ eventId?: string }> }){
-  const session=await auth();
-  if(!session?.user?.id) redirect('/sign-in');
-  const [events,fitness,hair,params]=await Promise.all([getTimelineEvents(session.user.id),getFitnessSessions(session.user.id),getHairLogs(session.user.id),searchParams]);
-  const selected=params.eventId?events.find((event)=>event.id===params.eventId)??null:null;
-  const story:Story[]=[
-    ...events.map(e=>({id:`t-${e.id}`,rawId:e.id,title:e.title,category:e.category,occurredAt:e.occurredAt,summary:e.summary,source:'timeline' as const,href:`/timeline?eventId=${encodeURIComponent(e.id)}`})),
-    ...fitness.map(e=>({id:`f-${e.id}`,rawId:e.id,title:`${e.workoutType} workout`,category:'Fitness',occurredAt:e.occurredAt,summary:e.notes||`${e.durationMinutes??0} minutes`,source:'fitness' as const,href:`/fitness?sessionId=${encodeURIComponent(e.id)}`})),
-    ...hair.map(e=>({id:`h-${e.id}`,rawId:e.id,title:e.style?`${e.eventType}: ${e.style}`:e.eventType,category:'Hair',occurredAt:e.occurredAt,summary:e.notes,source:'hair' as const,href:`/hair?logId=${encodeURIComponent(e.id)}`})),
-  ].sort((a,b)=>b.occurredAt.getTime()-a.occurredAt.getTime());
-  const years=new Map<number,Story[]>();story.forEach(item=>years.set(item.occurredAt.getFullYear(),[...(years.get(item.occurredAt.getFullYear())??[]),item]));
-  const yearEntries=[...years.entries()].sort((a,b)=>b[0]-a[0]);
-  const highlights=story.slice(0,4);
-  const milestoneCount=events.length;
-
-  return <AppShell><div className="batch1-timeline-reference space-y-4">
-    <header className="flex flex-wrap items-end justify-between gap-3">
-      <div><p className="text-[9px] font-semibold uppercase tracking-[.14em] text-[#9b8d85]">7. Calendar — Timeline View</p><h1 className="glow-display mt-2 text-[42px] leading-none tracking-[-.03em] text-[#27211e]">Timeline</h1><p className="mt-2 text-[11px] text-[#8c8078]">Your life, in sequence.</p></div>
-      <div className="flex items-center gap-2"><span className="rounded-full border border-[#e9dfdb] bg-white px-3 py-2 text-[9px]">Year</span><span className="rounded-full border border-[#e9dfdb] bg-white px-3 py-2 text-[9px]">All Time</span><span className="inline-flex items-center gap-1 rounded-full border border-[#e9dfdb] bg-white px-3 py-2 text-[9px]"><Filter size={11}/>Filter</span><details className="relative"><summary className="list-none rounded-full bg-[#bb536c] px-4 py-2 text-[9px] font-medium text-white">+ Add Event</summary><form action={createTimelineEventAction} className="absolute right-0 z-30 mt-2 w-[min(360px,84vw)] space-y-2 rounded-[14px] border border-[#eadfdb] bg-white p-4 shadow-xl"><input name="title" required placeholder="What happened?" className={fieldClass}/><input name="category" required placeholder="Category" className={fieldClass}/><input name="occurredAt" required type="datetime-local" className={fieldClass}/><textarea name="summary" rows={4} placeholder="What should you remember?" className={fieldClass}/><button type="submit" className="w-full rounded-full bg-[#2B2420] px-4 py-2.5 text-[11px] text-white">Add to Timeline</button></form></details></div>
-    </header>
-
-    {params.eventId&&!selected?<div role="status" className="rounded-[10px] border border-[#eadfdb] bg-[#fff8f7] px-4 py-3 text-[10px] text-[#7B535C]">That saved timeline event is no longer available.</div>:null}
-    {selected?<Card className="border-[#c66b7d]"><div className="flex items-start justify-between gap-3"><div><p className="text-[8px] font-semibold uppercase tracking-[.13em] text-[#ba6575]">Selected timeline event</p><h2 className="glow-display mt-1 text-[20px] text-[#2B2420]">{selected.title}</h2></div><Link href="/timeline" className="text-[9px] text-[#C9727E]">Close</Link></div><form action={updateTimelineEventAction.bind(null,selected.id)} className="mt-4 grid gap-2 sm:grid-cols-2"><input name="title" required defaultValue={selected.title} className={fieldClass}/><input name="category" required defaultValue={selected.category} className={fieldClass}/><input name="occurredAt" type="datetime-local" required defaultValue={dateTimeLocal(selected.occurredAt)} className={fieldClass}/><input name="relatedEntityType" defaultValue={selected.relatedEntityType??''} placeholder="Related type" className={fieldClass}/><input name="relatedEntityId" defaultValue={selected.relatedEntityId??''} placeholder="Related record ID" className={fieldClass}/><textarea name="summary" rows={3} defaultValue={selected.summary??''} placeholder="What should you remember?" className={`${fieldClass} sm:col-span-2`}/><button type="submit" className="w-fit rounded-full bg-[#C9727E] px-4 py-2.5 text-[10px] text-white">Save timeline event</button></form></Card>:null}
-
-    <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_250px]">
-      <Card className="overflow-hidden p-0">
-        <div className="px-5 py-4"><div className="flex items-center justify-between"><p className="text-[9px] uppercase tracking-[.13em] text-[#958981]">Your life</p><p className="text-[9px] text-[#b46a78]">{story.length} moments</p></div></div>
-        <div className="px-5 pb-5">
-          {story.length===0?<p className="py-16 text-center text-[11px] text-[#9A9088]">Your timeline is ready for its first moment.</p>:yearEntries.map(([year,items])=><section key={year} className="grid grid-cols-[56px_1fr] gap-4 border-t border-[#f0e7e3] py-4 first:border-0"><div className="pt-2"><p className="glow-display text-[16px] text-[#302925]">{year}</p></div><div className="relative space-y-2 border-l border-[#e9cbd2] pl-6">{items.map((item,index)=>{const Icon=item.source==='fitness'?Dumbbell:item.source==='hair'?Scissors:Sparkles;return <Link href={item.href} key={item.id} className="group relative grid grid-cols-[56px_minmax(0,1fr)_58px] items-center gap-3 rounded-[9px] border border-transparent px-2 py-2 transition hover:border-[#efe3df] hover:bg-[#fff9f7]"><span className="absolute -left-[28px] top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full border-2 border-white bg-[#c8697d] shadow-[0_0_0_1px_#e8cbd1]"/><div className="flex h-[46px] items-center justify-center rounded-[7px]" style={{background:scene[index%scene.length]}}><Icon size={16} className="text-[#9f7b70]"/></div><div className="min-w-0"><p className="truncate text-[10px] font-medium text-[#352e2a]">{item.title}</p><p className="mt-1 text-[8px] uppercase tracking-[.09em] text-[#b56c79]">{item.category}</p>{item.summary?<p className="mt-1 line-clamp-1 text-[9px] text-[#8e837c]">{item.summary}</p>:null}</div><div className="text-right"><p className="text-[9px] text-[#5c534e]">{item.occurredAt.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</p><p className="mt-1 text-[8px] text-[#b7ada7]">Open →</p></div></Link>})}</div></section>)}
-        </div>
-      </Card>
-
-      <aside className="space-y-3">
-        <Card className="p-4"><div className="flex items-center justify-between"><h2 className="glow-display text-[16px]">Highlights</h2><Link href="/memory" className="text-[8px] text-[#b65f70]">Memory →</Link></div><div className="mt-3 grid grid-cols-2 gap-2">{highlights.map((item,index)=><Link key={item.id} href={item.href} className="aspect-[4/3] rounded-[8px] border border-[#efe5e1]" style={{background:`linear-gradient(145deg,${scene[index%scene.length]},#fff)`}} title={item.title}/>)}</div></Card>
-        <Card className="p-4"><h2 className="glow-display text-[16px]">Stats</h2><div className="mt-4 grid grid-cols-3 gap-2 text-center"><div><p className="glow-display text-[20px]">{yearEntries.length}</p><p className="text-[8px] text-[#9c918a]">Years</p></div><div><p className="glow-display text-[20px]">{milestoneCount}</p><p className="text-[8px] text-[#9c918a]">Milestones</p></div><div><p className="glow-display text-[20px]">{story.length}</p><p className="text-[8px] text-[#9c918a]">Events</p></div></div></Card>
-        <Card className="bg-[linear-gradient(160deg,#fff,#faeeee)] p-4"><Sparkles size={13} className="text-[#bd6978]"/><h2 className="glow-display mt-3 text-[16px]">Explore Your Life</h2><p className="mt-2 text-[9px] leading-4 text-[#8d817a]">See patterns and key moments without losing the exact source record behind each one.</p></Card>
-      </aside>
-    </div>
-  </div></AppShell>;
+export default async function TimelinePage(){
+ const s=await auth();if(!s?.user?.id)redirect('/sign-in');
+ const [events,fitness,hair]=await Promise.all([getTimelineEvents(s.user.id),getFitnessSessions(s.user.id),getHairLogs(s.user.id)]);
+ const story:Story[]=[...events.map(e=>({id:`t-${e.id}`,title:e.title,category:e.category,occurredAt:e.occurredAt,href:`/timeline?eventId=${encodeURIComponent(e.id)}`})),...fitness.map(e=>({id:`f-${e.id}`,title:`${e.workoutType} workout`,category:'Fitness',occurredAt:e.occurredAt,href:`/fitness?sessionId=${encodeURIComponent(e.id)}`})),...hair.map(e=>({id:`h-${e.id}`,title:e.style?`${e.eventType}: ${e.style}`:e.eventType,category:'Hair',occurredAt:e.occurredAt,href:`/hair?logId=${encodeURIComponent(e.id)}`}))].sort((a,b)=>a.occurredAt.getTime()-b.occurredAt.getTime());
+ const years=Array.from(new Set(story.map(s=>s.occurredAt.getFullYear()))).sort();const year=years.at(-1)??new Date().getFullYear();const current=story.filter(s=>s.occurredAt.getFullYear()===year);const markers=(current.length?current:story.slice(-6)).slice(-7);const monthItems=[...story].sort((a,b)=>b.occurredAt.getTime()-a.occurredAt.getTime()).slice(0,4);
+ return <AppShell><div className="batch2-page space-y-4">
+  <header className="flex items-start justify-between gap-4"><div><p className="batch2-kicker">4. Timeline</p><h1 className="batch2-title mt-3">Timeline</h1><p className="batch2-subtitle">Your life, beautifully visualized.</p></div><div className="flex gap-2"><span className="batch2-btn">Zoom</span><span className="batch2-btn">Month⌄</span><details className="relative"><summary className="batch2-btn list-none cursor-pointer"><Plus size={10}/>Event</summary><form action={createTimelineEventAction} className="absolute right-0 z-30 mt-2 w-[300px] space-y-2 rounded-[12px] border border-[#eee4e0] bg-white p-4 shadow-xl"><input name="title" required placeholder="What happened?" className={field}/><input name="category" required placeholder="Category" className={field}/><input name="occurredAt" required type="datetime-local" className={field}/><textarea name="summary" rows={3} placeholder="What should you remember?" className={field}/><button className="batch2-btn batch2-btn-primary w-full">Add to Timeline</button></form></details></div></header>
+  <nav className="flex items-center justify-center gap-9 border-y border-[#eee6e2] py-3 text-[8px]">{years.slice(-4).map(y=><span key={y} className={y===year?'border-b border-[#b65369] pb-2 text-[#9f4d60]':''}>{y}</span>)}<span>All Time</span></nav>
+  <section className="batch2-card batch2-timeline-hero">
+   <div className="absolute inset-x-0 top-[46%] z-10 h-px bg-white/55"/>
+   <div className="absolute inset-x-[5%] top-[20%] z-20 flex justify-between gap-2">{markers.map((item,i)=><Link key={item.id} href={item.href} className="group relative flex w-[13%] flex-col items-center text-center"><div className={`h-[115px] w-px ${i%2?'mt-[25px]':'mt-[70px]'} bg-[#b4576c]/55`}/><span className="-mt-1 h-2.5 w-2.5 rounded-full bg-[#b65369] ring-4 ring-white/75"/><div className="mt-2 max-w-[90px]"><p className="text-[7px] font-medium text-[#4d433e] line-clamp-2">{item.title}</p><p className="mt-1 text-[6.5px] text-[#8d817a]">{item.occurredAt.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</p></div></Link>)}</div>
+   {!markers.length?<div className="absolute inset-0 z-20 grid place-items-center text-[9px] text-white/85">Your timeline is ready for its first moment.</div>:null}
+  </section>
+  <section><h2 className="mb-3 font-serif text-[15px]">{new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'})}</h2><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{monthItems.length?monthItems.map((item,i)=><Link href={item.href} key={item.id} className="batch2-card overflow-hidden"><div className="h-[115px]" style={{background:thumbs[i%thumbs.length]}}/><div className="p-3"><p className="text-[8px] font-medium line-clamp-1">{item.title}</p><p className="batch2-mini mt-1">{item.occurredAt.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</p></div></Link>):Array.from({length:4}).map((_,i)=><div key={i} className="batch2-card overflow-hidden"><div className="h-[115px]" style={{background:thumbs[i]}}/><div className="p-3 text-[8px] text-[#958a83]">Your moments will appear here.</div></div>)}</div></section>
+ </div></AppShell>;
 }
