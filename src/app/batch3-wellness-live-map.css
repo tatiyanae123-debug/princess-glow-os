@@ -1,0 +1,51 @@
+/* Maps the existing live Batch 3 DOM to the uploaded reference without replacing real data/actions. */
+[data-room='wellness'] .glow-reference-route-stage>.space-y-6{display:grid;gap:13px;color:var(--b3-ink)}
+[data-room='wellness'] .glow-reference-route-stage>.space-y-6>div:first-child{display:grid;gap:13px}
+[data-room='wellness'] .glow-reference-route-stage [class*='lg:grid-cols-[1fr_300px]']{grid-template-columns:1fr!important;gap:12px!important}
+[data-room='wellness'] .glow-reference-route-stage [class*='lg:grid-cols-[1fr_300px]']>div:last-child{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px!important}
+[data-room='wellness'] .glow-reference-route-stage [class*='lg:grid-cols-[1fr_300px]']>div:first-child>div:first-child{border-radius:10px!important;box-shadow:var(--b3-float)!important}
+[data-room='wellness'] .glow-reference-route-stage [class*='grid-cols-2'][class*='sm:grid-cols-5']{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:8px!important}
+[data-room='wellness'] .glow-reference-route-stage [class*='grid-cols-2'][class*='sm:grid-cols-5']>div{padding:10px!important;min-height:84px;border-radius:8px!important;border-color:var(--b3-line-soft)!important}
+[data-room='wellness'] .glow-reference-route-stage [class*='sm:grid-cols-2'][class*='lg:grid-cols-4']{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
+[data-room='wellness'] .glow-reference-route-stage [class*='sm:grid-cols-2'][class*='lg:grid-cols-4']>a{border-radius:9px!important;border-color:var(--b3-line-soft)!important}
+[data-room='wellness'] .glow-reference-route-stage [class*='sm:grid-cols-2'][class*='lg:grid-cols-4'] [class*='h-24']{height:80px!important}
+[data-room='wellness'] #medications-supplements{padding-top:14px;border-top:1px solid var(--b3-line-soft)}
+[data-room='wellness'] #medications-supplements .glow-eyebrow{font-family:var(--font-display,Georgia,serif)!important;font-size:29px!important;line-height:1!important;letter-spacing:-.035em!important;text-transform:none!important;color:var(--b3-ink)!important}
+[data-room='wellness'] #medications-supplements~.grid{gap:10px!important}
+[data-room='wellness'] #medications-supplements~.grid>div{border-radius:10px!important;border-color:var(--b3-line-soft)!important;box-shadow:var(--b3-shadow)!important}
+[data-room='wellness'] #medications-supplements~.grid details{border-radius:8px!important;border-color:var(--b3-line-soft)!important}
+
+[data-room='fitness'] .glow-reference-route-stage>.mx-auto{max-width:1120px!important;display:grid!important;gap:11px!important;color:var(--b3-ink)}
+[data-room='fitness'] .glow-reference-route-stage>.mx-auto>header{min-height:62px!important}
+[data-room='fitness'] .glow-reference-route-stage>.mx-auto>header h1{font-size:40px!important;line-height:.96!important;letter-spacing:-.04em!important}
+[data-room='fitness'] .glow-reference-route-stage>.mx-auto>section{gap:9px!important}
+[data-room='fitness'] .glow-reference-route-stage>.mx-auto>section>div{border-radius:9px!important;border-color:var(--b3-line-soft)!important;box-shadow:var(--b3-shadow)!important}
+[data-room='fitness'] .glow-reference-route-stage>.mx-auto>section:first-of-type{grid-template-columns:1fr .83fr 1.08fr!important}
+[data-room='fitness'] .glow-reference-route-stage>.mx-auto>section:first-of-type>div{min-height:224px!important}
+[data-room='fitness'] .glow-reference-route-stage>.mx-auto [class*='min-h-[300px]']{min-height:224px!important}
+[data-room='fitness'] .glow-reference-route-stage>.mx-auto [class*='h-32'][class*='w-32']{width:108px!important;height:108px!important;border-width:7px!important}
+[data-room='fitness'] .glow-reference-route-stage>.mx-auto [class*='h-28']{height:98px!important}
+[data-room='fitness'] .glow-reference-route-stage>.mx-auto details>summary{border-radius:7px!important;background:#7e8a72!important;box-shadow:0 6px 15px rgba(92,107,80,.12)!important}
+
+[data-room='food'] .glow-reference-route-stage{max-width:1120px!important}
+[data-room='food'] .glow-reference-route-stage h1{font-size:39px!important;line-height:.96!important;letter-spacing:-.038em!important}
+[data-room='food'] .glow-reference-route-stage [class*='rounded-[18px]'],[data-room='food'] .glow-reference-route-stage [class*='rounded-[20px]'],[data-room='food'] .glow-reference-route-stage [class*='rounded-[22px]']{border-radius:9px!important;border-color:var(--b3-line-soft)!important;box-shadow:var(--b3-shadow)!important}
+[data-room='food'] .glow-reference-route-stage [class*='grid']{gap:9px!important}
+[data-room='food'] .glow-reference-route-stage img{filter:saturate(.88) contrast(.98) brightness(1.015)}
+
+[data-room='habits'] .glow-reference-route-stage,[data-room='routines'] .glow-reference-route-stage{max-width:1120px!important}
+[data-room='habits'] .glow-reference-route-stage h1,[data-room='routines'] .glow-reference-route-stage h1{font-family:var(--font-display,Georgia,serif)!important;font-size:40px!important;line-height:.96!important;letter-spacing:-.04em!important;font-weight:400!important}
+[data-room='habits'] .glow-reference-route-stage [class*='rounded-[18px]'],[data-room='habits'] .glow-reference-route-stage [class*='rounded-[20px]'],[data-room='routines'] .glow-reference-route-stage [class*='rounded-[18px]'],[data-room='routines'] .glow-reference-route-stage [class*='rounded-[20px]']{border-radius:9px!important;border-color:var(--b3-line-soft)!important;box-shadow:var(--b3-shadow)!important}
+[data-room='habits'] .glow-reference-route-stage button,[data-room='routines'] .glow-reference-route-stage button{border-radius:7px!important}
+[data-room='routines'] .glow-reference-route-stage img{filter:saturate(.82) contrast(.97) brightness(1.02)}
+
+@media(min-width:768px) and (max-width:1180px){
+ [data-room='wellness'] .glow-reference-route-stage [class*='lg:grid-cols-[1fr_300px]']>div:last-child{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ [data-room='fitness'] .glow-reference-route-stage>.mx-auto>section{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:767px){
+ [data-room='wellness'] .glow-reference-route-stage [class*='lg:grid-cols-[1fr_300px]']>div:last-child{grid-template-columns:1fr!important}
+ [data-room='wellness'] .glow-reference-route-stage [class*='grid-cols-2'][class*='sm:grid-cols-5']{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ [data-room='wellness'] .glow-reference-route-stage [class*='sm:grid-cols-2'][class*='lg:grid-cols-4']{grid-template-columns:1fr 1fr!important}
+ [data-room='fitness'] .glow-reference-route-stage>.mx-auto>section:first-of-type{grid-template-columns:1fr!important}
+}
