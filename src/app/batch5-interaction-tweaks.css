@@ -1,0 +1,13 @@
+/* Batch 5 interaction finishing details. */
+.batch5-period-label{height:31px;display:inline-flex;align-items:center;padding:0 9px;border:1px solid #e9e4df;border-radius:7px;background:rgba(255,255,255,.86);font-size:8.5px;color:#817b75;white-space:nowrap}
+.batch5-filter-wrap{position:relative}
+.batch5-filter-menu{position:absolute;right:0;top:38px;z-index:80;width:150px;padding:5px;border:1px solid #e9e4df;border-radius:9px;background:rgba(255,255,255,.98);box-shadow:0 18px 42px rgba(55,45,38,.12);backdrop-filter:blur(18px)}
+.batch5-filter-menu a{display:block;padding:8px 9px;border-radius:6px;color:#5f5954;text-decoration:none;font-size:9.5px}
+.batch5-filter-menu a:hover,.batch5-filter-menu a.active{background:#eef2eb;color:#4f604b}
+.batch5-tabs button:disabled{cursor:not-allowed;opacity:.42}
+.batch5-tabs button:not(:disabled){cursor:pointer}
+.batch5-header-actions button{transition:transform .15s ease,background .15s ease,box-shadow .15s ease}
+.batch5-header-actions button:hover{background:#fbf8f5;box-shadow:0 8px 20px rgba(53,43,36,.055)!important}
+.batch5-header-actions button:active{transform:scale(.97)}
+.batch5-ledger-row:focus-visible,.batch5-goal-row:focus-visible,.batch5-add:focus-visible,.batch5-header-actions button:focus-visible,.batch5-goal-tabs button:focus-visible,.batch5-tabs button:focus-visible{outline:2px solid #c9aeb5;outline-offset:2px}
+@media(max-width:767px){.batch5-period-label{display:none}.batch5-filter-menu{right:-38px}.batch5-header-actions{flex-wrap:wrap}}
