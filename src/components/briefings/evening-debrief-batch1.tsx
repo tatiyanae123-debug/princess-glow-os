@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CalendarDays, CheckCircle2, Circle, MoonStar, Sparkles } from 'lucide-react';
+import { CalendarDays, CheckCircle2, Circle, Droplets, MoonStar, Sparkles } from 'lucide-react';
 import { closeEveningAction, moveTaskToTomorrowAction, saveEveningReflectionAction } from '@/app/actions/evening-debrief';
 import type { CalendarEvent, Habit, HabitLog, Note, Routine, Task, WellnessEntry, FinanceEntry } from '@/lib/types';
 
@@ -42,8 +42,8 @@ export function EveningDebriefBatch1(props: Props) {
   const focusMinutes = props.focusSessions.filter((item) => sameDay(item.startedAt, now)).reduce((sum,item)=>sum+(item.actualMinutes??0),0);
   const wellness = props.wellnessEntries.find((entry) => sameDay(new Date(entry.entryDate), now)) ?? props.wellnessEntries[0] ?? null;
   const sleep = wellness?.sleepHours != null ? `${wellness.sleepHours}h` : '—';
-  const steps = wellness?.steps != null ? wellness.steps.toLocaleString() : '—';
-  const calories = wellness?.calories != null ? wellness.calories.toLocaleString() : '—';
+  const hydration = wellness?.waterGlasses != null ? `${wellness.waterGlasses}` : '—';
+  const mood = wellness?.mood ? wellness.mood : '—';
   const latestReflection = props.notes.find((note) => note.tags?.includes('evening-reflection'));
   const alreadyClosed = props.briefings.some((briefing) => briefing.kind === 'evening' && briefing.periodKey === todayKey);
 
@@ -52,8 +52,8 @@ export function EveningDebriefBatch1(props: Props) {
     ['Tasks Done', String(completed.length), CheckCircle2],
     ['Habits', `${habitsDone}/${props.habits.length || 0}`, Sparkles],
     ['Focus', focusMinutes ? `${Math.floor(focusMinutes/60)}h ${focusMinutes%60}m` : '—', MoonStar],
-    ['Steps', steps, Sparkles],
-    ['Calories', calories, Sparkles],
+    ['Water', hydration, Droplets],
+    ['Mood', mood, Sparkles],
   ] as const;
 
   return <div className="batch1-evening-reference space-y-3">
@@ -73,7 +73,7 @@ export function EveningDebriefBatch1(props: Props) {
 
     <section className="rounded-[12px] border border-[#ece3df] bg-white p-4 shadow-[0_6px_22px_rgba(65,46,39,.035)]">
       <h2 className="glow-display text-[16px]">Today at a Glance</h2>
-      <div className="mt-3 grid grid-cols-3 gap-px overflow-hidden rounded-[9px] border border-[#eee6e2] bg-[#eee6e2] sm:grid-cols-6">{stats.map(([label,value,Icon])=><div key={label} className="bg-white px-3 py-3 text-center"><Icon size={13} className="mx-auto text-[#9e756d]"/><p className="glow-display mt-2 text-[16px]">{value}</p><p className="mt-1 text-[7.5px] text-[#9c918a]">{label}</p></div>)}</div>
+      <div className="mt-3 grid grid-cols-3 gap-px overflow-hidden rounded-[9px] border border-[#eee6e2] bg-[#eee6e2] sm:grid-cols-6">{stats.map(([label,value,Icon])=><div key={label} className="bg-white px-3 py-3 text-center"><Icon size={13} className="mx-auto text-[#9e756d]"/><p className="glow-display mt-2 text-[16px] capitalize">{value}</p><p className="mt-1 text-[7.5px] text-[#9c918a]">{label}</p></div>)}</div>
     </section>
 
     <div className="grid gap-3 lg:grid-cols-2">
