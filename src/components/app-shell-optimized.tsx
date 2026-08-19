@@ -18,8 +18,7 @@ function roomFor(pathname: string) {
   if (pathname.startsWith('/alerts')) return 'notices';
   if (pathname.startsWith('/tasks')) return 'tasks';
   if (pathname.startsWith('/planning') || pathname.startsWith('/tomorrow')) return 'planning';
-  if (pathname.startsWith('/day-mode')) return 'planning';
-  if (pathname.startsWith('/focus')) return 'planning';
+  if (pathname.startsWith('/day-mode') || pathname.startsWith('/focus')) return 'planning';
   if (pathname.startsWith('/routines') || pathname.startsWith('/ritual')) return 'routines';
   if (pathname.startsWith('/today') || pathname.startsWith('/dashboard')) return 'dashboard';
   if (pathname.startsWith('/habits')) return 'habits';
@@ -53,11 +52,22 @@ function roomFor(pathname: string) {
   return 'dashboard';
 }
 
+function isReferenceRoute(pathname: string) {
+  return pathname === '/dashboard' || pathname.startsWith('/dashboard/') ||
+    pathname === '/today' || pathname.startsWith('/today/') ||
+    pathname.startsWith('/briefings') || pathname.startsWith('/calendar') ||
+    pathname.startsWith('/timeline') || pathname.startsWith('/brain') ||
+    pathname.startsWith('/concierge') || pathname.startsWith('/memory') ||
+    pathname.startsWith('/observations') || pathname.startsWith('/graph') ||
+    pathname.startsWith('/notes');
+}
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const room = roomFor(pathname);
-  const isReferenceDashboard = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
+  const referenceRoute = isReferenceRoute(pathname);
+  const isDashboard = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
   const [focus, setFocus] = useState(false);
 
   useEffect(() => {
@@ -65,10 +75,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     sync();
     window.addEventListener('popstate', sync);
     document.addEventListener('glow:focus-changed', sync);
-    return () => {
-      window.removeEventListener('popstate', sync);
-      document.removeEventListener('glow:focus-changed', sync);
-    };
+    return () => { window.removeEventListener('popstate', sync); document.removeEventListener('glow:focus-changed', sync); };
   }, [pathname]);
 
   function exitFocus() {
@@ -78,69 +85,32 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setFocus(false);
   }
 
-  const content = (
-    <div key={pathname} className={isReferenceDashboard ? 'w-full min-w-0' : 'glow-v3-route-stage mx-auto w-full max-w-[1500px]'}>
-      {children}
-    </div>
-  );
+  const content = <div key={pathname} className={isDashboard ? 'w-full min-w-0' : referenceRoute ? 'glow-reference-route-stage mx-auto w-full min-w-0' : 'glow-v3-route-stage mx-auto w-full max-w-[1500px]'}>{children}</div>;
 
-  if (isReferenceDashboard) {
-    return (
-      <GlowProvider>
-        <div className="min-h-screen w-full overflow-x-clip bg-white text-[#25211f]" data-room="dashboard" data-glow-shell="v3" data-focus-mode="false">
-          <div className="flex min-h-screen w-full flex-col bg-white md:flex-row">
-            <div className="sticky top-0 hidden h-screen w-[238px] shrink-0 overflow-y-auto overflow-x-hidden border-r border-[#ebe6e3] bg-white md:block">
-              <Sidebar variant="dashboard-reference" />
-            </div>
-            <div className="w-full md:hidden"><Sidebar /></div>
-            <main className="min-w-0 w-full flex-1 overflow-x-clip bg-white p-0">{content}</main>
+  if (referenceRoute && !focus) {
+    return <GlowProvider>
+      <div className="min-h-screen w-full overflow-x-clip bg-white text-[#25211f]" data-room={room} data-glow-shell="v3" data-reference-shell="true" data-focus-mode="false">
+        <div className="flex min-h-screen w-full flex-col bg-white md:flex-row">
+          <div className="sticky top-0 hidden h-screen w-[238px] shrink-0 overflow-y-auto overflow-x-hidden border-r border-[#ebe6e3] bg-white md:block"><Sidebar variant="dashboard-reference" /></div>
+          <div className="w-full md:hidden"><Sidebar /></div>
+          <div className="min-w-0 flex-1 bg-white">
+            {!isDashboard ? <GlobalHeader /> : null}
+            <main className={isDashboard ? 'min-w-0 w-full flex-1 overflow-x-clip bg-white p-0' : 'min-h-screen min-w-0 bg-white px-4 pb-20 pt-4 sm:px-5 md:px-6 lg:px-7 lg:pt-5'}>{content}</main>
           </div>
-          <GlobalCommandSurface />
-          <DeferredGlobalControls />
         </div>
-      </GlowProvider>
-    );
+        <GlobalCommandSurface /><DeferredGlobalControls />
+      </div>
+    </GlowProvider>;
   }
 
-  return (
-    <GlowProvider>
-      <div
-        className="min-h-screen overflow-x-clip bg-white text-[#25211f]"
-        data-room={room}
-        data-glow-shell="v3"
-        data-focus-mode={focus ? 'true' : 'false'}
-      >
-        <div className="flex min-h-screen w-full flex-col bg-white md:flex-row">
-          {!focus ? (
-            <>
-              <div className="w-full md:hidden"><Sidebar /></div>
-              <div className="hidden md:sticky md:top-0 md:block md:h-screen md:w-[238px] md:shrink-0 md:overflow-y-auto md:overflow-x-hidden md:border-r md:border-[#ebe6e3] md:bg-white">
-                <Sidebar variant="dashboard-reference" />
-              </div>
-            </>
-          ) : null}
-
-          <div className="min-w-0 flex-1 bg-white">
-            {!focus ? <GlobalHeader /> : null}
-            <main className={focus ? 'min-h-screen px-4 py-8 sm:px-7 lg:px-10' : 'min-h-screen min-w-0 bg-white px-4 pb-24 pt-5 sm:px-6 md:px-7 lg:px-10 lg:pt-7'}>
-              {content}
-            </main>
-          </div>
-        </div>
+  return <GlowProvider>
+    <div className="min-h-screen overflow-x-clip bg-white text-[#25211f]" data-room={room} data-glow-shell="v3" data-focus-mode={focus ? 'true' : 'false'}>
+      <div className="flex min-h-screen w-full flex-col bg-white md:flex-row">
+        {!focus ? <><div className="w-full md:hidden"><Sidebar /></div><div className="hidden md:sticky md:top-0 md:block md:h-screen md:w-[238px] md:shrink-0 md:overflow-y-auto md:overflow-x-hidden md:border-r md:border-[#ebe6e3] md:bg-white"><Sidebar variant="dashboard-reference" /></div></> : null}
+        <div className="min-w-0 flex-1 bg-white">{!focus ? <GlobalHeader /> : null}<main className={focus ? 'min-h-screen px-4 py-8 sm:px-7 lg:px-10' : 'min-h-screen min-w-0 bg-white px-4 pb-24 pt-5 sm:px-6 md:px-7 lg:px-10 lg:pt-7'}>{content}</main></div>
       </div>
-
-      {focus ? (
-        <button
-          type="button"
-          onClick={exitFocus}
-          className="fixed right-5 top-5 z-[100] inline-flex h-10 items-center gap-2 rounded-full border border-[#E9E1DE] bg-white px-4 text-[13px] font-medium text-[#44403d] shadow-[0_8px_28px_rgba(53,38,31,.08)]"
-        >
-          <X size={15} />Exit Focus
-        </button>
-      ) : null}
-
-      {!focus ? <DeferredGlobalControls /> : null}
-      {!focus ? <GlobalCommandSurface /> : null}
-    </GlowProvider>
-  );
+    </div>
+    {focus ? <button type="button" onClick={exitFocus} className="fixed right-5 top-5 z-[100] inline-flex h-10 items-center gap-2 rounded-full border border-[#E9E1DE] bg-white px-4 text-[13px] font-medium text-[#44403d] shadow-[0_8px_28px_rgba(53,38,31,.08)]"><X size={15} />Exit Focus</button> : null}
+    {!focus ? <DeferredGlobalControls /> : null}{!focus ? <GlobalCommandSurface /> : null}
+  </GlowProvider>;
 }
