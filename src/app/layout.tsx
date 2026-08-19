@@ -15,6 +15,7 @@ import './batch3-wellness-reference.css';
 import './batch3-wellness-live-map.css';
 import './batch3-tweaks.css';
 import './batch4-beauty-reference.css';
+import './batch4-tweaks.css';
 import './dashboard-apple-lock.css';
 import './dashboard-apple-details.css';
 
