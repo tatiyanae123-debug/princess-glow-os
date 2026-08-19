@@ -27,33 +27,39 @@ const LABELS: Record<string,string> = {
   '/dashboard':'Dashboard','/today':'Today','/briefings':'Briefings','/tomorrow':'Tomorrow','/day-mode':'Day Mode','/calendar':'Calendar','/tasks':'Tasks','/planning':'Planning','/reminders':'Reminders','/routines':'Routines','/habits':'Habits','/timeline':'Timeline','/goals':'Goals','/focus':'Focus','/brain':'Brain','/memory':'Memory','/observations':'Observations','/graph':'Graph','/notes':'Notes','/resources':'Resources','/rules':'Personal Rules','/knowledge':'Knowledge','/inbox':'Inbox','/intake':'Add Anything','/wellness':'Wellness','/fitness':'Fitness','/food':'Food','/maintenance':'Medications','/beauty':'Beauty','/beauty/lab':'Beauty Lab','/skincare':'Skincare','/makeup':'Makeup','/hair':'Hair','/closet':'Closet','/finance':'Finance','/finance/brain':'Financial Brain','/money':'Money','/work':'Work','/projects':'Projects','/creative-studio':'Creative Studio','/concierge':'Concierge','/home':'Home','/all-rooms':'All Rooms','/world':'Glow World','/life-world':'Life World','/ritual':'Ritual',
 };
 
+/* Reference sidebar deliberately mirrors the approved Dashboard screenshot.
+   Additional Glow rooms remain available through All Rooms, Search, and their
+   own deep links; they are not deleted just because the reference rail is calm. */
 const REFERENCE_GROUPS: {label:string;items:{label:string;href:string;icon:LucideIcon}[]}[] = [
   {label:'TODAY',items:[
-    {label:'Home',href:'/dashboard',icon:HomeIcon},{label:'Dashboard',href:'/today',icon:Grid2X2},{label:'Briefings',href:'/briefings',icon:NotebookTabs},{label:'Evening Debrief',href:'/briefings/evening',icon:CircleDot},{label:'Day Mode',href:'/day-mode',icon:Sparkles},
+    {label:'Home',href:'/dashboard',icon:HomeIcon},
+    {label:'Dashboard',href:'/today',icon:Grid2X2},
+    {label:'Briefings',href:'/briefings',icon:NotebookTabs},
+    {label:'Debriefs',href:'/briefings/evening',icon:CircleDot},
   ]},
   {label:'LIFE',items:[
-    {label:'Calendar',href:'/calendar',icon:CalendarDays},{label:'Tasks',href:'/tasks',icon:CheckSquare2},{label:'Planning',href:'/planning',icon:NotebookTabs},{label:'Reminders',href:'/reminders',icon:Bell},{label:'Routines',href:'/routines',icon:CircleDot},{label:'Habits',href:'/habits',icon:CheckSquare2},{label:'Timeline',href:'/timeline',icon:CircleDot},{label:'Goals',href:'/goals',icon:Target},
+    {label:'Calendar',href:'/calendar',icon:CalendarDays},
+    {label:'Tasks',href:'/tasks',icon:CheckSquare2},
+    {label:'Reminders',href:'/reminders',icon:Bell},
+    {label:'Timeline',href:'/timeline',icon:CircleDot},
+    {label:'Goals',href:'/goals',icon:Target},
   ]},
   {label:'MIND',items:[
-    {label:'Brain',href:'/brain',icon:BrainCircuit},{label:'Memory',href:'/memory',icon:NotebookTabs},{label:'Observations',href:'/observations',icon:NotebookTabs},{label:'Graph',href:'/graph',icon:Waves},{label:'Notes',href:'/notes',icon:NotebookTabs},{label:'Add Anything',href:'/intake',icon:Sparkles},
+    {label:'Brain',href:'/brain',icon:BrainCircuit},
+    {label:'Memory',href:'/memory',icon:NotebookTabs},
+    {label:'Observations',href:'/observations',icon:NotebookTabs},
+    {label:'Graph',href:'/graph',icon:Waves},
   ]},
   {label:'WELLNESS',items:[
-    {label:'Wellness',href:'/wellness',icon:Heart},{label:'Fitness',href:'/fitness',icon:Dumbbell},{label:'Food',href:'/food',icon:Utensils},{label:'Medications',href:'/maintenance',icon:Pill},
+    {label:'Wellness',href:'/wellness',icon:Heart},
+    {label:'Fitness',href:'/fitness',icon:Dumbbell},
+    {label:'Food',href:'/food',icon:Utensils},
+    {label:'Medications',href:'/maintenance',icon:Pill},
   ]},
   {label:'BEAUTY',items:[
-    {label:'Beauty',href:'/beauty',icon:WandSparkles},{label:'Beauty Lab',href:'/beauty/lab',icon:FlaskConical},{label:'Hair',href:'/hair',icon:Sparkles},{label:'Closet',href:'/closet',icon:Grid2X2},
-  ]},
-  {label:'MONEY',items:[
-    {label:'Financial Brain',href:'/finance/brain',icon:CircleDollarSign},{label:'Finance',href:'/finance',icon:CircleDollarSign},
-  ]},
-  {label:'WORK + CREATE',items:[
-    {label:'Work',href:'/work',icon:BriefcaseBusiness},{label:'Projects',href:'/projects',icon:Target},{label:'Creative Studio',href:'/creative-studio',icon:Sparkles},{label:'Concierge',href:'/concierge',icon:Sparkles},
-  ]},
-  {label:'HOME + WORLD',items:[
-    {label:'Home',href:'/home',icon:HomeIcon},{label:'All Rooms',href:'/all-rooms',icon:CircleEllipsis},{label:'Glow World',href:'/world',icon:Waves},
-  ]},
-  {label:'UTILITIES',items:[
-    {label:'Gmail',href:'/gmail',icon:NotebookTabs},{label:'Import',href:'/import',icon:Sparkles},{label:'Connections',href:'/connections',icon:Waves},{label:'Notices',href:'/notices',icon:Bell},{label:'Settings',href:'/settings',icon:Settings},
+    {label:'Beauty',href:'/beauty',icon:WandSparkles},
+    {label:'Beauty Lab',href:'/beauty/lab',icon:FlaskConical},
+    {label:'Hair',href:'/hair',icon:Sparkles},
   ]},
 ];
 
@@ -63,17 +69,17 @@ function ReferenceSidebar(){
   const pathname=usePathname();
   function openSearch(){ document.dispatchEvent(new CustomEvent('glow:search-open')); }
   return (
-    <aside className="flex h-full min-h-[100dvh] w-[238px] flex-col border-r border-[#ebe6e3] bg-white px-[14px] pb-[18px] pt-[17px] text-[#282421]">
-      <Link href="/dashboard" className="flex h-[38px] shrink-0 items-center gap-[10px] px-[5px]"><Sparkles size={18} strokeWidth={1.35} className="text-[#c85f78]"/><span className="font-serif text-[16px] font-semibold tracking-[.09em]">GLOW OS</span></Link>
-      <nav className="mt-[13px] min-h-0 flex-1 overflow-y-auto pr-1 [scrollbar-width:thin]">
-        {REFERENCE_GROUPS.map(group=><div key={group.label} className="mb-[11px]"><p className="mb-[4px] px-[8px] text-[9px] font-semibold tracking-[.13em] text-[#7f7772]">{group.label}</p><div className="space-y-[1px]">{group.items.map(({label,href,icon:Icon})=>{const active=(href==='/dashboard'&&pathname==='/dashboard')||isActive(pathname,href);return <Link key={href} href={href} className={cn('flex min-h-[31px] items-center gap-[10px] rounded-[10px] px-[9px] text-[11.5px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7D1D8]',active?'bg-[#fae6e7] font-medium text-[#b65369]':'text-[#38332f] hover:bg-[#f7eeed]')}><Icon size={14.5} strokeWidth={1.5} className={active?'text-[#c55e74]':'text-[#48423e]'}/><span>{label}</span></Link>})}</div></div>)}
+    <aside className="flex h-full min-h-[100dvh] w-[238px] flex-col border-r border-[#ebe6e3] bg-white px-[16px] pb-[18px] pt-[19px] text-[#282421]">
+      <Link href="/dashboard" className="flex h-[44px] shrink-0 items-center gap-[11px] px-[6px]"><Sparkles size={19} strokeWidth={1.35} className="text-[#c85f78]"/><span className="font-serif text-[17px] font-semibold tracking-[.09em]">GLOW OS</span></Link>
+      <nav className="mt-[16px] min-h-0 flex-1 overflow-y-auto pr-1 [scrollbar-width:thin]">
+        {REFERENCE_GROUPS.map(group=><div key={group.label} className="mb-[17px]"><p className="mb-[7px] px-[8px] text-[9.5px] font-semibold tracking-[.14em] text-[#7f7772]">{group.label}</p><div className="space-y-[3px]">{group.items.map(({label,href,icon:Icon})=>{const active=(href==='/dashboard'&&pathname==='/dashboard')||isActive(pathname,href);return <Link key={href} href={href} className={cn('flex min-h-[36px] items-center gap-[11px] rounded-[11px] px-[10px] text-[12.5px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7D1D8]',active?'bg-[#fae6e7] font-medium text-[#b65369]':'text-[#38332f] hover:bg-[#f7eeed]')}><Icon size={15.5} strokeWidth={1.45} className={active?'text-[#c55e74]':'text-[#48423e]'}/><span>{label}</span></Link>})}</div></div>)}
       </nav>
-      <div className="shrink-0 border-t border-[#eee8e5] pt-[12px]">
-        <Link href="/settings?section=profile" className="flex items-center gap-[10px] rounded-[12px] px-[6px] py-[7px] hover:bg-[#f7eeed]"><span className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-[linear-gradient(145deg,#f7d1d8,#fae6e7)] font-serif text-[13px] text-[#6f3f49]">T</span><span className="min-w-0 flex-1"><span className="block text-[11px] font-medium">Tatiyana</span><span className="mt-[1px] block text-[8px] text-[#c15f74]">View Profile</span></span><ChevronDown size={12} className="-rotate-90 text-[#6f6762]"/></Link>
-        <div className="mt-[9px] flex items-center justify-between border-t border-[#eee8e5] px-[10px] pt-[11px] text-[#59514c]">
-          <button type="button" onClick={openSearch} aria-label="Search Glow" className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-[#f7eeed] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7D1D8]"><Search size={16}/></button>
-          <Link href="/notices" aria-label="Notifications" className="relative flex h-9 w-9 items-center justify-center rounded-full hover:bg-[#f7eeed]"><Bell size={16}/><span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#c55e74]"/></Link>
-          <Link href="/settings" aria-label="Settings" className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-[#f7eeed]"><Settings size={16}/></Link>
+      <div className="shrink-0 border-t border-[#eee8e5] pt-[13px]">
+        <Link href="/settings?section=profile" className="flex items-center gap-[11px] rounded-[13px] px-[7px] py-[9px] hover:bg-[#f7eeed]"><span className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-[linear-gradient(145deg,#f7d1d8,#fae6e7)] font-serif text-[15px] text-[#6f3f49]">T</span><span className="min-w-0 flex-1"><span className="block text-[12px] font-medium">Tatiyana</span><span className="mt-[2px] block text-[8.5px] text-[#c15f74]">View Profile</span></span><ChevronDown size={13} className="-rotate-90 text-[#6f6762]"/></Link>
+        <div className="mt-[10px] flex items-center justify-between border-t border-[#eee8e5] px-[10px] pt-[12px] text-[#59514c]">
+          <button type="button" onClick={openSearch} aria-label="Search Glow" className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-[#f7eeed] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7D1D8]"><Search size={17}/></button>
+          <Link href="/notices" aria-label="Notifications" className="relative flex h-10 w-10 items-center justify-center rounded-full hover:bg-[#f7eeed]"><Bell size={17}/><span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#c55e74]"/></Link>
+          <Link href="/settings" aria-label="Settings" className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-[#f7eeed]"><Settings size={17}/></Link>
         </div>
       </div>
     </aside>
