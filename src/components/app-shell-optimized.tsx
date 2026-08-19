@@ -63,7 +63,8 @@ function isReferenceRoute(pathname: string) {
     pathname.startsWith('/maintenance') || pathname.startsWith('/fitness') ||
     pathname.startsWith('/food') || pathname.startsWith('/habits') ||
     pathname.startsWith('/routines') || pathname.startsWith('/beauty') ||
-    pathname.startsWith('/hair');
+    pathname.startsWith('/hair') || pathname.startsWith('/finance') ||
+    pathname.startsWith('/goals');
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
