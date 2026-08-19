@@ -1,0 +1,132 @@
+/* Batch 3 forensic refinement pass — exact board proportions, depth, spacing and iPad behavior. */
+:root{--b3-ink:#29231f;--b3-muted:#887e77;--b3-paper:#fffdfb;--b3-line:rgba(91,69,59,.095);--b3-shadow:0 8px 26px rgba(61,44,37,.035),0 1px 2px rgba(61,44,37,.025);--b3-float:0 15px 36px rgba(61,44,37,.055),0 2px 5px rgba(61,44,37,.03)}
+
+/* Shared shell: the wellness board uses a calmer/narrower editorial workspace than the Dashboard. */
+[data-reference-shell='true'][data-room='wellness'] main,
+[data-reference-shell='true'][data-room='fitness'] main,
+[data-reference-shell='true'][data-room='food'] main,
+[data-reference-shell='true'][data-room='habits'] main,
+[data-reference-shell='true'][data-room='routines'] main{padding-top:14px!important;padding-bottom:54px!important;background:linear-gradient(180deg,#fffdfb 0,#fff 72%)!important}
+[data-reference-shell='true'][data-room='wellness'] .glow-reference-route-stage,
+[data-reference-shell='true'][data-room='fitness'] .glow-reference-route-stage,
+[data-reference-shell='true'][data-room='food'] .glow-reference-route-stage,
+[data-reference-shell='true'][data-room='habits'] .glow-reference-route-stage,
+[data-reference-shell='true'][data-room='routines'] .glow-reference-route-stage{max-width:1120px!important}
+[data-reference-shell='true'][data-room='wellness'] .glow-reference-route-stage *,
+[data-reference-shell='true'][data-room='fitness'] .glow-reference-route-stage *,
+[data-reference-shell='true'][data-room='food'] .glow-reference-route-stage *,
+[data-reference-shell='true'][data-room='habits'] .glow-reference-route-stage *,
+[data-reference-shell='true'][data-room='routines'] .glow-reference-route-stage *{box-sizing:border-box}
+
+/* Header chrome: thin, quiet, white, same scale as reference board. */
+[data-reference-shell='true'][data-room='wellness'] header.sticky,
+[data-reference-shell='true'][data-room='fitness'] header.sticky,
+[data-reference-shell='true'][data-room='food'] header.sticky,
+[data-reference-shell='true'][data-room='habits'] header.sticky,
+[data-reference-shell='true'][data-room='routines'] header.sticky{min-height:48px!important;height:48px!important;border-color:rgba(90,68,58,.075)!important;background:rgba(255,253,251,.965)!important;backdrop-filter:blur(18px) saturate(112%)!important;box-shadow:none!important}
+
+/* Wellness: the new component intentionally maps the board. */
+[data-room='wellness'] .batch3-wellness-reference{max-width:100%;gap:11px!important}
+[data-room='wellness'] .batch3-wellness-reference>header{gap:10px!important}
+[data-room='wellness'] .batch3-wellness-reference>header>div{border-radius:9px!important;border-color:var(--b3-line)!important}
+[data-room='wellness'] .batch3-wellness-reference button{font-family:inherit}
+[data-room='wellness'] .batch3-wellness-reference h1{font-size:40px!important;letter-spacing:-.035em!important}
+[data-room='wellness'] .batch3-wellness-reference section{margin-top:0!important}
+[data-room='wellness'] .batch3-wellness-reference section>div[class*='grid-cols-2']>div{box-shadow:0 5px 15px rgba(61,44,37,.024)!important}
+
+/* Medication records below Wellness should not look like an unrelated app. */
+[data-room='wellness'] #medications-supplements{margin-top:18px!important;border-top:1px solid var(--b3-line);padding-top:20px!important}
+[data-room='wellness'] #medications-supplements .glow-eyebrow{font-family:var(--font-display,Georgia,serif)!important;font-size:28px!important;line-height:1!important;letter-spacing:-.03em!important;text-transform:none!important;color:var(--b3-ink)!important}
+[data-room='wellness'] #medications-supplements~.grid{gap:10px!important}
+[data-room='wellness'] #medications-supplements~.grid>.v3-surface{border-radius:9px!important;border-color:var(--b3-line)!important;box-shadow:var(--b3-shadow)!important;padding:14px!important}
+[data-room='wellness'] #medications-supplements~.grid details{border-radius:8px!important;border-color:var(--b3-line)!important}
+[data-room='wellness'] #medications-supplements~.grid summary{padding:10px!important}
+
+/* Medications standalone panel 4. */
+[data-room='wellness'] .batch3-medications-reference{max-width:1080px!important}
+[data-room='wellness'] .batch3-medications-reference header h1{font-size:38px!important;letter-spacing:-.035em!important}
+[data-room='wellness'] .batch3-medications-reference nav{min-height:34px;align-items:end}
+[data-room='wellness'] .batch3-medications-reference section{gap:10px!important}
+[data-room='wellness'] .batch3-medications-reference section [class*='rounded-[10px]']{border-radius:9px!important;border-color:var(--b3-line)!important;box-shadow:var(--b3-shadow)!important}
+
+/* Fitness: make the actual current DOM read like board panel 2 rather than generic three-card SaaS rows. */
+[data-room='fitness'] .glow-reference-route-stage>div{max-width:1100px!important;margin-inline:auto!important;gap:10px!important}
+[data-room='fitness'] .glow-reference-route-stage>div>header{min-height:66px!important;margin-bottom:2px!important}
+[data-room='fitness'] .glow-reference-route-stage>div>header h1{font-size:40px!important;line-height:.94!important;letter-spacing:-.04em!important;font-weight:400!important}
+[data-room='fitness'] .glow-reference-route-stage>div>header p{font-size:10px!important;margin-top:6px!important}
+[data-room='fitness'] .glow-reference-route-stage>div>section{gap:9px!important}
+[data-room='fitness'] .glow-reference-route-stage>div>section:first-of-type{grid-template-columns:1.02fr .78fr 1.08fr!important}
+[data-room='fitness'] .glow-reference-route-stage>div>section:first-of-type>*{min-height:226px!important;border-radius:9px!important;border-color:var(--b3-line)!important;box-shadow:var(--b3-shadow)!important}
+[data-room='fitness'] .glow-reference-route-stage>div>section:first-of-type [class*='min-h-[300px]']{min-height:226px!important}
+[data-room='fitness'] .glow-reference-route-stage>div>section:nth-of-type(2)>*{min-height:168px!important;border-radius:9px!important;border-color:var(--b3-line)!important;box-shadow:var(--b3-shadow)!important}
+[data-room='fitness'] .glow-reference-route-stage>div>section:nth-of-type(3)>*{min-height:126px!important;border-radius:9px!important;border-color:var(--b3-line)!important;box-shadow:var(--b3-shadow)!important}
+[data-room='fitness'] .glow-reference-route-stage>div .v3-surface{padding:15px!important}
+[data-room='fitness'] .glow-reference-route-stage>div .ey{font-size:9px!important;letter-spacing:.05em!important;color:#5f5752!important}
+[data-room='fitness'] .glow-reference-route-stage>div [class*='h-32'][class*='w-32']{height:108px!important;width:108px!important;border-width:7px!important;border-color:#d7b7aa!important}
+[data-room='fitness'] .glow-reference-route-stage>div [class*='h-28']{height:98px!important;border-radius:8px!important}
+[data-room='fitness'] .glow-reference-route-stage>div details>summary{border-radius:7px!important;background:#75866c!important;padding:9px 15px!important;font-size:9.5px!important;box-shadow:0 5px 14px rgba(86,108,78,.12)}
+
+/* Food: flatten oversized starter-workflow blocks into compact editorial modules like panel 3. */
+[data-room='food'] .glow-reference-route-stage{max-width:1100px!important}
+[data-room='food'] .glow-reference-route-stage h1{font-size:39px!important;letter-spacing:-.035em!important}
+[data-room='food'] .glow-reference-route-stage [class*='rounded-[18px]'],
+[data-room='food'] .glow-reference-route-stage [class*='rounded-[14px]']{border-radius:9px!important;border-color:var(--b3-line)!important;box-shadow:var(--b3-shadow)!important}
+[data-room='food'] .glow-reference-route-stage [class*='min-h-[220px]']{min-height:176px!important}
+[data-room='food'] .glow-reference-route-stage [class*='p-6'],[data-room='food'] .glow-reference-route-stage [class*='p-8']{padding:17px!important}
+[data-room='food'] .glow-reference-route-stage img{filter:saturate(.86) contrast(.98) brightness(1.025) sepia(.025)}
+[data-room='food'] .glow-reference-route-stage button{border-radius:7px!important}
+
+/* Habits: slim, table-like rows and stronger weekly dots/progress as panel 5. */
+[data-room='habits'] .glow-reference-route-stage{max-width:1080px!important}
+[data-room='habits'] .glow-reference-route-stage h1{font-size:40px!important;letter-spacing:-.04em!important}
+[data-room='habits'] .glow-reference-route-stage :is([class*='rounded-[18px]'],[class*='rounded-[20px]'],[class*='rounded-[14px]']){border-radius:8px!important;border-color:var(--b3-line)!important;box-shadow:var(--b3-shadow)!important}
+[data-room='habits'] .glow-reference-route-stage [class*='space-y-']>*{border-color:rgba(91,69,59,.07)}
+[data-room='habits'] .glow-reference-route-stage button{border-radius:6px!important}
+
+/* Routines: image cards dominate, controls recede, matching panel 6. */
+[data-room='routines'] .glow-reference-route-stage{max-width:1080px!important}
+[data-room='routines'] .glow-reference-route-stage h1{font-size:40px!important;letter-spacing:-.04em!important}
+[data-room='routines'] .glow-reference-route-stage :is([class*='rounded-[18px]'],[class*='rounded-[20px]'],[class*='rounded-[14px]']){border-radius:8px!important;border-color:var(--b3-line)!important;box-shadow:var(--b3-shadow)!important}
+[data-room='routines'] .glow-reference-route-stage img{filter:saturate(.8) contrast(.97) brightness(1.025)}
+
+/* Sleep panel 7. */
+[data-room='wellness'] .batch3-sleep-reference{max-width:1080px!important}
+[data-room='wellness'] .batch3-sleep-reference header h1{font-size:40px!important;letter-spacing:-.04em!important}
+[data-room='wellness'] .batch3-sleep-reference section{gap:9px!important}
+[data-room='wellness'] .batch3-sleep-reference [class*='rounded-[10px]']{border-radius:8px!important;border-color:var(--b3-line)!important;box-shadow:var(--b3-shadow)!important}
+[data-room='wellness'] .batch3-sleep-reference [class*='h-36']{height:132px!important}
+
+/* Symptoms / recovery panel 8. */
+[data-room='wellness'] .batch3-recovery-reference{max-width:1080px!important}
+[data-room='wellness'] .batch3-recovery-reference header h1{font-size:38px!important;letter-spacing:-.04em!important}
+[data-room='wellness'] .batch3-recovery-reference [class*='rounded-[10px]']{border-radius:8px!important;border-color:var(--b3-line)!important;box-shadow:var(--b3-shadow)!important}
+
+/* iPad landscape: preserve the desktop/editorial board instead of collapsing early. */
+@media (min-width:768px) and (max-width:1180px){
+ [data-reference-shell='true'][data-room='wellness'] main,
+ [data-reference-shell='true'][data-room='fitness'] main,
+ [data-reference-shell='true'][data-room='food'] main,
+ [data-reference-shell='true'][data-room='habits'] main,
+ [data-reference-shell='true'][data-room='routines'] main{padding:11px 12px 58px!important}
+ [data-room='fitness'] .glow-reference-route-stage>div>section:first-of-type{display:grid!important;grid-template-columns:1fr .82fr 1fr!important}
+ [data-room='fitness'] .glow-reference-route-stage>div>section:nth-of-type(2),
+ [data-room='fitness'] .glow-reference-route-stage>div>section:nth-of-type(3){display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ [data-room='wellness'] .batch3-wellness-reference>header{grid-template-columns:1.05fr .95fr!important}
+}
+
+/* iPhone: deliberate mobile composition, no miniature scaled desktop. */
+@media (max-width:767px){
+ [data-reference-shell='true'][data-room='wellness'] main,
+ [data-reference-shell='true'][data-room='fitness'] main,
+ [data-reference-shell='true'][data-room='food'] main,
+ [data-reference-shell='true'][data-room='habits'] main,
+ [data-reference-shell='true'][data-room='routines'] main{padding:12px 14px 88px!important}
+ [data-room='wellness'] .batch3-wellness-reference>header{grid-template-columns:1fr!important}
+ [data-room='wellness'] .batch3-wellness-reference>header>div{min-height:205px!important}
+ [data-room='fitness'] .glow-reference-route-stage>div>section:first-of-type{grid-template-columns:1fr!important}
+ [data-room='fitness'] .glow-reference-route-stage>div>section:nth-of-type(2),
+ [data-room='fitness'] .glow-reference-route-stage>div>section:nth-of-type(3){grid-template-columns:1fr!important}
+ [data-room='fitness'] .glow-reference-route-stage>div>header h1,
+ [data-room='wellness'] .batch3-wellness-reference h1{font-size:36px!important}
+ [data-room='wellness'] .batch3-medications-reference nav{overflow-x:auto;white-space:nowrap}
+}
