@@ -46,7 +46,7 @@ export async function routeInboxItem(userId: string, itemId: string, requestedDe
   const extracted = parseExtracted(metadata);
   let routedEntityType = 'note';
   let routedEntityId: string | undefined;
-  let routedTitle = title;
+  const routedTitle = title;
 
   if (destination === 'calendar') {
     const startAt = parseDateTime(extracted.dateText, extracted.timeText);
