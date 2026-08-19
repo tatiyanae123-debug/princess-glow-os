@@ -88,12 +88,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return (
       <GlowProvider>
         <div className="min-h-screen w-full overflow-x-clip bg-white text-[#25211f]" data-room="dashboard" data-glow-shell="v3" data-focus-mode="false">
-          <div className="flex min-h-screen w-full bg-white">
+          <div className="flex min-h-screen w-full flex-col bg-white md:flex-row">
             <div className="sticky top-0 hidden h-screen w-[238px] shrink-0 overflow-y-auto overflow-x-hidden border-r border-[#ebe6e3] bg-white md:block">
               <Sidebar variant="dashboard-reference" />
             </div>
             <div className="w-full md:hidden"><Sidebar /></div>
-            <main className="min-w-0 flex-1 overflow-x-clip bg-white p-0">{content}</main>
+            <main className="min-w-0 w-full flex-1 overflow-x-clip bg-white p-0">{content}</main>
           </div>
           <GlobalCommandSurface />
           <DeferredGlobalControls />
