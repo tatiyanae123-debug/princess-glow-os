@@ -1,5 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
+import { AppShell } from '@/components/app-shell';
 import { LivingDashboard } from '@/components/dashboard/living-dashboard';
 import type { LivingDashboardData } from '@/lib/dashboard/types';
 
@@ -44,20 +45,24 @@ export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
   const userId = session.user.id;
+  const userName = session.user.name?.split(' ')[0] ?? 'Tatiyana';
 
+  let dashboard: React.ReactNode;
   if (!process.env.DATABASE_URL) {
-    return <LivingDashboard data={getFallbackData()} error="DATABASE_URL is not configured." userName={session.user.name?.split(' ')[0] ?? 'Tatiyana'} />;
+    dashboard = <LivingDashboard data={getFallbackData()} error="DATABASE_URL is not configured." userName={userName} />;
+  } else {
+    try {
+      const { getLivingDashboardData } = await import('@/lib/dashboard/living-dashboard');
+      const [data, insight] = await Promise.all([
+        getLivingDashboardData(userId),
+        getDashboardInsight(userId),
+      ]);
+      dashboard = <LivingDashboard data={data} insight={insight} userName={userName} />;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      dashboard = <LivingDashboard data={getFallbackData()} error={message} userName={userName} />;
+    }
   }
 
-  try {
-    const { getLivingDashboardData } = await import('@/lib/dashboard/living-dashboard');
-    const [data, insight] = await Promise.all([
-      getLivingDashboardData(userId),
-      getDashboardInsight(userId),
-    ]);
-    return <LivingDashboard data={data} insight={insight} userName={session.user.name?.split(' ')[0] ?? 'Tatiyana'} />;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return <LivingDashboard data={getFallbackData()} error={message} userName={session.user.name?.split(' ')[0] ?? 'Tatiyana'} />;
-  }
+  return <AppShell>{dashboard}</AppShell>;
 }
