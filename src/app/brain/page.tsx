@@ -37,16 +37,16 @@ export default async function BrainPage({ searchParams }: { searchParams?: Promi
   const currentContext = focused[0]?.label ?? 'What matters now';
   const question = askedQuery || (recentNotes[0]?.title ? `Keep exploring ${recentNotes[0].title}` : 'Ask Glow anything');
   const decision = focused[1]?.label ?? 'Make better choices';
-  const pattern = focused.length ? `${focused[0].label} is your strongest current focus` : 'Glow will learn from your rooms';
-  const observation = recentConnections[0]?.title ?? 'Key insights';
+  const pattern = context?.patterns?.[0]?.title ?? (focused.length ? `${focused[0].label} is your strongest current focus` : 'Glow will learn from your rooms');
+  const observation = recentConnections[0]?.title ?? context?.attentionSignals?.[0]?.label ?? 'Key insights';
   const memory = recentNotes[0]?.title ?? 'Your knowledge';
-  const recommendation = focusScore >= 70 ? 'Protect your strongest focus window' : 'Reduce competing priorities';
+  const recommendation = context?.recommendations?.[0]?.title ?? (focusScore >= 70 ? 'Protect your strongest focus window' : 'Reduce competing priorities');
   const journal = recentNotes[1]?.title ?? 'Your reflections';
-  const wellness = context?.wellness?.entry ?? null;
+  const habitsDone = context?.habits?.filter(h=>h.completedToday).length ?? 0;
   const insights = [
-    ['Your energy is highest', wellness?.energy ? `Energy: ${String(wellness.energy)}` : 'Log wellness to deepen this insight'],
-    ['Your schedule is busiest', `${context?.calendar?.today?.length ?? 0} events today`],
-    ['Your sleep pattern', wellness?.sleepHours != null ? `${wellness.sleepHours}h last logged` : 'Sleep data will appear here'],
+    ['Your focus is strongest', `${focusScore}% clarity score`],
+    ['Your schedule today', `${context?.todaysEvents?.length ?? 0} events`],
+    ['Your habits today', `${habitsDone}/${context?.habits?.length ?? 0} complete`],
     ["You haven't updated", recentNotes[0] ? `${recencyLabel(recentNotes[0].updatedAt)} · ${recentNotes[0].title}` : 'Capture a note to start'],
   ];
 
