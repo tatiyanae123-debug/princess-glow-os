@@ -2,6 +2,7 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
 import { GuaShaExperience } from '@/components/beauty/gua-sha-experience';
+import { GuaShaSourceVault } from '@/components/beauty/gua-sha-source-vault';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +12,10 @@ export default async function GuaShaPage() {
 
   return (
     <AppShell>
-      <GuaShaExperience />
+      <div className="space-y-6">
+        <GuaShaSourceVault />
+        <GuaShaExperience />
+      </div>
     </AppShell>
   );
 }
