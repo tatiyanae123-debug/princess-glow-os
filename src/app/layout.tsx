@@ -40,6 +40,7 @@ import './batch6-10-master-audit.css';
 import './navigation-and-header-hotfix.css';
 import './dashboard-emergency-polish.css';
 import './dashboard-forensic-rebuild.css';
+import './dashboard-forensic-background-fix.css';
 
 export const metadata: Metadata = {title:'Glow OS',description:'A calm intelligent personal life operating system'};
 export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body>{children}</body></html>}
