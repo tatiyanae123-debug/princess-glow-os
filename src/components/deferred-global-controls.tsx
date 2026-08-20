@@ -15,10 +15,6 @@ const QuickAdd = dynamic(
   () => import('@/components/quick-add/quick-add').then((mod) => mod.QuickAdd),
   { ssr: false },
 );
-const UniversalCaptureDock = dynamic(
-  () => import('@/components/universal-capture-dock').then((mod) => mod.UniversalCaptureDock),
-  { ssr: false },
-);
 const GlowActionButton = dynamic(
   () => import('@/components/glow-action-button').then((mod) => mod.GlowActionButton),
   { ssr: false },
@@ -44,7 +40,6 @@ export function DeferredGlobalControls() {
       <ReferenceRoomInteractions />
       <GlowVoiceCommand />
       <QuickAdd />
-      <UniversalCaptureDock />
       <GlowActionButton />
     </>
   );
