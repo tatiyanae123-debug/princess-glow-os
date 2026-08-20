@@ -1,0 +1,59 @@
+/* Batch 5 reference lock. Loaded last so the global customization layer cannot flatten the Money + Goals composition. */
+[data-room='finance'] .glow-reference-route-stage,
+[data-room='financial-brain'] .glow-reference-route-stage,
+[data-room='goals'] .glow-reference-route-stage{max-width:1200px!important}
+
+[data-room='finance'] :is(.batch5-card,.batch5-goal-row,.batch5-goal-insight),
+[data-room='financial-brain'] :is(.batch5-card,.batch5-goal-row,.batch5-goal-insight),
+[data-room='goals'] :is(.batch5-card,.batch5-goal-row,.batch5-goal-insight){
+  border-radius:8px!important;
+  border-color:rgba(112,94,80,.14)!important;
+  box-shadow:0 1px 0 rgba(255,255,255,.94) inset,0 10px 26px rgba(54,45,38,.046),0 24px 70px rgba(54,45,38,.026)!important;
+}
+[data-room='finance'] .batch5-card,
+[data-room='financial-brain'] .batch5-card,
+[data-room='goals'] .batch5-card{padding:15px!important}
+
+.batch5-page-header{min-height:79px!important;padding:4px 0 13px!important;align-items:flex-end!important}
+.batch5-page-header h1{font-size:41px!important;line-height:.96!important;letter-spacing:-.043em!important}
+.batch5-page-header p:not(.batch5-eyebrow){font-size:10.5px!important;margin-top:8px!important}
+.batch5-eyebrow{font-size:8.2px!important;letter-spacing:.13em!important;margin-bottom:5px!important}
+.batch5-metric-grid,.batch5-two,.batch5-spending-hero{gap:10px!important}
+.batch5-two{grid-template-columns:1.16fr .84fr!important}
+.batch5-metric{min-height:94px!important}
+.batch5-chart{height:184px!important}
+.batch5-ledger-row{min-height:51px!important}
+
+.batch5-goal-row{grid-template-columns:145px minmax(0,1fr) 278px 18px!important;gap:15px!important;min-height:112px!important;padding:9px!important;border-radius:8px!important}
+.batch5-goal-photo{height:94px!important;border-radius:7px!important}
+.batch5-goal-copy h2{font-size:18px!important;letter-spacing:-.02em!important}
+.batch5-goal-copy p{font-size:9.5px!important;margin-top:6px!important}
+.batch5-goal-insight{min-height:76px!important;border-radius:8px!important}
+
+[data-room='financial-brain'] .reference-page-heading{min-height:116px!important;padding:8px 34% 16px 0!important;border-bottom:1px solid #eee8e3!important}
+[data-room='financial-brain'] .reference-page-heading h1{font-size:40px!important;line-height:.96!important;letter-spacing:-.042em!important}
+[data-room='financial-brain'] .reference-page-heading>p:last-child{font-size:10.5px!important;line-height:1.5!important;max-width:520px!important;color:#7f7973!important}
+[data-room='financial-brain'] .batch5-brain-root{gap:10px!important}
+[data-room='financial-brain'] .batch5-brain-position{padding:17px 18px!important;border-radius:8px!important}
+
+@media(min-width:768px) and (max-width:1100px){
+  .batch5-page-header{min-height:70px!important}
+  .batch5-page-header h1{font-size:34px!important}
+  [data-room='finance'] .batch5-card,[data-room='financial-brain'] .batch5-card,[data-room='goals'] .batch5-card{padding:11px!important}
+  .batch5-metric{min-height:83px!important}.batch5-chart{height:147px!important}
+  .batch5-two{grid-template-columns:1.08fr .92fr!important;gap:8px!important}
+  .batch5-goal-row{grid-template-columns:104px minmax(0,1fr) 176px 14px!important;min-height:94px!important;gap:10px!important;padding:7px!important}
+  .batch5-goal-photo{height:78px!important}
+  .batch5-goal-copy h2{font-size:15.5px!important}
+  .batch5-goal-meta{gap:9px!important;font-size:8.5px!important}
+  [data-room='financial-brain'] .reference-page-heading{padding-right:29%!important}
+}
+
+@media(max-width:767px){
+  .batch5-page-header{min-height:0!important;align-items:flex-start!important}
+  .batch5-page-header h1{font-size:35px!important}
+  .batch5-goal-row{grid-template-columns:86px minmax(0,1fr) 15px!important;min-height:96px!important;gap:10px!important}
+  .batch5-goal-photo{height:78px!important}
+  .batch5-goal-meta{grid-column:2/3!important;grid-template-columns:1fr 1fr!important}
+  [data-room='financial-brain'] .reference-page-heading{min-height:0!important;padding-right:0!important}
+}
