@@ -1,0 +1,68 @@
+/* Final forensic correction layer for /brain and /concierge. Loaded last. */
+[data-room='brain'],[data-room='concierge']{--ir-accent:var(--glow-user-accent,#7f405c);--ir-text:var(--glow-user-text,#33272d);--ir-radius:var(--glow-user-radius,22px)}
+[data-room='brain'] .ir-world,[data-room='concierge'] .ir-world{color:var(--ir-text);isolation:isolate}
+[data-room='brain'] .ir-glass,[data-room='concierge'] .ir-glass{border-color:rgba(255,255,255,.52);background:linear-gradient(135deg,rgba(255,249,247,.59),rgba(239,216,221,.37));box-shadow:0 18px 48px rgba(57,38,48,.12),inset 0 1px 0 rgba(255,255,255,.82);backdrop-filter:blur(25px) saturate(1.1)}
+[data-room='brain'] .ir-sidebar,[data-room='concierge'] .ir-sidebar{background:linear-gradient(180deg,rgba(248,238,239,.76),rgba(243,229,232,.68));border-right-color:rgba(255,255,255,.56)}
+[data-room='brain'] .ir-sidebar nav a.active,[data-room='concierge'] .ir-sidebar nav a.active{background:rgba(255,246,246,.77);color:var(--ir-accent);box-shadow:inset 0 0 0 1px rgba(255,255,255,.44)}
+[data-room='brain'] .ir-command-trigger,[data-room='concierge'] .ir-command-trigger{cursor:pointer}
+[data-room='brain'] .ir-command-mic,[data-room='concierge'] .ir-command-mic{background:linear-gradient(145deg,color-mix(in srgb,var(--ir-accent) 82%,#34232d),color-mix(in srgb,var(--ir-accent) 78%,#aa7589))}
+
+/* Concierge: remove hover-only functionality and make the capability card work on touch. */
+.concierge-task-card{cursor:pointer}
+.concierge-task-card>button{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;opacity:1!important;border:0!important;background:transparent!important;color:transparent!important;font-size:0!important;z-index:5!important;cursor:pointer!important}
+.concierge-task-card>button:focus-visible{outline:2px solid rgba(126,66,89,.55)!important;outline-offset:3px!important}
+.concierge-capabilities>a,.concierge-capabilities>div{overflow:hidden}
+.concierge-popular a{padding:0 12px;text-align:center;line-height:1.25}
+
+/* Concierge history becomes the reference-like history control instead of an extra floating card. */
+.concierge-history{top:22px!important;right:178px!important;width:42px!important;height:42px!important;border-radius:999px!important;overflow:visible!important;padding:0!important;z-index:46!important;background:rgba(255,246,244,.36)!important;box-shadow:0 9px 24px rgba(68,43,54,.10)!important}
+.concierge-history>summary{width:42px!important;height:42px!important;padding:0!important;display:grid!important;place-items:center!important;border-radius:50%!important;color:#4d3a42!important}
+.concierge-history>summary span,.concierge-history>summary b{display:none!important}
+.concierge-history[open]{top:76px!important;right:24px!important;width:min(330px,calc(100vw - 36px))!important;height:auto!important;max-height:calc(100dvh - 96px)!important;border-radius:18px!important;overflow:hidden!important;background:linear-gradient(135deg,rgba(255,249,247,.9),rgba(243,225,229,.82))!important}
+.concierge-history[open]>summary{width:100%!important;height:42px!important;display:flex!important;justify-content:flex-start!important;gap:8px!important;padding:0 13px!important;border-radius:0!important}
+.concierge-history[open]>summary span,.concierge-history[open]>summary b{display:inline-flex!important}.concierge-history[open]>summary b{margin-left:auto!important;width:20px;height:20px;align-items:center;justify-content:center;border-radius:50%;background:rgba(126,66,88,.12)}
+.concierge-history[open]>div{max-height:calc(100dvh - 145px)!important;overflow:auto!important}
+.concierge-new-request :is(input,textarea){font:inherit}
+
+/* Keep title/console proportions close to the reference and prevent the dock from falling below the viewport at iPad landscape. */
+.concierge-main{padding-top:28px!important;padding-bottom:22px!important;justify-content:flex-start}
+.concierge-title{margin-top:2px!important}.concierge-title h1{font-size:clamp(34px,3.2vw,45px)!important}.concierge-title p{font-size:13px!important}
+.concierge-console{margin-top:14px!important;padding:24px 32px 26px!important}.concierge-hello h2{font-size:18px!important}.concierge-hello p{font-size:15px!important}
+.concierge-console .ir-command-trigger{margin-top:18px!important;min-height:66px!important}.concierge-console .ir-command-mic{width:48px;height:48px}
+.concierge-popular{margin-top:20px!important}.concierge-popular>div{margin-top:12px!important;gap:12px!important}.concierge-capabilities{margin-top:16px!important;gap:14px!important}.concierge-capabilities>a,.concierge-capabilities>div{min-height:142px!important}
+.concierge-capabilities span{width:52px!important;height:52px!important}.concierge-suggestions{margin-top:11px!important}.concierge-dock{margin-top:11px!important;padding-block:7px!important}.concierge-dock a{min-height:62px!important}.concierge-dock .center span{width:62px!important;height:62px!important}
+
+/* Brain: make the orb dominant and secondary glass planes quieter. */
+.brain-title{top:20px!important}.brain-title h1{font-size:clamp(35px,3.1vw,43px)!important}.brain-title p{margin-top:8px!important}.brain-title span{margin-top:8px!important}
+.brain-orb-zone{top:128px!important;height:min(570px,55vw)!important}.brain-orb{width:260px!important;height:260px!important}.brain-rings i:nth-child(1){width:350px!important;height:350px!important}.brain-rings i:nth-child(2){width:445px!important;height:445px!important}.brain-rings i:nth-child(3){width:535px!important;height:535px!important}
+.brain-insights{top:255px!important}.brain-right{top:105px!important}.brain-overview,.brain-connections,.brain-revelations{background:linear-gradient(135deg,rgba(247,237,239,.58),rgba(229,213,221,.44))!important}
+.brain-command{bottom:178px!important}.brain-signal{bottom:24px!important}.brain-dock{bottom:25px!important}
+.brain-clarity{background:conic-gradient(color-mix(in srgb,var(--ir-accent) 70%,#d8c394) var(--brain-score,0%),rgba(255,255,255,.25) 0)!important}
+.brain-counts p{min-width:0}.brain-counts b{font-variant-numeric:tabular-nums}
+.brain-connections>a small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.brain-revelations article p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* iPad landscape: retain the cinematic composition but avoid right-rail/orb collisions. */
+@media (min-width:900px) and (max-width:1199px){
+ .ir-desktop-side{width:180px}.ir-sidebar{width:180px;padding-left:12px;padding-right:12px}.ir-sidebar nav a{font-size:9px;min-height:32px}.ir-brand>span{font-size:19px}
+ .concierge-main,.brain-main{margin-left:180px!important}
+ .concierge-main{padding-left:32px!important;padding-right:32px!important}.concierge-console,.concierge-suggestions{width:min(760px,100%)!important}
+ .brain-main{padding-left:16px!important;padding-right:16px!important}.brain-right{right:16px!important;width:255px!important}.brain-insights{left:16px!important;width:178px!important}.brain-orb-zone{width:52vw!important;left:49%!important}.brain-orb{width:220px!important;height:220px!important}.brain-rings i:nth-child(3){width:450px!important;height:450px!important}.brain-command{width:min(520px,50vw)!important}.brain-dock{width:min(540px,52vw)!important}
+}
+
+/* Portrait tablets use the overlay drawer. Keep the room itself full width. */
+@media (max-width:899px){
+ .ir-desktop-side{display:none!important}.ir-mobile-menu{display:flex!important;position:fixed;top:14px;left:14px;z-index:70;align-items:center;gap:7px;height:39px;padding:0 13px;border-radius:999px;border:1px solid rgba(255,255,255,.55);background:rgba(255,245,244,.58);backdrop-filter:blur(18px);box-shadow:0 8px 22px rgba(62,42,50,.10);font-size:10px;color:#503c44}
+ .ir-scrim{display:block!important;position:fixed;inset:0;z-index:79;background:rgba(35,28,31,.22);backdrop-filter:blur(3px)}.ir-drawer{display:block!important;position:fixed;inset:0 auto 0 0;z-index:80;width:min(300px,82vw)}.ir-drawer .ir-sidebar{width:100%}
+ .concierge-main,.brain-main{margin-left:0!important}
+ .ir-top-controls{top:12px!important;right:12px!important;gap:7px!important}.ir-top-controls>*{width:38px!important;height:38px!important}
+ .concierge-history{top:12px!important;right:147px!important;width:38px!important;height:38px!important}.concierge-history>summary{width:38px!important;height:38px!important}.concierge-history[open]{top:60px!important;right:12px!important}
+ .concierge-main{padding:66px 22px 24px!important}.concierge-console{padding:22px!important}.concierge-popular>div,.concierge-capabilities{grid-template-columns:repeat(2,minmax(0,1fr))!important}.concierge-suggestion-grid{grid-template-columns:1fr!important}.concierge-suggestion-grid article{border-right:0!important;border-bottom:1px solid rgba(116,80,91,.12);padding:8px 0!important}.concierge-dock{width:min(620px,96%)!important}
+ .brain-main{padding:74px 16px 28px!important;display:flex!important;flex-direction:column!important;gap:14px!important}.brain-title,.brain-orb-zone,.brain-insights,.brain-right,.brain-command,.brain-signal,.brain-dock{position:relative!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;transform:none!important;width:100%!important;max-width:680px!important;margin-inline:auto!important}.brain-title{order:1}.brain-orb-zone{order:2;height:440px!important}.brain-insights{order:3}.brain-right{order:4;display:grid!important;grid-template-columns:1fr 1fr!important;gap:12px!important}.brain-overview{grid-column:1/-1}.brain-command{order:5}.brain-signal{order:6}.brain-dock{order:7}.brain-dock{grid-template-columns:repeat(5,1fr)!important}.brain-orb{width:220px!important;height:220px!important}.brain-rings i:nth-child(3){width:420px!important;height:420px!important}
+}
+
+@media (max-width:599px){
+ .ir-top-controls>*{width:35px!important;height:35px!important}.ir-top-controls{right:9px!important}.concierge-history{right:132px!important;width:35px!important;height:35px!important}.concierge-history>summary{width:35px!important;height:35px!important}
+ .concierge-main{padding:62px 12px 18px!important}.concierge-title h1{font-size:32px!important}.concierge-title p{font-size:11px!important}.concierge-console{border-radius:22px!important;padding:18px 14px!important}.concierge-hello h2{font-size:16px!important}.concierge-hello p{font-size:13px!important}.concierge-console .ir-command-trigger{min-height:58px!important;padding-left:18px!important;font-size:12px!important}.concierge-console .ir-command-mic{width:43px!important;height:43px!important}.concierge-popular>div{gap:8px!important}.concierge-popular a{min-height:38px!important;font-size:9px!important}.concierge-capabilities{gap:8px!important}.concierge-capabilities>a,.concierge-capabilities>div{min-height:124px!important;border-radius:18px!important}.concierge-capabilities span{width:45px!important;height:45px!important}.concierge-suggestions{padding:13px!important}.concierge-dock{grid-template-columns:repeat(5,minmax(0,1fr))!important;padding:6px 8px!important;border-radius:28px!important}.concierge-dock a{min-width:0!important}.concierge-dock span{width:34px!important;height:34px!important}.concierge-dock .center span{width:48px!important;height:48px!important}.concierge-dock small{font-size:7px!important}
+ .brain-main{padding:62px 10px 20px!important}.brain-title h1{font-size:32px!important}.brain-title h2{font-size:14px!important}.brain-title p{font-size:9px!important}.brain-orb-zone{height:350px!important;overflow:hidden}.brain-orb{width:175px!important;height:175px!important}.brain-rings i:nth-child(1){width:240px!important;height:240px!important}.brain-rings i:nth-child(2){width:310px!important;height:310px!important}.brain-rings i:nth-child(3){width:370px!important;height:370px!important}.brain-wing{width:180px!important;height:240px!important}.brain-right{grid-template-columns:1fr!important}.brain-overview{grid-column:auto}.brain-command .ir-command-trigger{min-height:56px!important;font-size:11px!important}.brain-command>div{display:grid!important;grid-template-columns:1fr 1fr!important}.brain-dock{overflow-x:auto!important;grid-template-columns:repeat(5,78px)!important;justify-content:flex-start!important;padding-inline:12px!important}.brain-signal{min-height:100px!important}
+}
