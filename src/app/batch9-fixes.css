@@ -1,0 +1,79 @@
+/* Batch 9 correction layer — truthfulness, density, responsive polish */
+[data-room='search'],[data-room='intake'],[data-room='focus-mode'],[data-room='interview-mode'],[data-room='workout-mode'],[data-room='ambient-mode'],[data-room='connections'],[data-room='system-overview']{--b9-line-2:#e8ded9;--b9-hover:#fbf6f4}
+
+/* shared reference density */
+[data-room='search'] main,[data-room='intake'] main,[data-room='focus-mode'] main,[data-room='interview-mode'] main,[data-room='workout-mode'] main,[data-room='ambient-mode'] main,[data-room='connections'] main,[data-room='system-overview'] main{padding-top:18px!important;padding-bottom:36px!important}
+[data-room='search'] .glow-reference-route-stage,[data-room='intake'] .glow-reference-route-stage,[data-room='focus-mode'] .glow-reference-route-stage,[data-room='interview-mode'] .glow-reference-route-stage,[data-room='workout-mode'] .glow-reference-route-stage,[data-room='ambient-mode'] .glow-reference-route-stage,[data-room='connections'] .glow-reference-route-stage,[data-room='system-overview'] .glow-reference-route-stage{width:100%!important;max-width:1160px!important}
+[data-room='search'] :is(button,a,input,textarea,select):focus-visible,[data-room='intake'] :is(button,a,input,textarea,select):focus-visible,[data-room='focus-mode'] :is(button,a,input,textarea,select):focus-visible,[data-room='interview-mode'] :is(button,a,input,textarea,select):focus-visible,[data-room='workout-mode'] :is(button,a,input,textarea,select):focus-visible,[data-room='ambient-mode'] :is(button,a,input,textarea,select):focus-visible,[data-room='connections'] :is(button,a,input,textarea,select):focus-visible,[data-room='system-overview'] :is(button,a,input,textarea,select):focus-visible{outline:2px solid rgba(126,55,80,.52)!important;outline-offset:2px}
+
+/* Command Surface: keep the dark command bar dominant, but do not imply execution beyond search/open actions. */
+[data-room='search'] .b8-search-page>section:first-child{border-color:var(--b9-line-2)!important}
+[data-room='search'] .b8-search-page form{min-height:52px!important;border-radius:28px!important}
+[data-room='search'] .b8-search-page form button:hover{background:rgba(255,255,255,.18)!important;transform:none!important}
+[data-room='search'] .b8-search-page a{min-height:28px}
+[data-room='search'] .b8-search-page a:hover{transform:none!important}
+
+/* Intake */
+[data-room='intake'] .b8-intake-page>section:first-of-type{box-shadow:none!important}
+[data-room='intake'] .b8-intake-page button:disabled{box-shadow:none!important;transform:none!important}
+[data-room='intake'] .b8-intake-page #intake-workspace{margin-top:14px!important}
+[data-room='intake'] .b8-intake-page #intake-workspace>div{border-radius:8px!important;border-color:var(--b9-line-2)!important;box-shadow:none!important}
+[data-room='intake'] .b8-intake-page #intake-workspace form{gap:12px}
+
+/* Deep Focus */
+[data-room='focus-mode'] .b8-focus-page>section:first-of-type{height:300px!important}
+[data-room='focus-mode'] .b8-focus-page>section:first-of-type form button{min-width:96px}
+[data-room='focus-mode'] .b8-focus-page>section:first-of-type a,[data-room='focus-mode'] .b8-focus-page>section:first-of-type button{backdrop-filter:blur(10px)}
+[data-room='focus-mode'] .b8-focus-page .grid>section{box-shadow:none!important}
+
+/* Interview */
+[data-room='interview-mode'] .b8-interview-hero{align-items:stretch!important;overflow:hidden!important}
+[data-room='interview-mode'] .b8-interview-image{height:100%!important;min-height:126px!important}
+[data-room='interview-mode'] .b8-check-list :is(a,div),[data-room='interview-mode'] .b8-question-list a{min-height:29px}
+
+/* Workout */
+[data-room='workout-mode'] .b9-workout-tabs .is-reference{cursor:default!important}
+[data-room='workout-mode'] .b9-workout-tabs .is-reference:not(.active){color:#9b918b!important;background:#fff!important}
+[data-room='workout-mode'] .b9-workout-tabs .active.is-reference{background:#f7ecef!important;color:#6f2943!important;border-color:#ead8de!important}
+[data-room='workout-mode'] .b8-workout-hero{min-height:184px!important;height:auto!important}
+[data-room='workout-mode'] .b8-workout-image{min-height:184px!important}
+[data-room='workout-mode'] .b8-metrics .b8-card{min-height:72px!important}
+[data-room='workout-mode'] .b8-body-image{object-position:center top!important}
+
+/* Ambient */
+[data-room='ambient-mode'] .b8-ambient-stage{min-height:370px!important;height:370px!important}
+[data-room='ambient-mode'] .b8-player{border:1px solid rgba(255,255,255,.16)!important;box-shadow:0 18px 46px rgba(36,29,34,.22)!important;backdrop-filter:blur(14px)}
+[data-room='ambient-mode'] .b8-ambient-controls button:hover{background:rgba(255,255,255,.06)!important}
+
+/* Connections: inactive relationship views are informational, not fake tabs. */
+[data-room='connections'] .b9-c-tabs .is-disabled{cursor:not-allowed!important;opacity:.48!important;background:#fff!important;color:#81766f!important;border-color:#eee6e2!important}
+[data-room='connections'] .b9-c-tabs .is-disabled:hover{transform:none!important;background:#fff!important}
+[data-room='connections'] .b9-c-metrics article{min-height:72px}
+[data-room='connections'] .b9-empty-chart{min-height:92px;display:flex;align-items:center;justify-content:center;gap:8px;color:#9a9089;font-size:8px}
+[data-room='connections'] .b9-line-chart i{min-height:0!important}
+
+/* System overview: zero means zero. No decorative minimum bars. */
+[data-room='system-overview'] .b9-track i[style*="width:0%"]{width:0!important}
+[data-room='system-overview'] .b9-spark i[style*="height:0%"]{height:0!important}
+[data-room='system-overview'] .b9-empty-signal{display:grid;place-items:center;height:50px;margin-top:10px;border:1px dashed #eadfda;border-radius:6px;color:#9a9089;font-size:8px;background:#fffdfa}
+[data-room='system-overview'] .b9-status-card strong{line-height:1.25}
+
+@media (min-width:768px) and (max-width:1100px){
+ [data-room='search'] main,[data-room='intake'] main,[data-room='focus-mode'] main,[data-room='interview-mode'] main,[data-room='workout-mode'] main,[data-room='ambient-mode'] main,[data-room='connections'] main,[data-room='system-overview'] main{padding-left:18px!important;padding-right:18px!important}
+ [data-room='interview-mode'] .b8-interview-hero{grid-template-columns:minmax(0,1fr) 230px!important}
+ [data-room='ambient-mode'] .b8-ambient-stage{height:350px!important;min-height:350px!important}
+ .b9-system-grid{grid-template-columns:minmax(0,1.3fr) minmax(220px,.7fr)!important}
+}
+
+@media (max-width:767px){
+ [data-room='search'] main,[data-room='intake'] main,[data-room='focus-mode'] main,[data-room='interview-mode'] main,[data-room='workout-mode'] main,[data-room='ambient-mode'] main,[data-room='connections'] main,[data-room='system-overview'] main{padding-top:12px!important;padding-bottom:28px!important}
+ [data-room='search'] .b8-search-page h1,[data-room='intake'] .b8-intake-page h1,[data-room='focus-mode'] .b8-focus-page h1,[data-room='interview-mode'] .b8-page h1,[data-room='workout-mode'] .b8-page h1,[data-room='ambient-mode'] .b8-page h1,[data-room='connections'] h1,[data-room='system-overview'] h1{font-size:27px!important}
+ [data-room='focus-mode'] .b8-focus-page>section:first-of-type{height:330px!important}
+ [data-room='interview-mode'] .b8-interview-image{min-height:170px!important}
+ [data-room='workout-mode'] .b8-workout-hero{min-height:250px!important}
+ [data-room='workout-mode'] .b8-workout-image{min-height:250px!important}
+ [data-room='ambient-mode'] .b8-ambient-stage{height:460px!important;min-height:460px!important}
+ [data-room='connections'] .b9-c-tabs{overflow-x:auto;display:flex;flex-wrap:nowrap!important;padding-bottom:2px}
+ [data-room='connections'] .b9-c-tabs span{white-space:nowrap}
+ .b9-activity-row{grid-template-columns:1fr!important;gap:4px!important}.b9-activity-row strong{justify-self:end;margin-top:-17px}.b9-track{grid-column:1/-1}
+}
