@@ -65,9 +65,9 @@ export function UniversalCaptureDock() {
   }
 
   return (
-    <div className="fixed bottom-4 left-4 z-[80] flex max-w-[calc(100vw-2rem)] flex-col items-start gap-2 sm:bottom-5 sm:left-5">
+    <div className="glow-capture-dock fixed bottom-4 left-4 z-[80] flex max-w-[calc(100vw-2rem)] flex-col items-start gap-2 sm:bottom-5 sm:left-5">
       {open ? (
-        <div className="w-[min(410px,calc(100vw-2rem))] overflow-hidden rounded-[20px] border border-[#F1E7E3] bg-white shadow-[0_24px_70px_rgba(66,45,38,.18)]">
+        <div className="glow-capture-panel w-[min(410px,calc(100vw-2rem))] overflow-hidden rounded-[20px] border border-[#F1E7E3] bg-white shadow-[0_24px_70px_rgba(66,45,38,.18)]">
           <div className="flex items-start justify-between gap-3 border-b border-[#F1E7E3] bg-[linear-gradient(120deg,#FBE4E8,#FDF8F6)] px-4 py-3.5">
             <div>
               <div className="flex items-center gap-1.5 text-[#C9727E]"><Sparkles size={13} /><p className="text-[10px] font-semibold uppercase tracking-[.12em]">Add Anything · From {pathname === '/' ? 'Dashboard' : pathname.replace('/', '')}</p></div>
@@ -93,7 +93,7 @@ export function UniversalCaptureDock() {
           </form>
         </div>
       ) : null}
-      <button type="button" onClick={() => setOpen((current) => !current)} className="group inline-flex items-center gap-2 rounded-full border border-white/70 bg-[#C9727E] px-4 py-3 text-[12px] font-medium text-white shadow-[0_14px_38px_rgba(121,70,76,.2)] transition hover:-translate-y-0.5 hover:bg-[#B15A68]" aria-expanded={open} aria-label="Add anything to Glow OS"><Plus size={14} /><span>Add Anything</span><Sparkles size={11} className="opacity-80" /></button>
+      <button type="button" onClick={() => setOpen((current) => !current)} className="glow-capture-fab group inline-flex items-center gap-2 rounded-full border border-white/70 bg-[#C9727E] px-4 py-3 text-[12px] font-medium text-white shadow-[0_14px_38px_rgba(121,70,76,.2)] transition hover:-translate-y-0.5 hover:bg-[#B15A68]" aria-expanded={open} aria-label="Add anything to Glow OS"><Plus size={14} /><span>Add Anything</span><Sparkles size={11} className="opacity-80" /></button>
     </div>
   );
 }
