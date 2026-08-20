@@ -65,8 +65,15 @@ for (const file of ROOTS.flatMap(walk)) {
     }
   }
 
-  for (const match of text.matchAll(/<(?:div|span)\b[^>]*\bonClick\s*=/g)) {
-    report(warnings, file, text, match.index ?? 0, 'non-semantic clickable element; verify keyboard accessibility');
+  for (const match of text.matchAll(/<(?:div|span)\b[\s\S]*?>/g)) {
+    const tag = match[0];
+    if (!/\bonClick\s*=/.test(tag)) continue;
+    const index = match.index ?? 0;
+    const decorativeBackdrop = /\baria-hidden(?:\s|=|>)/.test(tag);
+    const keyboardSafe = /\brole\s*=/.test(tag) && /\btabIndex\s*=/.test(tag) && /\bonKeyDown\s*=/.test(tag);
+    if (!decorativeBackdrop && !keyboardSafe) {
+      report(failures, file, text, index, 'non-semantic clickable element is missing keyboard interaction semantics');
+    }
   }
 }
 
@@ -82,4 +89,4 @@ if (failures.length) {
   for (const item of failures) console.error(`  FAIL ${item}`);
   process.exit(1);
 }
-console.log('Interaction audit passed: no definite dead buttons or navigation targets found.');
+console.log('Interaction audit passed: every statically-auditable control has an action, submit path, disabled state, or keyboard-safe interaction.');
