@@ -89,7 +89,8 @@ export function LivingDashboard({data,error,insight,userName,userImage}:{data:Li
   function completeTask(id:string){setBusyTask(id);startTransition(async()=>{await updateTaskAction(id,{status:'done'});setBusyTask(null);router.refresh()})}
   function logHabit(id:string){setBusyHabit(id);startTransition(async()=>{await logHabitAction({habitId:id,loggedDate:dateKey(),count:1});setBusyHabit(null);router.refresh()})}
 
-  return <div className="gd-world" style={{backgroundImage:`linear-gradient(115deg,rgba(255,248,247,.18),rgba(154,91,107,.12)),url(${BACKDROP})`}}>
+  return <div className="gd-world">
+    <img className="gd-backdrop" src={BACKDROP} alt="Glow dashboard background" data-glow-image-key="dashboard-background"/>
     {error?<div className="gd-error">Some live data could not load. Confirmed data only.</div>:null}
     <div className="gd-desktop-nav"><DashboardNav name={name} image={userImage}/></div>
     <button className="gd-mobile-menu" type="button" onClick={()=>setNameMenu(true)} aria-label="Open navigation"><Menu size={18}/><span>Glow OS</span></button>
