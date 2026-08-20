@@ -133,7 +133,7 @@ export function RoutineStepPlayer({ routine, steps, initialMode = 'full', onClos
       utterance.rate = 0.96;
       window.speechSynthesis.speak(utterance);
     }
-  }, [step?.id, speakMode]);
+  }, [step, speakMode]);
 
   useEffect(() => {
     if (!timerRunning || secondsLeft <= 0) return;
