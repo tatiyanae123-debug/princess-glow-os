@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   Bell, BrainCircuit, CalendarDays, CheckSquare2, CircleDot, FolderKanban, Goal, Grid2X2,
   Home, Menu, NotebookTabs, Search, Settings, Sparkles, TimerReset, UserRound, X,
+  Heart, Dumbbell, Utensils, Scissors, Shirt, WalletCards, Music2, LockKeyhole, Upload,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -14,53 +15,53 @@ type Group = { label: string; items: Item[] };
 
 const GROUPS: Group[] = [
   { label: 'TODAY', items: [
-    { label: 'Home', href: '/today', icon: Home },
     { label: 'Dashboard', href: '/dashboard', icon: Grid2X2 },
-    { label: 'Briefings', href: '/briefings/morning', icon: NotebookTabs },
-    { label: 'Debriefs', href: '/briefings/evening', icon: CircleDot },
-  ]},
-  { label: 'LIFE', items: [
+    { label: 'Second Brain', href: '/second-brain', icon: BrainCircuit },
     { label: 'Calendar', href: '/calendar', icon: CalendarDays },
     { label: 'Tasks', href: '/tasks', icon: CheckSquare2 },
     { label: 'Reminders', href: '/reminders', icon: Bell },
-    { label: 'Timeline', href: '/timeline', icon: CircleDot },
-    { label: 'Goals', href: '/goals', icon: Goal },
-    { label: 'Planning', href: '/planning', icon: TimerReset },
-    { label: 'Projects', href: '/projects', icon: FolderKanban },
+    { label: 'Briefings', href: '/briefings/morning', icon: NotebookTabs },
+  ]},
+  { label: 'LIFE', items: [
     { label: 'Routines', href: '/routines', icon: Sparkles },
     { label: 'Habits', href: '/habits', icon: CheckSquare2 },
-  ]},
-  { label: 'MIND', items: [
-    { label: 'Brain', href: '/brain', icon: BrainCircuit },
-    { label: 'Second Brain', href: '/second-brain', icon: BrainCircuit },
-    { label: 'Memory', href: '/memory', icon: NotebookTabs },
-    { label: 'Observations', href: '/observations', icon: CircleDot },
-    { label: 'Connections', href: '/connections', icon: Grid2X2 },
-    { label: 'Concierge', href: '/concierge', icon: Sparkles },
-    { label: 'Vault', href: '/vault', icon: FolderKanban },
-  ]},
-  { label: 'BODY + CARE', items: [
-    { label: 'Wellness', href: '/wellness', icon: Sparkles },
-    { label: 'Fitness', href: '/fitness', icon: TimerReset },
-    { label: 'Food', href: '/food', icon: Grid2X2 },
+    { label: 'Fitness', href: '/fitness', icon: Dumbbell },
+    { label: 'Wellness', href: '/wellness', icon: Heart },
+    { label: 'Food', href: '/food', icon: Utensils },
     { label: 'Beauty', href: '/beauty', icon: Sparkles },
-    { label: 'Hair', href: '/hair', icon: Sparkles },
-    { label: 'Closet', href: '/closet', icon: Grid2X2 },
-  ]},
-  { label: 'WORLD + WORK', items: [
+    { label: 'Hair', href: '/hair', icon: Scissors },
+    { label: 'Closet', href: '/closet', icon: Shirt },
     { label: 'Home', href: '/home', icon: Home },
-    { label: 'Money', href: '/finance', icon: Grid2X2 },
-    { label: 'Work', href: '/work', icon: UserRound },
-    { label: 'World', href: '/world', icon: Grid2X2 },
-    { label: 'Travel', href: '/travel', icon: CalendarDays },
-    { label: 'All Rooms', href: '/all-rooms', icon: Grid2X2 },
   ]},
-  { label: 'CREATE + CAPTURE', items: [
+  { label: 'GROW', items: [
+    { label: 'Goals', href: '/goals', icon: Goal },
+    { label: 'Projects', href: '/projects', icon: FolderKanban },
+    { label: 'Planning', href: '/planning', icon: TimerReset },
+    { label: 'Finance', href: '/finance', icon: WalletCards },
+    { label: 'Financial Brain', href: '/finance/brain', icon: BrainCircuit },
+  ]},
+  { label: 'BRAIN', items: [
+    { label: 'Brain', href: '/brain', icon: BrainCircuit },
+    { label: 'Concierge', href: '/concierge', icon: Sparkles },
+    { label: 'Observations', href: '/observations', icon: CircleDot },
+    { label: 'Memory', href: '/memory', icon: NotebookTabs },
+    { label: 'Timeline', href: '/timeline', icon: CircleDot },
     { label: 'Notes', href: '/notes', icon: NotebookTabs },
-    { label: 'Inbox', href: '/inbox', icon: Bell },
+  ]},
+  { label: 'CONNECT', items: [
     { label: 'Gmail', href: '/gmail', icon: Bell },
-    { label: 'Import', href: '/import', icon: FolderKanban },
+    { label: 'Connections', href: '/connections', icon: UserRound },
+    { label: 'Spotify', href: '/spotify', icon: Music2 },
+    { label: 'Vault', href: '/vault', icon: LockKeyhole },
+  ]},
+  { label: 'SYSTEM', items: [
+    { label: 'World', href: '/world', icon: Grid2X2 },
+    { label: 'Import', href: '/import', icon: Upload },
+    { label: 'All Rooms', href: '/all-rooms', icon: Grid2X2 },
+    { label: 'Work', href: '/work', icon: UserRound },
+    { label: 'Travel', href: '/travel', icon: CalendarDays },
     { label: 'Creative Studio', href: '/creative-studio', icon: Sparkles },
+    { label: 'Settings', href: '/settings', icon: Settings },
   ]},
 ];
 
@@ -84,8 +85,10 @@ function FullNavigation({ compact = false }: { compact?: boolean }) {
 
 function ReferenceSidebar() {
   function openSearch() { document.dispatchEvent(new CustomEvent('glow:search-open')); }
+  function openCapture() { document.dispatchEvent(new CustomEvent('glow:voice-open')); }
   return <aside className="flex h-full min-h-[100dvh] w-[238px] flex-col border-r border-[#ebe6e3] bg-white px-4 pb-4 pt-5 text-[#282421]">
     <Link href="/dashboard" className="flex h-[44px] shrink-0 items-center gap-3 px-2"><Sparkles size={19} strokeWidth={1.35} className="text-[#c85f78]"/><span className="font-serif text-[17px] font-semibold tracking-[.09em]">GLOW OS</span></Link>
+    <button type="button" onClick={openCapture} className="mt-3 flex min-h-10 w-full items-center justify-center gap-2 rounded-[13px] bg-[#c45f76] px-3 text-[10.5px] font-medium text-white shadow-[0_7px_20px_rgba(196,95,118,.18)]"><Sparkles size={13}/>Tell Glow anything</button>
     <nav className="mt-5 min-h-0 flex-1 overflow-y-auto pr-1 [scrollbar-width:thin]"><FullNavigation compact /></nav>
     <div className="shrink-0 border-t border-[#eee8e5] pt-3"><div className="grid grid-cols-3 gap-1 text-[#5d5651]"><button type="button" onClick={openSearch} aria-label="Search Glow" className="flex h-10 items-center justify-center rounded-full hover:bg-[#f7eeed]"><Search size={16}/></button><Link href="/notices" aria-label="Attention center" className="flex h-10 items-center justify-center rounded-full hover:bg-[#f7eeed]"><Bell size={16}/></Link><Link href="/settings" aria-label="Settings" className="flex h-10 items-center justify-center rounded-full hover:bg-[#f7eeed]"><Settings size={16}/></Link></div></div>
   </aside>;
