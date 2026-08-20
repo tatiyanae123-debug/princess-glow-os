@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { Sidebar } from '@/components/ui/sidebar';
 import { Batch6Sidebar } from '@/components/batch6/batch6-sidebar';
+import { Batch6TopControls } from '@/components/batch6/batch6-top-controls';
 import { GlowProvider } from '@/lib/context/glow-provider';
 import { GlobalHeader } from '@/components/global-header';
 import { DeferredGlobalControls } from '@/components/deferred-global-controls';
@@ -103,8 +104,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className={`sticky top-0 hidden h-screen shrink-0 overflow-y-auto overflow-x-hidden border-r border-[#ebe6e3] bg-white md:block ${isBatch6 ? 'w-[202px]' : 'w-[238px]'}`}>{isBatch6 ? <Batch6Sidebar /> : <Sidebar variant="dashboard-reference" />}</div>
           <div className="w-full md:hidden"><Sidebar /></div>
           <div className="min-w-0 flex-1 bg-white">
-            {!isDashboard ? <GlobalHeader /> : null}
-            <main className={isDashboard ? 'min-w-0 w-full flex-1 overflow-x-clip bg-white p-0' : 'min-h-screen min-w-0 bg-white px-4 pb-20 pt-4 sm:px-5 md:px-6 lg:px-7 lg:pt-5'}>{content}</main>
+            {!isDashboard && !isBatch6 ? <GlobalHeader /> : null}
+            <main className={`${isBatch6 ? 'relative ' : ''}${isDashboard ? 'min-w-0 w-full flex-1 overflow-x-clip bg-white p-0' : 'min-h-screen min-w-0 bg-white px-4 pb-20 pt-4 sm:px-5 md:px-6 lg:px-7 lg:pt-5'}`}>{isBatch6 ? <Batch6TopControls /> : null}{content}</main>
           </div>
         </div>
         <GlobalCommandSurface /><DeferredGlobalControls />
