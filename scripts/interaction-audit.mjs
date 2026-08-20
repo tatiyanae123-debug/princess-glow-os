@@ -23,6 +23,10 @@ function report(bucket, file, text, index, message) {
   bucket.push(`${file}:${lineFor(text, index)} ${message}`);
 }
 
+function insideForm(text, index) {
+  return text.lastIndexOf('<form', index) > text.lastIndexOf('</form>', index);
+}
+
 for (const file of ROOTS.flatMap(walk)) {
   const text = fs.readFileSync(file, 'utf8');
 
@@ -38,13 +42,18 @@ for (const file of ROOTS.flatMap(walk)) {
     const tag = match[0];
     const index = match.index ?? 0;
     const explicitlyButton = /type\s*=\s*["']button["']/.test(tag);
+    const explicitlySubmit = /type\s*=\s*["']submit["']/.test(tag);
     const disabled = /\bdisabled(?:\s|=|>)/.test(tag) || /aria-disabled\s*=\s*["']true["']/.test(tag);
     const hasAction = /\bonClick\s*=|\bonPointerDown\s*=|\bonMouseDown\s*=|\bformAction\s*=|\bonKeyDown\s*=/.test(tag);
-    if (explicitlyButton && !disabled && !hasAction) {
+    const propsDriven = /\.\.\.[A-Za-z_$][\w$]*/.test(tag);
+    const inForm = insideForm(text, index);
+
+    if (explicitlyButton && !disabled && !hasAction && !propsDriven) {
       report(failures, file, text, index, 'has type="button" but no interaction handler');
     }
-    if (!/\btype\s*=/.test(tag) && !hasAction && !/\bname\s*=/.test(tag) && !/\bvalue\s*=/.test(tag) && !disabled) {
-      report(warnings, file, text, index, 'button has no explicit type or handler; verify it is an intentional form submit');
+
+    if (!explicitlyButton && !explicitlySubmit && !hasAction && !disabled && !propsDriven && !inForm && !/\bname\s*=/.test(tag) && !/\bvalue\s*=/.test(tag)) {
+      report(failures, file, text, index, 'looks clickable but has no action and is not a form submit');
     }
   }
 
@@ -61,7 +70,8 @@ for (const file of ROOTS.flatMap(walk)) {
   }
 }
 
-console.log(`Interaction audit scanned ${ROOTS.flatMap(walk).length} source files.`);
+const scanned = ROOTS.flatMap(walk).length;
+console.log(`Interaction audit scanned ${scanned} source files.`);
 if (warnings.length) {
   console.log(`Interaction audit warnings (${warnings.length}):`);
   for (const item of warnings.slice(0, 120)) console.log(`  WARN ${item}`);
