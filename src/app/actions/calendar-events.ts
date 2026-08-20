@@ -8,6 +8,16 @@ import * as data from '@/lib/data/calendar-events';
 import { convertCalendarEventSchema } from '@/lib/validations/google-calendar';
 import { createTask } from '@/lib/data/tasks';
 
+function revalidateCalendarSurfaces() {
+  revalidatePath('/calendar');
+  revalidatePath('/dashboard');
+  revalidatePath('/tasks');
+  revalidatePath('/today');
+  revalidatePath('/tomorrow');
+  revalidatePath('/briefings/morning');
+  revalidatePath('/briefings/evening');
+}
+
 export async function createCalendarEventAction(formData: unknown) {
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
@@ -15,7 +25,7 @@ export async function createCalendarEventAction(formData: unknown) {
   const parsed = createCalendarEventSchema.safeParse(formData);
   if (!parsed.success) return { error: parsed.error.flatten() };
   const event = await data.createCalendarEvent(userId, parsed.data);
-  revalidatePath('/calendar');
+  revalidateCalendarSurfaces();
   return { data: event };
 }
 
@@ -35,7 +45,7 @@ export async function convertCalendarEventToTaskAction(input: unknown) {
     status: 'pending',
     priority: 'medium',
   });
-  revalidatePath('/tasks');
+  revalidateCalendarSurfaces();
   return { data: task };
 }
 
@@ -46,7 +56,7 @@ export async function updateCalendarEventAction(id: string, formData: unknown) {
   const parsed = updateCalendarEventSchema.safeParse(formData);
   if (!parsed.success) return { error: parsed.error.flatten() };
   const event = await data.updateCalendarEvent(id, userId, parsed.data);
-  revalidatePath('/calendar');
+  revalidateCalendarSurfaces();
   return { data: event };
 }
 
@@ -55,6 +65,6 @@ export async function deleteCalendarEventAction(id: string) {
   if (!session?.user?.id) redirect('/sign-in');
   const userId = session.user.id;
   const event = await data.deleteCalendarEvent(id, userId);
-  revalidatePath('/calendar');
+  revalidateCalendarSurfaces();
   return { data: event };
 }
