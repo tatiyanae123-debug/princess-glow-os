@@ -1,4 +1,4 @@
-/* Batch 5 interaction finishing details. */
+/* Batch 5 interaction + final reference-fidelity details. */
 .batch5-period-label{height:31px;display:inline-flex;align-items:center;padding:0 9px;border:1px solid #e9e4df;border-radius:7px;background:rgba(255,255,255,.86);font-size:8.5px;color:#817b75;white-space:nowrap}
 .batch5-filter-wrap{position:relative}
 .batch5-filter-menu{position:absolute;right:0;top:38px;z-index:80;width:150px;padding:5px;border:1px solid #e9e4df;border-radius:9px;background:rgba(255,255,255,.98);box-shadow:0 18px 42px rgba(55,45,38,.12);backdrop-filter:blur(18px)}
@@ -10,4 +10,62 @@
 .batch5-header-actions button:hover{background:#fbf8f5;box-shadow:0 8px 20px rgba(53,43,36,.055)!important}
 .batch5-header-actions button:active{transform:scale(.97)}
 .batch5-ledger-row:focus-visible,.batch5-goal-row:focus-visible,.batch5-add:focus-visible,.batch5-header-actions button:focus-visible,.batch5-goal-tabs button:focus-visible,.batch5-tabs button:focus-visible{outline:2px solid #c9aeb5;outline-offset:2px}
-@media(max-width:767px){.batch5-period-label{display:none}.batch5-filter-menu{right:-38px}.batch5-header-actions{flex-wrap:wrap}}
+
+/* The Batch 5 reference uses real editorial photography, not generated CSS blobs. */
+.batch5-goal-photo{background-size:cover!important;background-repeat:no-repeat!important;box-shadow:inset 0 0 0 1px rgba(65,53,45,.055),0 7px 18px rgba(65,53,45,.065)!important}
+.batch5-goal-photo-0{background-image:linear-gradient(140deg,rgba(62,68,55,.10),rgba(88,68,54,.14)),url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=700&q=86')!important;background-position:center 56%!important}
+.batch5-goal-photo-1{background-image:linear-gradient(140deg,rgba(255,255,255,.08),rgba(94,80,68,.10)),url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=700&q=86')!important;background-position:center!important}
+.batch5-goal-photo-2{background-image:linear-gradient(140deg,rgba(255,255,255,.06),rgba(65,76,58,.11)),url('https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=700&q=86')!important;background-position:center 44%!important}
+.batch5-goal-photo-3{background-image:linear-gradient(140deg,rgba(255,255,255,.05),rgba(54,47,42,.12)),url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=700&q=86')!important;background-position:center!important}
+.batch5-goal-photo:before,.batch5-goal-photo-shape{display:none!important}
+.batch5-goal-photo:after{background:linear-gradient(145deg,rgba(255,255,255,.14),transparent 46%,rgba(31,27,24,.10))!important;mix-blend-mode:soft-light}
+
+/* Give the reference cards a thin Apple-like material edge and layered depth instead of flat white boxes. */
+.batch5-card,.batch5-goal-row,.batch5-goal-insight{background:linear-gradient(155deg,rgba(255,255,255,.985),rgba(253,250,247,.94))!important;border-color:rgba(112,94,80,.14)!important;box-shadow:0 1px 0 rgba(255,255,255,.94) inset,0 10px 26px rgba(54,45,38,.046),0 24px 70px rgba(54,45,38,.026)!important}
+.batch5-card:where(:hover),.batch5-goal-row:hover{box-shadow:0 1px 0 rgba(255,255,255,.96) inset,0 14px 34px rgba(54,45,38,.065),0 28px 78px rgba(54,45,38,.032)!important}
+.batch5-metric strong,.batch5-spending-hero strong,.batch5-forecast strong{font-variant-numeric:tabular-nums}
+.batch5-card-head{border-bottom:1px solid rgba(112,94,80,.075);padding-bottom:8px}
+.batch5-ledger-row:last-child{border-bottom:0}
+
+/* Reference chart geometry: thinner grid, more visual breathing room, clearer paired series. */
+.batch5-chart{position:relative;padding:7px 3px 0!important}
+.batch5-chart svg line{stroke:#eee9e4!important;stroke-width:.42!important}
+.batch5-chart svg polyline{stroke-width:1.55!important;filter:drop-shadow(0 2px 2px rgba(56,48,42,.05))}
+.batch5-chart svg .income{stroke:#596b55!important}.batch5-chart svg .expense{stroke:#b5a49a!important}
+.batch5-chart-labels{padding-inline:1px;font-size:7.8px!important;letter-spacing:.02em}
+.batch5-donut{width:142px!important;filter:drop-shadow(0 9px 18px rgba(58,49,43,.065))}
+.batch5-donut:after{inset:29px!important;background:linear-gradient(145deg,#fff,#fbf8f4)!important;box-shadow:inset 0 0 0 1px rgba(112,94,80,.10),0 1px 0 rgba(255,255,255,.9)!important}
+.batch5-donut span{font-size:14.5px!important;letter-spacing:-.025em}
+.batch5-categories>div{min-height:15px}
+
+/* Financial Brain reference hero vignette: a real soft-lit desk/plant photograph. */
+[data-room='financial-brain'] .reference-page-heading:after{background-image:linear-gradient(90deg,rgba(255,253,250,.08),rgba(64,54,46,.08)),url('https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&w=900&q=88')!important;background-size:cover!important;background-position:center 50%!important;box-shadow:inset 0 0 0 1px rgba(76,63,53,.07),0 14px 34px rgba(57,47,39,.06)!important}
+[data-room='financial-brain'] .glow-reference-route-stage [class*='bg-[linear-gradient']{background:linear-gradient(145deg,#f7f4ef,#fffdfa)!important}
+[data-room='financial-brain'] .glow-reference-route-stage .glow-eyebrow{letter-spacing:.13em!important;font-size:8.2px!important;color:#817a74!important}
+
+/* Match the reference's denser desktop sidebar on Money + Goals without affecting other Glow OS rooms. */
+@media(min-width:768px){
+  [data-room='finance']>.flex>.sticky,[data-room='financial-brain']>.flex>.sticky,[data-room='goals']>.flex>.sticky{width:206px!important}
+  [data-room='finance'] main,[data-room='financial-brain'] main,[data-room='goals'] main{padding-left:22px!important;padding-right:22px!important}
+}
+
+/* iPad is a first-class target: preserve the wide editorial rows instead of letting them feel compressed. */
+@media(min-width:768px) and (max-width:1100px){
+  [data-room='finance']>.flex>.sticky,[data-room='financial-brain']>.flex>.sticky,[data-room='goals']>.flex>.sticky{width:188px!important}
+  [data-room='finance'] main,[data-room='financial-brain'] main,[data-room='goals'] main{padding-left:18px!important;padding-right:18px!important}
+  .batch5-page-header{min-height:70px!important}
+  .batch5-page-header h1{font-size:34px!important}
+  .batch5-header-actions{gap:5px!important}
+  .batch5-header-actions button,.batch5-add,.batch5-period-label{height:29px!important;min-width:29px!important}
+  .batch5-metric-grid{gap:7px!important}.batch5-metric{min-height:83px!important}.batch5-card{padding:11px!important}
+  .batch5-metric strong{font-size:21px!important}
+  .batch5-two{grid-template-columns:1.08fr .92fr!important;gap:8px!important}
+  .batch5-chart{height:147px!important}
+  .batch5-donut-wrap{grid-template-columns:119px minmax(0,1fr)!important;gap:10px!important}.batch5-donut{width:111px!important}.batch5-donut:after{inset:23px!important}
+  .batch5-goal-row{grid-template-columns:104px minmax(0,1fr) 176px 14px!important;min-height:94px!important;gap:10px!important;padding:7px!important}
+  .batch5-goal-photo{height:78px!important}.batch5-goal-copy h2{font-size:15.5px!important}.batch5-goal-copy p{font-size:8.7px!important}.batch5-goal-meta{gap:9px!important;font-size:8.5px!important}.batch5-goal-meta small{font-size:6.8px!important}
+  .batch5-ledger-row{grid-template-columns:25px minmax(0,1fr) 74px 72px 10px!important;gap:6px!important;min-height:45px!important}
+  .batch5-ledger-date{font-size:7.6px!important}.batch5-ledger-main strong{font-size:9.2px!important}
+}
+
+@media(max-width:767px){.batch5-period-label{display:none}.batch5-filter-menu{right:-38px}.batch5-header-actions{flex-wrap:wrap}.batch5-goal-photo{background-position:center!important}}
