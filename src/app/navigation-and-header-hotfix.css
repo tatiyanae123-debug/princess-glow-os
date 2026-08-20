@@ -1,0 +1,43 @@
+/* Universal navigation + dashboard header hotfix.
+   Loaded last so older reference locks cannot reintroduce the collision. */
+
+/* The Dashboard reference originally positioned the search pill at 46% while
+   independently anchoring the utility cluster to the right. Those two absolute
+   regions overlap. Keep a guaranteed gutter between them. */
+[data-room="dashboard"] .glow-reference-route-stage > div > header > button:first-of-type {
+  left: auto !important;
+  right: 410px !important;
+  width: 210px !important;
+  max-width: 210px !important;
+}
+
+[data-room="dashboard"] .glow-reference-route-stage > div > header > div.absolute.right-\[17px\] {
+  gap: 7px !important;
+}
+
+/* Tablet/mobile now use the drawer instead of permanently consuming a rail.
+   Keep page chrome clear of the 54px universal trigger bar. */
+@media (max-width: 1279px) {
+  [data-glow-shell="v3"] main {
+    scroll-margin-top: 54px;
+  }
+
+  [data-reference-shell="true"] .glow-reference-route-stage,
+  [data-glow-shell="v3"] .glow-v3-route-stage {
+    max-width: 100% !important;
+  }
+}
+
+/* Compact reference top controls must never sit on top of long headings on
+   phone-sized screens. They become a tiny utility strip above the page copy. */
+@media (max-width: 639px) {
+  [data-reference-shell="true"] main.relative > div.pointer-events-none.absolute {
+    position: relative !important;
+    right: auto !important;
+    top: auto !important;
+    z-index: 25 !important;
+    width: 100% !important;
+    justify-content: flex-end !important;
+    padding: 0 0 8px !important;
+  }
+}
