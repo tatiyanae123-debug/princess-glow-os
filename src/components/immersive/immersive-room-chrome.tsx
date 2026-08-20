@@ -20,7 +20,8 @@ function Side({name,image,onClose}:{name:string;image?:string|null;onClose?:()=>
 
 export function ImmersiveRoomChrome({name,image}:{name:string;image?:string|null}){
  const[open,setOpen]=useState(false);
- return <><div className="ir-desktop-side"><Side name={name} image={image}/></div><button className="ir-mobile-menu" onClick={()=>setOpen(true)} aria-label="Open navigation"><Menu size={17}/><span>Glow OS</span></button>{open?<><button className="ir-scrim" onClick={()=>setOpen(false)} aria-label="Close navigation"/><div className="ir-drawer"><Side name={name} image={image} onClose={()=>setOpen(false)}/></div></>:null}</>\}
+ return <><div className="ir-desktop-side"><Side name={name} image={image}/></div><button className="ir-mobile-menu" onClick={()=>setOpen(true)} aria-label="Open navigation"><Menu size={17}/><span>Glow OS</span></button>{open?<><button className="ir-scrim" onClick={()=>setOpen(false)} aria-label="Close navigation"/><div className="ir-drawer"><Side name={name} image={image} onClose={()=>setOpen(false)}/></div></>:null}</>;
+}
 
 export function ImmersiveTopControls({searchHref='/search'}:{searchHref?:string}){
  function customize(){document.querySelector<HTMLButtonElement>('.glow-customize-fab')?.click()}
