@@ -5,72 +5,50 @@
 
 .b10-disabled-tab{opacity:.42!important;cursor:not-allowed!important;pointer-events:none!important}
 .b10-tabs button{transition:background .15s ease,color .15s ease,border-color .15s ease}
-.b10-tabs button:hover{background:#fbf6f4}
-.b10-tabs button.active:hover{background:#f6ebec}
+.b10-tabs button:hover{background:#fbf6f4}.b10-tabs button.active:hover{background:#f6ebec}
 .b10-primary,.b10-soft{transition:background .15s ease,border-color .15s ease,box-shadow .15s ease,filter .15s ease}
 .b10-card{box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 7px 22px rgba(58,44,36,.035)}
 
 /* Reminders */
-.b10-reminders .b10-reminder-row:hover{background:#fcf8f6}
-.b10-reminders .b10-reminder-row:focus-visible{position:relative;z-index:2}
-.b10-reminders .b10-empty{min-height:110px;display:grid;place-items:center}
+.b10-reminders .b10-reminder-row:hover{background:#fcf8f6}.b10-reminders .b10-reminder-row:focus-visible{position:relative;z-index:2}.b10-reminders .b10-empty{min-height:110px;display:grid;place-items:center}
+.b10-reminders .b10-reminder-row>svg:last-child{color:#a65a69}.b10-reminder-spacer{display:block;width:12px;height:12px}.b10-reminders .b10-date-row{min-height:30px}
 
 /* Gmail */
-.b10-gmail .b10-mail-list>a:hover{background:#fbf7f5}
-.b10-gmail .b10-mail-reader{border-color:var(--b10-line3)}
-.b10-gmail .b10-mail-reader-head svg{stroke-width:1.35}
-.b10-gmail .b10-mail-visual{background:linear-gradient(145deg,#f4e9e6,#eaded9);border:1px solid #eee3de}
+.b10-gmail .b10-mail-list>a:hover{background:#fbf7f5}.b10-gmail .b10-mail-reader{border-color:var(--b10-line3)}.b10-gmail .b10-mail-reader-head svg{stroke-width:1.35}.b10-gmail .b10-mail-visual{background:linear-gradient(145deg,#f4e9e6,#eaded9);border:1px solid #eee3de}
+.b10-mail-priority{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:99px;background:#f7edef;color:#874555;font-size:7px;white-space:nowrap}.b10-gmail .b10-mail-reader-head{align-items:center}
 
 /* Import */
-.b10-import .b10-dropzone:hover{background:#fbf7f5;border-color:#cdbbb2}
-.b10-import .b10-import-list>div:hover{background:#fcf9f7}
-.b10-import #import-tools{box-shadow:none!important}
+.b10-import .b10-dropzone:hover{background:#fbf7f5;border-color:#cdbbb2}.b10-import .b10-import-list>div:hover{background:#fcf9f7}.b10-import #import-tools{box-shadow:none!important}.b10-import .b10-dropzone{cursor:pointer}
 
 /* Brain connection */
-.b10-connection .b10-person-avatar{transition:transform .16s ease,box-shadow .16s ease}
-.b10-connection .b10-people-strip>a:hover .b10-person-avatar{transform:translateY(-2px);box-shadow:0 10px 24px rgba(61,45,36,.1)}
-.b10-connection .b10-connection-event:hover{background:#fbf7f5}
+.b10-connection .b10-person-avatar{transition:transform .16s ease,box-shadow .16s ease}.b10-connection .b10-people-strip>a:hover .b10-person-avatar{transform:translateY(-2px);box-shadow:0 10px 24px rgba(61,45,36,.1)}.b10-connection .b10-connection-event:hover{background:#fbf7f5}
+.b10-connection .b10-people-strip>a:not(.b10-person-add){min-height:90px}.b10-connection .b10-person-avatar svg{stroke-width:1.4}
 
 /* All Rooms */
-.b10-rooms .b10-room-grid{align-items:start}
-.b10-rooms .b10-room{border-radius:8px}
-.b10-rooms .b10-room-add{min-height:100%}
+.b10-rooms .b10-room-grid{align-items:start}.b10-rooms .b10-room{border-radius:8px}.b10-rooms .b10-room-add{min-height:100%}.b10-rooms .b10-tabs button{min-width:44px}
 
 /* Notices */
-.b10-notices .b10-notice-row:hover{background:#fcf9f7}
-.b10-notices .b10-notice-actions button:hover{border-color:#d8c6ce;color:#874555;background:#fbf6f7}
-.b10-notices .b10-notice-age{font-variant-numeric:tabular-nums}
+.b10-notices .b10-notice-row:hover{background:#fcf9f7}.b10-notices .b10-notice-actions button:hover{border-color:#d8c6ce;color:#874555;background:#fbf6f7}.b10-notices .b10-notice-age{font-variant-numeric:tabular-nums}.b10-notices .b10-empty{min-height:120px;display:flex;align-items:center;justify-content:center;gap:7px}
 
 /* Graph */
-.b10-life-graph .b10-graph-chart{overflow:hidden}
-.b10-life-graph .b10-graph-chart polyline{stroke-linecap:round;stroke-linejoin:round}
-.b10-life-graph .b10-mini-ring{box-shadow:inset 0 0 0 1px rgba(98,78,70,.03)}
-.b10-life-graph .b10-graph-controls span{cursor:default;color:#8c817b;background:#fffdfa}
+.b10-life-graph .b10-graph-chart{overflow:hidden}.b10-life-graph .b10-graph-chart polyline{stroke-linecap:round;stroke-linejoin:round}.b10-life-graph .b10-mini-ring{box-shadow:inset 0 0 0 1px rgba(98,78,70,.03)}.b10-life-graph .b10-graph-controls span{cursor:default;color:#8c817b;background:#fffdfa}.b10-life-graph .b10-graph-controls{flex-wrap:wrap;justify-content:flex-end}.b10-life-graph .b10-graph-metrics>div{min-height:86px}
 
 /* Home */
-.b10-home .b10-home-greeting>div{max-width:62%}
-.b10-home .b10-home-event:hover{background:#fbf7f5}
-.b10-home .b10-voice:hover{border-color:#d9c9c1;background:#fcf8f6}
-.b10-home .b10-home-metrics .b10-card strong{font-variant-numeric:tabular-nums}
+.b10-home .b10-home-greeting>div{max-width:62%}.b10-home .b10-home-event:hover{background:#fbf7f5}.b10-home .b10-voice:hover{border-color:#d9c9c1;background:#fcf8f6}.b10-home .b10-home-metrics .b10-card strong{font-variant-numeric:tabular-nums}.b10-home .b10-home-metrics .b10-card{min-height:82px}.b10-home .b10-home-metrics span{line-height:1.25}
 
 @media(min-width:768px) and (max-width:1100px){
  [data-room='reminders'] main,[data-room='gmail'] main,[data-room='import'] main,[data-room='brain-connection'] main,[data-room='all-rooms'] main,[data-room='notices'] main,[data-room='graph'] main,[data-room='home'] main{padding-left:16px!important;padding-right:16px!important}
- .b10-head h1{font-size:31px!important}
- .b10-mail-layout{grid-template-columns:.44fr .56fr!important}
- .b10-room-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
- .b10-home-top{grid-template-columns:1.02fr .98fr!important}
- .b10-graph-chart{height:290px!important}
+ .b10-head h1{font-size:31px!important}.b10-mail-layout{grid-template-columns:.44fr .56fr!important}.b10-room-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}.b10-home-top{grid-template-columns:1.02fr .98fr!important}.b10-graph-chart{height:290px!important}.b10-graph-controls{max-width:330px}
 }
 
 @media(max-width:767px){
  [data-room='reminders'] main,[data-room='gmail'] main,[data-room='import'] main,[data-room='brain-connection'] main,[data-room='all-rooms'] main,[data-room='notices'] main,[data-room='graph'] main,[data-room='home'] main{padding-top:12px!important;padding-bottom:28px!important}
  .b10-head{gap:10px!important}.b10-head h1{font-size:30px!important}.b10-head .b10-primary,.b10-head .b10-soft{align-self:flex-start}
  .b10-reminder-row{grid-template-columns:18px minmax(0,1fr) 58px 18px!important;min-height:51px!important}.b10-reminder-time{font-size:7px!important}
- .b10-mail-layout{grid-template-columns:1fr!important}.b10-mail-reader{min-height:300px!important}
- .b10-room-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
- .b10-home-greeting>div{max-width:78%}.b10-home-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}
- .b10-notice-footer{font-size:11px!important}
- .b10-graph-rings{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .b10-mail-layout{grid-template-columns:1fr!important}.b10-mail-reader{min-height:300px!important}.b10-mail-priority{max-width:92px;overflow:hidden;text-overflow:ellipsis}
+ .b10-room-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.b10-home-greeting>div{max-width:78%}.b10-home-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .b10-notice-footer{font-size:11px!important}.b10-graph-rings{grid-template-columns:repeat(2,minmax(0,1fr))!important}.b10-graph-controls{justify-content:flex-start!important}
+ .b10-connection-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}.b10-connection .b10-people-strip{padding-bottom:7px}
 }
 
 @media(prefers-reduced-motion:reduce){.b10-connection .b10-person-avatar,.b10-primary,.b10-soft,.b10-tabs button{transition:none!important}}
