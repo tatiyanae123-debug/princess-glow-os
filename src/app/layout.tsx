@@ -29,6 +29,7 @@ import './dashboard-apple-lock.css';
 import './dashboard-apple-details.css';
 import './batch1-6-final-tweaks.css';
 import './batch8-fixes.css';
+import './batch9-advanced-tools-reference.css';
 
 export const metadata: Metadata = {title:'Glow OS',description:'A calm intelligent personal life operating system'};
 export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body>{children}</body></html>}
