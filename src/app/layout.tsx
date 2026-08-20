@@ -21,6 +21,7 @@ import './batch5-tweaks.css';
 import './batch5-interaction-tweaks.css';
 import './batch5-brain-final.css';
 import './batch6-work-create-reference.css';
+import './batch6-tweaks.css';
 import './dashboard-apple-lock.css';
 import './dashboard-apple-details.css';
 
