@@ -7,13 +7,13 @@ export const appleReminderItemSchema = z.object({
   notes: z.string().max(2000).optional().nullable(),
   dueAt: z.string().datetime({ offset: true }).optional().nullable(),
   completed: z.boolean().default(false),
-  priority: z.enum(['none', 'low', 'medium', 'high']).optional().default('none'),
-  flagged: z.boolean().optional().default(false),
+  priority: z.enum(['none', 'low', 'medium', 'high']).optional(),
+  flagged: z.boolean().optional(),
   recurrence: z.string().max(300).optional().nullable(),
   locationName: z.string().max(300).optional().nullable(),
   locationTrigger: z.enum(['arrive', 'leave']).optional().nullable(),
   url: z.string().url().max(2000).optional().nullable(),
-  snoozeCount: z.number().int().min(0).max(1000).optional().default(0),
+  snoozeCount: z.number().int().min(0).max(1000).optional(),
 });
 
 export const appleReminderImportSchema = z.object({
