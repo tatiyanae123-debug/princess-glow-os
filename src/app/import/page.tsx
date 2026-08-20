@@ -10,5 +10,5 @@ export const dynamic='force-dynamic';
 export default async function ImportPage(){
  const session=await auth();if(!session?.user?.id)redirect('/sign-in');
  const batches=await getImportBatchesByUser(session.user.id);
- return <AppShell><div className="space-y-4"><Batch7ImportView recent={batches}/><details className="b7-card"><summary className="cursor-pointer text-[10px] font-medium">Open import tools</summary><div className="mt-4 space-y-4"><UploadedImporter/><MasterImporter initialBatches={batches}/></div></details></div></AppShell>;
+ return <AppShell><div className="space-y-4"><Batch7ImportView recent={batches}/><details id="import-tools" className="b7-card scroll-mt-24" open={batches.length===0}><summary className="cursor-pointer text-[10px] font-medium">Open import tools</summary><div className="mt-4 space-y-4"><UploadedImporter/><MasterImporter initialBatches={batches}/></div></details></div></AppShell>;
 }
