@@ -6,7 +6,7 @@ import { AppShell } from '@/components/app-shell';
 import { Batch10RemindersView } from '@/components/batch10/special-features-reference';
 import { getAppleReminderConnection, getAppleRemindersByUser } from '@/lib/apple-reminders/service';
 import { understandAppleReminder } from '@/lib/apple-reminders/intelligence';
-import { BellRing, CalendarDays, CircleAlert, Clock3, Crosshair, HeartPulse, ListTodo, MapPin, Repeat2, ShoppingBasket, Sparkles, Target, Workflow } from 'lucide-react';
+import { BellRing, CalendarDays, CircleAlert, Clock3, Crosshair, HeartPulse, MapPin, Repeat2, ShoppingBasket, Sparkles, Target, Workflow } from 'lucide-react';
 
 export const dynamic='force-dynamic';
 type Mode='very-productive'|'normal'|'low'|'cancel-everything';
