@@ -3,94 +3,191 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Bell, BrainCircuit, BriefcaseBusiness, CalendarDays, CheckSquare2, ChevronDown, CircleDollarSign,
-  CircleEllipsis, CircleDot, Dumbbell, FlaskConical, Grid2X2, Heart, HeartPulse, Home as HomeIcon,
-  Menu, NotebookTabs, Pill, Search, Settings, Sparkles, Target, Utensils, WandSparkles, Waves,
-  X, type LucideIcon,
+  Bell, BrainCircuit, CalendarDays, CircleDot, Home, Layers3, Menu, NotebookTabs, Plus,
+  Search, Settings, Sparkles, WandSparkles, X, type LucideIcon,
 } from 'lucide-react';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { useMemo, useState } from 'react';
+import { ProductivityModeControl } from '@/components/productivity-mode-control';
 
-type World = { label:string; href:string; icon:LucideIcon; paths:string[] };
-const WORLDS: World[] = [
-  {label:'Today',href:'/today',icon:CircleDot,paths:['/dashboard','/today','/briefings','/tomorrow','/day-mode']},
-  {label:'Life',href:'/calendar',icon:Sparkles,paths:['/calendar','/tasks','/planning','/reminders','/routines','/habits','/timeline','/goals','/focus']},
-  {label:'Mind',href:'/brain',icon:BrainCircuit,paths:['/brain','/memory','/observations','/graph','/notes','/resources','/rules','/knowledge','/inbox','/intake']},
-  {label:'Wellness',href:'/wellness',icon:HeartPulse,paths:['/wellness','/fitness','/food','/maintenance']},
-  {label:'Beauty',href:'/beauty',icon:WandSparkles,paths:['/beauty','/beauty/lab','/skincare','/makeup','/hair','/closet']},
-  {label:'Money',href:'/finance/brain',icon:CircleDollarSign,paths:['/finance','/finance/brain','/money']},
-  {label:'Work + Create',href:'/work',icon:BriefcaseBusiness,paths:['/work','/projects','/creative-studio','/concierge']},
-  {label:'Home',href:'/home',icon:HomeIcon,paths:['/home','/all-rooms','/world','/life-world','/ritual']},
-];
-const UTILITIES = [['Gmail','/gmail'],['Import','/import'],['Notices','/notices'],['Connections','/connections'],['Settings','/settings']] as const;
-const LABELS: Record<string,string> = {
-  '/dashboard':'Dashboard','/today':'Today','/briefings':'Briefings','/tomorrow':'Tomorrow','/day-mode':'Day Mode','/calendar':'Calendar','/tasks':'Tasks','/planning':'Planning','/reminders':'Reminders','/routines':'Routines','/habits':'Habits','/timeline':'Timeline','/goals':'Goals','/focus':'Focus','/brain':'Brain','/memory':'Memory','/observations':'Observations','/graph':'Graph','/notes':'Notes','/resources':'Resources','/rules':'Personal Rules','/knowledge':'Knowledge','/inbox':'Inbox','/intake':'Add Anything','/wellness':'Wellness','/fitness':'Fitness','/food':'Food','/maintenance':'Medications','/beauty':'Beauty','/beauty/lab':'Beauty Lab','/skincare':'Skincare','/makeup':'Makeup','/hair':'Hair','/closet':'Closet','/finance':'Finance','/finance/brain':'Financial Brain','/money':'Money','/work':'Work','/projects':'Projects','/creative-studio':'Creative Studio','/concierge':'Concierge','/home':'Home','/all-rooms':'All Rooms','/world':'Glow World','/life-world':'Life World','/ritual':'Ritual',
+type Area = {
+  label: string;
+  href: string;
+  icon: LucideIcon;
+  paths: string[];
+  children: { label: string; href: string }[];
 };
 
-/* Reference sidebar deliberately mirrors the approved Dashboard screenshot.
-   Additional Glow rooms remain available through All Rooms, Search, and their
-   own deep links; they are not deleted just because the reference rail is calm. */
-const REFERENCE_GROUPS: {label:string;items:{label:string;href:string;icon:LucideIcon}[]}[] = [
-  {label:'TODAY',items:[
-    {label:'Home',href:'/dashboard',icon:HomeIcon},
-    {label:'Dashboard',href:'/today',icon:Grid2X2},
-    {label:'Briefings',href:'/briefings',icon:NotebookTabs},
-    {label:'Debriefs',href:'/briefings/evening',icon:CircleDot},
-  ]},
-  {label:'LIFE',items:[
-    {label:'Calendar',href:'/calendar',icon:CalendarDays},
-    {label:'Tasks',href:'/tasks',icon:CheckSquare2},
-    {label:'Reminders',href:'/reminders',icon:Bell},
-    {label:'Timeline',href:'/timeline',icon:CircleDot},
-    {label:'Goals',href:'/goals',icon:Target},
-  ]},
-  {label:'MIND',items:[
-    {label:'Brain',href:'/brain',icon:BrainCircuit},
-    {label:'Memory',href:'/memory',icon:NotebookTabs},
-    {label:'Observations',href:'/observations',icon:NotebookTabs},
-    {label:'Graph',href:'/graph',icon:Waves},
-  ]},
-  {label:'WELLNESS',items:[
-    {label:'Wellness',href:'/wellness',icon:Heart},
-    {label:'Fitness',href:'/fitness',icon:Dumbbell},
-    {label:'Food',href:'/food',icon:Utensils},
-    {label:'Medications',href:'/maintenance',icon:Pill},
-  ]},
-  {label:'BEAUTY',items:[
-    {label:'Beauty',href:'/beauty',icon:WandSparkles},
-    {label:'Beauty Lab',href:'/beauty/lab',icon:FlaskConical},
-    {label:'Hair',href:'/hair',icon:Sparkles},
-  ]},
+const AREAS: Area[] = [
+  {
+    label: 'Today', href: '/today', icon: CircleDot,
+    paths: ['/today', '/dashboard', '/briefings', '/tomorrow', '/day-mode'],
+    children: [
+      { label: 'Morning Brief', href: '/briefings/morning' },
+      { label: 'Today', href: '/today' },
+      { label: 'Evening Debrief', href: '/briefings/evening' },
+    ],
+  },
+  {
+    label: 'Plan', href: '/plan', icon: CalendarDays,
+    paths: ['/plan', '/calendar', '/tasks', '/reminders', '/planning', '/goals', '/projects', '/routines', '/habits', '/focus'],
+    children: [
+      { label: 'Calendar', href: '/calendar' },
+      { label: 'Tasks', href: '/tasks' },
+      { label: 'Reminders', href: '/reminders' },
+      { label: 'Planning', href: '/planning' },
+      { label: 'Goals', href: '/goals' },
+      { label: 'Projects', href: '/projects' },
+      { label: 'Routines', href: '/routines' },
+      { label: 'Habits', href: '/habits' },
+    ],
+  },
+  {
+    label: 'Life', href: '/life', icon: Home,
+    paths: ['/life', '/wellness', '/fitness', '/food', '/maintenance', '/beauty', '/skincare', '/makeup', '/hair', '/closet', '/home', '/finance', '/money', '/work', '/career', '/all-rooms', '/world', '/travel', '/saint-space'],
+    children: [
+      { label: 'Body', href: '/life#body' },
+      { label: 'Beauty', href: '/life#beauty' },
+      { label: 'Home', href: '/life#home' },
+      { label: 'Money', href: '/life#money' },
+      { label: 'Work', href: '/life#work' },
+    ],
+  },
+  {
+    label: 'Brain', href: '/brain', icon: BrainCircuit,
+    paths: ['/brain', '/memory', '/timeline', '/observations', '/graph', '/connections', '/notices', '/concierge', '/rules', '/knowledge'],
+    children: [
+      { label: 'Insights', href: '/brain' },
+      { label: 'Memory', href: '/memory' },
+      { label: 'Timeline', href: '/timeline' },
+      { label: 'Observations', href: '/observations' },
+      { label: 'Graph', href: '/graph' },
+      { label: 'Connections', href: '/connections' },
+      { label: 'Notices', href: '/notices' },
+      { label: 'Concierge', href: '/concierge' },
+    ],
+  },
+  {
+    label: 'Create', href: '/create', icon: WandSparkles,
+    paths: ['/create', '/creative-studio', '/notes', '/resources', '/import', '/gmail', '/inbox', '/intake'],
+    children: [
+      { label: 'Capture', href: '/intake' },
+      { label: 'Creative Studio', href: '/creative-studio' },
+      { label: 'Notes', href: '/notes' },
+      { label: 'Inbox', href: '/inbox' },
+      { label: 'Gmail', href: '/gmail' },
+      { label: 'Import', href: '/import' },
+    ],
+  },
 ];
 
-function isActive(pathname:string,path:string){return pathname===path||pathname.startsWith(`${path}/`)}
+function matches(pathname: string, path: string) {
+  if (path === '/brain') return pathname === '/brain';
+  if (path === '/finance') return pathname === '/finance' || pathname.startsWith('/finance/');
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
 
-function ReferenceSidebar(){
-  const pathname=usePathname();
-  function openSearch(){ document.dispatchEvent(new CustomEvent('glow:search-open')); }
+function areaActive(pathname: string, area: Area) {
+  return area.paths.some((path) => matches(pathname, path));
+}
+
+function ShellNavigation({ mobile = false, onNavigate }: { mobile?: boolean; onNavigate?: () => void }) {
+  const pathname = usePathname();
+  const activeArea = AREAS.find((area) => areaActive(pathname, area));
+
   return (
-    <aside className="flex h-full min-h-[100dvh] w-[238px] flex-col border-r border-[#ebe6e3] bg-white px-[16px] pb-[18px] pt-[19px] text-[#282421]">
-      <Link href="/dashboard" className="flex h-[44px] shrink-0 items-center gap-[11px] px-[6px]"><Sparkles size={19} strokeWidth={1.35} className="text-[#c85f78]"/><span className="font-serif text-[17px] font-semibold tracking-[.09em]">GLOW OS</span></Link>
-      <nav className="mt-[16px] min-h-0 flex-1 overflow-y-auto pr-1 [scrollbar-width:thin]">
-        {REFERENCE_GROUPS.map(group=><div key={group.label} className="mb-[17px]"><p className="mb-[7px] px-[8px] text-[9.5px] font-semibold tracking-[.14em] text-[#7f7772]">{group.label}</p><div className="space-y-[3px]">{group.items.map(({label,href,icon:Icon})=>{const active=(href==='/dashboard'&&pathname==='/dashboard')||isActive(pathname,href);return <Link key={href} href={href} className={cn('flex min-h-[36px] items-center gap-[11px] rounded-[11px] px-[10px] text-[12.5px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7D1D8]',active?'bg-[#fae6e7] font-medium text-[#b65369]':'text-[#38332f] hover:bg-[#f7eeed]')}><Icon size={15.5} strokeWidth={1.45} className={active?'text-[#c55e74]':'text-[#48423e]'}/><span>{label}</span></Link>})}</div></div>)}
+    <>
+      <div className={mobile ? 'space-y-2' : 'space-y-1.5'}>
+        {AREAS.map((area) => {
+          const Icon = area.icon;
+          const active = activeArea?.label === area.label;
+          return (
+            <div key={area.label}>
+              <Link
+                href={area.href}
+                onClick={onNavigate}
+                className={cn(
+                  'flex items-center gap-3 rounded-[14px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2cbd3]',
+                  mobile ? 'min-h-[48px] px-3.5 text-[15px]' : 'min-h-[42px] px-3 text-[12.5px]',
+                  active ? 'bg-[#fae7ea] text-[#b45569]' : 'text-[#443e3a] hover:bg-[#faf5f3]'
+                )}
+              >
+                <Icon size={mobile ? 18 : 16} strokeWidth={1.5} />
+                <span>{area.label}</span>
+              </Link>
+              {active ? (
+                <div className={cn('mt-1 space-y-0.5 border-l border-[#eee5e1]', mobile ? 'ml-5 pl-4' : 'ml-5 pl-3')}>
+                  {area.children.map((child) => (
+                    <Link
+                      key={child.href}
+                      href={child.href}
+                      onClick={onNavigate}
+                      className={cn(
+                        'block rounded-[9px] text-[#817771] transition hover:bg-[#fbf7f5] hover:text-[#5a514c]',
+                        mobile ? 'px-3 py-2 text-[12.5px]' : 'px-2.5 py-1.5 text-[10.5px]',
+                        matches(pathname, child.href.split('#')[0]) && 'font-medium text-[#b45569]'
+                      )}
+                    >
+                      {child.label}
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+function ReferenceSidebar() {
+  function openSearch() { document.dispatchEvent(new CustomEvent('glow:search-open')); }
+  function quickAdd() { document.dispatchEvent(new CustomEvent('glow:quick-add')); }
+
+  return (
+    <aside className="flex h-full min-h-[100dvh] w-[238px] flex-col border-r border-[#ebe6e3] bg-white px-4 pb-4 pt-5 text-[#282421]">
+      <Link href="/today" className="flex h-[44px] shrink-0 items-center gap-3 px-2">
+        <Sparkles size={19} strokeWidth={1.35} className="text-[#c85f78]" />
+        <span className="font-serif text-[17px] font-semibold tracking-[.09em]">GLOW OS</span>
+      </Link>
+
+      <div className="mt-4 px-1"><ProductivityModeControl compact /></div>
+
+      <nav className="mt-5 min-h-0 flex-1 overflow-y-auto pr-1 [scrollbar-width:thin]">
+        <p className="mb-2 px-3 text-[9px] font-semibold uppercase tracking-[.16em] text-[#9b918b]">Your world</p>
+        <ShellNavigation />
       </nav>
-      <div className="shrink-0 border-t border-[#eee8e5] pt-[13px]">
-        <Link href="/settings?section=profile" className="flex items-center gap-[11px] rounded-[13px] px-[7px] py-[9px] hover:bg-[#f7eeed]"><span className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-[linear-gradient(145deg,#f7d1d8,#fae6e7)] font-serif text-[15px] text-[#6f3f49]">T</span><span className="min-w-0 flex-1"><span className="block text-[12px] font-medium">Tatiyana</span><span className="mt-[2px] block text-[8.5px] text-[#c15f74]">View Profile</span></span><ChevronDown size={13} className="-rotate-90 text-[#6f6762]"/></Link>
-        <div className="mt-[10px] flex items-center justify-between border-t border-[#eee8e5] px-[10px] pt-[12px] text-[#59514c]">
-          <button type="button" onClick={openSearch} aria-label="Search Glow" className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-[#f7eeed] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7D1D8]"><Search size={17}/></button>
-          <Link href="/notices" aria-label="Notifications" className="relative flex h-10 w-10 items-center justify-center rounded-full hover:bg-[#f7eeed]"><Bell size={17}/><span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#c55e74]"/></Link>
-          <Link href="/settings" aria-label="Settings" className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-[#f7eeed]"><Settings size={17}/></Link>
+
+      <div className="shrink-0 border-t border-[#eee8e5] pt-3">
+        <button type="button" onClick={quickAdd} className="flex min-h-[42px] w-full items-center justify-center gap-2 rounded-full bg-[#c86679] px-4 text-[12px] font-medium text-white shadow-[0_8px_22px_rgba(185,88,109,.18)]">
+          <Plus size={15} /> Add Anything
+        </button>
+        <div className="mt-2 grid grid-cols-4 gap-1 text-[#5d5651]">
+          <button type="button" onClick={openSearch} aria-label="Search Glow" className="flex h-10 items-center justify-center rounded-full hover:bg-[#f7eeed]"><Search size={16} /></button>
+          <Link href="/concierge" aria-label="Glow Concierge" className="flex h-10 items-center justify-center rounded-full hover:bg-[#f7eeed]"><Sparkles size={16} /></Link>
+          <Link href="/notices" aria-label="Attention center" className="relative flex h-10 items-center justify-center rounded-full hover:bg-[#f7eeed]"><Bell size={16} /></Link>
+          <Link href="/settings" aria-label="Settings" className="flex h-10 items-center justify-center rounded-full hover:bg-[#f7eeed]"><Settings size={16} /></Link>
         </div>
       </div>
     </aside>
   );
 }
 
-export function Sidebar({variant='default'}:{variant?:'default'|'dashboard-reference'}){
-  const pathname=usePathname();
-  const [mobileOpen,setMobileOpen]=useState(false);
-  const activeWorld=useMemo(()=>WORLDS.find(w=>w.paths.some(p=>isActive(pathname,p)))?.label??null,[pathname]);
-  const [openWorld,setOpenWorld]=useState<string|null>(activeWorld);
-  if(variant==='dashboard-reference') return <ReferenceSidebar/>;
-  return <aside className="flex h-full w-full flex-col border-b border-[#EEE9E6] bg-white/96 px-3 py-2.5 backdrop-blur-xl lg:min-h-screen lg:w-[220px] lg:border-b-0 lg:border-r lg:px-3.5 lg:py-5"><div className="flex min-h-[40px] items-center justify-between px-0.5 lg:min-h-0 lg:px-1"><Link href="/today" className="flex min-w-0 items-center gap-2 text-[#2D2927]" onClick={()=>setMobileOpen(false)}><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#F1DDE2] bg-[#FBE8EC] text-[#B85F70] lg:h-9 lg:w-9"><Sparkles size={14}/></span><span className="min-w-0"><span className="glow-display block truncate text-[18px] leading-none lg:text-[20px]">Glow OS</span><span className="mt-1 hidden text-[7.5px] font-semibold uppercase tracking-[.17em] text-[#A99D95] sm:block">Personal digital world</span></span></Link><button type="button" onClick={()=>setMobileOpen(v=>!v)} className="rounded-full p-2 text-[#756D68] hover:bg-[#FBF8F7] lg:hidden" aria-label={mobileOpen?'Close navigation':'Open navigation'}>{mobileOpen?<X size={18}/>:<Menu size={18}/>}</button></div><div className={cn('mt-3 min-h-0 flex-1 overflow-y-auto pb-4 lg:mt-6',mobileOpen?'block':'hidden lg:block')}><p className="mb-2 px-3 text-[8.5px] font-semibold uppercase tracking-[.18em] text-[#B2A69E]">Worlds</p><nav className="space-y-1">{WORLDS.map(world=>{const Icon=world.icon;const active=world.label===activeWorld;const open=openWorld===world.label;return <div key={world.label} className={cn('rounded-[12px]',active?'bg-[#FFF4F6]':'')}><div className="flex items-center"><Link href={world.href} onClick={()=>setMobileOpen(false)} className={cn('flex min-h-[42px] min-w-0 flex-1 items-center gap-3 rounded-[12px] px-3 text-[12.5px] font-medium',active?'text-[#B55F70]':'text-[#4E4742] hover:bg-[#FBF8F7]')}><Icon size={15}/><span>{world.label}</span></Link><button type="button" onClick={()=>setOpenWorld(open?null:world.label)} className="mr-1 flex h-9 w-8 items-center justify-center rounded-[9px] text-[#92877F]" aria-label={`${open?'Collapse':'Expand'} ${world.label}`}><ChevronDown size={13} className={cn(open&&'rotate-180')}/></button></div>{open?<div className="pb-2 pl-9 pr-2">{world.paths.map(path=><Link key={path} href={path} className={cn('flex min-h-[32px] items-center rounded-[8px] px-2.5 text-[10.5px]',isActive(pathname,path)?'bg-white font-medium text-[#B55F70]':'text-[#81766F] hover:bg-white')}>{LABELS[path]??path}</Link>)}</div>:null}</div>})}</nav><div className="my-4 h-px bg-[#EEE9E6]"/><Link href="/all-rooms" className="flex min-h-[40px] items-center gap-3 rounded-[11px] px-3 text-[11.5px] font-medium text-[#655D58]"><CircleEllipsis size={15}/>All Rooms</Link><p className="mb-2 mt-4 px-3 text-[8.5px] font-semibold uppercase tracking-[.18em] text-[#B2A69E]">Utilities</p><div>{UTILITIES.map(([label,href])=><Link key={href} href={href} className="flex min-h-[34px] items-center rounded-[9px] px-3 text-[11px] text-[#7D746E]">{label}</Link>)}</div></div></aside>;
+export function Sidebar({ variant = 'default' }: { variant?: 'default' | 'dashboard-reference' }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  if (variant === 'dashboard-reference') return <ReferenceSidebar />;
+
+  return (
+    <aside className="flex h-full w-full flex-col border-b border-[#EEE9E6] bg-white/96 px-3 py-2.5 backdrop-blur-xl lg:min-h-screen lg:w-[220px] lg:border-b-0 lg:border-r lg:px-3.5 lg:py-5">
+      <div className="flex min-h-[40px] items-center justify-between px-1">
+        <Link href="/today" className="flex min-w-0 items-center gap-2 text-[#2D2927]"><Sparkles size={17} className="text-[#c85f78]" /><span className="font-serif text-[18px] font-semibold tracking-[.06em]">Glow OS</span></Link>
+        <button type="button" onClick={() => setMobileOpen((value) => !value)} className="rounded-full p-2 text-[#756D68] lg:hidden" aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}>{mobileOpen ? <X size={18} /> : <Menu size={18} />}</button>
+      </div>
+      <div className={cn('mt-3 min-h-0 flex-1 overflow-y-auto pb-4 lg:mt-5', mobileOpen ? 'block' : 'hidden lg:block')}>
+        <ProductivityModeControl compact />
+        <div className="mt-4"><ShellNavigation mobile /></div>
+      </div>
+    </aside>
+  );
 }
