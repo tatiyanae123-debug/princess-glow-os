@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { ingestFile, ingestText } from '@/lib/intelligence/universal-intake';
+import { routeInboxItem } from '@/lib/intelligence/inbox-routing';
 import { ensureGlowIntelligenceSchema } from '@/app/actions/intelligence-activation';
 
 export const runtime = 'nodejs';
@@ -33,17 +34,37 @@ export async function POST(request: Request) {
       const result = await ingestFile(session.user.id, file, note || text, { sourceRoute });
       return NextResponse.json({
         ok: true,
-        message: `${file.name} was uploaded and understood by Glow.`,
+        message: `${file.name} was uploaded and understood by Glow. Review its proposed destination in Glow Inbox before the file changes another room.`,
         uploadedName: file.name,
         classification: result.classification,
+        routed: false,
       });
     }
 
     const result = await ingestText(session.user.id, text, { sourceRoute });
+    const routed = await routeInboxItem(session.user.id, result.inbox.id);
+    if (routed.ok) {
+      return NextResponse.json({
+        ok: true,
+        message: `Glow understood this and placed it in ${routed.routedEntityType.replace(/_/g, ' ')}.`,
+        classification: result.classification,
+        routed: true,
+        routedEntityType: routed.routedEntityType,
+        routedEntityId: routed.routedEntityId,
+      });
+    }
+
+    const missing = routed.reason === 'calendar_needs_date'
+      ? 'a date or time'
+      : routed.reason === 'finance_needs_amount'
+        ? 'an amount'
+        : 'one more detail';
     return NextResponse.json({
       ok: true,
-      message: 'Glow understood your text and added it to Glow Inbox.',
+      message: `Glow understood this and kept it in Inbox because it needs ${missing} before it can be placed safely.`,
       classification: result.classification,
+      routed: false,
+      routeReason: routed.reason,
     });
   } catch (error) {
     const detail = error instanceof Error ? error.message : 'Unknown intake error';
