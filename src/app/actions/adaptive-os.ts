@@ -1,6 +1,7 @@
 'use server';
 
 import { auth } from '@/auth';
+import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { addInboxItem, finishFocusSession, getLifeModes, setActiveLifeMode, startFocusSession, upsertDayReview } from '@/lib/intelligence/adaptive-os';
@@ -9,10 +10,16 @@ import { buildTomorrowBrief } from '@/lib/intelligence/tomorrow';
 
 async function requireUserId(){const session=await auth();if(!session?.user?.id)redirect('/sign-in');return session.user.id;}
 
-const LIFE_MODE_DEPENDENT_PATHS=['/today','/dashboard','/planning','/tasks','/calendar','/habits','/routines','/fitness','/wellness','/brain','/briefings','/world'] as const;
-function revalidateLifeModeViews(){for(const path of LIFE_MODE_DEPENDENT_PATHS)revalidatePath(path);}
+const LIFE_MODE_DEPENDENT_PATHS=['/today','/dashboard','/plan','/planning','/tasks','/calendar','/habits','/routines','/fitness','/wellness','/life','/brain','/briefings','/world','/create'] as const;
+const LIFE_MODE_COOKIE='glow-os-productivity-mode';
+const SLUG_TO_PRODUCTIVITY:Record<string,string>={'deep-work':'very-productive','normal':'normal','low-energy':'low','sick':'cancel-everything'};
+const PRODUCTIVITY_TO_SLUG:Record<string,string>={'very-productive':'deep-work','normal':'normal','low':'low-energy','cancel-everything':'sick'};
 
-export async function setLifeModeAction(modeId:string):Promise<void>{const userId=await requireUserId();const modes=await getLifeModes(userId);if(!modes.some(mode=>mode.id===modeId))throw new Error('Life Mode not found for this user.');await setActiveLifeMode(userId,modeId);revalidateLifeModeViews();}
+function revalidateLifeModeViews(){for(const path of LIFE_MODE_DEPENDENT_PATHS)revalidatePath(path);}
+async function persistModeCookie(slug:string){const store=await cookies();store.set(LIFE_MODE_COOKIE,SLUG_TO_PRODUCTIVITY[slug]??'normal',{path:'/',sameSite:'lax',maxAge:60*60*24*365});}
+
+export async function setLifeModeAction(modeId:string):Promise<void>{const userId=await requireUserId();const modes=await getLifeModes(userId);const selected=modes.find(mode=>mode.id===modeId);if(!selected)throw new Error('Life Mode not found for this user.');await setActiveLifeMode(userId,modeId);await persistModeCookie(selected.slug);revalidateLifeModeViews();}
+export async function setLifeModeByProductivityModeAction(productivityMode:string):Promise<void>{const userId=await requireUserId();const slug=PRODUCTIVITY_TO_SLUG[productivityMode]??'normal';const modes=await getLifeModes(userId);const selected=modes.find(mode=>mode.slug===slug);if(!selected)throw new Error(`Glow Mode ${slug} is not available for this user.`);await setActiveLifeMode(userId,selected.id);await persistModeCookie(slug);revalidateLifeModeViews();}
 export async function addInboxItemFormAction(formData:FormData):Promise<void>{const userId=await requireUserId();const rawText=String(formData.get('rawText')??'').trim();if(!rawText)return;await addInboxItem(userId,rawText);revalidatePath('/inbox');revalidatePath('/today');}
 export async function startFocusSessionAction(entityType:string,entityId:string,title:string,plannedMinutes=25):Promise<void>{const userId=await requireUserId();await startFocusSession(userId,entityType,entityId,title,plannedMinutes);revalidatePath('/today');}
 export async function finishFocusSessionFormAction(sessionId:string,formData:FormData):Promise<void>{const userId=await requireUserId();const outcome=String(formData.get('outcome')??'completed');const notes=String(formData.get('notes')??'');await finishFocusSession(userId,sessionId,outcome,notes||undefined);revalidatePath('/today');}
