@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition } from 'react';
 import {
-  BrainCircuit, CalendarDays, Check, CheckCircle2, Circle, Droplets, Dumbbell,
-  Heart, Home, ListChecks, Menu, Moon, NotebookTabs, Plus, Search, Settings,
+  BrainCircuit, CalendarDays, CheckCircle2, Circle, Droplets, Dumbbell,
+  Heart, Home, ListChecks, Menu, Moon, NotebookTabs, Search, Settings,
   Sparkles, Target, Utensils, WandSparkles, X, type LucideIcon,
 } from 'lucide-react';
 import type { LivingDashboardData } from '@/lib/dashboard/types';
@@ -44,8 +44,15 @@ function moodLabel(value: string | number | null | undefined) {
   }
   return {title:String(value),sub:'Today'};
 }
-function energyPercent(value:number|null|undefined){
+function energyPercent(value:number|string|null|undefined){
   if(value==null)return null;
+  if(typeof value==='string'){
+    if(value==='high')return 84;
+    if(value==='medium')return 62;
+    if(value==='low')return 36;
+    if(value==='exhausted')return 18;
+    return null;
+  }
   if(value<=5)return Math.round((value/5)*100);
   if(value<=10)return Math.round((value/10)*100);
   return Math.min(100,Math.round(value));
@@ -75,11 +82,10 @@ export function LivingDashboard({data,error,insight,userName,userImage}:{data:Li
   const top=tasks[0]??null;const taskTotal=data.projectStatus.activeTaskCount+data.projectStatus.completedTaskCount;const taskDone=data.projectStatus.completedTaskCount;const routineCount=data.todayOverview.activeRoutines;const habitDone=data.habitSummary.completedToday;
   const dayLabel=now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
   const focusTitle=data.dailyFocus?.title||data.weekTheme.title||'Protect your peace';
-  const focusCopy=data.dailyFocus?.note||data.weekTheme.note||'Choose one clear priority and move with intention.';
 
   function openSearch(){document.dispatchEvent(new CustomEvent('glow:search-open'))}
   function quickAdd(module?:string){document.dispatchEvent(new CustomEvent('glow:quick-add',{detail:module?{module}:{}}))}
-  function openCustomize(){document.dispatchEvent(new CustomEvent('glow:customize-open'))}
+  function openCustomize(){document.querySelector<HTMLButtonElement>('.glow-customize-fab')?.click()}
   function completeTask(id:string){setBusyTask(id);startTransition(async()=>{await updateTaskAction(id,{status:'done'});setBusyTask(null);router.refresh()})}
   function logHabit(id:string){setBusyHabit(id);startTransition(async()=>{await logHabitAction({habitId:id,loggedDate:dateKey(),count:1});setBusyHabit(null);router.refresh()})}
 
