@@ -36,6 +36,7 @@ export function UniversalMobileNav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => { setOpen(false); }, []);
   useEffect(() => {
     if (!open) return;
     const previous = document.body.style.overflow;
@@ -48,15 +49,15 @@ export function UniversalMobileNav() {
   const activeArea = AREAS.find((area) => area.paths.some((path) => matches(pathname, path)));
 
   return <>
-    <div className="sticky top-0 z-[72] flex min-h-[58px] w-full items-center justify-between border-b border-[#eee8e5] bg-white/96 px-3.5 pb-2 pt-[max(8px,env(safe-area-inset-top))] shadow-[0_3px_14px_rgba(62,43,36,.035)] backdrop-blur-xl xl:hidden">
-      <Link href="/today" className="flex min-w-0 items-center gap-2.5 text-[#282421]"><Sparkles size={17} strokeWidth={1.4} className="text-[#c85f78]"/><span className="font-serif text-[16px] font-semibold tracking-[.08em]">GLOW OS</span></Link>
+    <div className="sticky top-0 z-[72] flex min-h-[58px] w-full items-center justify-between border-b border-[#eee8e5] bg-white px-3.5 pb-2 pt-[max(8px,env(safe-area-inset-top))] shadow-[0_3px_14px_rgba(62,43,36,.035)] xl:hidden" style={{backgroundColor:'#fff',opacity:1}}>
+      <Link href="/dashboard" className="flex min-w-0 items-center gap-2.5 text-[#282421]"><Sparkles size={17} strokeWidth={1.4} className="text-[#c85f78]"/><span className="font-serif text-[16px] font-semibold tracking-[.08em]">GLOW OS</span></Link>
       <div className="flex items-center gap-1.5"><button type="button" onClick={openSearch} aria-label="Search Glow" className="flex h-9 w-9 items-center justify-center rounded-full text-[#5d5651] hover:bg-[#f8efee]"><Search size={16}/></button><button type="button" onClick={()=>setOpen(true)} aria-label="Open navigation" className="flex h-9 w-9 items-center justify-center rounded-full border border-[#eee5e1] bg-white text-[#4c4541] shadow-sm hover:bg-[#f8efee]"><Menu size={18}/></button></div>
     </div>
-    {open ? <button type="button" aria-label="Close navigation overlay" onClick={()=>setOpen(false)} className="fixed inset-0 z-[88] bg-black/20 backdrop-blur-[1px] xl:hidden"/> : null}
-    <aside className={`fixed inset-y-0 left-0 z-[90] flex w-[min(90vw,390px)] flex-col border-r border-[#ebe6e3] bg-white text-[#282421] shadow-[20px_0_55px_rgba(53,38,31,.12)] transition-transform duration-200 xl:hidden ${open?'translate-x-0':'-translate-x-full'}`} aria-hidden={!open}>
-      <div className="flex min-h-[72px] shrink-0 items-center justify-between border-b border-[#eee8e5] px-5 pb-3 pt-[max(12px,env(safe-area-inset-top))]"><Link href="/today" className="flex items-center gap-3"><Sparkles size={22} strokeWidth={1.35} className="text-[#c85f78]"/><span className="font-serif text-[22px] font-semibold tracking-[.09em]">GLOW OS</span></Link><button type="button" onClick={()=>setOpen(false)} aria-label="Close navigation" className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-[#f8efee]"><X size={19}/></button></div>
-      <div className="border-b border-[#eee8e5] px-5 py-4"><ProductivityModeControl /></div>
-      <nav className="min-h-0 flex-1 overflow-y-auto px-5 py-5 [scrollbar-width:thin]">
+    {open ? <button type="button" aria-label="Close navigation overlay" onClick={()=>setOpen(false)} className="fixed inset-0 z-[88] bg-black/35 xl:hidden"/> : null}
+    <aside className={`fixed inset-y-0 left-0 z-[90] flex w-[min(90vw,390px)] flex-col border-r border-[#ebe6e3] bg-white text-[#282421] shadow-[20px_0_55px_rgba(53,38,31,.18)] transition-transform duration-200 xl:hidden ${open?'translate-x-0':'-translate-x-full'}`} style={{backgroundColor:'#fff',opacity:1}} aria-hidden={!open}>
+      <div className="flex min-h-[72px] shrink-0 items-center justify-between border-b border-[#eee8e5] bg-white px-5 pb-3 pt-[max(12px,env(safe-area-inset-top))]"><Link href="/dashboard" className="flex items-center gap-3"><Sparkles size={22} strokeWidth={1.35} className="text-[#c85f78]"/><span className="font-serif text-[22px] font-semibold tracking-[.09em]">GLOW OS</span></Link><button type="button" onClick={()=>setOpen(false)} aria-label="Close navigation" className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-[#f8efee]"><X size={19}/></button></div>
+      <div className="border-b border-[#eee8e5] bg-white px-5 py-4"><ProductivityModeControl /></div>
+      <nav className="min-h-0 flex-1 overflow-y-auto bg-white px-5 py-5 [scrollbar-width:thin]">
         <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[.16em] text-[#9b918b]">Your world</p>
         <div className="space-y-2">
           {AREAS.map((area) => {
