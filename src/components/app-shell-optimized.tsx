@@ -29,7 +29,8 @@ function roomFor(pathname: string) {
   if (pathname.startsWith('/wellness') || pathname.startsWith('/maintenance')) return 'wellness';
   if (pathname.startsWith('/finance') || pathname.startsWith('/money')) return 'finance';
   if (pathname.startsWith('/goals')) return 'goals';
-  if (pathname.startsWith('/projects') || pathname.startsWith('/creative-studio')) return 'projects';
+  if (pathname.startsWith('/creative-studio')) return 'creative-studio';
+  if (pathname.startsWith('/projects')) return 'projects';
   if (pathname.startsWith('/brain') || pathname.startsWith('/inbox') || pathname.startsWith('/intake') || pathname.startsWith('/rules') || pathname.startsWith('/knowledge')) return 'brain';
   if (pathname.startsWith('/concierge')) return 'concierge';
   if (pathname.startsWith('/observations')) return 'observations';
@@ -64,7 +65,8 @@ function isReferenceRoute(pathname: string) {
     pathname.startsWith('/food') || pathname.startsWith('/habits') ||
     pathname.startsWith('/routines') || pathname.startsWith('/beauty') ||
     pathname.startsWith('/hair') || pathname.startsWith('/finance') ||
-    pathname.startsWith('/goals');
+    pathname.startsWith('/goals') || pathname.startsWith('/projects') ||
+    pathname.startsWith('/creative-studio') || pathname.startsWith('/work');
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
