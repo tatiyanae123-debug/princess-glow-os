@@ -49,6 +49,8 @@ export type LivingDashboardData = {
   };
   todayOverview: {
     tasksDueToday: number;
+    tasksCompletedToday: number;
+    tasksTotalToday: number;
     eventsToday: number;
     activeRoutines: number;
     activeGoals: number;
@@ -74,7 +76,7 @@ export type LivingDashboardData = {
   habitSummary: {
     totalHabits: number;
     completedToday: number;
-    habits: (Pick<Habit, 'id' | 'name' | 'color' | 'targetCount'> & { completedToday: boolean })[];
+    habits: (Pick<Habit, 'id' | 'name' | 'color' | 'targetCount'> & { currentCount: number; completedToday: boolean })[];
   };
   notesSummary: {
     pinnedCount: number;
