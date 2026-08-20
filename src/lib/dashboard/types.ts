@@ -37,6 +37,8 @@ export const DEFAULT_WIDGET_ORDER: DashboardWidgetId[] = [
 
 export type GoogleWidgetStatus = 'connected' | 'not_connected' | 'insufficient_scope' | 'revoked' | 'error';
 
+type DashboardCalendarEvent = Omit<Pick<CalendarEvent, 'id' | 'title' | 'startAt' | 'endAt' | 'location' | 'allDay'>, 'endAt'> & { endAt: Date };
+
 export type LivingDashboardData = {
   greeting: {
     label: string;
@@ -64,7 +66,7 @@ export type LivingDashboardData = {
   routinesForNow: Pick<Routine, 'id' | 'name' | 'description' | 'timeOfDay'>[];
   todaySchedule: {
     workSlots: Pick<WorkSchedule, 'id' | 'title' | 'startTime' | 'endTime' | 'dayOfWeek'>[];
-    events: Pick<CalendarEvent, 'id' | 'title' | 'startAt' | 'endAt' | 'location' | 'allDay'>[];
+    events: DashboardCalendarEvent[];
   };
   projectStatus: {
     goalsInProgress: number;
