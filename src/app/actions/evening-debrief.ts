@@ -69,6 +69,31 @@ export async function saveEveningReflectionAction(formData: FormData): Promise<v
   revalidatePath('/briefings/evening');
 }
 
+export async function saveEveningPatternAction(pattern: string): Promise<void> {
+  const userId = await requireUser();
+  const clean = String(pattern).trim();
+  if (!clean) return;
+  const notes = await getNotesByUser(userId);
+  const existing = notes.find((note) => note.tags?.includes('glow-planning-pattern'));
+  if (existing) {
+    await updateNote(existing.id, userId, {
+      content: clean,
+      tags: ['glow-planning-pattern'],
+      pinned: false,
+    });
+  } else {
+    await createNote(userId, {
+      title: 'Glow Planning Pattern',
+      content: clean,
+      tags: ['glow-planning-pattern'],
+      pinned: false,
+    });
+  }
+  revalidatePath('/briefings/evening');
+  revalidatePath('/briefings/morning');
+  revalidatePath('/dashboard');
+}
+
 export async function saveTomorrowDraftAction(titles: string[]): Promise<void> {
   const userId = await requireUser();
   await upsertTomorrowDraft(userId, titles);
