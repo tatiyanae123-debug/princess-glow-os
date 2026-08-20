@@ -144,7 +144,7 @@ export function Batch5FinanceView({ mode, entries, goals }: { mode: Mode; entrie
     const total = subscriptions.reduce((sum, entry) => sum + Number(entry.amount), 0);
     return <div className="batch5-root">
       <FinanceHeader mode={mode} title="Subscriptions" subtitle="Manage and optimize your subscriptions." />
-      <div className="batch5-tabs"><button type="button" className="active">Active</button><button type="button" disabled title="Upcoming billing dates are not stored in the current finance schema">Upcoming</button><button type="button" disabled title="Cancelled subscription status is not stored in the current finance schema">Cancelled</button><div className="batch5-total"><small>Recorded total</small><strong>{money(total)}</strong></div></div>
+      <div className="batch5-tabs"><span className="active" aria-current="page">Active</span><button type="button" disabled title="Upcoming billing dates are not stored in the current finance schema">Upcoming</button><button type="button" disabled title="Cancelled subscription status is not stored in the current finance schema">Cancelled</button><div className="batch5-total"><small>Recorded total</small><strong>{money(total)}</strong></div></div>
       <section className="batch5-card"><TransactionRows entries={subscriptions} />{!subscriptions.length ? <div className="batch5-empty">No entries are categorized as subscriptions yet. Categorize a finance expense as “subscriptions” and it will appear here.</div> : null}</section>
     </div>;
   }
