@@ -20,6 +20,16 @@ export function categorize(habit: Pick<Habit, 'name' | 'description'>): HabitCat
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+function targetOf(habit: Habit) {
+  return Math.max(1, Number(habit.targetCount ?? 1));
+}
+
+function countFor(logs: HabitLog[], habitId: string, date: string) {
+  return logs
+    .filter((log) => log.habitId === habitId && log.loggedDate === date)
+    .reduce((sum, log) => sum + Math.max(0, Number(log.count ?? 0)), 0);
+}
+
 export function buildHabitDashboardStats(habits: Habit[], logs: HabitLog[], now = new Date()) {
   const insights = buildHabitInsights(habits, logs, now);
   const insightList = [...insights.values()];
@@ -28,16 +38,20 @@ export function buildHabitDashboardStats(habits: Habit[], logs: HabitLog[], now 
   const bestEverStreak = insightList.reduce((max, item) => Math.max(max, item.bestStreak), 0);
 
   const todayKey = now.toISOString().slice(0, 10);
-  const loggedToday = new Set(logs.filter((log) => log.loggedDate === todayKey && log.count > 0).map((log) => log.habitId));
-  const completedToday = habits.filter((habit) => loggedToday.has(habit.id)).length;
+  const completedTodayIds = new Set(
+    habits
+      .filter((habit) => countFor(logs, habit.id, todayKey) >= targetOf(habit))
+      .map((habit) => habit.id),
+  );
+  const completedToday = completedTodayIds.size;
 
-  // Weekly bars: for each of the last 7 days, what fraction of habits were logged.
+  // Weekly bars use true target completion, not merely "has any log".
   const weeklyBars = Array.from({ length: 7 }, (_, index) => {
     const date = new Date(now);
     date.setDate(date.getDate() - (6 - index));
     const key = date.toISOString().slice(0, 10);
-    const loggedCount = new Set(logs.filter((log) => log.loggedDate === key && log.count > 0).map((log) => log.habitId)).size;
-    return { label: WEEKDAYS[date.getDay()], ratio: habits.length ? loggedCount / habits.length : 0 };
+    const completed = habits.filter((habit) => countFor(logs, habit.id, key) >= targetOf(habit)).length;
+    return { label: WEEKDAYS[date.getDay()], ratio: habits.length ? completed / habits.length : 0 };
   });
   const weeklyProgress = weeklyBars.length ? Math.round((weeklyBars.reduce((sum, bar) => sum + bar.ratio, 0) / weeklyBars.length) * 100) : 0;
 
@@ -56,21 +70,19 @@ export function buildHabitDashboardStats(habits: Habit[], logs: HabitLog[], now 
     percent: bucket.count ? Math.round(bucket.totalRate / bucket.count) : 0,
   })).sort((a, b) => b.count - a.count);
 
-  // Best weekday: which day-of-week has the highest historical logging rate.
+  // Best weekday: count fully completed habit targets only.
   const weekdayTotals = Array.from({ length: 7 }, () => 0);
-  const weekdayCounts = Array.from({ length: 7 }, () => 0);
-  for (const log of logs) {
-    if (log.count <= 0) continue;
-    const day = new Date(`${log.loggedDate}T00:00:00.000Z`).getUTCDay();
-    weekdayTotals[day] += 1;
+  const dateKeys = [...new Set(logs.map((log) => log.loggedDate))];
+  for (const dateKey of dateKeys) {
+    const day = new Date(`${dateKey}T00:00:00.000Z`).getUTCDay();
+    weekdayTotals[day] += habits.filter((habit) => countFor(logs, habit.id, dateKey) >= targetOf(habit)).length;
   }
-  for (let i = 0; i < 7; i += 1) weekdayCounts[i] = weekdayTotals[i];
-  const bestWeekdayIndex = weekdayCounts.indexOf(Math.max(...weekdayCounts));
-  const weekdayLogTotal = weekdayCounts.reduce((sum, value) => sum + value, 0);
+  const bestWeekdayIndex = weekdayTotals.indexOf(Math.max(...weekdayTotals));
+  const weekdayLogTotal = weekdayTotals.reduce((sum, value) => sum + value, 0);
   const bestWeekdayLabel = weekdayLogTotal > 0 ? WEEKDAYS[bestWeekdayIndex] : null;
   const isWeekdayStrong = bestWeekdayIndex >= 1 && bestWeekdayIndex <= 5;
 
-  // Best time of day: mode of the hour a log entry was actually created.
+  // Best time of day remains based on when a user actually logged progress.
   const hourCounts = Array.from({ length: 24 }, () => 0);
   for (const log of logs) hourCounts[log.createdAt.getHours()] += 1;
   const totalLogs = hourCounts.reduce((sum, value) => sum + value, 0);
@@ -80,6 +92,7 @@ export function buildHabitDashboardStats(habits: Habit[], logs: HabitLog[], now 
     bestCurrentStreak,
     bestEverStreak,
     completedToday,
+    completedTodayIds,
     totalHabits: habits.length,
     weeklyBars,
     weeklyProgress,
