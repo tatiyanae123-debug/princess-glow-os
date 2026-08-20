@@ -5,7 +5,29 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Dialog } from '@/components/ui/dialog';
 import { RoutineForm } from '@/components/routines/routine-form';
 import { RoutinesExperience } from '@/components/routines/routines-experience';
-import type { Routine, RoutineStep } from '@/lib/types';
+import type {
+  CalendarEvent,
+  Habit,
+  Routine,
+  RoutineChain,
+  RoutineRun,
+  RoutineStep,
+  RoutineStepLink,
+  RoutineStepRule,
+  RoutineStepStat,
+  RoutineTrigger,
+  Task,
+} from '@/lib/types';
+
+export type RoutineEngineSnapshot = {
+  activeRuns: RoutineRun[];
+  history: RoutineRun[];
+  stats: RoutineStepStat[];
+  links: RoutineStepLink[];
+  triggers: RoutineTrigger[];
+  rules: RoutineStepRule[];
+  chains: RoutineChain[];
+};
 
 function withoutRoutineParams(params: URLSearchParams) {
   const next = new URLSearchParams(params.toString());
@@ -14,7 +36,21 @@ function withoutRoutineParams(params: URLSearchParams) {
   return next;
 }
 
-export function RoutinesRouteExperience({ initialRoutines, initialSteps }: { initialRoutines: Routine[]; initialSteps: RoutineStep[] }) {
+export function RoutinesRouteExperience({
+  initialRoutines,
+  initialSteps,
+  initialEngine,
+  calendarEvents,
+  tasks,
+  habits,
+}: {
+  initialRoutines: Routine[];
+  initialSteps: RoutineStep[];
+  initialEngine: RoutineEngineSnapshot;
+  calendarEvents: CalendarEvent[];
+  tasks: Task[];
+  habits: Habit[];
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedId = searchParams.get('routineId') ?? searchParams.get('selected');
@@ -30,7 +66,14 @@ export function RoutinesRouteExperience({ initialRoutines, initialSteps }: { ini
 
   return (
     <>
-      <RoutinesExperience initialRoutines={initialRoutines} initialSteps={initialSteps} />
+      <RoutinesExperience
+        initialRoutines={initialRoutines}
+        initialSteps={initialSteps}
+        initialEngine={initialEngine}
+        calendarEvents={calendarEvents}
+        tasks={tasks}
+        habits={habits}
+      />
       <Dialog open={Boolean(requestedId && selectedRoutine)} onClose={closeRecord} title={selectedRoutine ? `Routine · ${selectedRoutine.name}` : 'Routine'}>
         {selectedRoutine ? (
           <RoutineForm
