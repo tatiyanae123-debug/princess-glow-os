@@ -9,11 +9,12 @@ type Props = {
   className?: string;
   children?: React.ReactNode;
   overlay?: boolean;
+  fallbackUrl?: string;
 };
 
 const storageKey = (slot: string) => `glow:image:${slot}`;
 
-export function EditableRoomImage({ slot, label, className = '', children, overlay = true }: Props) {
+export function EditableRoomImage({ slot, label, className = '', children, overlay = true, fallbackUrl }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [src, setSrc] = useState<string | null>(null);
 
@@ -41,10 +42,13 @@ export function EditableRoomImage({ slot, label, className = '', children, overl
     if (inputRef.current) inputRef.current.value = '';
   }
 
+  const visibleSrc = src || fallbackUrl || null;
+
   return (
     <div className={`group relative overflow-hidden bg-[linear-gradient(145deg,#ead9ce,#d7bdb0_48%,#9b8177)] ${className}`}>
-      {src ? <img src={src} alt={label} className="absolute inset-0 h-full w-full object-cover" /> : null}
-      {!src ? <div className="absolute inset-0 opacity-80 [background:radial-gradient(circle_at_70%_25%,rgba(255,255,255,.5),transparent_24%),linear-gradient(145deg,rgba(255,248,242,.35),rgba(149,112,98,.18))]" /> : null}
+      {visibleSrc ? <img src={visibleSrc} alt={label} className="absolute inset-0 h-full w-full object-cover" /> : null}
+      {!visibleSrc ? <div className="absolute inset-0 opacity-80 [background:radial-gradient(circle_at_70%_25%,rgba(255,255,255,.5),transparent_24%),linear-gradient(145deg,rgba(255,248,242,.35),rgba(149,112,98,.18))]" /> : null}
+      {fallbackUrl && !src ? <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(145deg,rgba(255,250,246,.04),rgba(85,65,55,.07))]" /> : null}
       {children ? <div className="relative z-10 h-full">{children}</div> : null}
       {overlay ? <div className="absolute right-2 top-2 z-20 flex gap-1 opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100">
         <button type="button" onClick={() => inputRef.current?.click()} aria-label={`Change ${label}`} title={`Change ${label}`} className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/70 bg-[#fffaf6]/90 text-[#805c5f] shadow-sm backdrop-blur"><ImagePlus size={14}/></button>
