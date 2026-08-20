@@ -1,0 +1,87 @@
+'use client';
+
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
+import {
+  Bell, CalendarDays, Check, ChevronRight, Circle, FileText, Filter, Heart,
+  Home, Inbox, Mail, Mic, MoreHorizontal, Paperclip, Plus, Search, Settings,
+  Sparkles, Star, UploadCloud,
+} from 'lucide-react';
+import { EditableRoomImage } from '@/components/media/editable-room-image';
+
+const photo=(id:string)=>`https://images.unsplash.com/${id}?auto=format&fit=crop&w=1200&q=88`;
+const ROOM_PHOTOS=[
+ ['Planning Room','/planning','photo-1497366754035-f200968a6e72','Plan your life'],
+ ['Calendar Room','/calendar','photo-1494438639946-1ebd1d20bf85','Time is your tool'],
+ ['Routines Room','/routines','photo-1600607687939-ce8a6c25118c','Daily rhythms'],
+ ['Habit Room','/habits','photo-1497250681960-ef046c08a56e','Build consistency'],
+ ['Fitness Studio','/fitness','photo-1534438327276-14e5300c3a48','Move your body'],
+ ['Wellness Garden','/wellness','photo-1441974231531-c6227db76b6e','Nourish your mind'],
+ ['Food Kitchen','/food','photo-1498837167922-ddd27525d352','Fuel your body'],
+ ['Beauty Atelier','/beauty','photo-1522335789203-aabd1fc54bc9','Enhance your glow'],
+ ['Hair Salon','/hair','photo-1522337660859-02fbefca4702','Care for your hair'],
+ ['Closet Wardrobe','/closet','photo-1551488831-00ddcb6c6bd3','Dress with intention'],
+ ['Finance Vault','/finance','photo-1486406146926-c627a92ad1ab','Build wealth'],
+ ['Goals Destination','/goals','photo-1500530855697-b586d89ba3ee','Build your future'],
+ ['Brain Center','/brain','photo-1446776811953-b23d57bd21aa','Your second brain'],
+ ['Memory Archive','/memory','photo-1494438639946-1ebd1d20bf85','All that matters'],
+ ['Timeline','/timeline','photo-1500534623283-312aade485b7','Your life story'],
+] as const;
+
+type Reminder={id:string;title:string;notes:string|null;listName:string;dueAt:string|null;completed:boolean;domain:string;urgency:string};
+type GmailRow={id:string;threadId?:string;from:string;subject:string;snippet?:string;date?:string|null;priority?:string};
+type ImportRow={id?:string|null;category?:string|null;summary?:string|null;status?:string|null;createdAt?:Date|string|null};
+type HomeTask={id:string;title:string;dueDate?:Date|null};
+type HomeEvent={id:string;title:string;startAt:Date};
+
+function Head({index,title,sub,action}:{index:string;title:string;sub:string;action?:React.ReactNode}){
+ return <header className="b10-head"><div><p className="b10-eyebrow">{index}</p><h1>{title}</h1><p>{sub}</p></div>{action}</header>;
+}
+function Card({children,className=''}:{children:React.ReactNode;className?:string}){return <section className={`b10-card ${className}`}>{children}</section>}
+function dateTime(value:string|null){if(!value)return'';const d=new Date(value);return d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
+
+export function Batch10RemindersView({reminders}:{reminders:Reminder[]}){
+ const [tab,setTab]=useState<'all'|'today'|'scheduled'|'flagged'>('today');
+ const today=new Date().toDateString();
+ const filtered=useMemo(()=>reminders.filter(r=>{
+  if(tab==='all')return !r.completed;
+  if(tab==='today')return !r.completed&&Boolean(r.dueAt)&&new Date(r.dueAt as string).toDateString()===today;
+  if(tab==='scheduled')return !r.completed&&Boolean(r.dueAt);
+  return !r.completed&&(r.urgency==='overdue'||r.urgency==='today');
+ }),[reminders,tab,today]);
+ const rows=filtered.length?filtered:reminders.filter(r=>!r.completed).slice(0,8);
+ return <div className="b10-root b10-reminders"><Head index="1. REMINDERS" title="Reminders" sub="Never forget what matters." action={<Link href="/intake?type=reminder" className="b10-primary"><Plus size={12}/> New Reminder</Link>}/>
+  <div className="b10-tabs">{(['all','today','scheduled','flagged'] as const).map(x=><button key={x} onClick={()=>setTab(x)} className={tab===x?'active':''}>{x[0].toUpperCase()+x.slice(1)}</button>)}</div>
+  <div className="b10-date-row"><strong>{new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</strong><span>Today <b>{rows.length}</b></span><span>Completed <b>{reminders.filter(r=>r.completed).length}</b></span></div>
+  <Card className="b10-reminder-list">{rows.length?rows.map(r=><Link key={r.id} href={`/search?q=${encodeURIComponent(r.title)}`} className="b10-reminder-row"><Circle size={13}/><span className="b10-reminder-title">{r.title}</span><span className="b10-reminder-time">{dateTime(r.dueAt)||r.listName}</span><Star size={12}/></Link>):<div className="b10-empty">No reminders in this view.</div>}</Card>
+  <div className="b10-editorial-strip"><span>Small reminders. Big impact.</span><EditableRoomImage slot="batch10:reminders:strip" label="Reminders editorial" fallbackUrl={photo('photo-1499209974431-9dddcece7f88')} className="b10-strip-image"/></div>
+ </div>;
+}
+
+export function Batch10GmailView({rows,selectedId}:{rows:GmailRow[];selectedId?:string|null}){
+ const selected=rows.find(r=>r.id===selectedId)??rows[0];
+ return <div className="b10-root b10-gmail"><Head index="2. GMAIL" title="Gmail" sub="All your emails. One beautiful place." action={<a href="https://mail.google.com/mail/?view=cm&fs=1" target="_blank" rel="noreferrer" className="b10-primary">Compose</a>}/>
+  <div className="b10-tabs"><span className="active">Primary</span><span>Social</span><span>Promotions</span><span>Updates</span><Link href="/gmail" className="ml-auto"><Filter size={11}/> Filter</Link></div>
+  <div className="b10-mail-layout"><Card className="b10-mail-list">{rows.length?rows.slice(0,10).map(r=><Link key={r.id} href={`/gmail?messageId=${encodeURIComponent(r.id)}`} className={selected?.id===r.id?'selected':''}><span className="b10-mail-dot"/><div><strong>{r.from}</strong><small>{r.subject}</small></div><span>{r.date||''}</span></Link>):<div className="b10-empty">Your recent Gmail messages will appear here.</div>}</Card>
+   <Card className="b10-mail-reader">{selected?<><div className="b10-mail-reader-head"><div><strong>{selected.subject}</strong><small>{selected.from}</small></div><div><Star size={13}/><MoreHorizontal size={14}/></div></div><div className="b10-mail-visual"><Mail size={28}/><span>{selected.priority||'Email'}</span></div><p>{selected.snippet||'Open the message actions below to reply, forward, or turn this email into a Glow action.'}</p><Link href={`#gmail-actions-${encodeURIComponent(selected.id)}`} className="b10-primary b10-reply">Message Actions</Link></>:<div className="b10-empty">Select an email to read it.</div>}</Card>
+  </div><Link href="https://mail.google.com" target="_blank" className="b10-view-all">View all emails <ChevronRight size={12}/></Link>
+ </div>;
+}
+
+export function Batch10ImportView({recent}:{recent:ImportRow[]}){
+ return <div className="b10-root b10-import"><Head index="3. IMPORT" title="Import" sub="Bring everything into Glow OS." action={<a href="#import-tools" className="b10-primary"><Plus size={12}/> New Import</a>}/>
+  <div className="b10-tabs"><span className="active">All</span><span>Files</span><span>Calendar</span><span>Tasks</span><span>Notes</span><span>Contacts</span></div>
+  <a href="#import-tools" className="b10-dropzone"><UploadCloud size={35}/><strong>Drag & drop files here</strong><span>or browse to import</span><small>Supports PDF, CSV, Images, Docs & more</small></a>
+  <h2 className="b10-section-title">Recent Imports</h2><Card className="b10-import-list">{recent.length?recent.slice(0,8).map((r,i)=><div key={r.id||i}><span className="b10-file-icon"><FileText size={13}/></span><div><strong>{r.summary||r.category||'Imported batch'}</strong><small>{r.createdAt?new Date(r.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'Imported'}</small></div><span>{r.status||r.category||'Ready'}</span></div>):<div className="b10-empty">No imports yet. Use the real import tools below.</div>}</Card>
+  <div className="b10-editorial-strip"><span>Import once. Organized forever.</span><EditableRoomImage slot="batch10:import:strip" label="Import editorial" fallbackUrl={photo('photo-1497215728101-856f4ea42174')} className="b10-strip-image"/></div>
+ </div>;
+}
+
+export function Batch10AllRoomsView(){
+ return <div className="b10-root b10-rooms"><Head index="5. ALL ROOMS" title="All Rooms" sub="Every part of your world. Connected." action={<Link href="/settings" className="b10-soft">Customize Rooms</Link>}/><div className="b10-tabs"><span className="active">All</span><span>Life</span><span>Mind</span><span>Wellness</span><span>Money</span><span>Home</span><span>Work</span><span>Create</span></div><div className="b10-room-grid">{ROOM_PHOTOS.map(([title,href,id,sub],i)=><Link key={title} href={href} className="b10-room"><EditableRoomImage slot={`batch10:room:${i}`} label={title} fallbackUrl={photo(id)} className="b10-room-img"/><strong>{title}</strong><span>{sub}</span></Link>)}<Link href="/settings" className="b10-room b10-room-add"><Plus size={28}/><strong>Create New Room</strong></Link></div></div>;
+}
+
+export function Batch10HomeSummaryView({tasks,events}:{tasks:HomeTask[];events:HomeEvent[]}){
+ const top=tasks.slice(0,3);const upcoming=events.slice(0,4);
+ return <div className="b10-root b10-home"><Head index="8. HOME DASHBOARD (SUMMARY VIEW)" title="Home" sub="Everything you need. Right now." action={<Link href="/intake" className="b10-soft"><Plus size={12}/> Quick Add</Link>}/><div className="b10-home-top"><Card className="b10-home-greeting"><div><h2>Good Morning, Tatiyana ♡</h2><p>You are capable of amazing things.</p></div><EditableRoomImage slot="batch10:home:greeting" label="Home sunrise" fallbackUrl={photo('photo-1500530855697-b586d89ba3ee')} className="b10-home-sunrise"/></Card><Card><h2>Today’s Focus</h2><p>Protect your peace. Prioritize what moves you forward.</p><ol>{top.length?top.map((t,i)=><li key={t.id}><span>{i+1}.</span><Link href={`/tasks?taskId=${encodeURIComponent(t.id)}`}>{t.title}</Link></li>):<li><span>1.</span><Link href="/tasks">Choose your top priority</Link></li>}</ol></Card></div><div className="b10-home-metrics">{[['Water','—','Connect wellness'],['Steps','—','Connect wellness'],['Mood','—','Check in'],['Focus Time','—','Today']].map(([a,b,c])=><Card key={a}><small>{a}</small><strong>{b}</strong><span>{c}</span></Card>)}</div><div className="b10-home-bottom"><Card><h2>Upcoming Events</h2>{upcoming.length?upcoming.map(e=><Link href={`/calendar?eventId=${encodeURIComponent(e.id)}`} key={e.id} className="b10-home-event"><span>{e.startAt.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span><strong>{e.title}</strong><small>{e.startAt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}</small></Link>):<div className="b10-empty">No upcoming events.</div>}<Link href="/calendar" className="b10-view-all">View full calendar <ChevronRight size={12}/></Link></Card><Card className="b10-affirmation"><small>Daily Affirmation</small><p>I am becoming the best version of myself every single day.</p><EditableRoomImage slot="batch10:home:affirmation" label="Affirmation editorial" fallbackUrl={photo('photo-1499209974431-9dddcece7f88')} className="b10-affirmation-img"/></Card></div><button type="button" onClick={()=>document.dispatchEvent(new CustomEvent('glow:search-open'))} className="b10-voice"><Search size={13}/><span>Ask Glow or use voice command...</span><Mic size={14}/></button></div>;
+}
