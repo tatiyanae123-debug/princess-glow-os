@@ -47,7 +47,35 @@ function readOpeningTag(text, start) {
   return text.slice(start, Math.min(text.length, start + 2000));
 }
 
-for (const file of ROOTS.flatMap(walk)) {
+function appRouteFromPage(file) {
+  const relative = path.relative('src/app', path.dirname(file)).replaceAll(path.sep, '/');
+  if (!relative || relative === '.') return '/';
+  const segments = relative.split('/').filter((segment) => !segment.startsWith('(') && !segment.startsWith('@'));
+  return `/${segments.join('/')}`;
+}
+
+function routeRegex(route) {
+  const escaped = route.split('/').map((segment) => {
+    if (!segment) return '';
+    if (/^\[\[\.\.\..+\]\]$/.test(segment)) return '(?:.*)?';
+    if (/^\[\.\.\..+\]$/.test(segment)) return '.+';
+    if (/^\[.+\]$/.test(segment)) return '[^/]+';
+    return segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }).join('/');
+  return new RegExp(`^${escaped || '/'}$`);
+}
+
+const sourceFiles = ROOTS.flatMap(walk);
+const pageFiles = walk('src/app').filter((file) => /\/page\.(tsx|ts|jsx|js)$/.test(file.replaceAll('\\', '/')));
+const routePatterns = pageFiles.map(appRouteFromPage).map(routeRegex);
+
+function hasRoute(href) {
+  const clean = href.split('#')[0].split('?')[0] || '/';
+  if (clean.startsWith('/api/')) return true;
+  return routePatterns.some((pattern) => pattern.test(clean));
+}
+
+for (const file of sourceFiles) {
   const text = fs.readFileSync(file, 'utf8');
 
   for (const match of text.matchAll(/(?:href|to)\s*=\s*["'](?:#|javascript:void\(0\)|)["']/g)) {
@@ -83,6 +111,10 @@ for (const file of ROOTS.flatMap(walk)) {
     if (/href\s*=\s*\{?\s*["']\s*["']\s*\}?/.test(tag)) {
       report(failures, file, text, index, 'contains an empty href');
     }
+    const literal = tag.match(/href\s*=\s*["'](\/[^"']*)["']/)?.[1];
+    if (literal && !hasRoute(literal)) {
+      report(failures, file, text, index, `points to missing internal route ${literal}`);
+    }
   }
 
   for (const match of text.matchAll(/<(?:div|span)\b/g)) {
@@ -97,8 +129,7 @@ for (const file of ROOTS.flatMap(walk)) {
   }
 }
 
-const scanned = ROOTS.flatMap(walk).length;
-console.log(`Interaction audit scanned ${scanned} source files.`);
+console.log(`Interaction audit scanned ${sourceFiles.length} source files and ${pageFiles.length} application routes.`);
 if (warnings.length) {
   console.log(`Interaction audit warnings (${warnings.length}):`);
   for (const item of warnings.slice(0, 120)) console.log(`  WARN ${item}`);
@@ -109,4 +140,4 @@ if (failures.length) {
   for (const item of failures) console.error(`  FAIL ${item}`);
   process.exit(1);
 }
-console.log('Interaction audit passed: every statically-auditable control has an action, submit path, disabled state, or keyboard-safe interaction.');
+console.log('Interaction audit passed: every statically-auditable control has an action, submit path, disabled state, keyboard-safe interaction, and valid literal internal destination.');
