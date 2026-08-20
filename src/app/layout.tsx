@@ -34,6 +34,7 @@ import './batch9-connections.css';
 import './batch9-fixes.css';
 import './batch10-special-features-reference.css';
 import './batch10-special-features-tweaks.css';
+import './batch5-final-lock.css';
 
 export const metadata: Metadata = {title:'Glow OS',description:'A calm intelligent personal life operating system'};
 export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body>{children}</body></html>}
