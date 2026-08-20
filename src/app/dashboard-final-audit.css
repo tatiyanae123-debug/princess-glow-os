@@ -1,0 +1,114 @@
+/* Final Dashboard audit. Keeps the reference composition while correcting overlap, density and truthfulness. */
+[data-room='dashboard'] .gd-world{min-height:100dvh;background:#e7d6d2!important;color:#392d31}
+[data-room='dashboard'] .gd-backdrop{filter:saturate(.78) brightness(1.08) sepia(.08);object-position:50% 48%;transform:scale(1.01)}
+[data-room='dashboard'] .gd-world:before{background:linear-gradient(90deg,rgba(255,247,244,.24),rgba(255,240,237,.08) 57%,rgba(77,41,51,.09)),radial-gradient(circle at 49% 6%,rgba(255,249,234,.54),transparent 30%)}
+[data-room='dashboard'] .gd-sidebar{background:linear-gradient(180deg,rgba(255,248,246,.76),rgba(245,226,226,.67));border-color:rgba(255,255,255,.69);box-shadow:0 24px 60px rgba(77,43,52,.14),inset 0 1px 0 rgba(255,255,255,.92)}
+[data-room='dashboard'] .gd-sidebar nav{gap:1px}
+[data-room='dashboard'] .gd-sidebar nav a{min-height:29px;font-size:10.5px}
+[data-room='dashboard'] .gd-main{padding:18px 22px 24px}
+[data-room='dashboard'] .gd-hero{min-height:292px}
+[data-room='dashboard'] .gd-date-pill{top:13px;padding:10px 19px;font-size:11px;background:rgba(255,249,246,.72)}
+[data-room='dashboard'] .gd-customize{top:10px;right:4px;padding:10px 17px;background:rgba(255,249,246,.72)}
+[data-room='dashboard'] .gd-greeting{left:23px;top:43px;width:360px}
+[data-room='dashboard'] .gd-greeting small{font-size:18px;color:#805060}
+[data-room='dashboard'] .gd-greeting h1{font-size:52px;line-height:.94;margin-top:3px;color:#38262c}
+[data-room='dashboard'] .gd-greeting p{max-width:300px;font-size:12.5px;line-height:1.55}
+[data-room='dashboard'] .gd-layout{grid-template-columns:minmax(0,1fr) 302px;gap:18px}
+[data-room='dashboard'] .gd-right{margin-top:-202px;gap:14px}
+[data-room='dashboard'] .gd-glass{background:linear-gradient(135deg,rgba(255,250,247,.72),rgba(242,222,224,.59));border-color:rgba(255,255,255,.73);border-radius:21px;box-shadow:0 17px 38px rgba(79,44,54,.10),inset 0 1px 0 rgba(255,255,255,.9);backdrop-filter:blur(21px) saturate(1.08)}
+[data-room='dashboard'] .gd-kpis{grid-template-columns:1.12fr 1.22fr .91fr .95fr;gap:12px}
+[data-room='dashboard'] .gd-kpis>.gd-glass{min-height:162px;padding:18px}
+[data-room='dashboard'] .gd-mini{margin-bottom:18px;font-size:8.2px}
+[data-room='dashboard'] .gd-kpis strong{font-size:20px;line-height:1.14}
+[data-room='dashboard'] .gd-priority{display:flex;flex-direction:column}
+[data-room='dashboard'] .gd-priority .gd-priority-meta{margin-top:auto;padding-top:14px;color:#826b71;font-size:8px;text-transform:capitalize}
+[data-room='dashboard'] .gd-ring.qualitative{background:radial-gradient(circle,rgba(255,250,247,.95) 0 58%,transparent 59%),linear-gradient(145deg,#f0d5a1,#f6e8cb);box-shadow:inset 0 0 0 7px rgba(255,255,255,.64),0 8px 20px rgba(125,80,72,.08)}
+[data-room='dashboard'] .gd-ring.qualitative strong{font-size:15px;text-transform:capitalize}
+[data-room='dashboard'] .gd-middle{grid-template-columns:.96fr 1.04fr;gap:14px;margin-top:14px}
+[data-room='dashboard'] .gd-list-card{min-height:302px;padding:16px}
+[data-room='dashboard'] .gd-task-row{min-height:48px;background:rgba(255,255,255,.42)}
+[data-room='dashboard'] .gd-event-row{min-height:57px;grid-template-columns:62px minmax(0,1fr) 132px;background:rgba(255,255,255,.42)}
+[data-room='dashboard'] .gd-assistant{min-height:142px;margin-top:14px;padding:16px 18px 14px}
+[data-room='dashboard'] .gd-assistant-input{height:41px;margin-top:12px}
+[data-room='dashboard'] .gd-orb{width:62px;height:62px;top:51px}
+[data-room='dashboard'] .gd-right>.gd-glass{padding:16px}
+[data-room='dashboard'] .gd-right>.gd-glass:nth-child(1){min-height:260px}
+[data-room='dashboard'] .gd-right>.gd-glass:nth-child(2){min-height:306px}
+[data-room='dashboard'] .gd-right>.gd-glass:nth-child(3){min-height:105px}
+[data-room='dashboard'] .gd-right>.gd-glass:nth-child(4){min-height:166px}
+[data-room='dashboard'] .gd-glance{gap:9px;margin-top:13px}
+[data-room='dashboard'] .gd-glance p{min-height:42px}
+[data-room='dashboard'] .gd-habits{gap:9px;margin-top:13px}
+[data-room='dashboard'] .gd-habits button{min-height:43px}
+[data-room='dashboard'] .gd-habits button:disabled{opacity:.68;cursor:default}
+[data-room='dashboard'] .gd-water{justify-content:space-between;gap:3px}
+[data-room='dashboard'] .gd-actions{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:14px}
+[data-room='dashboard'] .gd-actions button{min-height:74px;justify-content:center}
+[data-room='dashboard'] .gd-insight{display:none}
+
+@media (min-width:1181px) and (max-height:920px){
+  [data-room='dashboard'] .gd-sidebar nav a{min-height:26px;font-size:9.8px}
+  [data-room='dashboard'] .gd-profile{padding:7px}
+  [data-room='dashboard'] .gd-focus-card{padding:9px}
+  [data-room='dashboard'] .gd-hero{min-height:250px}
+  [data-room='dashboard'] .gd-right{margin-top:-168px}
+  [data-room='dashboard'] .gd-kpis>.gd-glass{min-height:144px}
+  [data-room='dashboard'] .gd-list-card{min-height:276px}
+}
+
+@media (max-width:1180px){
+  [data-room='dashboard'] .gd-main{padding:14px 16px 22px}
+  [data-room='dashboard'] .gd-hero{min-height:278px}
+  [data-room='dashboard'] .gd-layout{grid-template-columns:minmax(0,1fr) 270px;gap:14px}
+  [data-room='dashboard'] .gd-right{margin-top:-176px}
+  [data-room='dashboard'] .gd-kpis{gap:10px}
+  [data-room='dashboard'] .gd-kpis>.gd-glass{min-height:150px;padding:15px}
+  [data-room='dashboard'] .gd-greeting{left:8px;top:50px}
+  [data-room='dashboard'] .gd-greeting h1{font-size:47px}
+}
+
+@media (max-width:900px){
+  [data-room='dashboard'] .gd-main{padding:14px}
+  [data-room='dashboard'] .gd-hero{min-height:270px}
+  [data-room='dashboard'] .gd-layout{display:block}
+  [data-room='dashboard'] .gd-right{margin-top:14px;grid-template-columns:repeat(2,minmax(0,1fr))}
+  [data-room='dashboard'] .gd-right>.gd-glass:nth-child(n){min-height:0}
+  [data-room='dashboard'] .gd-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  [data-room='dashboard'] .gd-middle{grid-template-columns:1fr 1fr}
+  [data-room='dashboard'] .gd-date-pill{left:auto;right:116px;transform:none}
+  [data-room='dashboard'] .gd-customize{right:6px}
+}
+
+@media (max-width:680px){
+  [data-room='dashboard'] .gd-world{overflow-x:hidden}
+  [data-room='dashboard'] .gd-main{padding:12px 12px 24px}
+  [data-room='dashboard'] .gd-mobile-menu{top:12px;left:12px}
+  [data-room='dashboard'] .gd-hero{min-height:318px;padding-top:54px}
+  [data-room='dashboard'] .gd-date-pill{position:relative;left:auto;right:auto;top:auto;transform:none;width:max-content;margin:0 0 15px auto;padding:8px 13px;font-size:9px}
+  [data-room='dashboard'] .gd-customize{position:relative;right:auto;top:auto;width:max-content;margin:-49px 0 18px auto;padding:8px 12px;font-size:9px}
+  [data-room='dashboard'] .gd-greeting{position:relative;left:auto;top:auto;width:auto;padding-top:8px}
+  [data-room='dashboard'] .gd-greeting small{font-size:17px}
+  [data-room='dashboard'] .gd-greeting h1{font-size:45px}
+  [data-room='dashboard'] .gd-greeting p{font-size:12px}
+  [data-room='dashboard'] .gd-kpis{grid-template-columns:1fr 1fr;gap:10px}
+  [data-room='dashboard'] .gd-kpis>.gd-glass{min-height:142px;padding:14px}
+  [data-room='dashboard'] .gd-kpis strong{font-size:17px}
+  [data-room='dashboard'] .gd-middle{grid-template-columns:1fr}
+  [data-room='dashboard'] .gd-list-card{min-height:0}
+  [data-room='dashboard'] .gd-event-row{grid-template-columns:58px minmax(0,1fr) 92px}
+  [data-room='dashboard'] .gd-right{grid-template-columns:1fr;margin-top:12px}
+  [data-room='dashboard'] .gd-assistant{padding-bottom:15px}
+  [data-room='dashboard'] .gd-assistant-input{width:100%;padding-right:70px}
+  [data-room='dashboard'] .gd-orb{left:auto;right:17px;transform:none;top:42px;width:50px;height:50px}
+  [data-room='dashboard'] .gd-actions button{min-height:64px}
+}
+
+@media (max-width:430px){
+  [data-room='dashboard'] .gd-kpis{grid-template-columns:1fr}
+  [data-room='dashboard'] .gd-kpis>.gd-glass{min-height:130px}
+  [data-room='dashboard'] .gd-greeting h1{font-size:39px}
+  [data-room='dashboard'] .gd-event-row{grid-template-columns:54px minmax(0,1fr)}
+  [data-room='dashboard'] .gd-event-row>i{display:none}
+  [data-room='dashboard'] .gd-actions{grid-template-columns:1fr 1fr}
+  [data-room='dashboard'] .gd-water{flex-wrap:wrap;justify-content:flex-start}
+}
