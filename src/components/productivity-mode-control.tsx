@@ -50,7 +50,7 @@ export function ProductivityModeControl({ compact = false }: { compact?: boolean
           <div role="menu" className="absolute right-0 top-[calc(100%+9px)] z-[95] w-[min(330px,calc(100vw-28px))] overflow-hidden rounded-[22px] border border-[#eadfdb] bg-white p-2 shadow-[0_24px_70px_rgba(64,43,36,.15)]">
             <div className="px-3 pb-2 pt-2">
               <p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#a1958e]">Glow Modes</p>
-              <p className="mt-1 text-[11px] leading-4 text-[#7f756f]">This changes Glow's database-backed day mode, priorities, density, routines, prompts, and recommendations across the system.</p>
+              <p className="mt-1 text-[11px] leading-4 text-[#7f756f]">This changes Glow&apos;s database-backed day mode, priorities, density, routines, prompts, and recommendations across the system.</p>
             </div>
             {(Object.keys(PRODUCTIVITY_MODES) as ProductivityMode[]).map((mode) => {
               const info = PRODUCTIVITY_MODES[mode];
