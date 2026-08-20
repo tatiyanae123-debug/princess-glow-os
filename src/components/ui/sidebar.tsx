@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Bell, BrainCircuit, CalendarDays, CircleDot, Home, Layers3, Menu, NotebookTabs, Plus,
+  Bell, BrainCircuit, CalendarDays, CircleDot, Home, Menu, Plus,
   Search, Settings, Sparkles, WandSparkles, X, type LucideIcon,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -55,9 +55,11 @@ const AREAS: Area[] = [
   },
   {
     label: 'Brain', href: '/brain', icon: BrainCircuit,
-    paths: ['/brain', '/memory', '/timeline', '/observations', '/graph', '/connections', '/notices', '/concierge', '/rules', '/knowledge'],
+    paths: ['/brain', '/second-brain', '/vault', '/memory', '/timeline', '/observations', '/graph', '/connections', '/notices', '/concierge', '/rules', '/knowledge'],
     children: [
       { label: 'Insights', href: '/brain' },
+      { label: 'Second Brain', href: '/second-brain' },
+      { label: 'Vault', href: '/vault' },
       { label: 'Memory', href: '/memory' },
       { label: 'Timeline', href: '/timeline' },
       { label: 'Observations', href: '/observations' },
