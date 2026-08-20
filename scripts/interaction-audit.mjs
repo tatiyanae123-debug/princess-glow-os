@@ -27,8 +27,24 @@ function insideForm(text, index) {
   return text.lastIndexOf('<form', index) > text.lastIndexOf('</form>', index);
 }
 
-function openingTagWindow(text, index, size = 1400) {
-  return text.slice(index, Math.min(text.length, index + size));
+function readOpeningTag(text, start) {
+  let quote = null;
+  let braceDepth = 0;
+  let escaped = false;
+  for (let i = start; i < text.length; i += 1) {
+    const ch = text[i];
+    if (quote) {
+      if (escaped) { escaped = false; continue; }
+      if (ch === '\\') { escaped = true; continue; }
+      if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === '`') { quote = ch; continue; }
+    if (ch === '{') { braceDepth += 1; continue; }
+    if (ch === '}') { braceDepth = Math.max(0, braceDepth - 1); continue; }
+    if (ch === '>' && braceDepth === 0) return text.slice(start, i + 1);
+  }
+  return text.slice(start, Math.min(text.length, start + 2000));
 }
 
 for (const file of ROOTS.flatMap(walk)) {
@@ -42,14 +58,13 @@ for (const file of ROOTS.flatMap(walk)) {
     report(failures, file, text, match.index ?? 0, 'contains an empty click handler');
   }
 
-  for (const match of text.matchAll(/<button\b[\s\S]*?>/g)) {
-    const tag = match[0];
+  for (const match of text.matchAll(/<button\b/g)) {
     const index = match.index ?? 0;
-    const context = openingTagWindow(text, index, 900);
+    const tag = readOpeningTag(text, index);
     const explicitlyButton = /type\s*=\s*["']button["']/.test(tag);
     const explicitlySubmit = /type\s*=\s*["']submit["']/.test(tag);
     const disabled = /\bdisabled(?:\s|=|>)/.test(tag) || /aria-disabled\s*=\s*["']true["']/.test(tag);
-    const hasAction = /\bonClick\s*=|\bonPointerDown\s*=|\bonMouseDown\s*=|\bformAction\s*=|\bonKeyDown\s*=/.test(tag) || /\bonClick\s*=|\bformAction\s*=/.test(context);
+    const hasAction = /\bonClick\s*=|\bonPointerDown\s*=|\bonMouseDown\s*=|\bformAction\s*=|\bonKeyDown\s*=/.test(tag);
     const propsDriven = /\.\.\.[A-Za-z_$][\w$]*/.test(tag);
     const inForm = insideForm(text, index);
 
@@ -62,9 +77,9 @@ for (const file of ROOTS.flatMap(walk)) {
     }
   }
 
-  for (const match of text.matchAll(/<(?:Link|a)\b[\s\S]*?>/g)) {
-    const tag = match[0];
+  for (const match of text.matchAll(/<(?:Link|a)\b/g)) {
     const index = match.index ?? 0;
+    const tag = readOpeningTag(text, index);
     if (/href\s*=\s*\{?\s*["']\s*["']\s*\}?/.test(tag)) {
       report(failures, file, text, index, 'contains an empty href');
     }
@@ -72,13 +87,10 @@ for (const file of ROOTS.flatMap(walk)) {
 
   for (const match of text.matchAll(/<(?:div|span)\b/g)) {
     const index = match.index ?? 0;
-    const context = openingTagWindow(text, index);
-    const nextClose = context.indexOf('>');
-    const shortTag = nextClose >= 0 ? context.slice(0, nextClose + 1) : context;
-    const hasClick = /\bonClick\s*=/.test(shortTag) || /\bonClick\s*=/.test(context.slice(0, 700));
-    if (!hasClick) continue;
-    const decorativeBackdrop = /\baria-hidden(?:\s|=|>)/.test(context.slice(0, 700));
-    const keyboardSafe = /\brole\s*=/.test(context) && /\btabIndex\s*=/.test(context) && /\bonKeyDown\s*=/.test(context);
+    const tag = readOpeningTag(text, index);
+    if (!/\bonClick\s*=/.test(tag)) continue;
+    const decorativeBackdrop = /\baria-hidden(?:\s|=|>)/.test(tag);
+    const keyboardSafe = /\brole\s*=/.test(tag) && /\btabIndex\s*=/.test(tag) && /\bonKeyDown\s*=/.test(tag);
     if (!decorativeBackdrop && !keyboardSafe) {
       report(failures, file, text, index, 'non-semantic clickable element is missing keyboard interaction semantics');
     }
