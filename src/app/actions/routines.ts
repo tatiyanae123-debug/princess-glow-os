@@ -6,6 +6,19 @@ import { revalidatePath } from 'next/cache';
 import { createRoutineSchema, updateRoutineSchema, createRoutineStepSchema, updateRoutineStepSchema } from '@/lib/validations/routines';
 import * as data from '@/lib/data/routines';
 
+function revalidateRoutineSurfaces() {
+  for (const path of [
+    '/routines',
+    '/dashboard',
+    '/today',
+    '/tomorrow',
+    '/briefings/morning',
+    '/briefings/evening',
+    '/calendar',
+    '/habits',
+  ]) revalidatePath(path);
+}
+
 export async function createRoutineAction(formData: unknown) {
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
@@ -13,7 +26,7 @@ export async function createRoutineAction(formData: unknown) {
   const parsed = createRoutineSchema.safeParse(formData);
   if (!parsed.success) return { error: parsed.error.flatten() };
   const routine = await data.createRoutine(userId, parsed.data);
-  revalidatePath('/routines');
+  revalidateRoutineSurfaces();
   return { data: routine };
 }
 
@@ -24,7 +37,7 @@ export async function updateRoutineAction(id: string, formData: unknown) {
   const parsed = updateRoutineSchema.safeParse(formData);
   if (!parsed.success) return { error: parsed.error.flatten() };
   const routine = await data.updateRoutine(id, userId, parsed.data);
-  revalidatePath('/routines');
+  revalidateRoutineSurfaces();
   return { data: routine };
 }
 
@@ -33,7 +46,7 @@ export async function deleteRoutineAction(id: string) {
   if (!session?.user?.id) redirect('/sign-in');
   const userId = session.user.id;
   const routine = await data.deleteRoutine(id, userId);
-  revalidatePath('/routines');
+  revalidateRoutineSurfaces();
   return { data: routine };
 }
 
@@ -44,7 +57,7 @@ export async function createRoutineStepAction(formData: unknown) {
   const parsed = createRoutineStepSchema.safeParse(formData);
   if (!parsed.success) return { error: parsed.error.flatten() };
   const step = await data.createRoutineStep(userId, parsed.data);
-  revalidatePath('/routines');
+  revalidateRoutineSurfaces();
   return { data: step };
 }
 
@@ -55,7 +68,7 @@ export async function updateRoutineStepAction(id: string, formData: unknown) {
   const parsed = updateRoutineStepSchema.safeParse(formData);
   if (!parsed.success) return { error: parsed.error.flatten() };
   const step = await data.updateRoutineStep(id, userId, parsed.data);
-  revalidatePath('/routines');
+  revalidateRoutineSurfaces();
   return { data: step };
 }
 
@@ -64,6 +77,6 @@ export async function deleteRoutineStepAction(id: string) {
   if (!session?.user?.id) redirect('/sign-in');
   const userId = session.user.id;
   const step = await data.deleteRoutineStep(id, userId);
-  revalidatePath('/routines');
+  revalidateRoutineSurfaces();
   return { data: step };
 }
