@@ -1,0 +1,82 @@
+/* Glow OS Batch 6–10 master audit. Loaded last so earlier batch locks cannot regress these rooms. */
+[data-room='projects'],[data-room='creative-studio'],[data-room='work'],[data-room='home'],[data-room='all-rooms'],[data-room='world'],[data-room='travel'],[data-room='saint-space'],[data-room='closet'],[data-room='gmail'],[data-room='import'],[data-room='settings'],[data-room='notices'],[data-room='search'],[data-room='intake'],[data-room='focus-mode'],[data-room='interview-mode'],[data-room='workout-mode'],[data-room='ambient-mode'],[data-room='connections'],[data-room='system-overview'],[data-room='reminders'],[data-room='brain-connection'],[data-room='graph']{
+ --audit-line:#e9e1dc;--audit-soft:#fbf7f5;--audit-ink:#29231f;--audit-muted:#8f857e;--audit-accent:#7f3f54;
+}
+
+[data-room='projects'] .glow-reference-route-stage,[data-room='creative-studio'] .glow-reference-route-stage,[data-room='work'] .glow-reference-route-stage,[data-room='home'] .glow-reference-route-stage,[data-room='all-rooms'] .glow-reference-route-stage,[data-room='world'] .glow-reference-route-stage,[data-room='travel'] .glow-reference-route-stage,[data-room='saint-space'] .glow-reference-route-stage,[data-room='closet'] .glow-reference-route-stage,[data-room='gmail'] .glow-reference-route-stage,[data-room='import'] .glow-reference-route-stage,[data-room='settings'] .glow-reference-route-stage,[data-room='notices'] .glow-reference-route-stage,[data-room='search'] .glow-reference-route-stage,[data-room='intake'] .glow-reference-route-stage,[data-room='focus-mode'] .glow-reference-route-stage,[data-room='interview-mode'] .glow-reference-route-stage,[data-room='workout-mode'] .glow-reference-route-stage,[data-room='ambient-mode'] .glow-reference-route-stage,[data-room='connections'] .glow-reference-route-stage,[data-room='system-overview'] .glow-reference-route-stage,[data-room='reminders'] .glow-reference-route-stage,[data-room='brain-connection'] .glow-reference-route-stage,[data-room='graph'] .glow-reference-route-stage{max-width:1180px!important;width:100%!important}
+
+[data-room='projects'] main,[data-room='creative-studio'] main,[data-room='work'] main,[data-room='home'] main,[data-room='all-rooms'] main,[data-room='world'] main,[data-room='travel'] main,[data-room='saint-space'] main,[data-room='closet'] main,[data-room='gmail'] main,[data-room='import'] main,[data-room='settings'] main,[data-room='notices'] main,[data-room='search'] main,[data-room='intake'] main,[data-room='focus-mode'] main,[data-room='interview-mode'] main,[data-room='workout-mode'] main,[data-room='ambient-mode'] main,[data-room='connections'] main,[data-room='system-overview'] main,[data-room='reminders'] main,[data-room='brain-connection'] main,[data-room='graph'] main{padding-top:18px!important;padding-bottom:40px!important}
+
+.b6-card,.b7-card,.b8-card,.b9-c-card,.b9-panel,.b10-card{border-color:var(--audit-line)!important;border-radius:8px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.92),0 7px 24px rgba(55,43,36,.035)!important}
+.b6-head h1,.b7-head h1,.b8-head h1,.b9-c-head h1,.b9-system-head h1,.b10-head h1{letter-spacing:-.025em!important;line-height:.98!important}
+.b6-eyebrow,.b7-eyebrow,.b8-eyebrow,.b9-system-kicker,.b10-eyebrow{letter-spacing:.12em!important}
+
+/* All interactive surfaces receive a visible keyboard state and restrained hover. */
+[data-room='projects'] :is(a,button,input,textarea,select):focus-visible,[data-room='creative-studio'] :is(a,button,input,textarea,select):focus-visible,[data-room='work'] :is(a,button,input,textarea,select):focus-visible,[data-room='home'] :is(a,button,input,textarea,select):focus-visible,[data-room='all-rooms'] :is(a,button,input,textarea,select):focus-visible,[data-room='world'] :is(a,button,input,textarea,select):focus-visible,[data-room='travel'] :is(a,button,input,textarea,select):focus-visible,[data-room='saint-space'] :is(a,button,input,textarea,select):focus-visible,[data-room='closet'] :is(a,button,input,textarea,select):focus-visible,[data-room='gmail'] :is(a,button,input,textarea,select):focus-visible,[data-room='import'] :is(a,button,input,textarea,select):focus-visible,[data-room='settings'] :is(a,button,input,textarea,select):focus-visible,[data-room='notices'] :is(a,button,input,textarea,select):focus-visible,[data-room='search'] :is(a,button,input,textarea,select):focus-visible,[data-room='intake'] :is(a,button,input,textarea,select):focus-visible,[data-room='focus-mode'] :is(a,button,input,textarea,select):focus-visible,[data-room='interview-mode'] :is(a,button,input,textarea,select):focus-visible,[data-room='workout-mode'] :is(a,button,input,textarea,select):focus-visible,[data-room='ambient-mode'] :is(a,button,input,textarea,select):focus-visible,[data-room='connections'] :is(a,button,input,textarea,select):focus-visible,[data-room='system-overview'] :is(a,button,input,textarea,select):focus-visible,[data-room='reminders'] :is(a,button,input,textarea,select):focus-visible,[data-room='brain-connection'] :is(a,button,input,textarea,select):focus-visible,[data-room='graph'] :is(a,button,input,textarea,select):focus-visible{outline:2px solid rgba(127,63,84,.48)!important;outline-offset:2px}
+
+/* Batch 6 */
+.b6-audited .b6-audit-note{display:block;margin-top:8px;color:var(--audit-muted);font-size:8px;line-height:1.45}
+.b6-audited .b6-pills a{display:inline-flex;align-items:center;justify-content:center;min-height:28px;text-decoration:none}
+.b6-audited .b6-table>a{min-height:38px}
+.b6-audited .b6-table>a>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.b6-audited .b6-project-row:hover,.b6-audited .b6-table>a:hover,.b6-audited .b6-upcoming>a:hover,.b6-audited .b6-career-goals>a:hover{background:#fcf8f6!important;transform:none!important}
+.b6-reference-pills span{cursor:default!important;opacity:.62}.b6-reference-pills span.active{background:#fff!important;color:inherit!important}
+.b6-audited .b6-studio-hero,.b6-audited .b6-interview-hero{border-radius:8px!important;overflow:hidden!important}
+.b6-audited .b6-donut{box-shadow:inset 0 0 0 1px rgba(60,45,38,.03)}
+
+/* Batch 7 unique rooms */
+.b7-audited .b7-tabs{overflow-x:auto;scrollbar-width:none}.b7-audited .b7-tabs::-webkit-scrollbar{display:none}.b7-audited .b7-tabs a{white-space:nowrap;min-height:28px}
+.b7-audited .b7-packing-audit .b7-checklist a{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.b7-audited .b7-packing-audit .b7-checklist small{font-size:7px;color:var(--audit-muted)}
+.b7-audited .b7-record-count{display:grid;gap:3px;padding:12px 0}.b7-audited .b7-record-count strong{font-family:Georgia,serif;font-size:30px;font-weight:500}.b7-audited .b7-record-count span,.b7-audited .b7-record-count small{color:var(--audit-muted);font-size:8px}
+.b7-audited .b7-list a:hover,.b7-audited .b7-wear-list a:hover,.b7-audited .b7-checklist a:hover{background:#fcf8f6!important}
+.b7-audited .b7-clothing{min-width:0}.b7-audited .b7-clothing span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.b7-audited .b7-travel-image{object-position:center 45%!important}
+
+/* Batch 8 / 9 shared mode surfaces. Later Batch 9 geometry wins on shared routes. */
+[data-room='focus-mode'] .b8-focus-page>section:first-of-type{border-radius:9px!important;min-height:300px!important}
+[data-room='interview-mode'] .b8-interview-hero,[data-room='workout-mode'] .b8-workout-hero{border-radius:8px!important;overflow:hidden!important}
+[data-room='ambient-mode'] .b8-ambient-stage{border-radius:8px!important;overflow:hidden!important}
+[data-room='connections'] .b9-c-tabs,[data-room='workout-mode'] .b8-tabs,[data-room='interview-mode'] .b8-tabs{overflow-x:auto;scrollbar-width:none}
+[data-room='connections'] .b9-c-tabs::-webkit-scrollbar,[data-room='workout-mode'] .b8-tabs::-webkit-scrollbar,[data-room='interview-mode'] .b8-tabs::-webkit-scrollbar{display:none}
+[data-room='connections'] .b9-c-tabs>* ,[data-room='workout-mode'] .b8-tabs>* ,[data-room='interview-mode'] .b8-tabs>*{white-space:nowrap}
+[data-room='system-overview'] .b9-track,[data-room='system-overview'] .b9-spark{overflow:hidden}
+[data-room='system-overview'] .b9-panel,[data-room='connections'] .b9-c-card{background:#fff!important}
+
+/* Batch 10 */
+.b10-tabs{overflow-x:auto;scrollbar-width:none}.b10-tabs::-webkit-scrollbar{display:none}.b10-tabs>*{white-space:nowrap}
+.b10-mail-list>a,.b10-reminder-row,.b10-notice-row,.b10-home-event{transition:background .14s ease,border-color .14s ease!important}
+.b10-mail-list>a:hover,.b10-reminder-row:hover,.b10-notice-row:hover,.b10-home-event:hover{background:#fcf8f6!important}
+.b10-room-img,.b10-home-sunrise,.b10-affirmation-img,.b10-strip-image{object-position:center!important}
+.b10-life-graph .b10-graph-chart svg{overflow:visible}.b10-life-graph .b10-graph-chart polyline{vector-effect:non-scaling-stroke}
+
+/* Compact top-right controls must never cover page actions. */
+[data-reference-shell='true'] main>.batch6-top-controls,[data-reference-shell='true'] main>[data-batch6-top-controls]{z-index:45}
+.b6-head,.b7-head,.b8-head,.b9-c-head,.b9-system-head,.b10-head{padding-right:118px}
+
+@media(min-width:768px) and (max-width:1100px){
+ [data-room='projects'] main,[data-room='creative-studio'] main,[data-room='work'] main,[data-room='home'] main,[data-room='all-rooms'] main,[data-room='world'] main,[data-room='travel'] main,[data-room='saint-space'] main,[data-room='closet'] main,[data-room='gmail'] main,[data-room='import'] main,[data-room='settings'] main,[data-room='notices'] main,[data-room='search'] main,[data-room='intake'] main,[data-room='focus-mode'] main,[data-room='interview-mode'] main,[data-room='workout-mode'] main,[data-room='ambient-mode'] main,[data-room='connections'] main,[data-room='system-overview'] main,[data-room='reminders'] main,[data-room='brain-connection'] main,[data-room='graph'] main{padding-left:17px!important;padding-right:17px!important}
+ .b6-head h1,.b7-head h1,.b8-head h1,.b9-c-head h1,.b9-system-head h1,.b10-head h1{font-size:31px!important}
+ .b6-audited .b6-project-layout{grid-template-columns:minmax(0,1.45fr) minmax(240px,.55fr)!important}
+ .b6-audited .b6-work-bottom{grid-template-columns:minmax(0,1.3fr) minmax(235px,.7fr)!important}
+ .b7-audited .b7-travel-grid{grid-template-columns:minmax(0,1.35fr) minmax(240px,.65fr)!important}
+ .b7-audited .b7-closet-strip{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+ .b10-mail-layout{grid-template-columns:minmax(300px,.44fr) minmax(0,.56fr)!important}
+}
+
+@media(max-width:767px){
+ [data-room='projects'] main,[data-room='creative-studio'] main,[data-room='work'] main,[data-room='home'] main,[data-room='all-rooms'] main,[data-room='world'] main,[data-room='travel'] main,[data-room='saint-space'] main,[data-room='closet'] main,[data-room='gmail'] main,[data-room='import'] main,[data-room='settings'] main,[data-room='notices'] main,[data-room='search'] main,[data-room='intake'] main,[data-room='focus-mode'] main,[data-room='interview-mode'] main,[data-room='workout-mode'] main,[data-room='ambient-mode'] main,[data-room='connections'] main,[data-room='system-overview'] main,[data-room='reminders'] main,[data-room='brain-connection'] main,[data-room='graph'] main{padding-top:12px!important;padding-left:12px!important;padding-right:12px!important;padding-bottom:30px!important}
+ .b6-head,.b7-head,.b8-head,.b9-c-head,.b9-system-head,.b10-head{padding-right:0!important;padding-top:34px!important;display:block!important}
+ .b6-head h1,.b7-head h1,.b8-head h1,.b9-c-head h1,.b9-system-head h1,.b10-head h1{font-size:28px!important}
+ .b6-head>a,.b7-head>a,.b8-head>a,.b9-c-head>a,.b9-system-head>a,.b10-head>a{margin-top:10px!important;width:max-content}
+ .b6-audited .b6-project-layout,.b6-audited .b6-work-top,.b6-audited .b6-work-bottom,.b6-audited .b6-interview-grid,.b6-audited .b6-app-lower,.b7-audited .b7-travel-grid,.b7-audited .b7-travel-bottom,.b7-audited .b7-home-grid,.b7-audited .b7-closet-bottom{grid-template-columns:1fr!important}
+ .b6-audited .b6-metrics,.b7-audited .b7-metrics,.b10-home-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .b6-audited .b6-table{overflow-x:auto}.b6-audited .b6-table-head,.b6-audited .b6-table>a{min-width:650px}
+ .b7-audited .b7-closet-strip{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .b7-audited .b7-travel-image{height:210px!important}
+ [data-room='focus-mode'] .b8-focus-page>section:first-of-type{min-height:340px!important}
+ [data-room='ambient-mode'] .b8-ambient-stage{min-height:460px!important}
+ .b10-mail-layout{grid-template-columns:1fr!important}.b10-mail-reader{min-height:300px!important}
+}
+
+@media(prefers-reduced-motion:reduce){.b6-card,.b7-card,.b8-card,.b9-c-card,.b9-panel,.b10-card,.b6-audited a,.b7-audited a,.b10-root a{transition:none!important}}
