@@ -1,0 +1,76 @@
+/* Batch 10 final forensic fixes */
+[data-room='reminders'],[data-room='gmail'],[data-room='import'],[data-room='brain-connection'],[data-room='all-rooms'],[data-room='notices'],[data-room='graph'],[data-room='home']{--b10-accent:#874555;--b10-line3:#e9e1dc;--b10-hover:#fbf6f4}
+[data-room='reminders'] main,[data-room='gmail'] main,[data-room='import'] main,[data-room='brain-connection'] main,[data-room='all-rooms'] main,[data-room='notices'] main,[data-room='graph'] main,[data-room='home'] main{padding-top:18px!important;padding-bottom:36px!important}
+[data-room='reminders'] :is(button,a,input,textarea,select):focus-visible,[data-room='gmail'] :is(button,a,input,textarea,select):focus-visible,[data-room='import'] :is(button,a,input,textarea,select):focus-visible,[data-room='brain-connection'] :is(button,a,input,textarea,select):focus-visible,[data-room='all-rooms'] :is(button,a,input,textarea,select):focus-visible,[data-room='notices'] :is(button,a,input,textarea,select):focus-visible,[data-room='graph'] :is(button,a,input,textarea,select):focus-visible,[data-room='home'] :is(button,a,input,textarea,select):focus-visible{outline:2px solid rgba(135,69,85,.48)!important;outline-offset:2px}
+
+.b10-disabled-tab{opacity:.42!important;cursor:not-allowed!important;pointer-events:none!important}
+.b10-tabs button{transition:background .15s ease,color .15s ease,border-color .15s ease}
+.b10-tabs button:hover{background:#fbf6f4}
+.b10-tabs button.active:hover{background:#f6ebec}
+.b10-primary,.b10-soft{transition:background .15s ease,border-color .15s ease,box-shadow .15s ease,filter .15s ease}
+.b10-card{box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 7px 22px rgba(58,44,36,.035)}
+
+/* Reminders */
+.b10-reminders .b10-reminder-row:hover{background:#fcf8f6}
+.b10-reminders .b10-reminder-row:focus-visible{position:relative;z-index:2}
+.b10-reminders .b10-empty{min-height:110px;display:grid;place-items:center}
+
+/* Gmail */
+.b10-gmail .b10-mail-list>a:hover{background:#fbf7f5}
+.b10-gmail .b10-mail-reader{border-color:var(--b10-line3)}
+.b10-gmail .b10-mail-reader-head svg{stroke-width:1.35}
+.b10-gmail .b10-mail-visual{background:linear-gradient(145deg,#f4e9e6,#eaded9);border:1px solid #eee3de}
+
+/* Import */
+.b10-import .b10-dropzone:hover{background:#fbf7f5;border-color:#cdbbb2}
+.b10-import .b10-import-list>div:hover{background:#fcf9f7}
+.b10-import #import-tools{box-shadow:none!important}
+
+/* Brain connection */
+.b10-connection .b10-person-avatar{transition:transform .16s ease,box-shadow .16s ease}
+.b10-connection .b10-people-strip>a:hover .b10-person-avatar{transform:translateY(-2px);box-shadow:0 10px 24px rgba(61,45,36,.1)}
+.b10-connection .b10-connection-event:hover{background:#fbf7f5}
+
+/* All Rooms */
+.b10-rooms .b10-room-grid{align-items:start}
+.b10-rooms .b10-room{border-radius:8px}
+.b10-rooms .b10-room-add{min-height:100%}
+
+/* Notices */
+.b10-notices .b10-notice-row:hover{background:#fcf9f7}
+.b10-notices .b10-notice-actions button:hover{border-color:#d8c6ce;color:#874555;background:#fbf6f7}
+.b10-notices .b10-notice-age{font-variant-numeric:tabular-nums}
+
+/* Graph */
+.b10-life-graph .b10-graph-chart{overflow:hidden}
+.b10-life-graph .b10-graph-chart polyline{stroke-linecap:round;stroke-linejoin:round}
+.b10-life-graph .b10-mini-ring{box-shadow:inset 0 0 0 1px rgba(98,78,70,.03)}
+.b10-life-graph .b10-graph-controls span{cursor:default;color:#8c817b;background:#fffdfa}
+
+/* Home */
+.b10-home .b10-home-greeting>div{max-width:62%}
+.b10-home .b10-home-event:hover{background:#fbf7f5}
+.b10-home .b10-voice:hover{border-color:#d9c9c1;background:#fcf8f6}
+.b10-home .b10-home-metrics .b10-card strong{font-variant-numeric:tabular-nums}
+
+@media(min-width:768px) and (max-width:1100px){
+ [data-room='reminders'] main,[data-room='gmail'] main,[data-room='import'] main,[data-room='brain-connection'] main,[data-room='all-rooms'] main,[data-room='notices'] main,[data-room='graph'] main,[data-room='home'] main{padding-left:16px!important;padding-right:16px!important}
+ .b10-head h1{font-size:31px!important}
+ .b10-mail-layout{grid-template-columns:.44fr .56fr!important}
+ .b10-room-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ .b10-home-top{grid-template-columns:1.02fr .98fr!important}
+ .b10-graph-chart{height:290px!important}
+}
+
+@media(max-width:767px){
+ [data-room='reminders'] main,[data-room='gmail'] main,[data-room='import'] main,[data-room='brain-connection'] main,[data-room='all-rooms'] main,[data-room='notices'] main,[data-room='graph'] main,[data-room='home'] main{padding-top:12px!important;padding-bottom:28px!important}
+ .b10-head{gap:10px!important}.b10-head h1{font-size:30px!important}.b10-head .b10-primary,.b10-head .b10-soft{align-self:flex-start}
+ .b10-reminder-row{grid-template-columns:18px minmax(0,1fr) 58px 18px!important;min-height:51px!important}.b10-reminder-time{font-size:7px!important}
+ .b10-mail-layout{grid-template-columns:1fr!important}.b10-mail-reader{min-height:300px!important}
+ .b10-room-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .b10-home-greeting>div{max-width:78%}.b10-home-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .b10-notice-footer{font-size:11px!important}
+ .b10-graph-rings{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+
+@media(prefers-reduced-motion:reduce){.b10-connection .b10-person-avatar,.b10-primary,.b10-soft,.b10-tabs button{transition:none!important}}
