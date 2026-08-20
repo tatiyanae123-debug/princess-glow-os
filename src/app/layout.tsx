@@ -25,10 +25,10 @@ import './batch6-tweaks.css';
 import './batch7-home-world-reference.css';
 import './batch7-fixes.css';
 import './batch8-system-special-reference.css';
-import './batch8-fixes.css';
 import './dashboard-apple-lock.css';
 import './dashboard-apple-details.css';
 import './batch1-6-final-tweaks.css';
+import './batch8-fixes.css';
 
 export const metadata: Metadata = {title:'Glow OS',description:'A calm intelligent personal life operating system'};
 export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body>{children}</body></html>}
