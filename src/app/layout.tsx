@@ -22,19 +22,10 @@ import './batch5-interaction-tweaks.css';
 import './batch5-brain-final.css';
 import './batch6-work-create-reference.css';
 import './batch6-tweaks.css';
+import './batch7-home-world-reference.css';
 import './dashboard-apple-lock.css';
 import './dashboard-apple-details.css';
 import './batch1-6-final-tweaks.css';
 
-export const metadata: Metadata = {
-  title: 'Glow OS',
-  description: 'A calm intelligent personal life operating system',
-};
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  );
-}
+export const metadata: Metadata = {title:'Glow OS',description:'A calm intelligent personal life operating system'};
+export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body>{children}</body></html>}
