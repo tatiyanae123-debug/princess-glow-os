@@ -5,86 +5,39 @@ import { AppShell } from '@/components/app-shell';
 import { buildPersonalContext } from '@/lib/intelligence/context';
 import { buildBrainConnections, buildBrainMapDomains } from '@/lib/intelligence/brain-connections';
 import { getNotesByUser } from '@/lib/data/notes';
-import { ArrowRight, Search, Sparkles } from 'lucide-react';
+import { BrainCircuit, Camera, CircleDot, Gem, Lightbulb, Network, Sparkles, Target } from 'lucide-react';
+import { ImmersiveRoomChrome, ImmersiveTopControls, OpenGlowCommand } from '@/components/immersive/immersive-room-chrome';
 
-export const dynamic = 'force-dynamic';
+export const dynamic='force-dynamic';
+const BG='https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?auto=format&fit=crop&w=2400&q=92';
+const WATER='https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=88';
+const BLOOM='https://images.unsplash.com/photo-1522383225653-ed111181a951?auto=format&fit=crop&w=800&q=88';
+function recency(date:Date|null|undefined){if(!date)return'';const d=Math.floor((Date.now()-date.getTime())/86400000);return d<=0?'Today':d===1?'Yesterday':`${d} days ago`;}
 
-function recencyLabel(date: Date | null) {
-  if (!date) return 'No recent activity';
-  const days = Math.floor((Date.now() - date.getTime()) / 86400000);
-  if (days <= 0) return 'Today';
-  if (days === 1) return 'Yesterday';
-  return `${days} days ago`;
-}
-
-export default async function BrainPage({ searchParams }: { searchParams?: Promise<{ q?: string }> }) {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/sign-in');
-  const userId = session.user.id;
-  const askedQuery = (await searchParams)?.q?.trim() ?? '';
-
-  const [context, connections, domains, notes] = await Promise.all([
-    buildPersonalContext(userId).catch(() => null),
-    buildBrainConnections(userId),
-    buildBrainMapDomains(userId),
-    getNotesByUser(userId),
-  ]);
-
-  const recentNotes = [...notes].sort((a,b)=>b.updatedAt.getTime()-a.updatedAt.getTime());
-  const focused = [...domains].filter(d=>d.count>0).sort((a,b)=>b.count-a.count);
-  const recentConnections = connections.types.flatMap(type=>type.instances).sort((a,b)=>(b.occurredAt?.getTime()??0)-(a.occurredAt?.getTime()??0));
-  const focusScore = context?.focusScore ?? 0;
-  const currentContext = focused[0]?.label ?? 'What matters now';
-  const question = askedQuery || (recentNotes[0]?.title ? `Keep exploring ${recentNotes[0].title}` : 'Ask Glow anything');
-  const decision = focused[1]?.label ?? 'Make better choices';
-  const pattern = context?.patterns?.[0]?.title ?? (focused.length ? `${focused[0].label} is your strongest current focus` : 'Glow will learn from your rooms');
-  const observation = recentConnections[0]?.title ?? context?.attentionSignals?.[0]?.label ?? 'Key insights';
-  const memory = recentNotes[0]?.title ?? 'Your knowledge';
-  const recommendation = context?.recommendations?.[0]?.title ?? (focusScore >= 70 ? 'Protect your strongest focus window' : 'Reduce competing priorities');
-  const journal = recentNotes[1]?.title ?? 'Your reflections';
-  const habitsDone = context?.habits?.filter(h=>h.completedToday).length ?? 0;
-  const insights = [
-    ['Your focus is strongest', `${focusScore}% clarity score`],
-    ['Your schedule today', `${context?.todaysEvents?.length ?? 0} events`],
-    ['Your habits today', `${habitsDone}/${context?.habits?.length ?? 0} complete`],
-    ["You haven't updated", recentNotes[0] ? `${recencyLabel(recentNotes[0].updatedAt)} · ${recentNotes[0].title}` : 'Capture a note to start'],
-  ];
-
-  return <AppShell><div className="batch2-page space-y-4">
-    <header className="flex items-start justify-between gap-4">
-      <div><p className="batch2-kicker">1. Brain</p><h1 className="batch2-title mt-3">Brain</h1><p className="batch2-subtitle">Your personal intelligence chamber.</p></div>
-      <Link href="/search" className="batch2-btn"><Sparkles size={11}/>Ask Glow <ArrowRight size={10}/></Link>
-    </header>
-
-    {askedQuery ? <div className="batch2-card flex items-center justify-between gap-3 px-4 py-3 text-[9.5px]"><span>Glow is searching for “{askedQuery}”.</span><Link href={`/search?q=${encodeURIComponent(askedQuery)}`} className="text-[#b65369]">See all matching results →</Link></div>:null}
-
-    <section className="batch2-brain-stage">
-      <div className="batch2-brain-stack">
-        <div className="batch2-row"><p className="text-[8px] font-semibold">Current Context</p><p className="batch2-mini mt-1">{currentContext}</p></div>
-        <div className="batch2-row"><p className="text-[8px] font-semibold">Questions</p><p className="batch2-mini mt-1">{question}</p></div>
-        <div className="batch2-row"><p className="text-[8px] font-semibold">Decisions</p><p className="batch2-mini mt-1">{decision}</p></div>
-        <div className="batch2-row"><p className="text-[8px] font-semibold">Patterns</p><p className="batch2-mini mt-1">{pattern}</p></div>
-      </div>
-      <div className="batch2-brain-orb" aria-label="Glow intelligence visualization"/>
-      <div className="batch2-brain-stack">
-        <Link href="/observations" className="batch2-row block"><p className="text-[8px] font-semibold">Observations</p><p className="batch2-mini mt-1">{observation}</p></Link>
-        <Link href="/memory" className="batch2-row block"><p className="text-[8px] font-semibold">Memory</p><p className="batch2-mini mt-1">{memory}</p></Link>
-        <Link href="/concierge" className="batch2-row block"><p className="text-[8px] font-semibold">Recommendations</p><p className="batch2-mini mt-1">{recommendation}</p></Link>
-        <Link href="/notes" className="batch2-row block"><p className="text-[8px] font-semibold">Journal</p><p className="batch2-mini mt-1">{journal}</p></Link>
-      </div>
-    </section>
-
-    <form action="/brain" method="get" className="mx-auto flex max-w-[650px] items-center gap-2 rounded-full border border-[#e9dfdb] bg-white px-4 py-2.5 shadow-[0_7px_25px_rgba(73,50,42,.04)]"><Search size={13} className="text-[#9c918b]"/><input name="q" defaultValue={askedQuery} placeholder="Ask Glow anything..." className="min-w-0 flex-1 bg-transparent text-[10px] outline-none placeholder:text-[#aaa09a]"/><button className="text-[#b65369]"><ArrowRight size={13}/></button></form>
-
-    <div className="flex flex-wrap justify-center gap-2 text-[8px]">
-      {['What should I focus on today?','Plan my afternoon','Why am I so tired?','Help me decide'].map(prompt=><Link key={prompt} href={`/brain?q=${encodeURIComponent(prompt)}`} className="batch2-btn py-[7px]">{prompt}</Link>)}
-    </div>
-
-    <section className="batch2-card p-4">
-      <div className="flex items-center justify-between"><h2 className="font-serif text-[15px]">What Glow Knows Right Now</h2><Link href="/brain/insights" className="batch2-mini text-[#b65369]">View all insights</Link></div>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{insights.map(([title,meta])=><div key={title} className="rounded-[8px] border border-[#f0e7e3] bg-white p-3"><div className="flex h-7 w-7 items-center justify-center rounded-[7px] bg-[#fae9e9] text-[#b65369]"><Sparkles size={11}/></div><p className="mt-3 text-[8.5px] font-medium leading-4">{title}</p><p className="mt-1 text-[7.5px] leading-3 text-[#9d928c]">{meta}</p></div>)}</div>
-    </section>
-
-    <div className="flex justify-center gap-4 text-[8.5px]"><Link href="/brain/connections" className="text-[#b65369]">Open Mind Map →</Link><Link href="/graph" className="text-[#b65369]">Open Graph →</Link><span className="text-[#9d928c]">Clarity {focusScore}% · {connections.totalInstances} connections</span></div>
-  </div></AppShell>;
+export default async function BrainPage(){
+ const session=await auth();if(!session?.user?.id)redirect('/sign-in');const userId=session.user.id;const name=session.user.name?.split(' ')[0]??'Tatiyana';
+ const[context,connections,domains,notes]=await Promise.all([buildPersonalContext(userId).catch(()=>null),buildBrainConnections(userId),buildBrainMapDomains(userId),getNotesByUser(userId)]);
+ const focused=[...domains].filter(d=>d.count>0).sort((a,b)=>b.count-a.count);const instances=connections.types.flatMap(t=>t.instances).sort((a,b)=>(b.occurredAt?.getTime()??0)-(a.occurredAt?.getTime()??0));const focusScore=context?.focusScore??null;
+ const patternCount=context?.patterns?.length??0;const memoryCount=notes.length;const insightCount=(context?.recommendations?.length??0)+(context?.attentionSignals?.length??0);const clarity=focusScore!=null?Math.max(0,Math.min(100,Math.round(focusScore))):null;
+ const todayInsights=[context?.patterns?.[0]?.title,context?.recommendations?.[0]?.title,context?.attentionSignals?.[0]?.label].filter((x):x is string=>Boolean(x));
+ const revelations=[...(context?.patterns??[]).slice(0,2).map(p=>({title:p.title,when:'Pattern'})),...(context?.recommendations??[]).slice(0,2).map(r=>({title:r.title,when:'Recommendation'})),...notes.slice(0,2).map(n=>({title:n.title,when:recency(n.updatedAt)}))].slice(0,3);
+ const active=instances.slice(0,4);
+ const orbActive=connections.totalInstances>0||memoryCount>0||patternCount>0||Boolean(context);
+ return <AppShell><div className="ir-world brain-world">
+  <img className="ir-backdrop" src={BG} alt="Ethereal intelligence environment" data-glow-image-key="brain-background"/>
+  <div className="brain-atmosphere"/><ImmersiveRoomChrome name={name} image={session.user.image}/><ImmersiveTopControls/>
+  <main className="brain-main">
+   <header className="brain-title"><h1>BRAIN</h1><h2>Your Central Intelligence</h2><p>I connect your world, reveal patterns, and help you create with clarity.</p><span>✦ {orbActive?'Central Orb Active':'Waiting for more Glow data'}</span></header>
+   <section className="brain-orb-zone" aria-label="Central intelligence visualization"><div className="brain-wing left"/><div className="brain-wing right"/><div className="brain-rings"><i/><i/><i/></div><div className="brain-orb"><b>✦</b></div></section>
+   <section className="brain-insights ir-glass"><h3>✧ Today&apos;s Insights</h3>{todayInsights.length?todayInsights.map((v,i)=><p key={v}><span>{['◇','✦','✿'][i]??'✧'}</span>{v}</p>):<div className="ir-empty">No new insight signals yet.</div>}<Link href="/brain/insights">View All</Link></section>
+   <aside className="brain-right">
+    <section className="ir-glass brain-overview"><h3>✧ Brain Overview</h3><div className="brain-overview-body"><div className="brain-clarity" style={{'--brain-score':`${clarity??0}%`} as React.CSSProperties}><strong>{clarity==null?'—':`${clarity}%`}</strong><small>{clarity==null?'Not enough data':'Clarity'}</small></div><div className="brain-counts"><p><Network/>Connections <b>{connections.totalInstances}</b></p><p><Sparkles/>Patterns <b>{patternCount}</b></p><p><Gem/>Memories <b>{memoryCount}</b></p><p><Lightbulb/>Insights <b>{insightCount}</b></p></div></div><Link href="/brain/insights">Explore Deeper</Link></section>
+    <section className="ir-glass brain-connections"><div className="brain-card-head"><h3>✧ Active Connections</h3><Link href="/brain/connections">View All</Link></div>{active.length?active.map((item,i)=><Link href="/brain/connections" key={`${item.title}-${i}`}><img src={i%2?WATER:BLOOM} alt="" data-glow-image-key={`brain-connection-${i}`}/><div><strong>{item.title}</strong><small>{item.subtitle||item.typeLabel||'Stored relation'}</small></div><span>✦</span></Link>):<div className="ir-empty">No stored connections yet.</div>}</section>
+    <section className="ir-glass brain-revelations"><div className="brain-card-head"><h3>✧ Recent Revelations</h3><Link href="/observations">View All</Link></div>{revelations.length?revelations.map((r,i)=><article key={`${r.title}-${i}`}><img src={i%2?BLOOM:WATER} alt="" data-glow-image-key={`brain-revelation-${i}`}/><p>{r.title}</p><small>{r.when}</small></article>):<div className="ir-empty">No revelations yet. Glow will surface them as patterns emerge.</div>}</section>
+   </aside>
+   <section className="brain-command ir-glass"><OpenGlowCommand/><div><Link href="/brain/insights">Find Patterns</Link><Link href="/planning">Plan My Day</Link><Link href="/goals">Optimize Goals</Link><Link href="/creative-studio">Creative Spark</Link></div></section>
+   <section className="brain-signal ir-glass"><div className="brain-wave">▂▃▅▆▃▇▅▂▆▃▅▇▃▆▅▂</div><strong>{focused[0]?.label??'Brain Signal'}</strong><small>{focused[0]?`${focused[0].count} connected records`:'No dominant domain yet'}</small></section>
+   <nav className="brain-dock ir-glass"><Link href="/brain/connections"><span><Network/></span><small>Mind Map</small></Link><Link href="/brain/insights"><span><CircleDot/></span><small>Pattern Scan</small></Link><Link href="/memory"><span><Camera/></span><small>Memory Link</small></Link><Link href="/goals"><span><Gem/></span><small>Future Vision</small></Link><Link href="/creative-studio"><span><Lightbulb/></span><small>Idea Studio</small></Link></nav>
+  </main>
+ </div></AppShell>;
 }
