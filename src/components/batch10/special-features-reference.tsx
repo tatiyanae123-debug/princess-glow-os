@@ -3,9 +3,8 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
-  Bell, CalendarDays, Check, ChevronRight, Circle, FileText, Filter, Heart,
-  Home, Inbox, Mail, Mic, MoreHorizontal, Paperclip, Plus, Search, Settings,
-  Sparkles, Star, UploadCloud,
+  ChevronRight, Circle, FileText, Filter, Mail, Mic, MoreHorizontal,
+  Plus, Search, Star, UploadCloud,
 } from 'lucide-react';
 import { EditableRoomImage } from '@/components/media/editable-room-image';
 
