@@ -3,40 +3,75 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { Bell, BrainCircuit, CalendarDays, CircleDot, Home, Menu, Plus, Search, Settings, Sparkles, WandSparkles, X, type LucideIcon } from 'lucide-react';
-import { ProductivityModeControl } from '@/components/productivity-mode-control';
+import {
+  Bell, BrainCircuit, CalendarDays, CheckSquare2, CircleDot, FolderKanban, Goal, Grid2X2,
+  Home, Menu, NotebookTabs, Search, Settings, Sparkles, TimerReset, UserRound, X,
+} from 'lucide-react';
 
-type Area = { label: string; href: string; icon: LucideIcon; paths: string[]; children: { label: string; href: string }[] };
+type Item = { label: string; href: string; icon: typeof Home };
+type Group = { label: string; items: Item[] };
 
-const AREAS: Area[] = [
-  { label: 'Today', href: '/today', icon: CircleDot, paths: ['/today','/dashboard','/briefings','/tomorrow','/day-mode'], children: [
-    { label: 'Morning Brief', href: '/briefings/morning' }, { label: 'Today', href: '/today' }, { label: 'Evening Debrief', href: '/briefings/evening' },
+const GROUPS: Group[] = [
+  { label: 'TODAY', items: [
+    { label: 'Home', href: '/today', icon: Home },
+    { label: 'Dashboard', href: '/dashboard', icon: Grid2X2 },
+    { label: 'Briefings', href: '/briefings/morning', icon: NotebookTabs },
+    { label: 'Debriefs', href: '/briefings/evening', icon: CircleDot },
   ]},
-  { label: 'Plan', href: '/plan', icon: CalendarDays, paths: ['/plan','/calendar','/tasks','/reminders','/planning','/goals','/projects','/routines','/habits','/focus'], children: [
-    { label: 'Calendar', href: '/calendar' }, { label: 'Tasks', href: '/tasks' }, { label: 'Reminders', href: '/reminders' }, { label: 'Planning', href: '/planning' }, { label: 'Goals', href: '/goals' }, { label: 'Projects', href: '/projects' }, { label: 'Routines', href: '/routines' }, { label: 'Habits', href: '/habits' },
+  { label: 'LIFE', items: [
+    { label: 'Calendar', href: '/calendar', icon: CalendarDays },
+    { label: 'Tasks', href: '/tasks', icon: CheckSquare2 },
+    { label: 'Reminders', href: '/reminders', icon: Bell },
+    { label: 'Timeline', href: '/timeline', icon: CircleDot },
+    { label: 'Goals', href: '/goals', icon: Goal },
+    { label: 'Planning', href: '/planning', icon: TimerReset },
+    { label: 'Projects', href: '/projects', icon: FolderKanban },
+    { label: 'Routines', href: '/routines', icon: Sparkles },
+    { label: 'Habits', href: '/habits', icon: CheckSquare2 },
   ]},
-  { label: 'Life', href: '/life', icon: Home, paths: ['/life','/wellness','/fitness','/food','/maintenance','/beauty','/hair','/closet','/home','/finance','/money','/work','/all-rooms','/world','/travel','/saint-space'], children: [
-    { label: 'Body', href: '/life#body' }, { label: 'Beauty', href: '/life#beauty' }, { label: 'Home', href: '/life#home' }, { label: 'Money', href: '/life#money' }, { label: 'Work', href: '/life#work' },
+  { label: 'MIND', items: [
+    { label: 'Brain', href: '/brain', icon: BrainCircuit },
+    { label: 'Second Brain', href: '/second-brain', icon: BrainCircuit },
+    { label: 'Memory', href: '/memory', icon: NotebookTabs },
+    { label: 'Observations', href: '/observations', icon: CircleDot },
+    { label: 'Connections', href: '/connections', icon: Grid2X2 },
+    { label: 'Concierge', href: '/concierge', icon: Sparkles },
+    { label: 'Vault', href: '/vault', icon: FolderKanban },
   ]},
-  { label: 'Brain', href: '/brain', icon: BrainCircuit, paths: ['/brain','/second-brain','/vault','/memory','/timeline','/observations','/graph','/connections','/notices','/concierge','/rules','/knowledge'], children: [
-    { label: 'Insights', href: '/brain' }, { label: 'Second Brain', href: '/second-brain' }, { label: 'Vault', href: '/vault' }, { label: 'Memory', href: '/memory' }, { label: 'Timeline', href: '/timeline' }, { label: 'Observations', href: '/observations' }, { label: 'Graph', href: '/graph' }, { label: 'Connections', href: '/connections' }, { label: 'Notices', href: '/notices' }, { label: 'Concierge', href: '/concierge' },
+  { label: 'BODY + CARE', items: [
+    { label: 'Wellness', href: '/wellness', icon: Sparkles },
+    { label: 'Fitness', href: '/fitness', icon: TimerReset },
+    { label: 'Food', href: '/food', icon: Grid2X2 },
+    { label: 'Beauty', href: '/beauty', icon: Sparkles },
+    { label: 'Hair', href: '/hair', icon: Sparkles },
+    { label: 'Closet', href: '/closet', icon: Grid2X2 },
   ]},
-  { label: 'Create', href: '/create', icon: WandSparkles, paths: ['/create','/creative-studio','/notes','/resources','/import','/gmail','/inbox','/intake'], children: [
-    { label: 'Capture', href: '/intake' }, { label: 'Creative Studio', href: '/creative-studio' }, { label: 'Notes', href: '/notes' }, { label: 'Inbox', href: '/inbox' }, { label: 'Gmail', href: '/gmail' }, { label: 'Import', href: '/import' },
+  { label: 'WORLD + WORK', items: [
+    { label: 'Home', href: '/home', icon: Home },
+    { label: 'Money', href: '/finance', icon: Grid2X2 },
+    { label: 'Work', href: '/work', icon: UserRound },
+    { label: 'World', href: '/world', icon: Grid2X2 },
+    { label: 'Travel', href: '/travel', icon: CalendarDays },
+    { label: 'All Rooms', href: '/all-rooms', icon: Grid2X2 },
+  ]},
+  { label: 'CREATE + CAPTURE', items: [
+    { label: 'Notes', href: '/notes', icon: NotebookTabs },
+    { label: 'Inbox', href: '/inbox', icon: Bell },
+    { label: 'Gmail', href: '/gmail', icon: Bell },
+    { label: 'Import', href: '/import', icon: FolderKanban },
+    { label: 'Creative Studio', href: '/creative-studio', icon: Sparkles },
   ]},
 ];
 
-function matches(pathname: string, href: string) {
-  const path = href.split('#')[0];
-  if (path === '/brain') return pathname === '/brain';
-  return pathname === path || pathname.startsWith(`${path}/`);
+function active(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 export function UniversalMobileNav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+
   useEffect(() => setOpen(false), [pathname]);
-  useEffect(() => { setOpen(false); }, []);
   useEffect(() => {
     if (!open) return;
     const previous = document.body.style.overflow;
@@ -44,36 +79,44 @@ export function UniversalMobileNav() {
     return () => { document.body.style.overflow = previous; };
   }, [open]);
 
-  function openSearch() { setOpen(false); document.dispatchEvent(new CustomEvent('glow:search-open')); }
-  function quickAdd() { setOpen(false); document.dispatchEvent(new CustomEvent('glow:quick-add')); }
-  const activeArea = AREAS.find((area) => area.paths.some((path) => matches(pathname, path)));
+  function openSearch() {
+    setOpen(false);
+    document.dispatchEvent(new CustomEvent('glow:search-open'));
+  }
 
   return <>
-    <div className="sticky top-0 z-[72] flex min-h-[58px] w-full items-center justify-between border-b border-[#eee8e5] bg-white px-3.5 pb-2 pt-[max(8px,env(safe-area-inset-top))] shadow-[0_3px_14px_rgba(62,43,36,.035)] xl:hidden" style={{backgroundColor:'#fff',opacity:1}}>
-      <Link href="/dashboard" className="flex min-w-0 items-center gap-2.5 text-[#282421]"><Sparkles size={17} strokeWidth={1.4} className="text-[#c85f78]"/><span className="font-serif text-[16px] font-semibold tracking-[.08em]">GLOW OS</span></Link>
-      <div className="flex items-center gap-1.5"><button type="button" onClick={openSearch} aria-label="Search Glow" className="flex h-9 w-9 items-center justify-center rounded-full text-[#5d5651] hover:bg-[#f8efee]"><Search size={16}/></button><button type="button" onClick={()=>setOpen(true)} aria-label="Open navigation" className="flex h-9 w-9 items-center justify-center rounded-full border border-[#eee5e1] bg-white text-[#4c4541] shadow-sm hover:bg-[#f8efee]"><Menu size={18}/></button></div>
+    <div className="sticky top-0 z-[72] flex min-h-[58px] w-full items-center justify-between border-b border-[#eee8e5] bg-white px-3.5 pb-2 pt-[max(8px,env(safe-area-inset-top))] shadow-[0_3px_14px_rgba(62,43,36,.035)] xl:hidden">
+      <button type="button" onClick={() => setOpen(true)} className="flex min-w-0 items-center gap-2.5 text-[#282421]" aria-label="Open Glow OS navigation">
+        <Menu size={18} /><span className="font-serif text-[15px] tracking-[.04em]">Glow OS</span>
+      </button>
+      <button type="button" onClick={openSearch} aria-label="Search Glow" className="flex h-9 w-9 items-center justify-center rounded-full text-[#5d5651] hover:bg-[#f8efee]"><Search size={17}/></button>
     </div>
-    {open ? <button type="button" aria-label="Close navigation overlay" onClick={()=>setOpen(false)} className="fixed inset-0 z-[88] bg-black/35 xl:hidden"/> : null}
-    <aside className={`fixed inset-y-0 left-0 z-[90] flex w-[min(90vw,390px)] flex-col border-r border-[#ebe6e3] bg-white text-[#282421] shadow-[20px_0_55px_rgba(53,38,31,.18)] transition-transform duration-200 xl:hidden ${open?'translate-x-0':'-translate-x-full'}`} style={{backgroundColor:'#fff',opacity:1}} aria-hidden={!open}>
-      <div className="flex min-h-[72px] shrink-0 items-center justify-between border-b border-[#eee8e5] bg-white px-5 pb-3 pt-[max(12px,env(safe-area-inset-top))]"><Link href="/dashboard" className="flex items-center gap-3"><Sparkles size={22} strokeWidth={1.35} className="text-[#c85f78]"/><span className="font-serif text-[22px] font-semibold tracking-[.09em]">GLOW OS</span></Link><button type="button" onClick={()=>setOpen(false)} aria-label="Close navigation" className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-[#f8efee]"><X size={19}/></button></div>
-      <div className="border-b border-[#eee8e5] bg-white px-5 py-4"><ProductivityModeControl /></div>
-      <nav className="min-h-0 flex-1 overflow-y-auto bg-white px-5 py-5 [scrollbar-width:thin]">
-        <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[.16em] text-[#9b918b]">Your world</p>
-        <div className="space-y-2">
-          {AREAS.map((area) => {
-            const Icon = area.icon; const active = activeArea?.label === area.label;
-            return <div key={area.label}>
-              <Link href={area.href} aria-current={active?'page':undefined} className={`flex min-h-[48px] items-center gap-3 rounded-[16px] px-3.5 text-[15px] transition ${active?'bg-[#fae4e7] font-medium text-[#b85169]':'text-[#393431] hover:bg-[#f8efee]'}`}><Icon size={18} strokeWidth={1.45}/><span>{area.label}</span></Link>
-              {active ? <div className="ml-5 mt-1 space-y-0.5 border-l border-[#eee5e1] pl-4">{area.children.map((child)=><Link key={child.href} href={child.href} className={`block rounded-[10px] px-3 py-2 text-[12.5px] ${matches(pathname,child.href)?'font-medium text-[#b85169]':'text-[#817771] hover:bg-[#fbf7f5]'}`}>{child.label}</Link>)}</div> : null}
-            </div>;
-          })}
-        </div>
-        <div className="mt-7 border-t border-[#eee8e5] pt-5">
-          <Link href="/notices" className="flex min-h-[44px] items-center gap-3 rounded-[14px] px-3 text-[14px] text-[#393431] hover:bg-[#f8efee]"><Bell size={17}/>Attention Center</Link>
-          <Link href="/settings" className="flex min-h-[44px] items-center gap-3 rounded-[14px] px-3 text-[14px] text-[#393431] hover:bg-[#f8efee]"><Settings size={17}/>Settings</Link>
-        </div>
+
+    {open ? <button type="button" aria-label="Close navigation overlay" onClick={() => setOpen(false)} className="fixed inset-0 z-[88] bg-black/20 xl:hidden"/> : null}
+
+    <aside className={`fixed inset-y-0 left-0 z-[90] flex w-[min(92vw,390px)] flex-col border-r border-[#ebe6e3] bg-white text-[#282421] shadow-[18px_0_50px_rgba(53,38,31,.14)] transition-transform duration-200 xl:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`} aria-hidden={!open}>
+      <div className="flex min-h-[80px] shrink-0 items-center justify-between px-7 pb-3 pt-[max(18px,env(safe-area-inset-top))]">
+        <Link href="/dashboard" className="flex items-center gap-3"><Sparkles size={23} strokeWidth={1.35} className="text-[#c85f78]"/><span className="font-serif text-[24px] font-semibold tracking-[.11em]">GLOW OS</span></Link>
+        <button type="button" onClick={() => setOpen(false)} aria-label="Close navigation" className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-[#f8efee]"><X size={19}/></button>
+      </div>
+
+      <nav className="min-h-0 flex-1 overflow-y-auto px-8 pb-8 pt-3 [scrollbar-width:thin]">
+        {GROUPS.map((group) => <section key={group.label} className="mb-7">
+          <p className="mb-3 text-[11px] font-semibold tracking-[.16em] text-[#8e8986]">{group.label}</p>
+          <div className="space-y-1">
+            {group.items.map(({ label, href, icon: Icon }) => <Link key={`${group.label}-${href}`} href={href} className={`flex min-h-[48px] items-center gap-4 rounded-[16px] px-3 text-[16px] transition ${active(pathname, href) ? 'bg-[#f8e4e7] font-medium text-[#b85b70]' : 'text-[#3d3936] hover:bg-[#faf5f3]'}`}>
+              <Icon size={20} strokeWidth={1.45}/><span>{label}</span>
+            </Link>)}
+          </div>
+        </section>)}
       </nav>
-      <div className="shrink-0 border-t border-[#eee8e5] bg-white px-5 pb-[max(18px,env(safe-area-inset-bottom))] pt-4"><button type="button" onClick={quickAdd} className="flex h-[54px] w-full items-center justify-center gap-3 rounded-full bg-[#cd6b7e] px-5 text-[16px] font-medium text-white shadow-[0_9px_24px_rgba(190,85,107,.22)]"><Plus size={19}/>Add Anything <Sparkles size={15}/></button></div>
+
+      <div className="shrink-0 border-t border-[#eee8e5] bg-white px-8 pb-[max(20px,env(safe-area-inset-bottom))] pt-4">
+        <div className="grid grid-cols-2 gap-2">
+          <button type="button" onClick={openSearch} className="flex h-11 items-center justify-center gap-2 rounded-full border border-[#eee5e1] text-[13px] text-[#544d48]"><Search size={15}/>Search</button>
+          <Link href="/settings" className="flex h-11 items-center justify-center gap-2 rounded-full border border-[#eee5e1] text-[13px] text-[#544d48]"><Settings size={15}/>Settings</Link>
+        </div>
+      </div>
     </aside>
   </>;
 }
