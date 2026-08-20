@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "vercel-build": "npm run db:migrate && next build",
+    "audit:interactions": "node scripts/interaction-audit.mjs",
+    "vercel-build": "npm run audit:interactions && npm run db:migrate && next build",
     "db:migrate": "node scripts/migrate.mjs",
     "start": "next start",
     "lint": "next lint",
