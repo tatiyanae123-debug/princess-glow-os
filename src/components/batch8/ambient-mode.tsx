@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { CirclePause, CirclePlay, Lightbulb, SlidersHorizontal, Speaker, TimerReset, Waves } from 'lucide-react';
 import { EditableRoomImage } from '@/components/media/editable-room-image';
@@ -24,24 +24,26 @@ export function AmbientMode(){
   const oscillator=useRef<OscillatorNode|null>(null);
   const gain=useRef<GainNode|null>(null);
 
-  function stopSound(){
+  const stopSound=useCallback(()=>{
     try{oscillator.current?.stop()}catch{}
     oscillator.current?.disconnect();gain.current?.disconnect();oscillator.current=null;gain.current=null;
     if(audio.current){void audio.current.close();audio.current=null}
     setPlaying(false);
-  }
-  async function startSound(){
-    stopSound();
+  },[]);
+  const startSound=useCallback(async()=>{
+    try{oscillator.current?.stop()}catch{}
+    oscillator.current?.disconnect();gain.current?.disconnect();oscillator.current=null;gain.current=null;
+    if(audio.current){void audio.current.close();audio.current=null}
     const Ctx=window.AudioContext || (window as typeof window & {webkitAudioContext?:typeof AudioContext}).webkitAudioContext;
     if(!Ctx)return;
     const ctx=new Ctx();const osc=ctx.createOscillator();const g=ctx.createGain();const filter=ctx.createBiquadFilter();
     osc.type='sine';osc.frequency.value=MODES[mode].frequency;filter.type='lowpass';filter.frequency.value=420;g.gain.value=MODES[mode].gain;
     osc.connect(filter);filter.connect(g);g.connect(ctx.destination);osc.start();audio.current=ctx;oscillator.current=osc;gain.current=g;setPlaying(true);
-  }
-  useEffect(()=>()=>stopSound(),[]);
+  },[mode]);
+  useEffect(()=>()=>{try{oscillator.current?.stop()}catch{}oscillator.current?.disconnect();gain.current?.disconnect();if(audio.current)void audio.current.close()},[]);
   useEffect(()=>{setRemaining(minutes*60)},[minutes]);
-  useEffect(()=>{if(!playing)return;const t=window.setInterval(()=>setRemaining(v=>{if(v<=1){window.clearInterval(t);stopSound();return minutes*60}return v-1}),1000);return()=>window.clearInterval(t)},[playing,minutes]);
-  useEffect(()=>{if(playing){void startSound()}},[mode]);
+  useEffect(()=>{if(!playing)return;const t=window.setInterval(()=>setRemaining(v=>{if(v<=1){window.clearInterval(t);stopSound();return minutes*60}return v-1}),1000);return()=>window.clearInterval(t)},[playing,minutes,stopSound]);
+  useEffect(()=>{if(playing)void startSound()},[mode,playing,startSound]);
   const mm=Math.floor(remaining/60);const ss=String(remaining%60).padStart(2,'0');
 
   return <div className="b8-page b8-ambient">
