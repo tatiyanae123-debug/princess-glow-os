@@ -126,12 +126,12 @@ export function GlowVoiceCommand() {
   }
 
   function addAssistant(message: string, shouldSpeak = true) {
-    setMessages((current) => [...current, { id: makeId(), role: 'assistant', content: message }].slice(-30));
+    setMessages((current) => [...current, { id: makeId(), role: 'assistant' as const, content: message }].slice(-30));
     if (shouldSpeak) speak(message);
   }
 
   function addUser(message: string) {
-    setMessages((current) => [...current, { id: makeId(), role: 'user', content: message }].slice(-30));
+    setMessages((current) => [...current, { id: makeId(), role: 'user' as const, content: message }].slice(-30));
   }
 
   function clearConversation() {
