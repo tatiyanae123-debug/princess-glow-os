@@ -2,22 +2,30 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
 import { SectionPage } from '@/components/section-page';
-import { Card } from '@/components/ui/card';
 import { createFinanceGoalAction } from '@/app/actions/completion-v1';
 import { getFinanceGoals } from '@/lib/data/completion-v1';
 import { getFinanceEntriesByUser } from '@/lib/data/finance-entries';
-import { Calculator, PiggyBank, ShieldCheck, Sparkles, TrendingUp, WalletCards } from 'lucide-react';
+import { ArrowRight, CircleDollarSign, PiggyBank, Plane, Scissors, Sparkles, Target } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
-const fieldClass = 'w-full rounded-lg border border-[#F1E7E3] px-3.5 py-2.5 text-[12px] text-[#2B2420] placeholder:text-[#B5ACA5] focus:border-[#C9727E] focus:outline-none';
+
+const fieldClass = 'w-full rounded-lg border border-[#E8E1DC] bg-white px-3.5 py-2.5 text-[11px] text-[#2B2420] placeholder:text-[#A69E98] focus:border-[#71806A] focus:outline-none';
 
 function money(value: number) {
   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 }
 
+function dateValue(value: string | Date) {
+  return value instanceof Date ? value : new Date(`${value}T12:00:00`);
+}
+
 function monthKey(value: string | Date) {
-  const date = value instanceof Date ? value : new Date(`${value}T12:00:00`);
+  const date = dateValue(value);
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function clamp(value: number) {
+  return Math.max(0, Math.min(100, value));
 }
 
 export default async function FinanceBrainPage() {
@@ -29,170 +37,113 @@ export default async function FinanceBrainPage() {
     getFinanceEntriesByUser(session.user.id),
   ]);
 
-  const income = entries.filter((entry) => entry.type === 'income').reduce((sum, entry) => sum + Number(entry.amount), 0);
-  const expenses = entries.filter((entry) => entry.type === 'expense').reduce((sum, entry) => sum + Number(entry.amount), 0);
-  const savings = entries.filter((entry) => entry.type === 'saving').reduce((sum, entry) => sum + Number(entry.amount), 0);
-  const net = income - expenses;
-
-  const monthly = new Map<string, { income: number; expenses: number; savings: number }>();
-  for (const entry of entries) {
-    const key = monthKey(entry.entryDate);
-    const bucket = monthly.get(key) ?? { income: 0, expenses: 0, savings: 0 };
-    if (entry.type === 'income') bucket.income += Number(entry.amount);
-    if (entry.type === 'expense') bucket.expenses += Number(entry.amount);
-    if (entry.type === 'saving') bucket.savings += Number(entry.amount);
-    monthly.set(key, bucket);
-  }
-
-  const recentMonths = [...monthly.entries()].sort(([a], [b]) => b.localeCompare(a)).slice(0, 3);
-  const monthCount = Math.max(1, recentMonths.length);
-  const avgIncome = recentMonths.reduce((sum, [, value]) => sum + value.income, 0) / monthCount;
-  const avgExpenses = recentMonths.reduce((sum, [, value]) => sum + value.expenses, 0) / monthCount;
-  const avgSavings = recentMonths.reduce((sum, [, value]) => sum + value.savings, 0) / monthCount;
-  const avgSurplus = avgIncome - avgExpenses;
-  const savingsRate = avgIncome > 0 ? ((avgSavings + Math.max(0, avgSurplus)) / avgIncome) * 100 : 0;
-
-  const subscriptionAverage = recentMonths.reduce((sum, _entry, index) => {
-    const key = recentMonths[index]?.[0];
-    if (!key) return sum;
-    return sum + entries.filter((entry) => entry.type === 'expense' && entry.category === 'subscriptions' && monthKey(entry.entryDate) === key).reduce((subtotal, entry) => subtotal + Number(entry.amount), 0);
-  }, 0) / monthCount;
-
-  const nextMonthBaseline = avgSurplus;
-  const trim10 = avgIncome - avgExpenses * 0.9;
-  const trimSubscriptions = avgSurplus + subscriptionAverage * 0.25;
-  const protect15 = avgIncome * 0.15;
-  const affordabilityBuffer = Math.max(0, avgSurplus * 0.35);
-
   const now = new Date();
-  const goalPaces = goals.map((goal) => {
-    const remaining = Math.max(0, (goal.targetCents - goal.currentCents) / 100);
-    const targetDate = goal.targetDate ? new Date(goal.targetDate) : null;
-    const monthsRemaining = targetDate ? Math.max(1, Math.ceil((targetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30.4))) : null;
-    const neededMonthly = monthsRemaining ? remaining / monthsRemaining : null;
-    return { ...goal, remaining, monthsRemaining, neededMonthly };
-  });
+  const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const previousDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const previousKey = `${previousDate.getFullYear()}-${String(previousDate.getMonth() + 1).padStart(2, '0')}`;
 
-  const highestPressureGoal = goalPaces
-    .filter((goal) => goal.neededMonthly !== null && goal.remaining > 0)
-    .sort((a, b) => (b.neededMonthly ?? 0) - (a.neededMonthly ?? 0))[0];
+  const current = entries.filter((entry) => monthKey(entry.entryDate) === currentKey);
+  const previous = entries.filter((entry) => monthKey(entry.entryDate) === previousKey);
+  const allIncome = entries.filter((entry) => entry.type === 'income').reduce((sum, entry) => sum + Number(entry.amount), 0);
+  const allExpenses = entries.filter((entry) => entry.type === 'expense').reduce((sum, entry) => sum + Number(entry.amount), 0);
+  const allSavings = entries.filter((entry) => entry.type === 'saving').reduce((sum, entry) => sum + Number(entry.amount), 0);
+  const income = current.filter((entry) => entry.type === 'income').reduce((sum, entry) => sum + Number(entry.amount), 0);
+  const expenses = current.filter((entry) => entry.type === 'expense').reduce((sum, entry) => sum + Number(entry.amount), 0);
+  const savings = current.filter((entry) => entry.type === 'saving').reduce((sum, entry) => sum + Number(entry.amount), 0);
+  const previousExpenses = previous.filter((entry) => entry.type === 'expense').reduce((sum, entry) => sum + Number(entry.amount), 0);
+  const cashFlow = income - expenses;
+  const netWorthProxy = allIncome - allExpenses + allSavings;
+  const savingsRate = income > 0 ? ((savings + Math.max(0, cashFlow)) / income) * 100 : 0;
+  const spendingChange = previousExpenses > 0 ? ((expenses - previousExpenses) / previousExpenses) * 100 : 0;
+  const subscriptionEntries = current.filter((entry) => entry.type === 'expense' && (entry.category || '').toLowerCase().includes('subscription'));
 
-  const affordabilityMessage = avgIncome === 0
-    ? 'Add a few income and expense entries so Glow OS can estimate a safe discretionary buffer.'
-    : avgSurplus <= 0
-      ? 'Your recent baseline does not show a surplus yet. Treat new discretionary purchases cautiously until the monthly picture improves.'
-      : `A conservative discretionary buffer is about ${money(affordabilityBuffer)} per month while preserving most of your recent surplus.`;
+  const cashFlowScore = income > 0 ? clamp(50 + (cashFlow / income) * 100) : 50;
+  const savingsScore = clamp(savingsRate * 3.2);
+  const spendingScore = previousExpenses > 0 ? clamp(82 - Math.max(0, spendingChange) * 1.8) : 72;
+  const goalScore = goals.length ? clamp(goals.reduce((sum, goal) => sum + (goal.targetCents ? goal.currentCents / goal.targetCents * 100 : 0), 0) / goals.length) : 65;
+  const healthScore = Math.round((cashFlowScore + savingsScore + spendingScore + goalScore) / 4);
+  const healthLabel = healthScore >= 80 ? 'Strong' : healthScore >= 65 ? 'Good' : healthScore >= 50 ? 'Steady' : 'Needs attention';
+
+  const scenarios = [
+    { icon: Target, title: 'What if I save $300 more?', detail: `${money(Math.max(0, cashFlow) + 300)} potential monthly surplus` },
+    { icon: Scissors, title: 'What if I cut subscriptions?', detail: `${money(subscriptionEntries.reduce((sum, entry) => sum + Number(entry.amount), 0))} currently recorded` },
+    { icon: Plane, title: 'What if I take this trip?', detail: goals.find((goal) => goal.goalType === 'travel')?.name || 'Add a travel goal to model it' },
+  ];
+
+  const notices = [
+    previousExpenses > 0
+      ? `You spent ${Math.abs(spendingChange).toFixed(0)}% ${spendingChange >= 0 ? 'more' : 'less'} than last month.`
+      : 'Log another month of spending to unlock month-over-month patterns.',
+    income > 0
+      ? `Your savings rate is ${Math.max(0, savingsRate).toFixed(0)}% this month.${savingsRate >= 20 ? ' Great job staying consistent.' : ''}`
+      : 'Add this month’s income to calculate your savings rate.',
+    subscriptionEntries.length
+      ? `You have ${subscriptionEntries.length} subscription ${subscriptionEntries.length === 1 ? 'charge' : 'charges'} recorded this month.`
+      : 'No subscription expenses are recorded this month.',
+  ];
 
   return (
     <AppShell>
-      <SectionPage eyebrow="Financial Brain" title="See the direction of your money" description="Forecast from your real records, compare safer scenarios, and understand what your goals require. Glow OS never moves money automatically.">
-        <div className="space-y-4">
-          <section className="grid gap-3 sm:grid-cols-4">
-            <Card className="relative overflow-hidden">
-              <WalletCards size={30} strokeWidth={0.8} className="absolute right-4 top-4 text-[#C9727E]/20" />
-              <p className="text-[10.5px] text-[#8A8078]">Recorded income</p>
-              <p className="glow-display mt-2 text-[24px] text-[#2B2420]">{money(income)}</p>
-            </Card>
-            <Card>
-              <p className="text-[10.5px] text-[#8A8078]">Recorded expenses</p>
-              <p className="glow-display mt-2 text-[24px] text-[#2B2420]">{money(expenses)}</p>
-            </Card>
-            <Card>
-              <p className="text-[10.5px] text-[#8A8078]">Recorded savings</p>
-              <p className="glow-display mt-2 text-[24px] text-[#9A7A3D]">{money(savings)}</p>
-            </Card>
-            <Card className="bg-[linear-gradient(145deg,#F1E8D9,#FDF6F1)]">
-              <p className="text-[10.5px] text-[#8A8078]">Net records</p>
-              <p className={`glow-display mt-2 text-[24px] ${net >= 0 ? 'text-[#5A6E52]' : 'text-[#B15A68]'}`}>{money(net)}</p>
-            </Card>
+      <SectionPage eyebrow="1. Financial Brain" title="Financial Brain" description="Understand your money. Make confident decisions.">
+        <div className="batch5-brain-root">
+          <section className="batch5-brain-position batch5-card">
+            <div className="batch5-brain-position-main">
+              <p className="batch5-eyebrow">Current Position</p>
+              <span>Net Worth</span>
+              <strong>{money(netWorthProxy)}</strong>
+              <small>{cashFlow >= 0 ? '+' : '−'} {money(Math.abs(cashFlow))} this month</small>
+            </div>
+            <div className="batch5-brain-position-metrics">
+              <div><span>Income (Month)</span><strong>{money(income)}</strong></div>
+              <div><span>Expenses (Month)</span><strong>{money(expenses)}</strong></div>
+              <div><span>Cash Flow</span><strong className={cashFlow >= 0 ? 'positive' : 'negative'}>{cashFlow >= 0 ? '+' : '−'}{money(Math.abs(cashFlow))}</strong></div>
+            </div>
           </section>
 
-          <section className="grid gap-3 lg:grid-cols-3">
-            <Card className="lg:col-span-2">
-              <div className="flex items-start gap-3">
-                <TrendingUp size={16} className="mt-0.5 text-[#C9727E]" />
-                <div className="min-w-0 flex-1">
-                  <p className="glow-eyebrow">30-day outlook</p>
-                  <h2 className="glow-display mt-1 text-[20px] text-[#2B2420]">Baseline forecast</h2>
-                  <p className="mt-2 text-[11.5px] leading-4 text-[#8A8078]">Built from up to your three most recent months of logged income and expenses.</p>
-                </div>
-              </div>
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-[12px] bg-[#FDF8F6] p-4"><p className="text-[10px] uppercase tracking-[.12em] text-[#B5ACA5]">Avg income</p><p className="glow-display mt-2 text-[18px] text-[#2B2420]">{money(avgIncome)}</p></div>
-                <div className="rounded-[12px] bg-[#F1E8D9] p-4"><p className="text-[10px] uppercase tracking-[.12em] text-[#9A7A3D]">Avg expenses</p><p className="glow-display mt-2 text-[18px] text-[#2B2420]">{money(avgExpenses)}</p></div>
-                <div className="rounded-[12px] bg-[#E4EBDD] p-4"><p className="text-[10px] uppercase tracking-[.12em] text-[#5A6E52]">Projected surplus</p><p className={`glow-display mt-2 text-[18px] ${nextMonthBaseline >= 0 ? 'text-[#5A6E52]' : 'text-[#B15A68]'}`}>{money(nextMonthBaseline)}</p></div>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2 text-[10.5px] text-[#8A8078]"><span className="rounded-full bg-[#FDF8F6] px-3 py-1.5">Savings pace {Math.max(0, savingsRate).toFixed(0)}%</span><span className="rounded-full bg-[#FDF8F6] px-3 py-1.5">Subscriptions avg {money(subscriptionAverage)}/mo</span></div>
-            </Card>
+          <div className="batch5-brain-two">
+            <section className="batch5-card batch5-brain-notices">
+              <div className="batch5-card-head"><h2>What Glow Notices</h2><Sparkles size={14} /></div>
+              <div className="batch5-brain-notice-list">{notices.map((notice, index) => <div key={notice}><span>{index + 1}</span><p>{notice}</p></div>)}</div>
+            </section>
 
-            <Card className="bg-[linear-gradient(155deg,#E4EBDD,#FDF6F1)]">
-              <div className="flex items-center gap-2"><ShieldCheck size={15} className="text-[#5A6E52]" /><p className="glow-eyebrow">Affordability</p></div>
-              <h2 className="glow-display mt-2 text-[19px] text-[#2B2420]">Purchase guardrail</h2>
-              <p className="mt-3 text-[12px] leading-5 text-[#4A4440]">{affordabilityMessage}</p>
-              <p className="mt-4 text-[10.5px] leading-4 text-[#8A8078]">This is planning guidance from logged data, not financial advice or an automatic spending approval.</p>
-            </Card>
-          </section>
-
-          <section className="grid gap-3 lg:grid-cols-3">
-            <Card>
-              <div className="flex items-center gap-2"><Calculator size={14} className="text-[#C9727E]" /><p className="glow-eyebrow">Scenario A</p></div>
-              <h3 className="glow-display mt-2 text-[17px] text-[#2B2420]">Trim expenses 10%</h3>
-              <p className="mt-2 text-[11.5px] leading-4 text-[#8A8078]">Projected monthly surplus becomes <span className="font-medium text-[#5A6E52]">{money(trim10)}</span>.</p>
-              <p className="mt-3 text-[10.5px] text-[#B5ACA5]">Difference from baseline: {money(trim10 - avgSurplus)}.</p>
-            </Card>
-            <Card>
-              <div className="flex items-center gap-2"><Sparkles size={14} className="text-[#9A7A3D]" /><p className="glow-eyebrow">Scenario B</p></div>
-              <h3 className="glow-display mt-2 text-[17px] text-[#2B2420]">Reduce subscriptions 25%</h3>
-              <p className="mt-2 text-[11.5px] leading-4 text-[#8A8078]">Projected monthly surplus becomes <span className="font-medium text-[#5A6E52]">{money(trimSubscriptions)}</span>.</p>
-              <p className="mt-3 text-[10.5px] text-[#B5ACA5]">Potential monthly lift: {money(subscriptionAverage * 0.25)}.</p>
-            </Card>
-            <Card>
-              <div className="flex items-center gap-2"><PiggyBank size={14} className="text-[#9A7A3D]" /><p className="glow-eyebrow">Scenario C</p></div>
-              <h3 className="glow-display mt-2 text-[17px] text-[#2B2420]">Protect 15% of income</h3>
-              <p className="mt-2 text-[11.5px] leading-4 text-[#8A8078]">A 15% savings target equals <span className="font-medium text-[#9A7A3D]">{money(protect15)}</span> per month at your recent income pace.</p>
-              <p className="mt-3 text-[10.5px] text-[#B5ACA5]">Compare this with your current average savings of {money(avgSavings)}.</p>
-            </Card>
-          </section>
-
-          <div className="grid gap-4 lg:grid-cols-[.72fr_1.28fr]">
-            <Card>
-              <form action={createFinanceGoalAction} className="space-y-3">
-                <div className="flex items-center gap-2"><PiggyBank size={15} className="text-[#C9727E]" /><div><p className="glow-eyebrow">Goal ledger</p><h2 className="glow-display mt-1 text-[20px] text-[#2B2420]">Add financial goal</h2></div></div>
-                <input name="name" required placeholder="Goal name" className={fieldClass} />
-                <select name="goalType" defaultValue="savings" className={fieldClass}><option value="savings">Savings</option><option value="debt">Debt payoff</option><option value="travel">Travel</option><option value="emergency">Emergency fund</option><option value="purchase">Purchase</option></select>
-                <input name="target" required inputMode="decimal" placeholder="Target amount" className={fieldClass} />
-                <input name="current" inputMode="decimal" placeholder="Current amount" className={fieldClass} />
-                <input name="targetDate" type="date" className={fieldClass} />
-                <textarea name="notes" rows={3} placeholder="Notes / scenario" className={fieldClass} />
-                <button className="rounded-full bg-[#C9727E] px-4 py-2.5 text-[12px] font-medium text-white hover:bg-[#B15A68]">Save goal</button>
-              </form>
-            </Card>
-
-            <Card className="overflow-hidden p-0">
-              <div className="flex items-center justify-between gap-3 border-b border-[#F1E7E3] px-5 py-4">
-                <div className="flex items-center gap-2"><TrendingUp size={14} className="text-[#C9727E]" /><div><p className="glow-eyebrow">Savings intelligence</p><h2 className="glow-display mt-1 text-[19px] text-[#2B2420]">Goal pace</h2></div></div>
-                {highestPressureGoal && <span className="rounded-full bg-[#FDF3F2] px-3 py-1.5 text-[10px] text-[#B15A68]">Highest pace: {highestPressureGoal.name}</span>}
-              </div>
-              {goalPaces.length === 0 ? (
-                <div className="p-8 text-center"><p className="text-[12px] text-[#8A8078]">No financial goals yet.</p><p className="mt-2 text-[11px] text-[#B5ACA5]">Add a savings, debt, travel, emergency, or purchase goal to see required monthly pace.</p></div>
-              ) : (
-                <div className="divide-y divide-[#F1E7E3]">
-                  {goalPaces.map((goal, index) => {
-                    const progress = Math.max(0, Math.min(100, goal.targetCents ? goal.currentCents / goal.targetCents * 100 : 0));
-                    const paceGap = goal.neededMonthly !== null ? avgSurplus - goal.neededMonthly : null;
-                    return (
-                      <div key={goal.id} className={`p-4 ${index === 0 ? 'bg-[#FDF8F6]' : ''}`}>
-                        <div className="flex justify-between gap-3"><div><p className="glow-display text-[15px] text-[#2B2420]">{goal.name}</p><p className="mt-0.5 text-[10px] uppercase tracking-[.1em] text-[#B5ACA5]">{goal.goalType}</p></div><span className="glow-display text-[14px] text-[#C9727E]">{Math.round(progress)}%</span></div>
-                        <div className="mt-3 h-1.5 rounded-full bg-[#F4ECE8]"><div className="h-1.5 rounded-full bg-[#C9727E]" style={{ width: `${progress}%` }} /></div>
-                        <div className="mt-2 flex flex-wrap justify-between gap-2 text-[10.5px] text-[#8A8078]"><span>{money(goal.currentCents / 100)} of {money(goal.targetCents / 100)}</span><span>{money(goal.remaining)} remaining</span></div>
-                        {goal.neededMonthly !== null && <p className={`mt-2 text-[11px] ${paceGap !== null && paceGap >= 0 ? 'text-[#5A6E52]' : 'text-[#B15A68]'}`}>Needs about {money(goal.neededMonthly)}/month for the next {goal.monthsRemaining} month{goal.monthsRemaining === 1 ? '' : 's'}. {paceGap !== null && paceGap >= 0 ? 'Your recent surplus can cover that pace.' : 'That pace is above your recent surplus.'}</p>}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </Card>
+            <section className="batch5-card batch5-brain-scenarios">
+              <div className="batch5-card-head"><h2>Scenario Planner</h2><span>Explore</span></div>
+              {scenarios.map(({ icon: Icon, title, detail }) => <div className="batch5-brain-scenario" key={title}><span><Icon size={14} /></span><div><strong>{title}</strong><small>{detail}</small></div><ArrowRight size={12} /></div>)}
+            </section>
           </div>
+
+          <div className="batch5-brain-two batch5-brain-lower">
+            <section className="batch5-card batch5-brain-health">
+              <div className="batch5-card-head"><h2>Financial Health</h2><span>From logged data</span></div>
+              <div className="batch5-brain-health-grid">
+                <div className="batch5-brain-score" style={{ background: `conic-gradient(#61715b ${healthScore * 3.6}deg,#ebe7e2 0deg)` }}><span><strong>{healthScore}</strong><small>/100</small><em>{healthLabel}</em></span></div>
+                <div className="batch5-brain-bars">
+                  {[['Cash Flow', cashFlowScore], ['Savings Rate', savingsScore], ['Goal Pace', goalScore], ['Spending', spendingScore]].map(([label, value]) => <div key={String(label)}><div><span>{label}</span><small>{Number(value) >= 70 ? 'Good' : Number(value) >= 50 ? 'Steady' : 'Needs attention'}</small></div><i><b style={{ width: `${Number(value)}%` }} /></i></div>)}
+                </div>
+              </div>
+            </section>
+
+            <section className="batch5-card batch5-brain-priorities">
+              <div className="batch5-card-head"><h2>Top Priorities</h2><a href="#add-finance-goal">Add goal</a></div>
+              {goals.length ? goals.slice(0, 4).map((goal, index) => {
+                const progress = goal.targetCents ? clamp(goal.currentCents / goal.targetCents * 100) : 0;
+                return <div className="batch5-brain-priority" key={goal.id}><span>{index + 1}</span><div><strong>{goal.name}</strong><small>{money(goal.currentCents / 100)} of {money(goal.targetCents / 100)}</small><i><b style={{ width: `${progress}%` }} /></i></div><em>{Math.round(progress)}%</em></div>;
+              }) : <div className="batch5-empty">Add a financial goal and Glow will keep your priorities visible here.</div>}
+            </section>
+          </div>
+
+          <section id="add-finance-goal" className="batch5-card batch5-brain-goal-form">
+            <div className="batch5-card-head"><h2>Add Financial Goal</h2><CircleDollarSign size={14} /></div>
+            <form action={createFinanceGoalAction}>
+              <input name="name" required placeholder="Goal name" className={fieldClass} />
+              <select name="goalType" defaultValue="savings" className={fieldClass}><option value="savings">Savings</option><option value="debt">Debt payoff</option><option value="travel">Travel</option><option value="emergency">Emergency fund</option><option value="purchase">Purchase</option></select>
+              <input name="target" required inputMode="decimal" placeholder="Target amount" className={fieldClass} />
+              <input name="current" inputMode="decimal" placeholder="Current amount" className={fieldClass} />
+              <input name="targetDate" type="date" className={fieldClass} />
+              <textarea name="notes" rows={2} placeholder="Notes / scenario" className={fieldClass} />
+              <button><PiggyBank size={13} /> Save goal</button>
+            </form>
+          </section>
         </div>
       </SectionPage>
     </AppShell>
