@@ -6,67 +6,20 @@ import { AppShell } from '@/components/app-shell';
 import { UniversalIntakeForm } from '@/components/intake/universal-intake-form';
 import { db } from '@/db';
 import { universalIntakeArtifacts } from '@/db/schema/interconnected-os';
-import { FileImage, FileText, Link2, Sparkles, UploadCloud } from 'lucide-react';
+import { FileImage, FileText, Link2, Mic, NotebookPen, Sparkles, UploadCloud } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
-
-export default async function IntakePage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/sign-in');
-  let artifacts;
-  try {
-    artifacts = await db.select().from(universalIntakeArtifacts).where(eq(universalIntakeArtifacts.userId, session.user.id)).orderBy(desc(universalIntakeArtifacts.createdAt)).limit(12);
-  } catch {
-    return (
-      <AppShell>
-        <div className="mx-auto max-w-4xl rounded-[20px] border border-[#F1E7E3] bg-white p-6">
-          <p className="text-[13px] font-semibold text-[#2B2420]">Universal Intake is installed and needs one-time intelligence activation.</p>
-          <p className="mt-2 text-[12px] leading-5 text-[#8A8078]">Activation creates only the new idempotent Glow intelligence tables and keeps existing data untouched.</p>
-          <Link href="/settings/intelligence" className="mt-4 inline-block rounded-full bg-[#2B2420] px-4 py-2.5 text-[12px] text-white">Activate Glow Intelligence →</Link>
-        </div>
-      </AppShell>
-    );
-  }
-  return (
-    <AppShell>
-      <div className="mx-auto max-w-6xl space-y-5">
-        <header>
-          <div className="flex items-center gap-2 text-[#C9727E]"><Sparkles size={18} /><p className="text-[11px] font-semibold uppercase tracking-[.16em]">Drop Anything Into Glow</p></div>
-          <h1 className="glow-display mt-2 text-[38px] leading-none text-[#2B2420] sm:text-[42px]">Universal Intake</h1>
-          <p className="mt-2 max-w-3xl text-[13px] leading-6 text-[#8A8078]">Paste a thought, upload a screenshot, image, PDF, text file, CSV, receipt, schedule, appointment card, list or document. Glow stores it once, classifies what it appears to be, and proposes the systems that should use it.</p>
-        </header>
-        <section className="grid gap-5 lg:grid-cols-[1.25fr_.75fr]">
-          <UniversalIntakeForm />
-          <div className="space-y-4">
-            <div className="rounded-[20px] border border-[#F1E7E3] bg-white p-5">
-              <p className="text-[10.5px] font-semibold uppercase tracking-[.12em] text-[#8A8078]">What Glow can recognize</p>
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                {[['Appointments', FileText], ['Receipts', FileImage], ['Schedules', UploadCloud], ['Links & notes', Link2]].map(([label, Icon]) => {
-                  const I = Icon as typeof FileText;
-                  return <div key={String(label)} className="rounded-[14px] bg-[#FDF8F6] p-3"><I size={15} className="text-[#C9727E]" /><p className="mt-2 text-[11.5px] text-[#4A4440]">{String(label)}</p></div>;
-                })}
-              </div>
-            </div>
-            <div className="rounded-[20px] border border-[#F1E7E3] bg-[#2B2420] p-5 text-white">
-              <p className="text-[10.5px] font-semibold uppercase tracking-[.12em] text-[#E4C9C0]">One input → many systems</p>
-              <p className="glow-display mt-3 text-[18px]">Enter information once. Let relationships do the rest.</p>
-              <p className="mt-2 text-[11px] leading-5 text-white/65">An appointment can belong to Calendar, Tasks, Finance, Beauty, Timeline and Memory without being re-entered six times.</p>
-            </div>
-          </div>
-        </section>
-        <section className="rounded-[20px] border border-[#F1E7E3] bg-white">
-          <div className="flex items-center justify-between border-b border-[#F1E7E3] px-5 py-4"><p className="text-[10.5px] font-semibold uppercase tracking-[.12em] text-[#8A8078]">Recent Intake</p><span className="text-[11px] text-[#B5ACA5]">{artifacts.length}</span></div>
-          <div className="divide-y divide-[#F1E7E3]">
-            {artifacts.length ? artifacts.map((item) => (
-              <div key={item.id} className="grid gap-2 px-5 py-4 md:grid-cols-[1fr_120px_1fr]">
-                <div><p className="text-[13px] font-medium text-[#2B2420]">{item.detectedTitle || item.originalName || 'Untitled'}</p><p className="mt-1 text-[10.5px] text-[#8A8078]">{item.originalName || item.kind} · {Math.round(item.confidence * 100)}% confidence</p></div>
-                <span className="h-fit rounded-full bg-[#FBE4E8] px-3 py-1 text-center text-[10px] font-semibold uppercase text-[#B15A68]">{item.detectedType || item.kind}</span>
-                <div className="flex flex-wrap gap-1">{(item.proposedDestinations ?? []).map((destination) => <span key={destination} className="rounded-full bg-[#FDF8F6] px-2.5 py-1 text-[10px] text-[#8A8078]">{destination}</span>)}</div>
-              </div>
-            )) : <p className="p-8 text-center text-[12px] text-[#8A8078]">Nothing uploaded yet.</p>}
-          </div>
-        </section>
-      </div>
-    </AppShell>
-  );
+export const dynamic='force-dynamic';
+export default async function IntakePage(){
+ const session=await auth();if(!session?.user?.id)redirect('/sign-in');let artifacts;
+ try{artifacts=await db.select().from(universalIntakeArtifacts).where(eq(universalIntakeArtifacts.userId,session.user.id)).orderBy(desc(universalIntakeArtifacts.createdAt)).limit(12)}catch{return <AppShell><div className="b8-intake-page rounded-[8px] border border-[#eee5e1] bg-white p-5"><p className="text-[11px] font-semibold">Universal Intake needs one-time intelligence activation.</p><Link href="/settings/intelligence" className="mt-3 inline-block text-[9px] text-[#8e495a]">Activate Glow Intelligence →</Link></div></AppShell>}
+ return <AppShell><div className="b8-intake-page space-y-3">
+  <header><p className="b8-eyebrow">4. UNIVERSAL INTAKE</p><h1>Add Anything</h1><p className="mt-1 text-[10px] text-[#8A8078]">One place. All types.</p></header>
+  <section className="rounded-[8px] border border-[#eee5e1] bg-white p-3">
+   <div className="rounded-[7px] border border-dashed border-[#ddd0ca] bg-[#fffdfc] px-4 py-5"><p className="font-serif text-[14px] text-[#4b423d]">Add anything to Glow OS…</p><p className="mt-1 text-[8px] text-[#9A9088]">Attach, speak, or type.</p></div>
+   <div className="mt-3 grid grid-cols-5 gap-2">{[[UploadCloud,'Upload'],[Mic,'Voice'],[NotebookPen,'Note'],[Link2,'Link'],[FileImage,'Photo']].map(([Icon,label])=>{const I=Icon as typeof UploadCloud;return <a href="#intake-workspace" key={String(label)} className="flex min-h-[40px] flex-col items-center justify-center gap-1 rounded-[6px] border border-[#eee5e1] bg-[#fbf8f6] text-[7.5px] text-[#675e59]"><I size={12}/>{String(label)}</a>})}</div>
+  </section>
+  <section><div className="flex items-center justify-between"><h2 className="font-serif text-[13px]">Captured Items</h2><span className="text-[8px] text-[#9A9088]">{artifacts.length} recent</span></div><div className="mt-2 overflow-hidden rounded-[8px] border border-[#eee5e1] bg-white divide-y divide-[#eee7e2]">{artifacts.length?artifacts.slice(0,6).map(item=><div key={item.id} className="grid grid-cols-[28px_1fr_80px_70px] items-center gap-2 px-3 py-2.5"><span className="grid h-7 w-7 place-items-center rounded-[6px] bg-[#f8efef] text-[#8e495a]"><FileText size={11}/></span><div className="min-w-0"><p className="truncate text-[9px] font-medium">{item.detectedTitle||item.originalName||'Untitled'}</p><p className="truncate text-[7.5px] text-[#9A9088]">{item.originalName||item.kind}</p></div><span className="truncate text-[7.5px] text-[#7b706a]">{item.detectedType||item.kind}</span><span className="text-right text-[7px] text-[#9A9088]">{Math.round(item.confidence*100)}%</span></div>):<p className="px-3 py-8 text-center text-[9px] text-[#9A9088]">Nothing captured yet.</p>}</div></section>
+  <section id="intake-workspace" className="scroll-mt-24"><UniversalIntakeForm/></section>
+  <div className="flex items-center justify-between rounded-[8px] border border-[#eee5e1] bg-[linear-gradient(90deg,#fff,#f7ede8)] px-3 py-2"><div><p className="font-serif text-[10px]">Glow organizes it for you.</p><p className="text-[8px] text-[#8A8078]">You focus on what matters.</p></div><Sparkles size={12} className="text-[#8e495a]"/></div>
+ </div></AppShell>
 }
