@@ -18,6 +18,7 @@ const BG='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=form
 export function AmbientMode(){
   const [mode,setMode]=useState<Mode>('Relax');
   const [playing,setPlaying]=useState(false);
+  const [warmLight,setWarmLight]=useState(true);
   const [minutes,setMinutes]=useState(60);
   const [remaining,setRemaining]=useState(60*60);
   const audio=useRef<AudioContext|null>(null);
@@ -50,12 +51,17 @@ export function AmbientMode(){
     <header className="b8-head"><div><p className="b8-eyebrow">8. AMBIENT MODE</p><h1>Ambient Mode</h1><p>Your world. Your vibe.</p></div><Link className="b8-icon-link" href="/settings"><SlidersHorizontal size={14}/></Link></header>
     <section className="b8-ambient-stage">
       <EditableRoomImage slot="batch8:ambient:hero" label="Ambient room" fallbackUrl={BG} className="b8-ambient-image"/>
+      <div className={`b8-ambient-light ${warmLight?'is-on':'is-off'}`} aria-hidden="true"/>
       <div className="b8-ambient-tabs">{(Object.keys(MODES) as Mode[]).map(x=><button type="button" key={x} onClick={()=>setMode(x)} className={mode===x?'active':''}>{x}</button>)}</div>
       <div className="b8-player"><small>{mode}</small><h2>{MODES[mode].label}</h2><p>Generated ambient tone · no external audio stream</p><div className="b8-wave" aria-hidden="true">{Array.from({length:28},(_,i)=><i key={i} style={{height:`${8+((i*13)%30)}px`}}/>)}</div><div className="b8-player-actions"><button type="button" onClick={()=>playing?stopSound():void startSound()} aria-label={playing?'Pause ambient sound':'Play ambient sound'}>{playing?<CirclePause size={36}/>:<CirclePlay size={36}/>}</button></div></div>
     </section>
     <div className="b8-ambient-controls">
-      <div><Speaker size={15}/><span>Sound</span><strong>{playing?'On':'Off'}</strong></div><div><Lightbulb size={15}/><span>Light</span><strong>Warm</strong></div><div><Waves size={15}/><span>Scene</span><strong>{mode}</strong></div><label><TimerReset size={15}/><span>Timer</span><select value={minutes} onChange={e=>setMinutes(Number(e.target.value))}><option value={15}>15 min</option><option value={30}>30 min</option><option value={60}>60 min</option></select><strong>{mm}:{ss}</strong></label>
+      <button type="button" onClick={()=>playing?stopSound():void startSound()} aria-pressed={playing}><Speaker size={15}/><span>Sound</span><strong>{playing?'On':'Off'}</strong></button>
+      <button type="button" onClick={()=>setWarmLight(v=>!v)} aria-pressed={warmLight}><Lightbulb size={15}/><span>Light</span><strong>{warmLight?'Warm':'Off'}</strong></button>
+      <div><Waves size={15}/><span>Scene</span><strong>{mode}</strong></div>
+      <label><TimerReset size={15}/><span>Timer</span><select value={minutes} onChange={e=>setMinutes(Number(e.target.value))}><option value={15}>15 min</option><option value={30}>30 min</option><option value={60}>60 min</option></select><strong>{mm}:{ss}</strong></label>
     </div>
+    <p className="b8-ambient-note">Sound and the on-screen light treatment are controlled here. Glow does not claim to control your room lighting, scent, or device Do Not Disturb settings.</p>
     <section className="b8-ambient-quote"><p>Rest is productive.<br/>You are not behind.<br/>You are becoming.</p><EditableRoomImage slot="batch8:ambient:quote" label="Lavender candles" fallbackUrl="https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=1000&q=85" className="b8-ambient-quote-image"/></section>
   </div>;
 }
