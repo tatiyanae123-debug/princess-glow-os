@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   Bell, BrainCircuit, CalendarDays, CheckSquare2, CircleDot, FolderKanban, Goal, Grid2X2,
   Home, Menu, NotebookTabs, Search, Settings, Sparkles, TimerReset, UserRound, X,
+  Heart, Dumbbell, Utensils, Scissors, Shirt, WalletCards, Music2, LockKeyhole, Upload,
 } from 'lucide-react';
 
 type Item = { label: string; href: string; icon: typeof Home };
@@ -13,53 +14,53 @@ type Group = { label: string; items: Item[] };
 
 const GROUPS: Group[] = [
   { label: 'TODAY', items: [
-    { label: 'Home', href: '/today', icon: Home },
     { label: 'Dashboard', href: '/dashboard', icon: Grid2X2 },
-    { label: 'Briefings', href: '/briefings/morning', icon: NotebookTabs },
-    { label: 'Debriefs', href: '/briefings/evening', icon: CircleDot },
-  ]},
-  { label: 'LIFE', items: [
+    { label: 'Second Brain', href: '/second-brain', icon: BrainCircuit },
     { label: 'Calendar', href: '/calendar', icon: CalendarDays },
     { label: 'Tasks', href: '/tasks', icon: CheckSquare2 },
     { label: 'Reminders', href: '/reminders', icon: Bell },
-    { label: 'Timeline', href: '/timeline', icon: CircleDot },
-    { label: 'Goals', href: '/goals', icon: Goal },
-    { label: 'Planning', href: '/planning', icon: TimerReset },
-    { label: 'Projects', href: '/projects', icon: FolderKanban },
+    { label: 'Briefings', href: '/briefings/morning', icon: NotebookTabs },
+  ]},
+  { label: 'LIFE', items: [
     { label: 'Routines', href: '/routines', icon: Sparkles },
     { label: 'Habits', href: '/habits', icon: CheckSquare2 },
-  ]},
-  { label: 'MIND', items: [
-    { label: 'Brain', href: '/brain', icon: BrainCircuit },
-    { label: 'Second Brain', href: '/second-brain', icon: BrainCircuit },
-    { label: 'Memory', href: '/memory', icon: NotebookTabs },
-    { label: 'Observations', href: '/observations', icon: CircleDot },
-    { label: 'Connections', href: '/connections', icon: Grid2X2 },
-    { label: 'Concierge', href: '/concierge', icon: Sparkles },
-    { label: 'Vault', href: '/vault', icon: FolderKanban },
-  ]},
-  { label: 'BODY + CARE', items: [
-    { label: 'Wellness', href: '/wellness', icon: Sparkles },
-    { label: 'Fitness', href: '/fitness', icon: TimerReset },
-    { label: 'Food', href: '/food', icon: Grid2X2 },
+    { label: 'Fitness', href: '/fitness', icon: Dumbbell },
+    { label: 'Wellness', href: '/wellness', icon: Heart },
+    { label: 'Food', href: '/food', icon: Utensils },
     { label: 'Beauty', href: '/beauty', icon: Sparkles },
-    { label: 'Hair', href: '/hair', icon: Sparkles },
-    { label: 'Closet', href: '/closet', icon: Grid2X2 },
-  ]},
-  { label: 'WORLD + WORK', items: [
+    { label: 'Hair', href: '/hair', icon: Scissors },
+    { label: 'Closet', href: '/closet', icon: Shirt },
     { label: 'Home', href: '/home', icon: Home },
-    { label: 'Money', href: '/finance', icon: Grid2X2 },
-    { label: 'Work', href: '/work', icon: UserRound },
-    { label: 'World', href: '/world', icon: Grid2X2 },
-    { label: 'Travel', href: '/travel', icon: CalendarDays },
-    { label: 'All Rooms', href: '/all-rooms', icon: Grid2X2 },
   ]},
-  { label: 'CREATE + CAPTURE', items: [
+  { label: 'GROW', items: [
+    { label: 'Goals', href: '/goals', icon: Goal },
+    { label: 'Projects', href: '/projects', icon: FolderKanban },
+    { label: 'Planning', href: '/planning', icon: TimerReset },
+    { label: 'Finance', href: '/finance', icon: WalletCards },
+    { label: 'Financial Brain', href: '/finance/brain', icon: BrainCircuit },
+  ]},
+  { label: 'BRAIN', items: [
+    { label: 'Brain', href: '/brain', icon: BrainCircuit },
+    { label: 'Concierge', href: '/concierge', icon: Sparkles },
+    { label: 'Observations', href: '/observations', icon: CircleDot },
+    { label: 'Memory', href: '/memory', icon: NotebookTabs },
+    { label: 'Timeline', href: '/timeline', icon: CircleDot },
     { label: 'Notes', href: '/notes', icon: NotebookTabs },
-    { label: 'Inbox', href: '/inbox', icon: Bell },
+  ]},
+  { label: 'CONNECT', items: [
     { label: 'Gmail', href: '/gmail', icon: Bell },
-    { label: 'Import', href: '/import', icon: FolderKanban },
+    { label: 'Connections', href: '/connections', icon: UserRound },
+    { label: 'Spotify', href: '/spotify', icon: Music2 },
+    { label: 'Vault', href: '/vault', icon: LockKeyhole },
+  ]},
+  { label: 'SYSTEM', items: [
+    { label: 'World', href: '/world', icon: Grid2X2 },
+    { label: 'Import', href: '/import', icon: Upload },
+    { label: 'All Rooms', href: '/all-rooms', icon: Grid2X2 },
+    { label: 'Work', href: '/work', icon: UserRound },
+    { label: 'Travel', href: '/travel', icon: CalendarDays },
     { label: 'Creative Studio', href: '/creative-studio', icon: Sparkles },
+    { label: 'Settings', href: '/settings', icon: Settings },
   ]},
 ];
 
@@ -83,13 +84,20 @@ export function UniversalMobileNav() {
     setOpen(false);
     document.dispatchEvent(new CustomEvent('glow:search-open'));
   }
+  function openCapture() {
+    setOpen(false);
+    document.dispatchEvent(new CustomEvent('glow:voice-open'));
+  }
 
   return <>
     <div className="sticky top-0 z-[72] flex min-h-[58px] w-full items-center justify-between border-b border-[#eee8e5] bg-white px-3.5 pb-2 pt-[max(8px,env(safe-area-inset-top))] shadow-[0_3px_14px_rgba(62,43,36,.035)] xl:hidden">
       <button type="button" onClick={() => setOpen(true)} className="flex min-w-0 items-center gap-2.5 text-[#282421]" aria-label="Open Glow OS navigation">
         <Menu size={18} /><span className="font-serif text-[15px] tracking-[.04em]">Glow OS</span>
       </button>
-      <button type="button" onClick={openSearch} aria-label="Search Glow" className="flex h-9 w-9 items-center justify-center rounded-full text-[#5d5651] hover:bg-[#f8efee]"><Search size={17}/></button>
+      <div className="flex items-center gap-1">
+        <button type="button" onClick={openCapture} aria-label="Tell Glow anything" className="flex h-9 items-center gap-1.5 rounded-full bg-[#c45f76] px-3 text-[10px] font-medium text-white"><Sparkles size={13}/>Add</button>
+        <button type="button" onClick={openSearch} aria-label="Search Glow" className="flex h-9 w-9 items-center justify-center rounded-full text-[#5d5651] hover:bg-[#f8efee]"><Search size={17}/></button>
+      </div>
     </div>
 
     {open ? <button type="button" aria-label="Close navigation overlay" onClick={() => setOpen(false)} className="fixed inset-0 z-[88] bg-black/20 xl:hidden"/> : null}
@@ -99,6 +107,8 @@ export function UniversalMobileNav() {
         <Link href="/dashboard" className="flex items-center gap-3"><Sparkles size={23} strokeWidth={1.35} className="text-[#c85f78]"/><span className="font-serif text-[24px] font-semibold tracking-[.11em]">GLOW OS</span></Link>
         <button type="button" onClick={() => setOpen(false)} aria-label="Close navigation" className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-[#f8efee]"><X size={19}/></button>
       </div>
+
+      <div className="px-8 pb-2"><button type="button" onClick={openCapture} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-[14px] bg-[#c45f76] px-4 text-[12px] font-medium text-white"><Sparkles size={14}/>Tell Glow anything</button></div>
 
       <nav className="min-h-0 flex-1 overflow-y-auto px-8 pb-8 pt-3 [scrollbar-width:thin]">
         {GROUPS.map((group) => <section key={group.label} className="mb-7">
