@@ -18,8 +18,8 @@ const AREAS: Area[] = [
   { label: 'Life', href: '/life', icon: Home, paths: ['/life','/wellness','/fitness','/food','/maintenance','/beauty','/hair','/closet','/home','/finance','/money','/work','/all-rooms','/world','/travel','/saint-space'], children: [
     { label: 'Body', href: '/life#body' }, { label: 'Beauty', href: '/life#beauty' }, { label: 'Home', href: '/life#home' }, { label: 'Money', href: '/life#money' }, { label: 'Work', href: '/life#work' },
   ]},
-  { label: 'Brain', href: '/brain', icon: BrainCircuit, paths: ['/brain','/memory','/timeline','/observations','/graph','/connections','/notices','/concierge','/rules','/knowledge'], children: [
-    { label: 'Insights', href: '/brain' }, { label: 'Memory', href: '/memory' }, { label: 'Timeline', href: '/timeline' }, { label: 'Observations', href: '/observations' }, { label: 'Graph', href: '/graph' }, { label: 'Connections', href: '/connections' }, { label: 'Notices', href: '/notices' }, { label: 'Concierge', href: '/concierge' },
+  { label: 'Brain', href: '/brain', icon: BrainCircuit, paths: ['/brain','/second-brain','/vault','/memory','/timeline','/observations','/graph','/connections','/notices','/concierge','/rules','/knowledge'], children: [
+    { label: 'Insights', href: '/brain' }, { label: 'Second Brain', href: '/second-brain' }, { label: 'Vault', href: '/vault' }, { label: 'Memory', href: '/memory' }, { label: 'Timeline', href: '/timeline' }, { label: 'Observations', href: '/observations' }, { label: 'Graph', href: '/graph' }, { label: 'Connections', href: '/connections' }, { label: 'Notices', href: '/notices' }, { label: 'Concierge', href: '/concierge' },
   ]},
   { label: 'Create', href: '/create', icon: WandSparkles, paths: ['/create','/creative-studio','/notes','/resources','/import','/gmail','/inbox','/intake'], children: [
     { label: 'Capture', href: '/intake' }, { label: 'Creative Studio', href: '/creative-studio' }, { label: 'Notes', href: '/notes' }, { label: 'Inbox', href: '/inbox' }, { label: 'Gmail', href: '/gmail' }, { label: 'Import', href: '/import' },
