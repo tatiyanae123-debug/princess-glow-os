@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { HardDrive, Play, RefreshCw, Trash2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import type { Note } from '@/lib/types';
 import {
   buildRecordingBlob,
@@ -26,17 +25,12 @@ function duration(meta: RecordingMeta) {
 }
 
 export function NotesLocalRecoveryPanel({ notes }: { notes: Note[] }) {
-  const router = useRouter();
   const [sessions, setSessions] = useState<RecordingMeta[]>([]);
   const [storage, setStorage] = useState<{ usage: number; quota: number; remaining: number } | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [notice, setNotice] = useState('');
 
-  const noteByTitle = useMemo(() => {
-    const map = new Map<string, Note>();
-    for (const note of notes) if (!map.has(note.title)) map.set(note.title, note);
-    return map;
-  }, [notes]);
+  const noteTitles = useMemo(() => new Set(notes.map((note) => note.title)), [notes]);
 
   async function refresh() {
     try {
@@ -101,15 +95,15 @@ export function NotesLocalRecoveryPanel({ notes }: { notes: Note[] }) {
 
     <div className="mt-4 space-y-2">
       {sessions.length ? sessions.slice(0, 12).map((meta) => {
-        const note = noteByTitle.get(meta.title);
+        const linked = noteTitles.has(meta.title);
         const unfinished = !meta.endedAt;
         return <div key={meta.id} className="rounded-[20px] border border-[#ece5dc] bg-[#fffdf9] p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2"><p className="truncate text-sm font-medium text-[#3e3834]">{meta.title}</p>{unfinished ? <span className="rounded-full bg-[#f8e8e6] px-2 py-1 text-[9px] text-[#9b5f62]">Interrupted / unfinished</span> : <span className="rounded-full bg-[#edf3e9] px-2 py-1 text-[9px] text-[#64745f]">Saved locally</span>}{note ? <span className="rounded-full bg-[#f3eef5] px-2 py-1 text-[9px] text-[#75677c]">Smart Note linked by title</span> : null}</div>
-              <p className="mt-1 text-[10px] text-[#948a81]">{meta.type} · {formatDuration(duration(meta))} · {meta.chunkCount} saved chunk{meta.chunkCount === 1 ? '' : 's'} · {new Date(meta.startedAt).toLocaleString()}</p>
+              <div className="flex flex-wrap items-center gap-2"><p className="break-words text-sm font-medium text-[#3e3834]">{meta.title}</p>{unfinished ? <span className="rounded-full bg-[#f8e8e6] px-2 py-1 text-[9px] text-[#9b5f62]">Interrupted / unfinished</span> : <span className="rounded-full bg-[#edf3e9] px-2 py-1 text-[9px] text-[#64745f]">Saved locally</span>}{linked ? <span className="rounded-full bg-[#f3eef5] px-2 py-1 text-[9px] text-[#75677c]">Matching Smart Note exists</span> : null}</div>
+              <p className="mt-1 break-words text-[10px] text-[#948a81]">{meta.type} · {formatDuration(duration(meta))} · {meta.chunkCount} saved chunk{meta.chunkCount === 1 ? '' : 's'} · {new Date(meta.startedAt).toLocaleString()}</p>
             </div>
-            <div className="flex flex-wrap gap-2"><button type="button" disabled={busyId === meta.id || meta.chunkCount === 0} onClick={() => void play(meta)} className="rounded-full border px-3 py-2 text-[10px] disabled:opacity-40"><Play size={11} className="mr-1 inline"/>Play</button>{note ? <button type="button" onClick={() => router.push(`/notes?noteId=${encodeURIComponent(note.id)}`)} className="rounded-full border px-3 py-2 text-[10px]">Open Note</button> : null}<button type="button" disabled={busyId === meta.id} onClick={() => void remove(meta)} className="rounded-full border px-3 py-2 text-[10px] text-[#98656a] disabled:opacity-40"><Trash2 size={11} className="mr-1 inline"/>Delete audio</button></div>
+            <div className="flex flex-wrap gap-2"><button type="button" disabled={busyId === meta.id || meta.chunkCount === 0} onClick={() => void play(meta)} className="rounded-full border px-3 py-2 text-[10px] disabled:opacity-40"><Play size={11} className="mr-1 inline"/>Play</button><button type="button" disabled={busyId === meta.id} onClick={() => void remove(meta)} className="rounded-full border px-3 py-2 text-[10px] text-[#98656a] disabled:opacity-40"><Trash2 size={11} className="mr-1 inline"/>Delete audio</button></div>
           </div>
           {unfinished ? <p className="mt-3 rounded-[14px] bg-[#fbf5ee] p-3 text-[10px] leading-5 text-[#826f61]">Glow found audio chunks from a session that did not receive a normal Finish timestamp. The saved chunks can still be replayed. The transcript may be incomplete if the page closed before it was saved as a Smart Note.</p> : null}
         </div>;
