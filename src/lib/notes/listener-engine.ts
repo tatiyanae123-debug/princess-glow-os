@@ -31,6 +31,8 @@ const DB_NAME = 'glow-notes-listener';
 const DB_VERSION = 1;
 const SESSION_STORE = 'sessions';
 const CHUNK_STORE = 'chunks';
+const IMPORT_CHUNK_BYTES = 8 * 1024 * 1024;
+const pendingWrites = new Map<string, Set<Promise<void>>>();
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -60,6 +62,27 @@ function transactionDone(tx: IDBTransaction) {
   });
 }
 
+function trackWrite(sessionId: string, promise: Promise<void>) {
+  let writes = pendingWrites.get(sessionId);
+  if (!writes) {
+    writes = new Set();
+    pendingWrites.set(sessionId, writes);
+  }
+  writes.add(promise);
+  void promise.finally(() => {
+    const current = pendingWrites.get(sessionId);
+    current?.delete(promise);
+    if (current?.size === 0) pendingWrites.delete(sessionId);
+  });
+  return promise;
+}
+
+export async function awaitRecordingWrites(sessionId: string) {
+  while (pendingWrites.get(sessionId)?.size) {
+    await Promise.all([...pendingWrites.get(sessionId)!]);
+  }
+}
+
 export async function saveRecordingMeta(meta: RecordingMeta) {
   const db = await openDb();
   const tx = db.transaction(SESSION_STORE, 'readwrite');
@@ -68,15 +91,25 @@ export async function saveRecordingMeta(meta: RecordingMeta) {
   db.close();
 }
 
-export async function appendRecordingChunk(sessionId: string, index: number, blob: Blob) {
-  const db = await openDb();
-  const tx = db.transaction(CHUNK_STORE, 'readwrite');
-  tx.objectStore(CHUNK_STORE).put({ key: `${sessionId}:${String(index).padStart(8, '0')}`, sessionId, index, blob });
-  await transactionDone(tx);
-  db.close();
+export function appendRecordingChunk(sessionId: string, index: number, blob: Blob) {
+  const write = (async () => {
+    const db = await openDb();
+    const tx = db.transaction([CHUNK_STORE, SESSION_STORE], 'readwrite');
+    tx.objectStore(CHUNK_STORE).put({ key: `${sessionId}:${String(index).padStart(8, '0')}`, sessionId, index, blob });
+    const sessionStore = tx.objectStore(SESSION_STORE);
+    const getMeta = sessionStore.get(sessionId);
+    getMeta.onsuccess = () => {
+      const meta = getMeta.result as RecordingMeta | undefined;
+      if (meta) sessionStore.put({ ...meta, chunkCount: Math.max(meta.chunkCount, index + 1) });
+    };
+    await transactionDone(tx);
+    db.close();
+  })();
+  return trackWrite(sessionId, write);
 }
 
 export async function buildRecordingBlob(sessionId: string, mimeType: string): Promise<Blob> {
+  await awaitRecordingWrites(sessionId);
   const db = await openDb();
   const tx = db.transaction(CHUNK_STORE, 'readonly');
   const index = tx.objectStore(CHUNK_STORE).index('sessionId');
@@ -92,21 +125,54 @@ export async function buildRecordingBlob(sessionId: string, mimeType: string): P
 }
 
 export async function saveImportedMedia(id: string, file: File, type: NoteCaptureType) {
-  const meta: RecordingMeta = {
+  const baseMeta: RecordingMeta = {
     id,
     title: file.name,
     type,
     mimeType: file.type || 'application/octet-stream',
     startedAt: Date.now(),
-    endedAt: Date.now(),
-    chunkCount: 1,
+    chunkCount: 0,
   };
-  await saveRecordingMeta(meta);
-  await appendRecordingChunk(id, 0, file);
+  await saveRecordingMeta(baseMeta);
+  const chunkCount = Math.max(1, Math.ceil(file.size / IMPORT_CHUNK_BYTES));
+  for (let index = 0; index < chunkCount; index += 1) {
+    const start = index * IMPORT_CHUNK_BYTES;
+    const end = Math.min(file.size, start + IMPORT_CHUNK_BYTES);
+    await appendRecordingChunk(id, index, file.slice(start, end, file.type));
+  }
+  const finalMeta: RecordingMeta = { ...baseMeta, endedAt: Date.now(), chunkCount };
+  await saveRecordingMeta(finalMeta);
+  return finalMeta;
+}
+
+export async function getRecordingMeta(sessionId: string): Promise<RecordingMeta | null> {
+  const db = await openDb();
+  const tx = db.transaction(SESSION_STORE, 'readonly');
+  const request = tx.objectStore(SESSION_STORE).get(sessionId);
+  const meta = await new Promise<RecordingMeta | null>((resolve, reject) => {
+    request.onsuccess = () => resolve((request.result as RecordingMeta | undefined) ?? null);
+    request.onerror = () => reject(request.error ?? new Error('Could not load this recording.'));
+  });
+  await transactionDone(tx);
+  db.close();
   return meta;
 }
 
+export async function listRecordingMetas(): Promise<RecordingMeta[]> {
+  const db = await openDb();
+  const tx = db.transaction(SESSION_STORE, 'readonly');
+  const request = tx.objectStore(SESSION_STORE).getAll();
+  const rows = await new Promise<RecordingMeta[]>((resolve, reject) => {
+    request.onsuccess = () => resolve((request.result as RecordingMeta[]) ?? []);
+    request.onerror = () => reject(request.error ?? new Error('Could not load local recordings.'));
+  });
+  await transactionDone(tx);
+  db.close();
+  return rows.sort((a, b) => b.startedAt - a.startedAt);
+}
+
 export async function deleteRecording(sessionId: string) {
+  await awaitRecordingWrites(sessionId);
   const db = await openDb();
   const tx = db.transaction([SESSION_STORE, CHUNK_STORE], 'readwrite');
   tx.objectStore(SESSION_STORE).delete(sessionId);
@@ -120,6 +186,16 @@ export async function deleteRecording(sessionId: string) {
   };
   await transactionDone(tx);
   db.close();
+}
+
+export async function localStorageEstimate() {
+  if (typeof navigator === 'undefined' || !navigator.storage?.estimate) return null;
+  const estimate = await navigator.storage.estimate();
+  return {
+    usage: estimate.usage ?? 0,
+    quota: estimate.quota ?? 0,
+    remaining: Math.max(0, (estimate.quota ?? 0) - (estimate.usage ?? 0)),
+  };
 }
 
 export function formatDuration(totalSeconds: number) {
@@ -153,34 +229,74 @@ export function cleanTranscript(text: string) {
     .trim();
 }
 
-function nextOccurrence(day: number, hour = 12) {
-  const now = new Date();
-  const add = (day - now.getDay() + 7) % 7 || 7;
-  const date = new Date(now);
-  date.setDate(now.getDate() + add);
-  date.setHours(hour, 0, 0, 0);
+function parseClock(value: string) {
+  const match = value.match(/\b(?:at\s*)?(1[0-2]|0?[1-9])(?::([0-5]\d))?\s*(a\.?m\.?|p\.?m\.?)\b/i);
+  if (!match) return null;
+  let hour = Number(match[1]);
+  const minute = Number(match[2] ?? 0);
+  const meridiem = match[3].toLowerCase().startsWith('p') ? 'pm' : 'am';
+  if (hour === 12) hour = 0;
+  if (meridiem === 'pm') hour += 12;
+  return { hour, minute };
+}
+
+function inferredHour(value: string) {
+  const clock = parseClock(value);
+  if (clock) return clock;
+  if (/morning/.test(value)) return { hour: 9, minute: 0 };
+  if (/afternoon/.test(value)) return { hour: 14, minute: 0 };
+  if (/evening|night/.test(value)) return { hour: 18, minute: 0 };
+  return { hour: 12, minute: 0 };
+}
+
+function dateAt(base: Date, value: string) {
+  const { hour, minute } = inferredHour(value);
+  const date = new Date(base);
+  date.setHours(hour, minute, 0, 0);
   return date;
+}
+
+function nextOccurrence(day: number, value: string) {
+  const now = new Date();
+  let add = (day - now.getDay() + 7) % 7;
+  const candidate = dateAt(new Date(now.getFullYear(), now.getMonth(), now.getDate() + add), value);
+  if (add === 0 && candidate <= now) add = 7;
+  return dateAt(new Date(now.getFullYear(), now.getMonth(), now.getDate() + add), value);
 }
 
 export function parseLooseDate(text: string): Date | undefined {
   const value = text.toLowerCase();
-  const date = new Date();
-  if (/tomorrow/.test(value)) {
+  const now = new Date();
+  if (/\btoday\b/.test(value)) return dateAt(now, value);
+  if (/\btomorrow\b/.test(value)) {
+    const date = new Date(now);
     date.setDate(date.getDate() + 1);
-  } else if (/monday/.test(value)) return nextOccurrence(1, /afternoon|2\s*(pm|p\.m\.)/.test(value) ? 14 : 12);
-  else if (/tuesday/.test(value)) return nextOccurrence(2);
-  else if (/wednesday/.test(value)) return nextOccurrence(3);
-  else if (/thursday/.test(value)) return nextOccurrence(4);
-  else if (/friday/.test(value)) return nextOccurrence(5);
-  else if (/saturday/.test(value)) return nextOccurrence(6);
-  else if (/sunday/.test(value)) return nextOccurrence(0);
-  else return undefined;
+    return dateAt(date, value);
+  }
+  const weekdays: Array<[RegExp, number]> = [
+    [/\bsunday\b/, 0], [/\bmonday\b/, 1], [/\btuesday\b/, 2], [/\bwednesday\b/, 3],
+    [/\bthursday\b/, 4], [/\bfriday\b/, 5], [/\bsaturday\b/, 6],
+  ];
+  for (const [pattern, day] of weekdays) if (pattern.test(value)) return nextOccurrence(day, value);
 
-  if (/morning/.test(value)) date.setHours(9, 0, 0, 0);
-  else if (/afternoon/.test(value)) date.setHours(14, 0, 0, 0);
-  else if (/evening|night/.test(value)) date.setHours(18, 0, 0, 0);
-  else date.setHours(12, 0, 0, 0);
-  return date;
+  const numeric = value.match(/\b(\d{1,2})[\/-](\d{1,2})(?:[\/-](\d{2,4}))?\b/);
+  if (numeric) {
+    const month = Number(numeric[1]) - 1;
+    const day = Number(numeric[2]);
+    let year = numeric[3] ? Number(numeric[3]) : now.getFullYear();
+    if (year < 100) year += 2000;
+    const date = dateAt(new Date(year, month, day), value);
+    if (!numeric[3] && date < now) date.setFullYear(date.getFullYear() + 1);
+    return date;
+  }
+  return undefined;
+}
+
+function actionText(sentence: string) {
+  return sentence
+    .replace(/^.*?\bremind me(?: to)?\s+/i, '')
+    .replace(/^\s*(?:i|we)\s+(?:need to|have to|should|will)\s+/i, '')
+    .trim();
 }
 
 export function extractActions(transcript: string): DetectedAction[] {
@@ -190,29 +306,33 @@ export function extractActions(transcript: string): DetectedAction[] {
     .filter(Boolean);
   const output: DetectedAction[] = [];
   const push = (kind: DetectedAction['kind'], source: string, text: string, date?: Date) => {
-    const normalized = text.replace(/^(i|we)\s+(need to|have to|should|want to|will|can)\s+/i, '').trim();
-    if (!normalized) return;
-    output.push({ id: `${kind}-${output.length}-${normalized.slice(0, 20)}`, kind, source, text: normalized, date });
+    const normalized = actionText(text);
+    if (!normalized || normalized.length < 2) return;
+    output.push({ id: `${kind}-${output.length}-${normalized.slice(0, 28).toLowerCase().replace(/\W+/g, '-')}`, kind, source, text: normalized, date });
   };
 
   sentences.forEach((sentence) => {
     const lower = sentence.toLowerCase();
     const date = parseLooseDate(sentence);
-    if (/\b(i|we)\s+(need to|have to|should|will)\b/.test(lower)) push('task', sentence, sentence, date);
-    else if (/\bremind me\b/.test(lower)) push('reminder', sentence, sentence.replace(/^.*?remind me( to)?\s*/i, ''), date);
-    if (/\b(interview|appointment|dinner|meeting|event)\b/.test(lower) && date) push('calendar', sentence, sentence, date);
-    if (/\b(i|we)\s+(decided|agreed)|\blet'?s\s+(move|use|make|keep|switch)\b/.test(lower)) push('decision', sentence, sentence);
+    const reminder = /\bremind me\b/.test(lower);
+    if (reminder) push('reminder', sentence, sentence, date);
+    else if (/\b(i|we)\s+(need to|have to|should|will)\b/.test(lower)) push('task', sentence, sentence, date);
+
+    if (/\b(interview|appointment|dinner|meeting|event|reservation|class|flight|call)\b/.test(lower) && date) {
+      push('calendar', sentence, sentence, date);
+    }
+    if (/\b(i|we)\s+(decided|agreed)\b|\blet'?s\s+(move|use|make|keep|switch)\b/.test(lower)) push('decision', sentence, sentence);
     if (/\bidea\b|\bmaybe we could\b|\bwhat if\b/.test(lower)) push('idea', sentence, sentence);
     if (/\bi prefer\b|\bi usually\b|\bworks better for me\b/.test(lower)) push('memory', sentence, sentence);
   });
 
   const seen = new Set<string>();
   return output.filter((item) => {
-    const key = `${item.kind}:${item.text.toLowerCase()}`;
+    const key = `${item.kind}:${item.text.toLowerCase().replace(/\s+/g, ' ')}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
-  }).slice(0, 30);
+  }).slice(0, 50);
 }
 
 export function buildSmartNoteContent(input: {
