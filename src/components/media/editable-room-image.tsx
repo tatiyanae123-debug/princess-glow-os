@@ -62,7 +62,7 @@ export function EditableRoomImage({ slot, label, className = '', children, overl
 
   return (
     <div className={`group relative overflow-hidden bg-[linear-gradient(145deg,#ead9ce,#d7bdb0_48%,#9b8177)] ${className}`}>
-      {visibleSrc ? <img src={visibleSrc} alt={label} className="absolute inset-0 h-full w-full object-cover" /> : null}
+      {visibleSrc ? <img data-glow-image-key={slot} src={visibleSrc} alt={label} className="absolute inset-0 h-full w-full object-cover" /> : null}
       {!visibleSrc ? <div className="absolute inset-0 opacity-80 [background:radial-gradient(circle_at_70%_25%,rgba(255,255,255,.5),transparent_24%),linear-gradient(145deg,rgba(255,248,242,.35),rgba(149,112,98,.18))]" /> : null}
       {defaultSrc && !src ? <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(145deg,rgba(255,250,246,.04),rgba(85,65,55,.07))]" /> : null}
       {children ? <div className="relative z-10 h-full">{children}</div> : null}
