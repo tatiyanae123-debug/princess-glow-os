@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
-import { Batch6ProjectsView } from '@/components/batch6/work-create-reference';
+import { AuditedProjectsView } from '@/components/batch6/project-audited';
 import { createProjectAction, updateProjectAction } from '@/app/actions/intelligence-expansion';
 import { getProjectsByUser } from '@/lib/data/user-scope';
 
@@ -13,7 +13,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
   const session=await auth();if(!session?.user?.id)redirect('/sign-in');
   const [projects,params]=await Promise.all([getProjectsByUser(session.user.id),searchParams]);
   const requestedProjectId=typeof params.projectId==='string'?params.projectId:null;
-  return <AppShell><div className="space-y-4"><Batch6ProjectsView projects={projects}/>
+  return <AppShell><div className="space-y-4"><AuditedProjectsView projects={projects}/>
     <details id="new-project" className="rounded-[9px] border border-[#ece6e1] bg-white p-4 shadow-[0_10px_30px_rgba(57,46,39,.045)]"><summary className="cursor-pointer glow-display text-[16px]">Project management</summary>
       <div className="mt-4 grid gap-4 lg:grid-cols-[.62fr_1.38fr]">
         <form action={createProjectAction} className="space-y-2 rounded-[8px] border border-[#ece6e1] bg-[#fdfaf7] p-4"><h2 className="glow-display text-[16px]">New Project</h2><input name="title" required placeholder="Project title" className={fieldClass}/><input name="area" placeholder="Area" className={fieldClass}/><select name="priority" defaultValue="medium" className={fieldClass}><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="urgent">Urgent</option></select><input name="deadline" type="date" className={fieldClass}/><textarea name="nextAction" rows={3} placeholder="Next action" className={fieldClass}/><button className="rounded-[7px] bg-[#7C4857] px-3 py-2 text-[10px] text-white">Create project</button></form>
