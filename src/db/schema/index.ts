@@ -2,6 +2,7 @@ export * from './auth';
 export * from './tasks';
 export * from './habits';
 export * from './routines';
+export * from './advanced-routines';
 export * from './goals';
 export * from './calendar-events';
 export * from './beauty-routines';
