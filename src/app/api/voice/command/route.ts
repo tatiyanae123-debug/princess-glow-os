@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { ensureGlowIntelligenceSchema } from '@/app/actions/intelligence-activation';
 import { ingestText } from '@/lib/intelligence/universal-intake';
+import { routeInboxItem } from '@/lib/intelligence/inbox-routing';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -35,29 +36,60 @@ export async function POST(request: Request) {
     await ensureGlowIntelligenceSchema();
     const clauses = splitVoiceBrainDump(text);
     const protectedAction = requiresProtectedProposal(text, risk);
-    const actions = [] as Array<{ title: string; type: string; destinations: string[]; confidence: number }>;
+    const actions = [] as Array<{ title: string; type: string; destinations: string[]; confidence: number; routedEntityType?: string; routedEntityId?: string }>;
+    let autoRouted = 0;
+    let needsReview = 0;
 
     for (const clause of clauses) {
       const prefix = protectedAction
         ? '[GLOW VOICE · PROTECTED ACTION PROPOSAL — REQUIRE CONFIRMATION BEFORE DESTRUCTIVE/EXTERNAL CHANGE]'
         : '[GLOW VOICE · ACTION COMMAND]';
       const result = await ingestText(session.user.id, `${prefix}\n${clause}`, { sourceRoute });
+      let routedEntityType: string | undefined;
+      let routedEntityId: string | undefined;
+
+      if (!protectedAction && risk === 'low') {
+        const routed = await routeInboxItem(session.user.id, result.inbox.id);
+        if (routed.ok) {
+          routedEntityType = routed.routedEntityType;
+          routedEntityId = routed.routedEntityId;
+          autoRouted += 1;
+        } else {
+          needsReview += 1;
+        }
+      } else {
+        needsReview += 1;
+      }
+
       actions.push({
         title: result.classification.title,
         type: result.classification.type,
         destinations: result.classification.destinations,
         confidence: result.classification.confidence,
+        routedEntityType,
+        routedEntityId,
       });
+    }
+
+    let message: string;
+    if (protectedAction) {
+      message = `Glow understood ${actions.length} action${actions.length === 1 ? '' : 's'} and created a protected proposal for review.`;
+    } else if (risk === 'medium') {
+      message = `Glow understood ${actions.length} action${actions.length === 1 ? '' : 's'} and saved ${actions.length === 1 ? 'it' : 'them'} to Inbox for review before making larger changes.`;
+    } else if (needsReview > 0) {
+      message = `Glow placed ${autoRouted} item${autoRouted === 1 ? '' : 's'} into the right room and kept ${needsReview} in Inbox because it needs one missing detail or review.`;
+    } else {
+      message = `Glow understood and placed ${autoRouted} item${autoRouted === 1 ? '' : 's'} into the right part of your life.`;
     }
 
     return NextResponse.json({
       ok: true,
       risk,
       requiresConfirmation: protectedAction,
+      autoRouted,
+      needsReview,
       actions,
-      message: protectedAction
-        ? `Glow understood ${actions.length} action${actions.length === 1 ? '' : 's'} and created a protected proposal for review.`
-        : `Glow understood and routed ${actions.length} action${actions.length === 1 ? '' : 's'} using context from ${sourceRoute ?? 'your current room'}.`,
+      message,
     });
   } catch (error) {
     const detail = error instanceof Error ? error.message : 'Unknown voice command error';
