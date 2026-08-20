@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useTheme } from '@/lib/themes/use-theme';
 import { useVisualPreferences } from '@/lib/visual-preferences/use-visual-preferences';
 import { useCustomizeMode } from '@/lib/customize/use-customize-mode';
@@ -113,7 +113,7 @@ export function GlowProvider({ children }: { children: ReactNode }) {
   const getVisualSrc = (id: string, defaultSrc?: string) => prefs.visuals[id]?.imageUrl ?? defaultSrc;
   const getVisualPosition = (id: string) => prefs.visuals[id]?.position;
 
-  const value = useMemo<GlowContextValue>(() => ({
+  const value: GlowContextValue = {
     themeId, setTheme,
     prefs, updateVisual, removeVisualImage, restoreVisualDefault,
     setBackgroundImage, createObjectUrl, resetAll, setAutomaticVisuals, setSuggestionMode,
@@ -123,12 +123,7 @@ export function GlowProvider({ children }: { children: ReactNode }) {
     productivityModeInfo: PRODUCTIVITY_MODES[productivityMode],
     setProductivityMode,
     getVisualPrefs, getVisualSrc, getVisualPosition,
-  }), [
-    themeId, setTheme, prefs, updateVisual, removeVisualImage, restoreVisualDefault,
-    setBackgroundImage, createObjectUrl, resetAll, setAutomaticVisuals, setSuggestionMode,
-    isCustomizing, hasPendingChanges, activateCustomize, saveCustomize, discardCustomize, markChanged,
-    visualContext, productivityMode,
-  ]);
+  };
 
   return <GlowContext.Provider value={value}>{children}</GlowContext.Provider>;
 }
