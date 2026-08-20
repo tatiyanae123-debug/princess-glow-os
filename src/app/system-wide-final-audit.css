@@ -1,0 +1,92 @@
+/* Glow OS final system audit: interaction safety, widget placement, responsive resilience. */
+
+:root { --glow-safe-bottom: max(18px, env(safe-area-inset-bottom)); --glow-safe-right: max(18px, env(safe-area-inset-right)); --glow-safe-left: max(18px, env(safe-area-inset-left)); }
+
+html { overflow-x: clip; }
+body { min-width: 0; overflow-x: clip; }
+button, a, input, textarea, select, summary { -webkit-tap-highlight-color: transparent; }
+button, [role='button'], a { touch-action: manipulation; }
+button:not(:disabled), a[href], summary { cursor: pointer; }
+button:disabled, [aria-disabled='true'] { cursor: not-allowed !important; }
+
+:where(button,a,input,textarea,select,summary,[tabindex]):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--glow-user-accent, #c7657a) 70%, white) !important;
+  outline-offset: 2px !important;
+}
+
+/* Do not let late batch cards or controls escape their page geometry. */
+[data-glow-shell='v3'] main, .glow-reference-route-stage, .glow-v3-route-stage { min-width: 0; }
+[data-glow-shell='v3'] img, [data-glow-shell='v3'] video, [data-glow-shell='v3'] canvas, [data-glow-shell='v3'] svg { max-width: 100%; }
+[data-glow-shell='v3'] :is(.grid,.flex) > * { min-width: 0; }
+[data-glow-shell='v3'] table { max-width: 100%; }
+[data-glow-shell='v3'] :is(input,textarea,select) { max-width: 100%; }
+
+/* Floating widgets each own one corner/vertical lane so they never collide. */
+.glow-action-fab {
+  right: var(--glow-safe-right) !important;
+  bottom: var(--glow-safe-bottom) !important;
+  z-index: 92 !important;
+}
+.glow-customize-fab {
+  right: var(--glow-safe-right) !important;
+  bottom: calc(var(--glow-safe-bottom) + 62px) !important;
+  z-index: 91 !important;
+}
+.glow-capture-dock {
+  left: var(--glow-safe-left) !important;
+  bottom: var(--glow-safe-bottom) !important;
+  z-index: 89 !important;
+}
+.glow-capture-panel { max-height: min(76vh, 680px); overflow-y: auto !important; overscroll-behavior: contain; }
+.glow-customize-panel { max-height: min(82vh, 760px); overflow-y: auto !important; overscroll-behavior: contain; }
+.glow-image-edit-bar { max-width: calc(100vw - 24px); }
+
+/* Keep floating controls from covering page content on smaller screens. */
+@media (max-width: 767px) {
+  [data-glow-shell='v3']:not([data-room='dashboard']):not([data-room='brain']):not([data-room='concierge']) main { padding-bottom: 104px !important; }
+  .glow-action-fab { height: 46px !important; min-width: 46px; padding-inline: 14px !important; }
+  .glow-customize-fab { width: 42px !important; height: 42px !important; }
+  .glow-capture-dock { bottom: calc(var(--glow-safe-bottom) + 58px) !important; }
+  .glow-capture-panel { width: min(92vw, 410px) !important; max-height: 68vh; }
+}
+
+/* Tablet/iPad: preserve usable content width and prevent header/control crush. */
+@media (min-width: 768px) and (max-width: 1279px) {
+  [data-glow-shell='v3'] .glow-reference-route-stage { width: 100% !important; max-width: none !important; }
+  [data-glow-shell='v3'] main { min-width: 0 !important; }
+  .glow-action-fab { bottom: 22px !important; right: 22px !important; }
+  .glow-customize-fab { bottom: 82px !important; right: 22px !important; }
+  .glow-capture-dock { bottom: 22px !important; left: 22px !important; }
+}
+
+/* Habit Garden: visibly behaves like living growth, while respecting reduced motion. */
+[data-room='habits'] section .group > div:first-child { position: relative; isolation: isolate; }
+[data-room='habits'] section .group > div:first-child::after {
+  content: '';
+  position: absolute;
+  inset: auto 12% 4px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(108,126,92,.13), transparent 72%);
+  pointer-events: none;
+}
+[data-room='habits'] section .group > div:first-child span:not([class*='absolute right-2']) {
+  transform-origin: 50% 100%;
+  animation: glow-habit-leaf-breathe 3.8s ease-in-out infinite alternate;
+}
+[data-room='habits'] section .group:nth-child(2n) > div:first-child span:not([class*='absolute right-2']) { animation-delay: -.9s; }
+[data-room='habits'] section .group:nth-child(3n) > div:first-child span:not([class*='absolute right-2']) { animation-delay: -1.7s; }
+@keyframes glow-habit-leaf-breathe { from { filter: saturate(.92); } to { filter: saturate(1.12) brightness(1.03); } }
+
+/* Tables/lists should scroll inside themselves rather than push the whole page sideways. */
+@media (max-width: 900px) {
+  [data-glow-shell='v3'] :is(.overflow-x-auto,[class*='table-wrap'],[class*='tracker']) { overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+}
+
+/* Empty and disabled states remain quiet and truthful. */
+[data-glow-shell='v3'] [aria-disabled='true'] { opacity: .55; box-shadow: none !important; transform: none !important; }
+[data-glow-shell='v3'] button:disabled { opacity: .5; box-shadow: none !important; transform: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
