@@ -80,6 +80,10 @@ function readModeCookie(): ProductivityMode | null {
   return mode in PRODUCTIVITY_MODES ? mode : null;
 }
 
+function writeModeCookie(mode: ProductivityMode) {
+  document.cookie = `${MODE_COOKIE_KEY}=${encodeURIComponent(mode)}; path=/; max-age=31536000; samesite=lax`;
+}
+
 export function GlowProvider({ children }: { children: ReactNode }) {
   const { themeId, setTheme } = useTheme();
   const {
@@ -102,13 +106,36 @@ export function GlowProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    const syncFromServerCookie = () => {
+      const cookieMode = readModeCookie();
+      if (!cookieMode) return;
+      setProductivityModeState((current) => current === cookieMode ? current : cookieMode);
+    };
+
+    const interval = window.setInterval(syncFromServerCookie, 2000);
+    window.addEventListener('focus', syncFromServerCookie);
+    window.addEventListener('pageshow', syncFromServerCookie);
+    document.addEventListener('visibilitychange', syncFromServerCookie);
+
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('focus', syncFromServerCookie);
+      window.removeEventListener('pageshow', syncFromServerCookie);
+      document.removeEventListener('visibilitychange', syncFromServerCookie);
+    };
+  }, []);
+
+  useEffect(() => {
     window.localStorage.setItem(MODE_STORAGE_KEY, productivityMode);
     document.documentElement.dataset.productivityMode = productivityMode;
     document.documentElement.dataset.glowDensity = PRODUCTIVITY_MODES[productivityMode].density;
     document.dispatchEvent(new CustomEvent('glow:productivity-mode-changed', { detail: { mode: productivityMode } }));
   }, [productivityMode]);
 
-  const setProductivityMode = (mode: ProductivityMode) => setProductivityModeState(mode);
+  const setProductivityMode = (mode: ProductivityMode) => {
+    writeModeCookie(mode);
+    setProductivityModeState(mode);
+  };
   const getVisualPrefs = (id: string) => prefs.visuals[id];
   const getVisualSrc = (id: string, defaultSrc?: string) => prefs.visuals[id]?.imageUrl ?? defaultSrc;
   const getVisualPosition = (id: string) => prefs.visuals[id]?.position;
