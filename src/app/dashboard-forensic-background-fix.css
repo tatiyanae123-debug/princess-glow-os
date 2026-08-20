@@ -1,3 +1,4 @@
+/* Final dashboard image and shell layering. */
 [data-room='dashboard'] .gd-world{background:#eadbd8!important;background-image:none!important}
 [data-room='dashboard'] .gd-backdrop{position:absolute;inset:0;z-index:0;width:100%;height:100%;min-height:100%;object-fit:cover;object-position:center center;filter:saturate(.82) brightness(1.06) sepia(.06);transform:scale(1.015)}
 [data-room='dashboard'] .gd-world:before,[data-room='dashboard'] .gd-world:after{z-index:1}
