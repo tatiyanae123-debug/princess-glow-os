@@ -10,10 +10,10 @@ function Surface({ children, className = '' }: { children: React.ReactNode; clas
 const fieldClass = 'rounded-lg border border-[#F1E7E3] px-3 py-2.5 text-[12px] text-[#2B2420] placeholder:text-[#B5ACA5] outline-none focus:border-[#C9727E]';
 
 const PRIMARY_DAY_MODES = [
-  { slug: 'deep-work', label: 'Most Highly Productive Day', short: 'Maximum focus', note: 'Protect deep work, surface the highest-value priorities, and keep optional noise low.' },
-  { slug: 'normal', label: 'Productive Day', short: 'Balanced progress', note: 'A realistic full day with priorities, routines, meals, movement, and normal commitments.' },
-  { slug: 'low-energy', label: 'Bare Minimum Day', short: 'Protect essentials', note: 'Keep true essentials, reduce optional effort, and choose low-energy versions of routines and habits.' },
-  { slug: 'sick', label: 'Clear Everything Day', short: 'Clear flexible load', note: 'Protect immovable commitments and essentials while Glow proposes what flexible work can move.' },
+  { slug: 'deep-work', label: 'Very Productive Day', short: 'Full capacity', note: 'Surface the Top 3, focused work, full routines, useful secondary work, and meaningful bonus tasks without making extras feel required.' },
+  { slug: 'normal', label: 'Normal Productive Day', short: 'Balanced capacity', note: 'Keep the Top 3, schedule, essential routines, meals, wellness, breathing room, and only one optional extra.' },
+  { slug: 'low-energy', label: 'Low Productive Day', short: 'Reduce friction', note: 'Keep one priority, essential commitments, minimum routines and care. Move or hide work that does not truly need today.' },
+  { slug: 'sick', label: 'Cancel Everything Day', short: 'Protection + recovery', note: 'Show only truly necessary commitments and care. Pause pressure and let Glow propose what flexible work can safely move.' },
 ] as const;
 
 export async function AdaptiveTodayPanel({ userId }: { userId: string }) {
@@ -43,15 +43,15 @@ export async function AdaptiveTodayPanel({ userId }: { userId: string }) {
       <Surface className="overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#F1E7E3] px-5 py-3">
           <div>
-            <p className="text-[10.5px] font-semibold uppercase tracking-[.12em] text-[#8A8078]">Four Day Modes</p>
-            <p className="mt-1 text-[10.5px] text-[#A79D96]">Your selected mode changes how Glow prioritizes the day. It never silently moves protected commitments.</p>
+            <p className="text-[10.5px] font-semibold uppercase tracking-[.12em] text-[#8A8078]">Glow Modes · system-wide capacity</p>
+            <p className="mt-1 text-[10.5px] text-[#A79D96]">Your mode changes Glow across Today, planning, routines, habits, care, goals, notifications, recommendations and debriefs. Protected commitments are never silently moved.</p>
           </div>
-          <Link href="/day-mode" className="text-[10.5px] font-medium text-[#C9727E]">Open Day Mode planner</Link>
+          <Link href="/day-mode" className="text-[10.5px] font-medium text-[#C9727E]">Open Mode planner</Link>
         </div>
         <div className="grid gap-2 p-4 sm:grid-cols-2 xl:grid-cols-4">
           {coreModes.map((mode) => (
             <form action={setLifeModeAction.bind(null, mode.id)} key={mode.id} className="min-w-0">
-              <button type="submit" aria-pressed={mode.isActive} className={`v3-depth-plane min-h-[76px] w-full rounded-[16px] border px-3 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7D1D8] ${mode.isActive ? 'border-[#DDA9B5] bg-[#FAE6E7] text-[#A94D63] shadow-[0_8px_22px_rgba(186,82,107,.09)]' : 'border-[#F1E7E3] bg-white text-[#655D58] hover:border-[#E8D8D4] hover:bg-[#FFFDFC]'}`}>
+              <button type="submit" aria-pressed={mode.isActive} className={`v3-depth-plane min-h-[84px] w-full rounded-[16px] border px-3 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7D1D8] ${mode.isActive ? 'border-[#DDA9B5] bg-[#FAE6E7] text-[#A94D63] shadow-[0_8px_22px_rgba(186,82,107,.09)]' : 'border-[#F1E7E3] bg-white text-[#655D58] hover:border-[#E8D8D4] hover:bg-[#FFFDFC]'}`}>
                 <span className="block text-[11.5px] font-semibold leading-4">{mode.displayName}</span>
                 <span className="mt-1 block text-[9.5px] uppercase tracking-[.08em] text-[#9B918B]">{mode.short}</span>
               </button>
@@ -103,12 +103,12 @@ export async function AdaptiveTodayPanel({ userId }: { userId: string }) {
             </div>
           </Surface>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2" data-glow-detail="secondary">
             <Surface>
               <div className="flex items-center gap-2 border-b border-[#F1E7E3] px-4 py-3"><Target size={13} className="text-[#C9727E]" /><p className="text-[10.5px] font-semibold uppercase tracking-[.1em] text-[#8A8078]">Next Best Options</p></div>
               <div className="divide-y divide-[#F1E7E3]">
                 {state.now.alternatives.length ? state.now.alternatives.map((item) => (
-                  <Link key={item.id} href={item.href} className="block px-4 py-3 hover:bg-[#FDF8F6]">
+                  <Link key={item.id} href={item.href} data-glow-priority="bonus" className="block px-4 py-3 hover:bg-[#FDF8F6]">
                     <div className="flex justify-between gap-4"><div><p className="text-[12.5px] font-medium text-[#2B2420]">{item.title}</p><p className="mt-1 line-clamp-2 text-[11px] leading-4 text-[#8A8078]">{item.reason}</p></div><span className="text-[10.5px] text-[#B5ACA5]">{item.estimatedMinutes}m</span></div>
                   </Link>
                 )) : <p className="p-4 text-[12px] text-[#8A8078]">No extra actions need attention.</p>}
@@ -120,7 +120,7 @@ export async function AdaptiveTodayPanel({ userId }: { userId: string }) {
             </Surface>
           </div>
 
-          <Surface>
+          <Surface className="mode-system-health" data-glow-detail="tertiary">
             <div className="flex items-center gap-2 border-b border-[#F1E7E3] px-4 py-3"><BrainCircuit size={13} className="text-[#7C6B9C]" /><p className="text-[10.5px] font-semibold uppercase tracking-[.1em] text-[#8A8078]">System Health</p></div>
             <div className="grid gap-2 p-3 sm:grid-cols-2 lg:grid-cols-5">
               {state.systemHealth.map((item) => (
@@ -147,7 +147,7 @@ export async function AdaptiveTodayPanel({ userId }: { userId: string }) {
               ) : <p className="text-[12px] text-[#8A8078]">No upcoming commitment is constraining your block.</p>}
             </div>
           </Surface>
-          <Surface>
+          <Surface data-glow-priority="normal">
             <div className="flex items-center gap-2 border-b border-[#F1E7E3] px-4 py-3"><Inbox size={13} className="text-[#C9727E]" /><p className="text-[10.5px] font-semibold uppercase tracking-[.1em] text-[#8A8078]">Quick Capture</p></div>
             <form action={addInboxItemFormAction} className="p-4">
               <textarea name="rawText" rows={3} placeholder="Call dentist, buy retinol, research prototype vendors..." className={`w-full resize-none bg-[#FDF8F6] ${fieldClass}`} />
@@ -161,9 +161,9 @@ export async function AdaptiveTodayPanel({ userId }: { userId: string }) {
                 <input name="energy" type="number" min={1} max={10} defaultValue={dayReview?.energy ?? undefined} placeholder="Energy 1–10" className={fieldClass} />
                 <input name="mood" defaultValue={dayReview?.mood ?? ''} placeholder="Mood" className={fieldClass} />
               </div>
-              <textarea name="completedSummary" defaultValue={dayReview?.completedSummary ?? ''} rows={2} placeholder="What got done?" className={`w-full ${fieldClass}`} />
-              <textarea name="movedSummary" defaultValue={dayReview?.movedSummary ?? ''} rows={2} placeholder="What should move?" className={`w-full ${fieldClass}`} />
-              <textarea name="memoryNote" defaultValue={dayReview?.memoryNote ?? ''} rows={2} placeholder="Anything worth remembering?" className={`w-full ${fieldClass}`} />
+              <textarea name="completedSummary" defaultValue={dayReview?.completedSummary ?? ''} rows={2} placeholder={activeCoreMode?.slug === 'sick' ? 'Did anything help today?' : 'What got done?'} className={`w-full ${fieldClass}`} />
+              <textarea name="movedSummary" defaultValue={dayReview?.movedSummary ?? ''} rows={2} placeholder="What should carry forward?" className={`w-full ${fieldClass}`} />
+              <textarea name="memoryNote" defaultValue={dayReview?.memoryNote ?? ''} rows={2} placeholder={activeCoreMode?.slug === 'sick' ? 'What should tomorrow feel like?' : 'Anything worth remembering?'} className={`w-full ${fieldClass}`} />
               {[0, 1, 2].map((index) => <input key={index} name={`tomorrow${index + 1}`} defaultValue={dayReview?.tomorrowTopThree?.[index] ?? ''} placeholder={`Tomorrow ${index + 1}`} className={`w-full ${fieldClass}`} />)}
               <button type="submit" className="w-full rounded-full bg-[#7C6B9C] py-2.5 text-[11.5px] font-medium text-white hover:bg-[#655682]">Save Day + Prepare Tomorrow</button>
             </form>
