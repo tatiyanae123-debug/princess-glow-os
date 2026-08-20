@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
 import { getBeautyProducts } from '@/lib/data/completion-v1';
-import { Camera, FlaskConical } from 'lucide-react';
+import { Camera, FlaskConical, Sparkles } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,6 +56,17 @@ export default async function BeautyPage() {
     <AppShell>
       <div className="space-y-6">
         <BeautyExperience routines={routines} products={products} upcomingAppointments={upcomingAppointments} />
+
+        <Card className="overflow-hidden border-[#eadfe7] bg-[linear-gradient(135deg,#fffafd,#f5ebf1)] p-0">
+          <div className="grid gap-5 p-5 sm:p-6 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+              <div className="flex items-center gap-2"><Sparkles size={14} className="text-[#9a748d]"/><p className="glow-eyebrow">Guided facial ritual</p></div>
+              <h2 className="glow-display mt-2 text-[22px] text-[#2B2420]">Gua Sha</h2>
+              <p className="mt-2 max-w-2xl text-[12px] leading-5 text-[#81757d]">Open a timed, spoken step-by-step player with Quick, Full, and Slow modes, left/right side tracking, technique cues, and a post-routine comfort check-in.</p>
+            </div>
+            <Link href="/beauty/gua-sha" className="inline-flex items-center justify-center rounded-full bg-[#3b3038] px-5 py-3 text-[12px] font-medium text-white">Open Gua Sha</Link>
+          </div>
+        </Card>
 
         <Card className="p-0 overflow-hidden">
           <div className="border-b border-[#F1E7E3] px-5 py-4">
