@@ -288,7 +288,7 @@ export async function getLivingDashboardData(userId: string): Promise<LivingDash
         id: event.id,
         title: event.title,
         startAt: event.startAt,
-        endAt: event.endAt,
+        endAt: event.endAt ?? new Date(event.startAt.getTime() + 30 * 60 * 1000),
         location: event.location,
         allDay: event.allDay,
       })),
