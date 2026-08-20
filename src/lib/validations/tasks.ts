@@ -10,7 +10,8 @@ export const createTaskSchema = z.object({
 
 export const updateTaskSchema = createTaskSchema.partial().extend({
   archived: z.boolean().optional(),
-  completedAt: z.coerce.date().optional(),
+  dueDate: z.coerce.date().nullable().optional(),
+  completedAt: z.coerce.date().nullable().optional(),
 });
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
