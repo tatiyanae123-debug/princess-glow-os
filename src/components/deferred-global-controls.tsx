@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { useEffect } from 'react';
 
 const ReferenceRoomInteractions = dynamic(
   () => import('@/components/reference-room-interactions').then((mod) => mod.ReferenceRoomInteractions),
@@ -23,9 +24,23 @@ const GlowActionButton = dynamic(
   { ssr: false },
 );
 
+function DashboardAssistantBridge() {
+  useEffect(() => {
+    const routeDashboardAsk = () => {
+      if (window.location.pathname === '/dashboard' || window.location.pathname.startsWith('/dashboard/')) {
+        document.dispatchEvent(new Event('glow:voice-open'));
+      }
+    };
+    document.addEventListener('glow:search-open', routeDashboardAsk);
+    return () => document.removeEventListener('glow:search-open', routeDashboardAsk);
+  }, []);
+  return null;
+}
+
 export function DeferredGlobalControls() {
   return (
     <>
+      <DashboardAssistantBridge />
       <ReferenceRoomInteractions />
       <GlowVoiceCommand />
       <QuickAdd />
