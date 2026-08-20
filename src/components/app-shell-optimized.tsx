@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { Sidebar } from '@/components/ui/sidebar';
+import { Batch6Sidebar } from '@/components/batch6/batch6-sidebar';
 import { GlowProvider } from '@/lib/context/glow-provider';
 import { GlobalHeader } from '@/components/global-header';
 import { DeferredGlobalControls } from '@/components/deferred-global-controls';
@@ -75,6 +76,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const room = roomFor(pathname);
   const referenceRoute = isReferenceRoute(pathname);
   const isDashboard = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
+  const isBatch6 = pathname.startsWith('/projects') || pathname.startsWith('/creative-studio') || pathname.startsWith('/work');
   const [focus, setFocus] = useState(false);
 
   useEffect(() => {
@@ -98,7 +100,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return <GlowProvider>
       <div className="min-h-screen w-full overflow-x-clip bg-white text-[#25211f]" data-room={room} data-glow-shell="v3" data-reference-shell="true" data-focus-mode="false">
         <div className="flex min-h-screen w-full flex-col bg-white md:flex-row">
-          <div className="sticky top-0 hidden h-screen w-[238px] shrink-0 overflow-y-auto overflow-x-hidden border-r border-[#ebe6e3] bg-white md:block"><Sidebar variant="dashboard-reference" /></div>
+          <div className={`sticky top-0 hidden h-screen shrink-0 overflow-y-auto overflow-x-hidden border-r border-[#ebe6e3] bg-white md:block ${isBatch6 ? 'w-[202px]' : 'w-[238px]'}`}>{isBatch6 ? <Batch6Sidebar /> : <Sidebar variant="dashboard-reference" />}</div>
           <div className="w-full md:hidden"><Sidebar /></div>
           <div className="min-w-0 flex-1 bg-white">
             {!isDashboard ? <GlobalHeader /> : null}
