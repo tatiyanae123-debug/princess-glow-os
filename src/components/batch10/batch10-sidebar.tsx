@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
  Bell, BrainCircuit, CalendarDays, CheckSquare2, CircleDollarSign, Dumbbell,
- Grid2X2, HeartPulse, Home, Mail, NotebookTabs, Pill, Settings, Sparkles,
+ Grid2X2, HeartPulse, Home, Mail, NotebookTabs, Settings, Sparkles,
  Utensils, WandSparkles, Waves, ChevronRight, type LucideIcon,
 } from 'lucide-react';
 
@@ -17,4 +17,4 @@ const groups:{label?:string;items:{label:string;href:string;icon:LucideIcon;matc
  {label:'MORE',items:[{label:'Notes',href:'/notes',icon:NotebookTabs},{label:'Gmail',href:'/gmail',icon:Mail},{label:'Reminders',href:'/reminders',icon:Bell},{label:'Settings',href:'/settings',icon:Settings}]},
 ];
 function active(pathname:string,href:string,match?:string[]){const candidates=match??[href];return candidates.some(p=>pathname===p||pathname.startsWith(`${p}/`))}
-export function Batch10Sidebar(){const pathname=usePathname();return <aside className="b10-sidebar"><Link href="/dashboard" className="b10-side-brand"><Sparkles size={14}/><span>GLOW OS</span></Link><nav>{groups.map((group,index)=><div className="b10-side-group" key={group.label??index}>{group.label?<p>{group.label}</p>:null}{group.items.map(({label,href,icon:Icon,match})=><Link className={active(pathname,href,match)?'active':''} href={href} key={href}><Icon size={13}/><span>{label}</span></Link>)}</div>)}</nav><div className="b10-side-profile"><span>T</span><div><strong>Tatiyana</strong><small>View Profile</small></div><ChevronRight size={12}/></div></aside>}
+export function Batch10Sidebar(){const pathname=usePathname();return <aside className="b10-sidebar"><Link href="/dashboard" className="b10-side-brand"><Sparkles size={14}/><span>GLOW OS</span></Link><nav>{groups.map((group,index)=><div className="b10-side-group" key={group.label??index}>{group.label?<p>{group.label}</p>:null}{group.items.map(({label,href,icon:Icon,match})=>{const selected=label==='Finance'&&pathname.startsWith('/finance/brain')?false:active(pathname,href,match);return <Link className={selected?'active':''} href={href} key={href}><Icon size={13}/><span>{label}</span></Link>})}</div>)}</nav><Link href="/settings?section=profile" className="b10-side-profile"><span>T</span><div><strong>Tatiyana</strong><small>View Profile</small></div><ChevronRight size={12}/></Link></aside>}
