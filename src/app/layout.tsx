@@ -20,6 +20,7 @@ import './batch5-money-goals-reference.css';
 import './batch5-tweaks.css';
 import './batch5-interaction-tweaks.css';
 import './batch5-brain-final.css';
+import './batch6-work-create-reference.css';
 import './dashboard-apple-lock.css';
 import './dashboard-apple-details.css';
 
