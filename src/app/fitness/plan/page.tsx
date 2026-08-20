@@ -33,7 +33,6 @@ export default async function PersonalFitnessPlanPage() {
           </div>
           <div className="mt-5 flex flex-wrap gap-2">
             <Link href="/glow-cards?kind=workout" className="rounded-full bg-[#1C1C1E] px-4 py-2.5 text-[12px] text-white">Make today&apos;s workout card</Link>
-            <button type="button" onClick={undefined} className="hidden" aria-hidden="true" />
           </div>
         </Card>
 
