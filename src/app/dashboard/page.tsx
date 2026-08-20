@@ -10,7 +10,7 @@ function getFallbackData(): LivingDashboardData {
   return {
     greeting: { label: 'Welcome', title: 'Your living dashboard is ready.', message: 'Anchor one priority early and keep your pace intentional.' },
     weekTheme: { title: 'Foundation Week', note: 'Set one clear direction for this week and keep it visible.' },
-    todayOverview: { tasksDueToday: 0, eventsToday: 0, activeRoutines: 0, activeGoals: 0 },
+    todayOverview: { tasksDueToday: 0, tasksCompletedToday: 0, tasksTotalToday: 0, eventsToday: 0, activeRoutines: 0, activeGoals: 0 },
     dailyFocus: null,
     topPriorityTasks: [],
     routinesForNow: [],
