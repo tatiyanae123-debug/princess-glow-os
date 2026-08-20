@@ -113,8 +113,10 @@ export async function getLivingDashboardData(userId: string): Promise<LivingDash
   ]);
 
   const activeTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'cancelled');
-  const topPriorityTasks = sortTasksByPriority(activeTasks).slice(0, 3);
-  const tasksDueToday = activeTasks.filter((task) => task.dueDate && isSameDay(task.dueDate, now)).length;
+  const topPriorityTasks = sortTasksByPriority(activeTasks).slice(0, 5);
+  const tasksForToday = tasks.filter((task) => task.status !== 'cancelled' && task.dueDate && isSameDay(task.dueDate, now));
+  const tasksCompletedToday = tasksForToday.filter((task) => task.status === 'done').length;
+  const tasksDueToday = tasksForToday.filter((task) => task.status !== 'done').length;
 
   const todaysEvents = events
     .filter((event) => isSameDay(event.startAt, now))
@@ -140,17 +142,23 @@ export async function getLivingDashboardData(userId: string): Promise<LivingDash
     ? Math.round(goals.reduce((total, goal) => total + goal.progress, 0) / goals.length)
     : 0;
 
-  const loggedHabitIds = new Set(todaysHabitLogs.map((log) => log.habitId));
-  const habitSummary = {
-    totalHabits: habits.length,
-    completedToday: habits.filter((habit) => loggedHabitIds.has(habit.id)).length,
-    habits: habits.slice(0, 6).map((habit) => ({
+  const habitLogCount = new Map(todaysHabitLogs.map((log) => [log.habitId, Math.max(0, log.count)]));
+  const habitRows = habits.slice(0, 6).map((habit) => {
+    const currentCount = habitLogCount.get(habit.id) ?? 0;
+    return {
       id: habit.id,
       name: habit.name,
       color: habit.color,
       targetCount: habit.targetCount,
-      completedToday: loggedHabitIds.has(habit.id),
-    })),
+      currentCount,
+      completedToday: currentCount >= habit.targetCount,
+    };
+  });
+  const completedToday = habits.filter((habit) => (habitLogCount.get(habit.id) ?? 0) >= habit.targetCount).length;
+  const habitSummary = {
+    totalHabits: habits.length,
+    completedToday,
+    habits: habitRows,
   };
 
   const pinnedNotes = notes.filter((note) => note.pinned);
@@ -240,6 +248,8 @@ export async function getLivingDashboardData(userId: string): Promise<LivingDash
     weekTheme: { title: glowWeeklyTheme.title, note: glowWeeklyTheme.focus },
     todayOverview: {
       tasksDueToday,
+      tasksCompletedToday,
+      tasksTotalToday: tasksForToday.length,
       eventsToday: todaysEvents.length,
       activeRoutines: routinesForNow.length,
       activeGoals: inProgressGoals.length,
