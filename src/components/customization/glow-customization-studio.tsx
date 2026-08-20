@@ -52,7 +52,6 @@ function apply(p: Prefs) {
   const r = root.style;
   const fonts = fontStacks(p.font);
 
-  // Customizer variables.
   r.setProperty('--glow-user-accent', p.accent);
   r.setProperty('--glow-user-surface', p.surface);
   r.setProperty('--glow-user-bg', p.background);
@@ -63,7 +62,6 @@ function apply(p: Prefs) {
   r.setProperty('--glow-user-shadow', String(p.shadow));
   r.setProperty('--glow-user-font', fonts.body);
 
-  // Existing Glow variables used throughout Batches 1–6.
   r.setProperty('--glow-accent', p.accent);
   r.setProperty('--room-accent', p.accent);
   r.setProperty('--glow-surface', p.surface);
@@ -74,7 +72,6 @@ function apply(p: Prefs) {
   r.setProperty('--glow-font-display', fonts.display);
   r.setProperty('--b6-plum', p.accent);
 
-  // Tailwind/rem typography responds immediately as well.
   r.fontSize = `${16 * p.fontScale}px`;
   root.dataset.glowCustomized = 'true';
 }
@@ -153,6 +150,19 @@ function validHex(value: string) {
   return /^#[0-9a-f]{6}$/i.test(value);
 }
 
+function imageAtPoint(event: MouseEvent) {
+  const target = event.target as HTMLElement | null;
+  const direct = target?.closest('img') as HTMLImageElement | null;
+  if (direct) return direct;
+
+  const editableHost = target?.closest('[data-glow-editable-image]');
+  const hosted = editableHost?.querySelector('img') as HTMLImageElement | null;
+  if (hosted) return hosted;
+
+  const stacked = document.elementsFromPoint(event.clientX, event.clientY);
+  return (stacked.find((element) => element instanceof HTMLImageElement) as HTMLImageElement | undefined) ?? null;
+}
+
 export function GlowCustomizationStudio() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -224,7 +234,7 @@ export function GlowCustomizationStudio() {
   useEffect(() => {
     if (!imageMode) return;
     const handler = (event: MouseEvent) => {
-      const img = (event.target as HTMLElement | null)?.closest('img') as HTMLImageElement | null;
+      const img = imageAtPoint(event);
       if (!img) return;
       event.preventDefault();
       event.stopPropagation();
@@ -312,7 +322,8 @@ export function GlowCustomizationStudio() {
       <button type="button" className="glow-customize-image" onClick={() => { setOpen(false); setImageMode(true); }}><ImagePlus size={14} />Replace any image</button>
       <button type="button" className="glow-customize-reset" onClick={() => { void reset(); }}><RotateCcw size={13} />Reset styles + this room&apos;s images</button>
       <div className="glow-customize-note"><SlidersHorizontal size={12} />Changes save on this device automatically.</div>
-      <input ref={input} type="file" accept="image/*" className="sr-only" onChange={(event) => { void choose(event); }} />
     </div> : null}
+
+    <input ref={input} type="file" accept="image/*" className="sr-only" aria-label="Choose replacement image" onChange={(event) => { void choose(event); }} />
   </>;
 }
