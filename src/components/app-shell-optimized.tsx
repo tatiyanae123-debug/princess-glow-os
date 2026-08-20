@@ -39,7 +39,7 @@ export function AppShell({children}:{children:React.ReactNode}){
     </div>
    </div>
    {!focus&&!isDashboard?<GlobalCommandSurface/>:null}
-   {!focus&&!isDashboard?<DeferredGlobalControls/>:null}
+   {!focus?<DeferredGlobalControls/>:null}
    {!focus?<GlowCustomizationStudio/>:null}
    {!focus?<SpotifyQuickDock/>:null}
   </div>
