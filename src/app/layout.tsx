@@ -24,6 +24,7 @@ import './batch6-work-create-reference.css';
 import './batch6-tweaks.css';
 import './dashboard-apple-lock.css';
 import './dashboard-apple-details.css';
+import './batch1-6-final-tweaks.css';
 
 export const metadata: Metadata = {
   title: 'Glow OS',
