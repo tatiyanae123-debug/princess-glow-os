@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Dialog } from '@/components/ui/dialog';
 import { TaskForm } from '@/components/tasks/task-form';
-import { TasksExecutionStudioV2 } from '@/components/tasks/tasks-execution-studio-v2';
+import { TasksExecutionStudioV3 } from '@/components/tasks/tasks-execution-studio-v3';
 import type { CalendarEvent, Task } from '@/lib/types';
 
 function stripRecordParams(params: URLSearchParams) {
@@ -24,7 +24,7 @@ export function TasksRouteExperience({ initialTasks, blockedTaskIds, calendarEve
     router.replace(next.toString() ? `/tasks?${next.toString()}` : '/tasks', { scroll: false });
   }
   return <>
-    <TasksExecutionStudioV2 initialTasks={initialTasks} blockedTaskIds={blockedTaskIds} calendarEvents={calendarEvents} modeName={modeName} />
+    <TasksExecutionStudioV3 initialTasks={initialTasks} blockedTaskIds={blockedTaskIds} calendarEvents={calendarEvents} modeName={modeName} />
     <Dialog open={Boolean(requestedId && selectedTask)} onClose={closeRecord} title={selectedTask ? `Task · ${selectedTask.title}` : 'Task'}>
       {selectedTask ? <TaskForm task={selectedTask} onSaved={() => { closeRecord(); router.refresh(); }} onCancel={closeRecord} /> : null}
     </Dialog>
