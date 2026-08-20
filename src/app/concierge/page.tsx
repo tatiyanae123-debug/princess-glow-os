@@ -1,29 +1,47 @@
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
-import { createConciergeProposalAction, decideConciergeProposalAction, reverseConciergeProposalAction } from '@/app/actions/concierge';
 import { getAiProposals } from '@/lib/data/completion-v1';
-import { Check, RotateCcw, Sparkles, X } from 'lucide-react';
+import { buildPersonalContext } from '@/lib/intelligence/context';
+import { getNotesByUser } from '@/lib/data/notes';
+import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
+import { decideConciergeProposalAction, reverseConciergeProposalAction } from '@/app/actions/concierge';
+import { BrainCircuit, CalendarDays, Check, Clock3, FileUp, Mic, NotebookPen, RotateCcw, Search, Sparkles, X } from 'lucide-react';
+import { ImmersiveRoomChrome, ImmersiveTopControls, OpenGlowCommand, QuickAddGlow } from '@/components/immersive/immersive-room-chrome';
 
-export const dynamic = 'force-dynamic';
-const fieldClass='w-full rounded-[8px] border border-[#eee4e0] bg-white px-3 py-2 text-[9px] outline-none focus:border-[#c86a7b]';
-type Payload=Record<string,unknown>&{actionType?:string;task?:{title?:string;priority?:string;dueDate?:string|null};execution?:{entityType?:string;entityId?:string;reversedAt?:string}};
+export const dynamic='force-dynamic';
+const BG='https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=2200&q=92';
+const PEARL='https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=700&q=88';
+
+type Payload=Record<string,unknown>&{execution?:{entityId?:string;reversedAt?:string}};
 const payloadOf=(v:unknown)=>v&&typeof v==='object'?v as Payload:{};
+function when(date:Date){const ms=date.getTime()-Date.now();const h=Math.round(ms/3600000);if(h>=0&&h<24)return h===0?'Soon':`In ${h}h`;const d=Math.round(ms/86400000);return d===0?'Today':d===1?'Tomorrow':date.toLocaleDateString('en-US',{month:'short',day:'numeric'});}
 
 export default async function ConciergePage(){
- const s=await auth();if(!s?.user?.id)redirect('/sign-in');
- const proposals=await getAiProposals(s.user.id);
- const active=proposals.filter(p=>p.status==='pending').slice(0,4);
- const upcoming=proposals.filter(p=>p.status!=='pending').slice(0,3);
- return <AppShell><div className="batch2-page space-y-4">
-  <header><p className="batch2-kicker">2. Concierge</p><h1 className="batch2-title mt-3">Concierge</h1><p className="batch2-subtitle">Your personal assistant, anticipating and handling the details.</p></header>
-  <nav className="batch2-tabs"><span className="active">Requests</span><Link href="/planning">Planning</Link><Link href="/calendar">Reservations</Link><Link href="/projects">Shopping</Link><Link href="/search">Research</Link></nav>
-  <section>
-   <div className="mb-3 flex items-center justify-between"><h2 className="font-serif text-[15px]">Today&apos;s Requests</h2><details className="relative"><summary className="batch2-btn list-none cursor-pointer">+ New Request</summary><form action={createConciergeProposalAction} className="absolute right-0 z-30 mt-2 w-[330px] space-y-2 rounded-[12px] border border-[#eee4e0] bg-white p-4 shadow-xl"><input type="hidden" name="actionType" value="advisory"/><input name="intent" required placeholder="Request" className={fieldClass}/><textarea name="summary" required rows={2} placeholder="What should Glow help with?" className={fieldClass}/><textarea name="reason" required rows={3} placeholder="Why does this matter?" className={fieldClass}/><button className="batch2-btn batch2-btn-primary w-full">Save request</button></form></details></div>
-   <div className="batch2-request-list">{active.length?active.map((p,i)=>{const payload=payloadOf(p.payload);return <div key={p.id} className="batch2-row batch2-request-item"><span className="grid h-6 w-6 place-items-center rounded-[6px] border border-[#eee6e2] text-[#b45d70]">{i+1}</span><div><p className="text-[9px] font-medium">{p.summary}</p><p className="batch2-mini mt-1 line-clamp-1">{p.reason}</p></div><span className="batch2-mini">{p.createdAt.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span><div className="flex gap-1"><form action={decideConciergeProposalAction.bind(null,p.id,'approved')}><button className="rounded-[6px] bg-[#edf3e9] px-2 py-1.5 text-[7.5px] text-[#61755a]"><Check size={9}/></button></form><form action={decideConciergeProposalAction.bind(null,p.id,'rejected')}><button className="rounded-[6px] border border-[#eee4e0] px-2 py-1.5 text-[7.5px] text-[#9b7b75]"><X size={9}/></button></form>{payload.actionType==='create_task'?<span className="batch2-mini self-center">Task</span>:null}</div></div>}):<div className="batch2-card p-7 text-center text-[9px] text-[#968b84]">No pending requests. Add one when you want Glow to help coordinate something.</div>}</div>
-  </section>
-  <section><h2 className="mb-3 font-serif text-[15px]">Upcoming</h2><div className="grid gap-3 sm:grid-cols-3">{upcoming.length?upcoming.map(p=>{const payload=payloadOf(p.payload);const canReverse=p.status==='approved'&&p.reversible&&payload.execution?.entityId&&!payload.execution.reversedAt;return <div key={p.id} className="batch2-card min-h-[115px] p-4"><p className="text-[8px] font-medium line-clamp-2">{p.summary}</p><p className="batch2-mini mt-3 capitalize">{p.status}</p>{canReverse?<form action={reverseConciergeProposalAction.bind(null,p.id)} className="mt-3"><button className="inline-flex items-center gap-1 text-[7.5px] text-[#b45d70]"><RotateCcw size={9}/>Undo action</button></form>:null}</div>}):['Travel planning','Client dinner','Interview prep'].map(label=><div key={label} className="batch2-card min-h-[115px] p-4"><p className="text-[8px] font-medium">{label}</p><p className="batch2-mini mt-3">No saved request yet</p></div>)}</div></section>
-  <section className="batch2-card grid min-h-[120px] items-center overflow-hidden p-5 sm:grid-cols-[120px_1fr] bg-[linear-gradient(100deg,#f6eee8,#fff)]"><div className="h-[78px] rounded-[9px] bg-[radial-gradient(circle_at_40%_35%,#fff,#e6d8cc_60%,#cbb7a7)]"/><div className="px-5"><Sparkles size={12} className="text-[#b55d70]"/><p className="mt-2 font-serif text-[18px] leading-6">How can I help make<br/>your life easier today?</p><Link href="/search" className="mt-2 inline-block text-[8px] text-[#b45d70]">Ask Glow →</Link></div></section>
+ const session=await auth();if(!session?.user?.id)redirect('/sign-in');const userId=session.user.id;const name=session.user.name?.split(' ')[0]??'Tatiyana';
+ const [proposals,context,notes,events]=await Promise.all([getAiProposals(userId),buildPersonalContext(userId).catch(()=>null),getNotesByUser(userId),getCalendarEventsByUser(userId)]);
+ const pending=proposals.filter(p=>p.status==='pending').slice(0,5);const recent=proposals.filter(p=>p.status!=='pending').slice(0,4);const upcomingEvents=events.filter(e=>e.startAt.getTime()>=Date.now()).sort((a,b)=>a.startAt.getTime()-b.startAt.getTime()).slice(0,2);
+ const suggestions:string[]=[];
+ if(context?.recommendations?.[0]?.title)suggestions.push(context.recommendations[0].title);
+ if(upcomingEvents[0])suggestions.push(`${upcomingEvents[0].title} · ${when(upcomingEvents[0].startAt)}`);
+ if(context?.attentionSignals?.[0]?.label)suggestions.push(context.attentionSignals[0].label);
+ if(notes[0]?.title)suggestions.push(`Continue ${notes[0].title}`);
+ if(!suggestions.length)suggestions.push('Glow suggestions will appear as your real data creates useful signals.');
+ return <AppShell><div className="ir-world concierge-world">
+  <img className="ir-backdrop" src={BG} alt="Pearl floral concierge environment" data-glow-image-key="concierge-background"/>
+  <ImmersiveRoomChrome name={name} image={session.user.image}/><ImmersiveTopControls/>
+  <main className="concierge-main">
+   <header className="concierge-title"><span>✧</span><h1>Glow Concierge</h1><p>Your intelligent assistant.</p><i/></header>
+   <section className="concierge-console ir-glass">
+    <div className="concierge-hello"><h2>Hello, {name}.</h2><p>How can I help you today?</p></div>
+    <OpenGlowCommand label="Ask me anything..."/>
+    <div className="concierge-popular"><span>✧ Popular Actions</span><div><Link href="/planning">Plan my day</Link><Link href="/focus">Find time to work out</Link><Link href="/work/interviews">Prep for interview</Link><Link href="/food">Grocery list</Link></div></div>
+    <div className="concierge-capabilities"><Link href="/brain"><span><BrainCircuit/></span><strong>Open Brain</strong><small>Get insights</small></Link><Link href="/memory"><span><Search/></span><strong>Search Memory</strong><small>Find anything</small></Link><div><span><NotebookPen/></span><strong>Create Task</strong><small>Add to your list</small><QuickAddGlow module="task" label="Create"/></div><Link href="/intake"><span><FileUp/></span><strong>Import Info</strong><small>From anywhere</small></Link></div>
+   </section>
+   <section className="concierge-suggestions ir-glass"><div className="concierge-strip-title">✧ Glow Suggestions</div><div className="concierge-suggestion-grid">{suggestions.slice(0,3).map((s,i)=><article key={`${s}-${i}`}><img src={i%2?BG:PEARL} alt="" data-glow-image-key={`concierge-suggestion-${i}`}/><p>{s}</p></article>)}</div></section>
+   <nav className="concierge-dock ir-glass"><Link href="/search"><span><Mic/></span><small>Voice</small></Link><Link href="/calendar"><span><CalendarDays/></span><small>Calendar</small></Link><button className="center" onClick={undefined}><span>✦</span><small>Glow</small></button><Link href="/notes"><span><NotebookPen/></span><small>Notes</small></Link><Link href="/reminders"><span><Clock3/></span><small>Reminders</small></Link></nav>
+  </main>
+  <details id="concierge-history" className="concierge-history ir-glass"><summary><Clock3 size={14}/> Requests <b>{pending.length}</b></summary><div>{pending.length?pending.map(p=><article key={p.id}><div><strong>{p.summary}</strong><small>{p.reason}</small></div><div><form action={decideConciergeProposalAction.bind(null,p.id,'approved')}><button aria-label="Approve"><Check size={11}/></button></form><form action={decideConciergeProposalAction.bind(null,p.id,'rejected')}><button aria-label="Reject"><X size={11}/></button></form></div></article>):<p className="ir-empty">No pending requests.</p>}{recent.map(p=>{const payload=payloadOf(p.payload);const canReverse=p.status==='approved'&&p.reversible&&payload.execution?.entityId&&!payload.execution.reversedAt;return <article key={p.id}><div><strong>{p.summary}</strong><small>{p.status}</small></div>{canReverse?<form action={reverseConciergeProposalAction.bind(null,p.id)}><button aria-label="Undo"><RotateCcw size={11}/></button></form>:null}</article>})}</div></details>
  </div></AppShell>;
 }
