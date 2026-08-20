@@ -12,7 +12,14 @@ import { getBriefings } from '@/lib/data/completion-v1';
 import { getLifeModes } from '@/lib/intelligence/adaptive-os';
 
 export const dynamic = 'force-dynamic';
-const dateKey = (date: Date) => date.toISOString().slice(0, 10);
+
+function dateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 const sameDay = (value: Date, target: Date) => value.toDateString() === target.toDateString();
 
 export default async function EveningDebriefPage() {
@@ -37,13 +44,21 @@ export default async function EveningDebriefPage() {
 
   const activeMode = modes.find((mode) => mode.isActive);
   const completed = tasks.filter((task) => task.status === 'done' && task.completedAt && sameDay(task.completedAt, now));
-  const open = tasks.filter((task) => task.status !== 'done' && task.status !== 'cancelled');
+  const priorityRank = { urgent: 0, high: 1, medium: 2, low: 3 } as const;
+  const open = tasks
+    .filter((task) => task.status !== 'done' && task.status !== 'cancelled')
+    .sort((a, b) => {
+      const priorityDiff = priorityRank[a.priority] - priorityRank[b.priority];
+      if (priorityDiff !== 0) return priorityDiff;
+      return (a.dueDate?.getTime() ?? Number.MAX_SAFE_INTEGER) - (b.dueDate?.getTime() ?? Number.MAX_SAFE_INTEGER);
+    });
   const todayEvents = events.filter((event) => sameDay(event.startAt, now));
   const tomorrowEvents = events.filter((event) => sameDay(event.startAt, tomorrow)).sort((a, b) => a.startAt.getTime() - b.startAt.getTime());
-  const loggedHabitIds = new Set(habitLogs.filter((log) => log.loggedDate === dateKey(now) && log.count > 0).map((log) => log.habitId));
+  const todayKey = dateKey(now);
+  const loggedHabitIds = new Set(habitLogs.filter((log) => log.loggedDate === todayKey && log.count > 0).map((log) => log.habitId));
   const habitsDone = habits.filter((habit) => loggedHabitIds.has(habit.id)).length;
   const focusMinutes = focus.filter((item) => sameDay(item.startedAt, now)).reduce((sum, item) => sum + (item.actualMinutes ?? 0), 0);
-  const alreadyClosed = briefings.some((briefing) => briefing.kind === 'evening' && briefing.periodKey === dateKey(now));
+  const alreadyClosed = briefings.some((briefing) => briefing.kind === 'evening' && briefing.periodKey === todayKey);
 
   return (
     <AppShell>
