@@ -42,6 +42,24 @@ export async function saveEveningReflectionAction(formData: FormData): Promise<v
   revalidatePath('/briefings/evening');
 }
 
+export async function saveTomorrowDraftAction(titles: string[]): Promise<void> {
+  const userId = await requireUser();
+  const clean = titles.map((title) => String(title).trim()).filter(Boolean).slice(0, 3);
+  if (!clean.length) return;
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const periodKey = tomorrow.toISOString().slice(0, 10);
+  await createNote(userId, {
+    title: `Tomorrow Top 3 · ${periodKey}`,
+    content: clean.map((title, index) => `${index + 1}. ${title}`).join('\n'),
+    tags: ['tomorrow-top3', periodKey],
+    pinned: false,
+  });
+  revalidatePath('/briefings/morning');
+  revalidatePath('/briefings/evening');
+  revalidatePath('/dashboard');
+}
+
 export async function moveTaskToTomorrowAction(formData: FormData): Promise<void> {
   await requireUser();
   const taskId = String(formData.get('taskId') ?? '').trim();
