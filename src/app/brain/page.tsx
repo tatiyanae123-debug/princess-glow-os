@@ -5,7 +5,7 @@ import { AppShell } from '@/components/app-shell';
 import { buildPersonalContext } from '@/lib/intelligence/context';
 import { buildBrainConnections, buildBrainMapDomains } from '@/lib/intelligence/brain-connections';
 import { getNotesByUser } from '@/lib/data/notes';
-import { BrainCircuit, Camera, CircleDot, Gem, Lightbulb, Network, Sparkles, Target } from 'lucide-react';
+import { Camera, CircleDot, Gem, Lightbulb, Network, Sparkles } from 'lucide-react';
 import { ImmersiveRoomChrome, ImmersiveTopControls, OpenGlowCommand } from '@/components/immersive/immersive-room-chrome';
 
 export const dynamic='force-dynamic';
@@ -21,8 +21,7 @@ export default async function BrainPage(){
  const patternCount=context?.patterns?.length??0;const memoryCount=notes.length;const insightCount=(context?.recommendations?.length??0)+(context?.attentionSignals?.length??0);const clarity=focusScore!=null?Math.max(0,Math.min(100,Math.round(focusScore))):null;
  const todayInsights=[context?.patterns?.[0]?.title,context?.recommendations?.[0]?.title,context?.attentionSignals?.[0]?.label].filter((x):x is string=>Boolean(x));
  const revelations=[...(context?.patterns??[]).slice(0,2).map(p=>({title:p.title,when:'Pattern'})),...(context?.recommendations??[]).slice(0,2).map(r=>({title:r.title,when:'Recommendation'})),...notes.slice(0,2).map(n=>({title:n.title,when:recency(n.updatedAt)}))].slice(0,3);
- const active=instances.slice(0,4);
- const orbActive=connections.totalInstances>0||memoryCount>0||patternCount>0||Boolean(context);
+ const active=instances.slice(0,4);const orbActive=connections.totalInstances>0||memoryCount>0||patternCount>0||Boolean(context);
  return <AppShell><div className="ir-world brain-world">
   <img className="ir-backdrop" src={BG} alt="Ethereal intelligence environment" data-glow-image-key="brain-background"/>
   <div className="brain-atmosphere"/><ImmersiveRoomChrome name={name} image={session.user.image}/><ImmersiveTopControls/>
@@ -32,7 +31,7 @@ export default async function BrainPage(){
    <section className="brain-insights ir-glass"><h3>✧ Today&apos;s Insights</h3>{todayInsights.length?todayInsights.map((v,i)=><p key={v}><span>{['◇','✦','✿'][i]??'✧'}</span>{v}</p>):<div className="ir-empty">No new insight signals yet.</div>}<Link href="/brain/insights">View All</Link></section>
    <aside className="brain-right">
     <section className="ir-glass brain-overview"><h3>✧ Brain Overview</h3><div className="brain-overview-body"><div className="brain-clarity" style={{'--brain-score':`${clarity??0}%`} as React.CSSProperties}><strong>{clarity==null?'—':`${clarity}%`}</strong><small>{clarity==null?'Not enough data':'Clarity'}</small></div><div className="brain-counts"><p><Network/>Connections <b>{connections.totalInstances}</b></p><p><Sparkles/>Patterns <b>{patternCount}</b></p><p><Gem/>Memories <b>{memoryCount}</b></p><p><Lightbulb/>Insights <b>{insightCount}</b></p></div></div><Link href="/brain/insights">Explore Deeper</Link></section>
-    <section className="ir-glass brain-connections"><div className="brain-card-head"><h3>✧ Active Connections</h3><Link href="/brain/connections">View All</Link></div>{active.length?active.map((item,i)=><Link href="/brain/connections" key={`${item.title}-${i}`}><img src={i%2?WATER:BLOOM} alt="" data-glow-image-key={`brain-connection-${i}`}/><div><strong>{item.title}</strong><small>{item.subtitle||item.typeLabel||'Stored relation'}</small></div><span>✦</span></Link>):<div className="ir-empty">No stored connections yet.</div>}</section>
+    <section className="ir-glass brain-connections"><div className="brain-card-head"><h3>✧ Active Connections</h3><Link href="/brain/connections">View All</Link></div>{active.length?active.map((item,i)=><Link href={item.href} key={`${item.id}-${i}`}><img src={i%2?WATER:BLOOM} alt="" data-glow-image-key={`brain-connection-${i}`}/><div><strong>{item.title}</strong><small>{item.detail}</small></div><span>✦</span></Link>):<div className="ir-empty">No stored connections yet.</div>}</section>
     <section className="ir-glass brain-revelations"><div className="brain-card-head"><h3>✧ Recent Revelations</h3><Link href="/observations">View All</Link></div>{revelations.length?revelations.map((r,i)=><article key={`${r.title}-${i}`}><img src={i%2?BLOOM:WATER} alt="" data-glow-image-key={`brain-revelation-${i}`}/><p>{r.title}</p><small>{r.when}</small></article>):<div className="ir-empty">No revelations yet. Glow will surface them as patterns emerge.</div>}</section>
    </aside>
    <section className="brain-command ir-glass"><OpenGlowCommand/><div><Link href="/brain/insights">Find Patterns</Link><Link href="/planning">Plan My Day</Link><Link href="/goals">Optimize Goals</Link><Link href="/creative-studio">Creative Spark</Link></div></section>
