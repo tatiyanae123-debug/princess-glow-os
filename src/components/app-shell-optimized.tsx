@@ -6,6 +6,7 @@ import { X } from 'lucide-react';
 import { Sidebar } from '@/components/ui/sidebar';
 import { Batch6Sidebar } from '@/components/batch6/batch6-sidebar';
 import { Batch6TopControls } from '@/components/batch6/batch6-top-controls';
+import { GlowCustomizationStudio } from '@/components/customization/glow-customization-studio';
 import { GlowProvider } from '@/lib/context/glow-provider';
 import { GlobalHeader } from '@/components/global-header';
 import { DeferredGlobalControls } from '@/components/deferred-global-controls';
@@ -108,7 +109,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <main className={`${isBatch6 ? 'relative ' : ''}${isDashboard ? 'min-w-0 w-full flex-1 overflow-x-clip bg-white p-0' : 'min-h-screen min-w-0 bg-white px-4 pb-20 pt-4 sm:px-5 md:px-6 lg:px-7 lg:pt-5'}`}>{isBatch6 ? <Batch6TopControls /> : null}{content}</main>
           </div>
         </div>
-        <GlobalCommandSurface /><DeferredGlobalControls />
+        <GlobalCommandSurface /><DeferredGlobalControls /><GlowCustomizationStudio />
       </div>
     </GlowProvider>;
   }
@@ -121,6 +122,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
     </div>
     {focus ? <button type="button" onClick={exitFocus} className="fixed right-5 top-5 z-[100] inline-flex h-10 items-center gap-2 rounded-full border border-[#E9E1DE] bg-white px-4 text-[13px] font-medium text-[#44403d] shadow-[0_8px_28px_rgba(53,38,31,.08)]"><X size={15} />Exit Focus</button> : null}
-    {!focus ? <DeferredGlobalControls /> : null}{!focus ? <GlobalCommandSurface /> : null}
+    {!focus ? <DeferredGlobalControls /> : null}{!focus ? <GlobalCommandSurface /> : null}{!focus ? <GlowCustomizationStudio /> : null}
   </GlowProvider>;
 }
