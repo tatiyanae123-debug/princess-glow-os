@@ -46,10 +46,11 @@ export default async function DashboardPage() {
   if (!session?.user?.id) redirect('/sign-in');
   const userId = session.user.id;
   const userName = session.user.name?.split(' ')[0] ?? 'Tatiyana';
+  const userImage = session.user.image ?? null;
 
   let dashboard: React.ReactNode;
   if (!process.env.DATABASE_URL) {
-    dashboard = <LivingDashboard data={getFallbackData()} error="DATABASE_URL is not configured." userName={userName} />;
+    dashboard = <LivingDashboard data={getFallbackData()} error="DATABASE_URL is not configured." userName={userName} userImage={userImage} />;
   } else {
     try {
       const { getLivingDashboardData } = await import('@/lib/dashboard/living-dashboard');
@@ -57,10 +58,10 @@ export default async function DashboardPage() {
         getLivingDashboardData(userId),
         getDashboardInsight(userId),
       ]);
-      dashboard = <LivingDashboard data={data} insight={insight} userName={userName} />;
+      dashboard = <LivingDashboard data={data} insight={insight} userName={userName} userImage={userImage} />;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      dashboard = <LivingDashboard data={getFallbackData()} error={message} userName={userName} />;
+      dashboard = <LivingDashboard data={getFallbackData()} error={message} userName={userName} userImage={userImage} />;
     }
   }
 
