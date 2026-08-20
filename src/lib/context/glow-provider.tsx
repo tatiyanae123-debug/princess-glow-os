@@ -71,6 +71,14 @@ type GlowContextValue = {
 
 const GlowContext = createContext<GlowContextValue | null>(null);
 const MODE_STORAGE_KEY = 'glow-os:productivity-mode:v1';
+const MODE_COOKIE_KEY = 'glow-os-productivity-mode';
+
+function readModeCookie(): ProductivityMode | null {
+  const pair = document.cookie.split('; ').find((item) => item.startsWith(`${MODE_COOKIE_KEY}=`));
+  if (!pair) return null;
+  const mode = decodeURIComponent(pair.split('=').slice(1).join('=')) as ProductivityMode;
+  return mode in PRODUCTIVITY_MODES ? mode : null;
+}
 
 export function GlowProvider({ children }: { children: ReactNode }) {
   const { themeId, setTheme } = useTheme();
@@ -87,8 +95,10 @@ export function GlowProvider({ children }: { children: ReactNode }) {
   const [productivityMode, setProductivityModeState] = useState<ProductivityMode>('normal');
 
   useEffect(() => {
+    const cookieMode = readModeCookie();
     const stored = window.localStorage.getItem(MODE_STORAGE_KEY) as ProductivityMode | null;
-    if (stored && stored in PRODUCTIVITY_MODES) setProductivityModeState(stored);
+    if (cookieMode) setProductivityModeState(cookieMode);
+    else if (stored && stored in PRODUCTIVITY_MODES) setProductivityModeState(stored);
   }, []);
 
   useEffect(() => {
