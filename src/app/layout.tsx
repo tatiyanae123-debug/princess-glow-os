@@ -46,6 +46,7 @@ import './immersive-brain-concierge.css';
 import './immersive-brain-concierge-final-audit.css';
 import './system-wide-final-audit.css';
 import './glow-v4-calm-system.css';
+import { GlobalGlowIntelligence } from '@/components/life-intelligence/global-glow-intelligence';
 
 export const metadata: Metadata = {title:'Glow OS',description:'A calm intelligent personal life operating system'};
-export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body>{children}</body></html>}
+export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body>{children}<GlobalGlowIntelligence/></body></html>}
