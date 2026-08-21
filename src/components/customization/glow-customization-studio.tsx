@@ -192,28 +192,30 @@ export function GlowCustomizationStudio() {
 
   useEffect(() => {
     let stopped = false;
+    const activeUrls = urls.current;
+    const activeHydration = hydration.current;
 
     const hydrate = async (img: HTMLImageElement, index: number) => {
       const key = stableImageKey(img, index, pathname);
-      const known = urls.current.get(key);
+      const known = activeUrls.get(key);
       if (known) {
         if (img.src !== known) img.src = known;
         img.dataset.glowUserReplaced = 'true';
         return;
       }
-      if (hydration.current.has(key)) return;
-      hydration.current.add(key);
+      if (activeHydration.has(key)) return;
+      activeHydration.add(key);
       try {
         const blob = await getStoredImage(key);
         if (!blob || stopped) return;
         const url = URL.createObjectURL(blob);
-        urls.current.set(key, url);
+        activeUrls.set(key, url);
         img.src = url;
         img.dataset.glowUserReplaced = 'true';
       } catch {
         // IndexedDB can be unavailable in strict/private browser contexts.
       } finally {
-        hydration.current.delete(key);
+        activeHydration.delete(key);
       }
     };
 
@@ -225,9 +227,9 @@ export function GlowCustomizationStudio() {
     return () => {
       stopped = true;
       observer.disconnect();
-      urls.current.forEach((url) => URL.revokeObjectURL(url));
-      urls.current.clear();
-      hydration.current.clear();
+      activeUrls.forEach((url) => URL.revokeObjectURL(url));
+      activeUrls.clear();
+      activeHydration.clear();
     };
   }, [pathname]);
 
