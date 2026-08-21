@@ -75,7 +75,7 @@ export async function intentionalSkipHabitAction(raw: unknown) {
   const result = await data.intentionalSkipHabit(userId, parsed.habitId, parsed.dateKey, parsed.reason);
   if (!result) throw new Error('That habit is no longer available.');
   refreshHabitSurfaces();
-  return { data: result };
+  return { data: result, error: undefined as string | undefined };
 }
 
 export async function createHabitTriggerAction(raw: unknown) {
