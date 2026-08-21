@@ -1,0 +1,20 @@
+'use server';
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+import * as data from '@/lib/data/advanced-wellness';
+
+async function requireUser(){const session=await auth();if(!session?.user?.id)redirect('/sign-in');return session.user.id}
+function refresh(){['/wellness','/wellness/recovery','/today','/dashboard','/routines','/habits','/fitness'].forEach(p=>revalidatePath(p))}
+const checkSchema=z.object({state:z.string().min(1).max(80),need:z.string().min(1).max(80),activation:z.string().max(40).nullable().optional(),energy:z.string().max(40).nullable().optional(),bodySignals:z.array(z.string().min(1).max(60)).max(12).optional(),notes:z.string().max(1200).optional()});
+const protocolSchema=z.object({protocolKey:z.string().min(1).max(80),title:z.string().min(1).max(160),mode:z.enum(['full','standard','quick','minimum']),queue:z.array(z.object({id:z.string().min(1).max(80),title:z.string().min(1).max(160),seconds:z.number().int().min(0).max(3600),detail:z.string().max(400).optional()})).min(1).max(30),beforeActivation:z.string().max(40).nullable().optional(),context:z.record(z.unknown()).optional()});
+const stepSchema=z.object({runId:z.string().min(1),stepId:z.string().min(1),status:z.enum(['completed','skipped']),actualSeconds:z.number().int().min(0).max(3600)});
+export async function saveWellnessCheckInAction(input:unknown){const userId=await requireUser();const p=checkSchema.safeParse(input);if(!p.success)return{data:null,error:'Wellness check-in is incomplete.'};const row=await data.saveWellnessCheckIn(userId,p.data);refresh();return{data:row,error:null}}
+export async function startWellnessProtocolAction(input:unknown){const userId=await requireUser();const p=protocolSchema.safeParse(input);if(!p.success)return{data:null,error:'Wellness reset could not start because its plan was invalid.'};const row=await data.startWellnessProtocol(userId,p.data);if(!row)return{data:null,error:'This Wellness reset has no valid steps.'};refresh();return{data:row,error:null}}
+export async function recordWellnessProtocolStepAction(input:unknown){const userId=await requireUser();const p=stepSchema.safeParse(input);if(!p.success)return{data:null,error:'Glow could not save this Wellness step.'};const row=await data.recordWellnessProtocolStep(userId,p.data);if(!row)return{data:null,error:'This step is not part of the active Wellness reset.'};refresh();return{data:row,error:null}}
+export async function completeWellnessProtocolAction(runId:string,afterEffect?:string|null){const userId=await requireUser();const row=await data.completeWellnessProtocol(userId,runId,afterEffect);if(!row)return{data:null,error:'Finish or intentionally skip each reset step before closing it.'};refresh();return{data:row,error:null}}
+export async function abandonWellnessProtocolAction(runId:string){const userId=await requireUser();const row=await data.abandonWellnessProtocol(userId,runId);refresh();return row?{data:row,error:null}:{data:null,error:'This Wellness reset is no longer active.'}}
+export async function logWellnessHydrationAction(kind:'water'|'electrolytes',amountMl?:number|null){const userId=await requireUser();if(kind!=='water'&&kind!=='electrolytes')return{data:null,error:'Unsupported hydration type.'};const row=await data.logHydration(userId,kind,amountMl);refresh();return{data:row,error:null}}
+export async function saveWellnessObservationAction(input:{kind:string;title:string;body:string;evidence?:Record<string,unknown>;confidence?:string}){const userId=await requireUser();if(!input.title?.trim()||!input.body?.trim())return{data:null,error:'Wellness note is incomplete.'};const row=await data.saveWellnessObservation(userId,input);revalidatePath('/wellness');return{data:row,error:null}}
+export async function dismissWellnessObservationAction(id:string){const userId=await requireUser();const row=await data.dismissWellnessObservation(userId,id);revalidatePath('/wellness');return row?{data:row,error:null}:{data:null,error:'Wellness observation was not found.'}}
