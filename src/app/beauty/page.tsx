@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { BeautyOperatingStudio } from '@/components/beauty/beauty-operating-studio';
+import { BeautyIntelligenceHub } from '@/components/beauty/beauty-intelligence-hub';
 import { BeautySupportPanels } from '@/components/beauty/beauty-support-panels';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
@@ -13,8 +13,19 @@ const beautyKeywords=['beauty','facial','skin','skincare','brow','brows','lash',
 function isBeautyEvent(title:string,description:string|null){const haystack=`${title} ${description??''}`.toLowerCase();return beautyKeywords.some(keyword=>haystack.includes(keyword))}
 
 export default async function BeautyPage(){
-  const session=await auth();if(!session?.user?.id)redirect('/sign-in');const userId=session.user.id;
-  const [routines,events,products,intelligence]=await Promise.all([getBeautyRoutinesByUser(userId),getCalendarEventsByUser(userId),getBeautyProducts(userId),getBeautyIntelligenceState(userId)]);
-  const now=new Date();const upcomingAppointments=events.filter(event=>event.startAt.getTime()>=now.getTime()&&isBeautyEvent(event.title,event.description)).sort((a,b)=>a.startAt.getTime()-b.startAt.getTime()).slice(0,5);
-  return <AppShell><BeautyOperatingStudio routines={routines} products={products} upcomingAppointments={upcomingAppointments} intelligence={intelligence}/><BeautySupportPanels stepLogs={intelligence.stepLogs} readiness={intelligence.readiness}/></AppShell>;
+  const session=await auth();
+  if(!session?.user?.id)redirect('/sign-in');
+  const userId=session.user.id;
+  const [routines,events,products,intelligence]=await Promise.all([
+    getBeautyRoutinesByUser(userId),
+    getCalendarEventsByUser(userId),
+    getBeautyProducts(userId),
+    getBeautyIntelligenceState(userId),
+  ]);
+  const now=new Date();
+  const upcomingAppointments=events.filter(event=>event.startAt.getTime()>=now.getTime()&&isBeautyEvent(event.title,event.description)).sort((a,b)=>a.startAt.getTime()-b.startAt.getTime()).slice(0,5);
+  return <AppShell>
+    <BeautyIntelligenceHub routines={routines} products={products} upcomingAppointments={upcomingAppointments} intelligence={intelligence}/>
+    <BeautySupportPanels stepLogs={intelligence.stepLogs} readiness={intelligence.readiness}/>
+  </AppShell>;
 }
