@@ -1,0 +1,107 @@
+import { boolean, index, integer, jsonb, pgTable, real, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+import { users } from './auth';
+
+export const workoutTemplates = pgTable('workout_templates', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  category: text('category').notNull().default('strength'),
+  equipment: text('equipment').notNull().default('bodyweight'),
+  fullMinutes: integer('full_minutes').notNull().default(30),
+  quickMinutes: integer('quick_minutes').notNull().default(20),
+  minimumMinutes: integer('minimum_minutes').notNull().default(10),
+  difficulty: integer('difficulty').notNull().default(3),
+  primaryMuscles: text('primary_muscles').array().notNull().default([]),
+  lowImpact: boolean('low_impact').notNull().default(false),
+  archived: boolean('archived').notNull().default(false),
+  notes: text('notes'),
+  createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).notNull().defaultNow(),
+}, (t) => ({ userIdx: index('workout_templates_user_idx').on(t.userId) }));
+
+export const workoutExercises = pgTable('workout_exercises', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  templateId: text('template_id').notNull().references(() => workoutTemplates.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  position: integer('position').notNull().default(0),
+  sets: integer('sets').notNull().default(3),
+  reps: integer('reps').notNull().default(10),
+  seconds: integer('seconds'),
+  restSeconds: integer('rest_seconds').notNull().default(75),
+  weightLb: real('weight_lb'),
+  muscleGroup: text('muscle_group'),
+  equipment: text('equipment'),
+  formCue: text('form_cue'),
+  instructions: text('instructions'),
+  substitutions: text('substitutions').array().notNull().default([]),
+  optional: boolean('optional').notNull().default(false),
+  createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+}, (t) => ({ templatePositionIdx: index('workout_exercises_template_position_idx').on(t.templateId, t.position) }));
+
+export const workoutRuns = pgTable('workout_runs', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  templateId: text('template_id').references(() => workoutTemplates.id, { onDelete: 'set null' }),
+  name: text('name').notNull(),
+  version: text('version').notNull().default('full'),
+  status: text('status').notNull().default('active'),
+  currentExerciseIndex: integer('current_exercise_index').notNull().default(0),
+  startedAt: timestamp('started_at', { mode: 'date' }).notNull().defaultNow(),
+  completedAt: timestamp('completed_at', { mode: 'date' }),
+  activeSeconds: integer('active_seconds').notNull().default(0),
+  energyBefore: integer('energy_before'),
+  sorenessBefore: integer('soreness_before'),
+  readiness: text('readiness'),
+  equipment: text('equipment'),
+  notes: text('notes'),
+  feelingAfter: text('feeling_after'),
+  sessionId: text('session_id'),
+  context: jsonb('context').$type<Record<string, unknown>>().notNull().default({}),
+}, (t) => ({ userStatusIdx: index('workout_runs_user_status_idx').on(t.userId, t.status), startedIdx: index('workout_runs_started_idx').on(t.userId, t.startedAt) }));
+
+export const workoutSetLogs = pgTable('workout_set_logs', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  runId: text('run_id').notNull().references(() => workoutRuns.id, { onDelete: 'cascade' }),
+  exerciseId: text('exercise_id').references(() => workoutExercises.id, { onDelete: 'set null' }),
+  exerciseName: text('exercise_name').notNull(),
+  setNumber: integer('set_number').notNull(),
+  reps: integer('reps'),
+  seconds: integer('seconds'),
+  weightLb: real('weight_lb'),
+  rpe: integer('rpe'),
+  completed: boolean('completed').notNull().default(true),
+  skipped: boolean('skipped').notNull().default(false),
+  notes: text('notes'),
+  completedAt: timestamp('completed_at', { mode: 'date' }).notNull().defaultNow(),
+}, (t) => ({ runExerciseIdx: index('workout_set_logs_run_exercise_idx').on(t.runId, t.exerciseName), uniqueSet: uniqueIndex('workout_set_logs_run_exercise_set_uidx').on(t.runId, t.exerciseName, t.setNumber) }));
+
+export const workoutReadiness = pgTable('workout_readiness', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  dateKey: text('date_key').notNull(),
+  energy: integer('energy').notNull().default(3),
+  sleep: integer('sleep').notNull().default(3),
+  soreness: integer('soreness').notNull().default(3),
+  stress: integer('stress').notNull().default(3),
+  availableMinutes: integer('available_minutes').notNull().default(30),
+  equipment: text('equipment').notNull().default('bodyweight'),
+  locationMode: text('location_mode').notNull().default('home'),
+  muscleSoreness: jsonb('muscle_soreness').$type<Record<string, number>>().notNull().default({}),
+  createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).notNull().defaultNow(),
+}, (t) => ({ userDateUnique: uniqueIndex('workout_readiness_user_date_uidx').on(t.userId, t.dateKey) }));
+
+export const workoutPrograms = pgTable('workout_programs', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  weeks: integer('weeks').notNull().default(6),
+  currentWeek: integer('current_week').notNull().default(1),
+  status: text('status').notNull().default('active'),
+  templateIds: jsonb('template_ids').$type<string[]>().notNull().default([]),
+  goalId: text('goal_id'),
+  createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).notNull().defaultNow(),
+}, (t) => ({ userStatusIdx: index('workout_programs_user_status_idx').on(t.userId, t.status) }));
