@@ -1,4 +1,4 @@
-import { boolean, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+import { boolean, index, integer, jsonb, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 import { users } from './auth';
 import { beautyRoutines } from './beauty-routines';
 import { beautyProducts } from './completion-v1';
@@ -22,7 +22,6 @@ export const beautyRitualRuns = pgTable('beauty_ritual_runs', {
 }, (t) => ({
   userStatusIdx: index('beauty_ritual_runs_user_status_idx').on(t.userId, t.status),
   userStartedIdx: index('beauty_ritual_runs_user_started_idx').on(t.userId, t.startedAt),
-  activeRitualUid: uniqueIndex('beauty_ritual_runs_active_uidx').on(t.userId, t.ritualKey, t.status),
 }));
 
 export const beautyStepLogs = pgTable('beauty_step_logs', {
@@ -38,7 +37,6 @@ export const beautyStepLogs = pgTable('beauty_step_logs', {
 }, (t) => ({
   runIdx: index('beauty_step_logs_run_idx').on(t.runId),
   userDateIdx: index('beauty_step_logs_user_date_idx').on(t.userId, t.completedAt),
-  runRoutineUid: uniqueIndex('beauty_step_logs_run_routine_uidx').on(t.runId, t.routineId),
 }));
 
 export const beautyTreatmentLogs = pgTable('beauty_treatment_logs', {
