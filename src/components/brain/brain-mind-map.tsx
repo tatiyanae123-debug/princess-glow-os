@@ -6,7 +6,6 @@ import {
   BadgeDollarSign,
   BookOpen,
   Briefcase,
-  CalendarDays,
   Dumbbell,
   HeartPulse,
   Lightbulb,
