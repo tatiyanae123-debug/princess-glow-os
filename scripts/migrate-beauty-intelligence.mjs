@@ -21,8 +21,21 @@ await sql`CREATE TABLE IF NOT EXISTS beauty_treatment_logs (id text PRIMARY KEY,
 await sql`CREATE INDEX IF NOT EXISTS beauty_treatment_logs_user_occurred_idx ON beauty_treatment_logs(user_id,occurred_at)`;
 await sql`CREATE INDEX IF NOT EXISTS beauty_treatment_logs_user_treatment_idx ON beauty_treatment_logs(user_id,treatment_key)`;
 
+await sql`CREATE TABLE IF NOT EXISTS beauty_treatment_schedules (id text PRIMARY KEY, user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, treatment_key text NOT NULL, treatment_name text NOT NULL, area text NOT NULL DEFAULT 'face', weekdays integer[] NOT NULL DEFAULT '{}'::integer[], cadence_days integer, next_due_at timestamp, strong_treatment boolean NOT NULL DEFAULT false, enabled boolean NOT NULL DEFAULT true, notes text, created_at timestamp NOT NULL DEFAULT now(), updated_at timestamp NOT NULL DEFAULT now())`;
+await sql`CREATE INDEX IF NOT EXISTS beauty_treatment_schedules_user_enabled_idx ON beauty_treatment_schedules(user_id,enabled)`;
+await sql`CREATE INDEX IF NOT EXISTS beauty_treatment_schedules_user_due_idx ON beauty_treatment_schedules(user_id,next_due_at)`;
+
 await sql`CREATE TABLE IF NOT EXISTS beauty_maintenance_items (id text PRIMARY KEY, user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, title text NOT NULL, category text NOT NULL DEFAULT 'general', cadence_days integer, next_due_at timestamp, last_completed_at timestamp, notes text, source text NOT NULL DEFAULT 'manual', archived boolean NOT NULL DEFAULT false, created_at timestamp NOT NULL DEFAULT now(), updated_at timestamp NOT NULL DEFAULT now())`;
 await sql`CREATE INDEX IF NOT EXISTS beauty_maintenance_items_user_due_idx ON beauty_maintenance_items(user_id,next_due_at)`;
+
+await sql`CREATE TABLE IF NOT EXISTS beauty_looks (id text PRIMARY KEY, user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, name text NOT NULL, occasion text NOT NULL DEFAULT 'Everyday', mood text NOT NULL DEFAULT 'Natural', planned_minutes integer NOT NULL DEFAULT 20, steps jsonb NOT NULL DEFAULT '[]'::jsonb, product_ids text[] NOT NULL DEFAULT '{}'::text[], notes text, photo_url text, use_count integer NOT NULL DEFAULT 0, last_used_at timestamp, created_at timestamp NOT NULL DEFAULT now(), updated_at timestamp NOT NULL DEFAULT now())`;
+await sql`CREATE INDEX IF NOT EXISTS beauty_looks_user_created_idx ON beauty_looks(user_id,created_at)`;
+
+await sql`CREATE TABLE IF NOT EXISTS beauty_fragrances (id text PRIMARY KEY, user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, product_id text REFERENCES beauty_products(id) ON DELETE SET NULL, name text NOT NULL, family text, dayparts text[] NOT NULL DEFAULT '{}'::text[], seasons text[] NOT NULL DEFAULT '{}'::text[], moods text[] NOT NULL DEFAULT '{}'::text[], occasions text[] NOT NULL DEFAULT '{}'::text[], favorite boolean NOT NULL DEFAULT false, notes text, created_at timestamp NOT NULL DEFAULT now(), updated_at timestamp NOT NULL DEFAULT now())`;
+await sql`CREATE INDEX IF NOT EXISTS beauty_fragrances_user_idx ON beauty_fragrances(user_id)`;
+
+await sql`CREATE TABLE IF NOT EXISTS beauty_readiness_logs (id text PRIMARY KEY, user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, context text NOT NULL DEFAULT 'leaving', checks jsonb NOT NULL DEFAULT '{}'::jsonb, completed_count integer NOT NULL DEFAULT 0, total_count integer NOT NULL DEFAULT 0, occurred_at timestamp NOT NULL DEFAULT now())`;
+await sql`CREATE INDEX IF NOT EXISTS beauty_readiness_logs_user_occurred_idx ON beauty_readiness_logs(user_id,occurred_at)`;
 
 await sql`CREATE TABLE IF NOT EXISTS beauty_observations (id text PRIMARY KEY, user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, kind text NOT NULL, subject text NOT NULL, confidence text NOT NULL DEFAULT 'user_note', body text NOT NULL, evidence jsonb NOT NULL DEFAULT '{}'::jsonb, status text NOT NULL DEFAULT 'active', created_at timestamp NOT NULL DEFAULT now(), updated_at timestamp NOT NULL DEFAULT now())`;
 await sql`CREATE INDEX IF NOT EXISTS beauty_observations_user_status_idx ON beauty_observations(user_id,status)`;
