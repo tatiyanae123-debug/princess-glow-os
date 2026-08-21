@@ -48,8 +48,10 @@ import './system-wide-final-audit.css';
 import './glow-v4-calm-system.css';
 import './glow-speaking-presence.css';
 import './glow-liquid-crystal-constitution.css';
+/* Permanent final visual authority. Do not place legacy theme CSS after this import. */
+import './glow-reference-lock.css';
 import { GlobalGlowIntelligence } from '@/components/life-intelligence/global-glow-intelligence';
 import { GlowWorldPhysics } from '@/components/glow-world-physics';
 
-export const metadata: Metadata = {title:'Glow OS',description:'A calm intelligent personal life operating system'};
+export const metadata: Metadata = {title:'Glow OS',description:'A living liquid-crystal personal operating system'};
 export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body><GlowWorldPhysics/>{children}<GlobalGlowIntelligence/></body></html>}
