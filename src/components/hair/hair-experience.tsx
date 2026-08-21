@@ -186,23 +186,9 @@ const doctrine = [
 ];
 
 const routineProducts = [
-  'Aloe vera + water',
-  'Leave-in conditioner',
-  'Jojoba oil',
-  'Lightweight serum',
-  'Argan oil',
-  'Coconut oil',
-  'Castor oil',
-  'Pumpkin seed oil',
-  'Rosemary oil',
-  'Grape seed oil',
-  'Onion oil',
-  'Heat protectant',
-  'Bond treatment',
-  'Hair mask',
-  'Pantene Volume',
-  'L’Oréal gloss shampoo',
-  'Minoxidil · if using',
+  'Aloe vera + water', 'Leave-in conditioner', 'Jojoba oil', 'Lightweight serum', 'Argan oil', 'Coconut oil',
+  'Castor oil', 'Pumpkin seed oil', 'Rosemary oil', 'Grape seed oil', 'Onion oil', 'Heat protectant', 'Bond treatment',
+  'Hair mask', 'Pantene Volume', 'L’Oréal gloss shampoo', 'Minoxidil · if using',
 ] as const;
 
 export function HairExperience({ logs, timeline, routines, routineSteps, events, goals }: { logs: H[]; timeline: T[]; routines: Routine[]; routineSteps: RoutineStep[]; events: CalendarEvent[]; goals: Goal[] }) {
@@ -250,13 +236,7 @@ export function HairExperience({ logs, timeline, routines, routineSteps, events,
       </header>
 
       <nav className="flex gap-2 overflow-x-auto pb-1" aria-label="Hair workspace">
-        {([
-          ['today', 'Today'],
-          ['routines', 'My Routines'],
-          ['week', 'Hair Calendar'],
-          ['products', 'Products'],
-          ['journey', 'Journey'],
-        ] as const).map(([key, label]) => (
+        {([['today', 'Today'], ['routines', 'My Routines'], ['week', 'Hair Calendar'], ['products', 'Products'], ['journey', 'Journey']] as const).map(([key, label]) => (
           <button type="button" key={key} aria-pressed={tab === key} onClick={() => setTab(key)} className={`whitespace-nowrap rounded-full border px-4 py-2 text-[10px] transition ${tab === key ? 'border-[#C9727E] bg-[#F8E6E7] text-[#864D58]' : 'border-[#EEE3DE] bg-white text-[#8B7D75] hover:bg-[#FCF8F6]'}`}>{label}</button>
         ))}
       </nav>
@@ -282,9 +262,7 @@ export function HairExperience({ logs, timeline, routines, routineSteps, events,
 
         <section className="grid gap-4 lg:grid-cols-[1.1fr_.9fr]">
           <B t="Quick routines" subtitle="One tap opens the full detailed routine from your 2026 Hair System.">
-            <div className="grid gap-2 sm:grid-cols-2">
-              {masterRoutines.slice(0, 4).map((routine) => <RoutineButton key={routine.id} routine={routine} onClick={() => startGuided(routine)}/>) }
-            </div>
+            <div className="grid gap-2 sm:grid-cols-2">{masterRoutines.slice(0, 4).map((routine) => <RoutineButton key={routine.id} routine={routine} onClick={() => startGuided(routine)}/>)}</div>
           </B>
           <B t="Hair insight" subtitle="Glow combines your saved system with your actual logs.">
             <p className="glow-display text-[18px] leading-7 text-[#51413A]">{interval ? `Your logged wash rhythm is about every ${interval} days. Your imported plan anchors full resets to Sunday and maintenance to Thursday.` : 'Your imported plan anchors full resets to Sunday and maintenance to Thursday. As you log hair care, Glow will compare your real rhythm with the plan.'}</p>
@@ -319,9 +297,7 @@ export function HairExperience({ logs, timeline, routines, routineSteps, events,
 
       {tab === 'products' ? <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
         <B t="Routine product shelf" subtitle="Products and ingredients explicitly named in your imported Hair system.">
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {routineProducts.map((p) => <div key={p} className="rounded-[14px] border border-[#F0E6E2] bg-[#FFFDFC] p-3"><span className="grid h-9 w-9 place-items-center rounded-[10px] bg-[#F7ECE8] text-[#B37370]"><Droplets size={13}/></span><p className="mt-2 text-[9px] leading-4 text-[#665650]">{p}</p></div>)}
-          </div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{routineProducts.map((p) => <div key={p} className="rounded-[14px] border border-[#F0E6E2] bg-[#FFFDFC] p-3"><span className="grid h-9 w-9 place-items-center rounded-[10px] bg-[#F7ECE8] text-[#B37370]"><Droplets size={13}/></span><p className="mt-2 text-[9px] leading-4 text-[#665650]">{p}</p></div>)}</div>
         </B>
         <B t="What you actually use" subtitle="This shelf learns from the products you enter in Hair logs.">
           {shelf.length ? <div className="grid grid-cols-2 gap-2">{shelf.map(([p, n]) => <div key={p} className="flex items-center gap-3 rounded-[12px] border border-[#F0E7E3] p-3"><span className="grid h-10 w-9 place-items-center rounded-[9px] bg-[#F5ECE8]"><PackageOpen size={13}/></span><div className="min-w-0"><p className="truncate text-[10px]">{p}</p><p className="text-[8px] text-[#92867E]">logged {n}×</p></div></div>)}</div> : <Empty text="Log products during routines and your personal shelf will build automatically."/>}
@@ -350,7 +326,25 @@ export function HairExperience({ logs, timeline, routines, routineSteps, events,
         </form>
       </details>
 
-      {guided ? <div className="fixed inset-0 z-[90] grid place-items-end bg-[#3C2D28]/25 p-3 backdrop-blur-[3px] sm:place-items-center" role="presentation"><div role="dialog" aria-modal="true" aria-labelledby="guided-hair-title" className="max-h-[calc(100dvh-24px)] w-full max-w-[620px] overflow-y-auto rounded-[28px] border border-white/70 bg-[#FFFDFC] shadow-[0_30px_100px_rgba(49,33,28,.25)]"><div className="border-b border-[#F0E3DE] bg-[linear-gradient(135deg,#F8E9E7,#FFFDFC)] p-5"><div className="flex items-start justify-between gap-3"><div><p className="text-[8px] uppercase tracking-[.16em] text-[#AE7378]">Guided Hair · {guided.cadence}</p><h2 id="guided-hair-title" className="glow-display mt-1 text-[25px] text-[#40332D]">{guided.name}</h2><p className="mt-1 text-[9px] text-[#8C7770]">Step {stepIndex + 1} of {guided.steps.length} · {completedCount} completed · {guided.minutes}</p></div><button type="button" aria-label="Close guided hair routine" onClick={() => setGuided(null)} className="rounded-full border border-[#EADDD8] px-3 py-1.5 text-[9px] text-[#8F7770]">Close</button></div><div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white"><div className="h-full rounded-full bg-[#C9727E] transition-all" style={{ width: `${((stepIndex + 1) / guided.steps.length) * 100}%` }}/></div></div></div><div className="p-5 sm:p-7"><div className="flex items-center gap-3"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#F6E3E5] glow-display text-[18px] text-[#A85E69]">{stepIndex + 1}</span><h3 className="glow-display text-[22px] text-[#433630]">{guided.steps[stepIndex].title}</h3></div><p className="mt-5 rounded-[16px] bg-[#FAF4F1] p-4 text-[11px] leading-6 text-[#6F5D56]">{guided.steps[stepIndex].detail}</p><label className="mt-5 flex cursor-pointer items-center gap-3 rounded-[14px] border border-[#F0E4DF] p-3 text-[10px] text-[#6D5C55]"><input type="checkbox" checked={!!completed[`${guided.id}-${stepIndex}`]} onChange={(e) => setCompleted((old) => ({ ...old, [`${guided.id}-${stepIndex}`]: e.target.checked }))}/><span>Mark this step complete</span></label><div className="mt-6 flex items-center justify-between gap-2"><button type="button" disabled={stepIndex === 0} onClick={() => setStepIndex((i) => Math.max(0, i - 1))} className="rounded-full border border-[#E8DAD5] px-4 py-2.5 text-[10px] disabled:opacity-35">Back</button><button type="button" onClick={() => { if (stepIndex >= guided.steps.length - 1) { setGuided(null); setStepIndex(0); } else setStepIndex((i) => i + 1); }} className="rounded-full bg-[#5B413A] px-5 py-2.5 text-[10px] font-medium text-white">{stepIndex >= guided.steps.length - 1 ? 'Finish routine ✦' : 'Next step'}</button></div></div></div></div> : null}
+      {guided ? (
+        <div className="fixed inset-0 z-[90] grid place-items-end bg-[#3C2D28]/25 p-3 backdrop-blur-[3px] sm:place-items-center" role="presentation">
+          <div role="dialog" aria-modal="true" aria-labelledby="guided-hair-title" className="max-h-[calc(100dvh-24px)] w-full max-w-[620px] overflow-y-auto rounded-[28px] border border-white/70 bg-[#FFFDFC] shadow-[0_30px_100px_rgba(49,33,28,.25)]">
+            <div className="border-b border-[#F0E3DE] bg-[linear-gradient(135deg,#F8E9E7,#FFFDFC)] p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div><p className="text-[8px] uppercase tracking-[.16em] text-[#AE7378]">Guided Hair · {guided.cadence}</p><h2 id="guided-hair-title" className="glow-display mt-1 text-[25px] text-[#40332D]">{guided.name}</h2><p className="mt-1 text-[9px] text-[#8C7770]">Step {stepIndex + 1} of {guided.steps.length} · {completedCount} completed · {guided.minutes}</p></div>
+                <button type="button" aria-label="Close guided hair routine" onClick={() => setGuided(null)} className="rounded-full border border-[#EADDD8] px-3 py-1.5 text-[9px] text-[#8F7770]">Close</button>
+              </div>
+              <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white"><div className="h-full rounded-full bg-[#C9727E] transition-all" style={{ width: `${((stepIndex + 1) / guided.steps.length) * 100}%` }}/></div>
+            </div>
+            <div className="p-5 sm:p-7">
+              <div className="flex items-center gap-3"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#F6E3E5] glow-display text-[18px] text-[#A85E69]">{stepIndex + 1}</span><h3 className="glow-display text-[22px] text-[#433630]">{guided.steps[stepIndex].title}</h3></div>
+              <p className="mt-5 rounded-[16px] bg-[#FAF4F1] p-4 text-[11px] leading-6 text-[#6F5D56]">{guided.steps[stepIndex].detail}</p>
+              <label className="mt-5 flex cursor-pointer items-center gap-3 rounded-[14px] border border-[#F0E4DF] p-3 text-[10px] text-[#6D5C55]"><input type="checkbox" checked={!!completed[`${guided.id}-${stepIndex}`]} onChange={(e) => setCompleted((old) => ({ ...old, [`${guided.id}-${stepIndex}`]: e.target.checked }))}/><span>Mark this step complete</span></label>
+              <div className="mt-6 flex items-center justify-between gap-2"><button type="button" disabled={stepIndex === 0} onClick={() => setStepIndex((i) => Math.max(0, i - 1))} className="rounded-full border border-[#E8DAD5] px-4 py-2.5 text-[10px] disabled:opacity-35">Back</button><button type="button" onClick={() => { if (stepIndex >= guided.steps.length - 1) { setGuided(null); setStepIndex(0); document.dispatchEvent(new CustomEvent('glow:intelligence')); } else setStepIndex((i) => i + 1); }} className="rounded-full bg-[#5B413A] px-5 py-2.5 text-[10px] font-medium text-white">{stepIndex >= guided.steps.length - 1 ? 'Finish routine ✦' : 'Next step'}</button></div>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {play ? <RoutineStepPlayer routine={play} steps={routineSteps.filter((x) => x.routineId === play.id).sort((a, b) => a.order - b.order)} stats={[]} rules={[]} calendarEvents={events} context={{ locationMode: 'anywhere' }} onClose={() => setPlay(null)}/> : null}
     </div>
