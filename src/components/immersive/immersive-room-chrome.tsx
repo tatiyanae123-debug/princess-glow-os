@@ -29,7 +29,7 @@ export function ImmersiveTopControls({searchHref='/search'}:{searchHref?:string}
 }
 
 export function OpenGlowCommand({label='Ask Glow anything...'}:{label?:string}){
- function open(){document.dispatchEvent(new CustomEvent('glow:search-open'))}
+ function open(){document.dispatchEvent(new CustomEvent('glow:open-conversation'))}
  return <button type="button" className="ir-command-trigger" onClick={open}><span>{label}</span><span className="ir-command-mic">●</span></button>
 }
 
