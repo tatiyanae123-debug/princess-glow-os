@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, ChevronLeft, ChevronRight, CirclePause, Droplets, Hand, HeartPulse, Play, RotateCcw, ShieldCheck, Sparkles, Volume2 } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, CirclePause, Droplets, FileImage, Hand, HeartPulse, Play, RotateCcw, ShieldCheck, Sparkles, Upload, Video, Volume2 } from 'lucide-react';
 
 type Step = { title: string; instruction: string; reps?: string; cue?: string };
 type Routine = { name: string; time: string; purpose: string; description: string; steps: Step[] };
@@ -84,9 +84,12 @@ export function GuaShaStudio() {
   const [running, setRunning] = useState(false);
   const [seconds, setSeconds] = useState(30);
   const [completed, setCompleted] = useState<Record<string, boolean>>({});
+  const [media, setMedia] = useState<Record<string, { url: string; type: 'image' | 'video'; name: string }>>({});
   const routine = routines[routineIndex];
   const step = routine.steps[stepIndex];
   const progress = Math.round(((stepIndex + (completed[`${routineIndex}-${stepIndex}`] ? 1 : 0)) / routine.steps.length) * 100);
+  const stepKey = `${routineIndex}-${stepIndex}`;
+  const stepMedia = media[stepKey];
 
   useEffect(() => {
     if (!running) return;
@@ -98,6 +101,16 @@ export function GuaShaStudio() {
   const numberedSteps = useMemo(() => routine.steps.map((item, index) => ({ ...item, number: index + 1 })), [routine]);
   function chooseRoutine(index: number) { setRoutineIndex(index); setStepIndex(0); setRunning(false); setSeconds(30); }
   function next() { setCompleted((all) => ({ ...all, [`${routineIndex}-${stepIndex}`]: true })); if (stepIndex < routine.steps.length - 1) { setStepIndex(stepIndex + 1); setRunning(false); setSeconds(30); } }
+  function attachMedia(file: File | undefined) {
+    if (!file) return;
+    const type = file.type.startsWith('video/') ? 'video' : 'image';
+    const url = URL.createObjectURL(file);
+    setMedia(current => {
+      const previous = current[stepKey];
+      if (previous?.url.startsWith('blob:')) URL.revokeObjectURL(previous.url);
+      return { ...current, [stepKey]: { url, type, name: file.name } };
+    });
+  }
 
   return (
     <div className="gua-studio mx-auto max-w-[1400px] pb-24">
@@ -118,6 +131,10 @@ export function GuaShaStudio() {
         <div className="overflow-hidden rounded-[26px] border border-[#eadfd9] bg-white shadow-[0_20px_60px_rgba(87,61,72,.08)]">
           <div className="border-b border-[#eee5e0] p-6 sm:p-8"><div className="flex flex-wrap items-center justify-between gap-4"><div><p className="text-[10px] uppercase tracking-[.22em] text-[#a47d84]">Follow along · step {stepIndex + 1} of {routine.steps.length}</p><h2 className="mt-2 font-serif text-[30px] text-[#453638]">{step.title}</h2></div><div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#e6d7d4] bg-[#faf2ef] font-serif text-[19px] text-[#664b50]">{seconds}s</div></div><div className="mt-5 h-1.5 overflow-hidden rounded-full bg-[#eee5e1]"><div className="h-full rounded-full bg-[linear-gradient(90deg,#be8b95,#8c748e)] transition-all" style={{ width: `${progress}%` }}/></div></div>
           <div className="min-h-[300px] p-6 sm:p-9"><p className="max-w-3xl text-[16px] leading-8 text-[#5f5053]">{step.instruction}</p>{step.reps && <div className="mt-6 inline-flex rounded-full bg-[#f7ece9] px-4 py-2 text-[11px] font-semibold text-[#815e66]">{step.reps}</div>}{step.cue && <div className="mt-6 flex max-w-2xl gap-3 rounded-[16px] border border-[#eadfd9] bg-[#fcf8f6] p-4"><HeartPulse size={17} className="mt-0.5 shrink-0 text-[#a36f79]"/><p className="text-[11px] leading-5 text-[#79666a]">{step.cue}</p></div>}
+            <div className="mt-7 overflow-hidden rounded-[20px] border border-[#e8deda] bg-[#fcfaf8]">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#eee5e0] px-4 py-3"><div className="flex items-center gap-2"><FileImage size={15} className="text-[#9a7080]"/><div><p className="text-[9px] font-semibold uppercase tracking-[.15em] text-[#8e737a]">Step reference</p><p className="mt-0.5 text-[9px] text-[#958388]">Add the exact hand placement photo or video for this step.</p></div></div><label className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#5b4449] px-4 py-2 text-[9px] text-white"><Upload size={12}/>Add photo or video<input type="file" accept="image/*,video/*" className="sr-only" onChange={event=>attachMedia(event.target.files?.[0])}/></label></div>
+              {stepMedia ? <div className="p-4">{stepMedia.type==='video'?<video src={stepMedia.url} controls playsInline className="max-h-[420px] w-full rounded-[16px] bg-black object-contain"/>:<img src={stepMedia.url} alt={`Reference for ${step.title}`} className="max-h-[420px] w-full rounded-[16px] bg-[#f1e9e6] object-contain"/>}<div className="mt-3 flex items-center justify-between gap-3"><p className="truncate text-[9px] text-[#817176]">{stepMedia.name}</p><button type="button" onClick={()=>setMedia(current=>{const next={...current};if(next[stepKey]?.url.startsWith('blob:'))URL.revokeObjectURL(next[stepKey].url);delete next[stepKey];return next})} className="text-[9px] font-semibold text-[#9c596b]">Remove</button></div></div>:<div className="grid min-h-[130px] place-items-center p-6 text-center"><div><Video size={22} className="mx-auto text-[#c3adb5]"/><p className="mt-2 text-[10px] text-[#8d7d82]">No visual attached yet</p><p className="mt-1 text-[8px] text-[#aa999e]">Your reference stays attached to this routine step while this page is open.</p></div></div>}
+            </div>
             <div className="mt-10 flex flex-wrap items-center gap-3"><button onClick={() => { if (stepIndex > 0) setStepIndex(stepIndex - 1); setRunning(false); }} disabled={stepIndex === 0} className="inline-flex h-11 items-center gap-2 rounded-full border border-[#e4d7d2] px-4 text-[11px] text-[#6c585c] disabled:opacity-30"><ChevronLeft size={15}/>Back</button><button onClick={() => setRunning(!running)} className="inline-flex h-11 items-center gap-2 rounded-full bg-[#5b4449] px-5 text-[11px] text-white">{running ? <CirclePause size={15}/> : <Play size={15}/>} {running ? 'Pause cue' : 'Start 30-sec cue'}</button><button onClick={() => { setSeconds(30); setRunning(false); }} className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#e4d7d2] text-[#6c585c]" aria-label="Reset timer"><RotateCcw size={14}/></button><button onClick={next} className="ml-auto inline-flex h-11 items-center gap-2 rounded-full bg-[#b37f8a] px-5 text-[11px] text-white">{stepIndex === routine.steps.length - 1 ? 'Complete ritual' : 'Done · next'}<ChevronRight size={15}/></button></div>
           </div>
         </div>
