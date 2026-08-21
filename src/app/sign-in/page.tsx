@@ -1,6 +1,13 @@
 import { signIn } from '@/auth';
 
-export default function SignInPage() {
+function safeRedirect(value: string | string[] | undefined) {
+  const path = Array.isArray(value) ? value[0] : value;
+  return path?.startsWith('/') && !path.startsWith('//') ? path : '/dashboard';
+}
+
+export default async function SignInPage({ searchParams }: { searchParams: Promise<{ callbackUrl?: string | string[] }> }) {
+  const { callbackUrl } = await searchParams;
+  const redirectTo = safeRedirect(callbackUrl);
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(253,230,138,0.25),_transparent_40%),linear-gradient(135deg,_#fffaf7_0%,_#fdf2f8_100%)] flex items-center justify-center p-4 dark:bg-[radial-gradient(circle_at_top_left,_rgba(244,114,182,0.18),_transparent_40%),linear-gradient(135deg,_#020617_0%,_#111827_100%)]">
       <div className="w-full max-w-sm rounded-[30px] border border-slate-200/70 bg-white/80 p-8 shadow-[0_25px_80px_rgba(15,23,42,0.08)] backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
@@ -19,7 +26,7 @@ export default function SignInPage() {
           <form
             action={async () => {
               'use server';
-              await signIn('github', { redirectTo: '/dashboard' });
+              await signIn('github', { redirectTo });
             }}
           >
             <button
@@ -36,7 +43,7 @@ export default function SignInPage() {
           <form
             action={async () => {
               'use server';
-              await signIn('google', { redirectTo: '/dashboard' });
+              await signIn('google', { redirectTo });
             }}
           >
             <button
