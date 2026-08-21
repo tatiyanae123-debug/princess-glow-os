@@ -1,43 +1,41 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { and, eq } from 'drizzle-orm';
 import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
+import { db } from '@/db';
+import { beautyMaintenanceItems, beautyTreatmentSchedules } from '@/db/schema/advanced-beauty';
 
-export const dynamic = 'force-dynamic';
-
-const beautyWords = ['beauty','facial','skin','skincare','brow','lash','nail','wax','laser','derm','spa','makeup','hair','salon','trim','color','braid','blowout'];
-function isBeautyEvent(title:string, description:string|null){const h=`${title} ${description??''}`.toLowerCase();return beautyWords.some(w=>h.includes(w));}
-function key(d:Date){return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;}
-function fmt(d:Date){return d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});}
-function monthHref(date:Date){return `/beauty/calendar?year=${date.getFullYear()}&month=${date.getMonth()+1}`;}
+export const dynamic='force-dynamic';
+const beautyWords=['beauty','facial','skin','skincare','brow','lash','nail','wax','laser','derm','spa','makeup','hair','salon','trim','color','braid','blowout','shower','gua sha'];
+function isBeautyEvent(title:string,description:string|null){const h=`${title} ${description??''}`.toLowerCase();return beautyWords.some(w=>h.includes(w))}
+function dayKey(d:Date){return d.toLocaleDateString('en-CA')}
+function monthHref(date:Date){return `/beauty/calendar?year=${date.getFullYear()}&month=${date.getMonth()+1}`}
+function dueScheduleOn(schedule:{weekdays:number[];nextDueAt:Date|null},date:Date){return schedule.weekdays.includes(date.getDay())||Boolean(schedule.nextDueAt&&dayKey(schedule.nextDueAt)===dayKey(date))}
 
 export default async function BeautyCalendarPage({searchParams}:{searchParams?:Promise<{year?:string;month?:string}>}){
-  const session=await auth();
-  if(!session?.user?.id) redirect('/sign-in');
-  const events=(await getCalendarEventsByUser(session.user.id)).filter(e=>isBeautyEvent(e.title,e.description)).sort((a,b)=>a.startAt.getTime()-b.startAt.getTime());
-  const params=await searchParams;
-  const requestedYear=Number(params?.year);
-  const requestedMonth=Number(params?.month);
-  const fallback=events.find(e=>e.startAt.getTime()>=Date.now())?.startAt ?? new Date();
-  const validRequested=Number.isInteger(requestedYear)&&requestedYear>=2000&&requestedYear<=2100&&Number.isInteger(requestedMonth)&&requestedMonth>=1&&requestedMonth<=12;
-  const base=validRequested?new Date(requestedYear,requestedMonth-1,1):fallback;
-  const year=base.getFullYear(), month=base.getMonth();
-  const previous=new Date(year,month-1,1), next=new Date(year,month+1,1);
-  const first=new Date(year,month,1), startWeekday=first.getDay(), daysInMonth=new Date(year,month+1,0).getDate();
-  const cells=Array.from({length:42},(_,i)=>{const day=i-startWeekday+1;return day>=1&&day<=daysInMonth?new Date(year,month,day):null;});
-  const monthEvents=events.filter(e=>e.startAt.getFullYear()===year&&e.startAt.getMonth()===month);
-  const upcoming=events.filter(e=>e.startAt.getTime()>=Date.now()).slice(0,5);
-  return <AppShell><div className="b4-beauty-calendar">
-    <header className="b4-page-head"><div><p className="glow-eyebrow">6. Beauty Calendar</p><h1 className="glow-display">Beauty Calendar</h1><p>Appointments, treatments and key beauty dates.</p></div><div className="b4-calendar-actions"><Link href="/calendar">Open full calendar</Link></div></header>
-    <div className="b4-calendar-shell">
-      <section className="b4-calendar-main">
-        <div className="b4-calendar-toolbar"><Link href={monthHref(new Date())}>Today</Link><Link aria-label="Previous month" href={monthHref(previous)}>‹</Link><Link aria-label="Next month" href={monthHref(next)}>›</Link><strong>{base.toLocaleDateString('en-US',{month:'long',year:'numeric'})}</strong><div><span className="active">Month</span><Link href="/calendar?view=week">Week</Link><Link href="/calendar?view=list">List</Link></div></div>
-        <div className="b4-weekdays">{'SUN MON TUE WED THU FRI SAT'.split(' ').map(d=><span key={d}>{d}</span>)}</div>
-        <div className="b4-month-grid">{cells.map((d,i)=><div key={i} className={`b4-day-cell ${d&&key(d)===key(new Date())?'today':''}`}><span>{d?.getDate()??''}</span>{d?monthEvents.filter(e=>key(e.startAt)===key(d)).slice(0,2).map(e=><Link key={e.id} href={`/calendar?eventId=${e.id}`} className="b4-beauty-event"><b>{e.title}</b><small>{fmt(e.startAt)}</small></Link>):null}</div>)}</div>
-      </section>
-      <aside className="b4-calendar-rail"><article><h2>Upcoming</h2>{upcoming.length?upcoming.map(e=><Link key={e.id} href={`/calendar?eventId=${e.id}`}><b>{e.title}</b><small>{e.startAt.toLocaleDateString('en-US',{month:'short',day:'numeric'})} · {fmt(e.startAt)}</small></Link>):<p className="empty">No upcoming beauty appointments.</p>}<Link className="rail-link" href="/calendar">View all →</Link></article><article><h2>Key Dates</h2>{monthEvents.slice(0,4).map(e=><div key={e.id}><b>{e.title}</b><small>{e.startAt.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</small></div>)}{!monthEvents.length?<p className="empty">Beauty dates will appear here as you schedule them.</p>:null}</article></aside>
-    </div>
-    <nav className="b4-subnav"><Link href="/beauty">Beauty OS</Link><Link href="/beauty/lab">Beauty Lab</Link><Link href="/beauty/progress">Progress</Link><Link className="active" href="/beauty/calendar">Calendar</Link></nav>
+  const session=await auth();if(!session?.user?.id)redirect('/sign-in');const userId=session.user.id;
+  const [allEvents,schedules,maintenance]=await Promise.all([
+    getCalendarEventsByUser(userId),
+    db.select().from(beautyTreatmentSchedules).where(and(eq(beautyTreatmentSchedules.userId,userId),eq(beautyTreatmentSchedules.enabled,true))),
+    db.select().from(beautyMaintenanceItems).where(and(eq(beautyMaintenanceItems.userId,userId),eq(beautyMaintenanceItems.archived,false))),
+  ]);
+  const events=allEvents.filter(e=>isBeautyEvent(e.title,e.description)).sort((a,b)=>a.startAt.getTime()-b.startAt.getTime());
+  const params=await searchParams;const requestedYear=Number(params?.year),requestedMonth=Number(params?.month);const today=new Date();
+  const valid=Number.isInteger(requestedYear)&&requestedYear>=2000&&requestedYear<=2100&&Number.isInteger(requestedMonth)&&requestedMonth>=1&&requestedMonth<=12;
+  const base=valid?new Date(requestedYear,requestedMonth-1,1):new Date(today.getFullYear(),today.getMonth(),1);const year=base.getFullYear(),month=base.getMonth();
+  const prev=new Date(year,month-1,1),next=new Date(year,month+1,1);const start=new Date(year,month,1);const days=new Date(year,month+1,0).getDate();const cells=Array.from({length:42},(_,i)=>{const n=i-start.getDay()+1;return n>=1&&n<=days?new Date(year,month,n):null});
+  const monthEvents=events.filter(e=>e.startAt.getFullYear()===year&&e.startAt.getMonth()===month);const upcomingEvents=events.filter(e=>e.startAt>=today).slice(0,5);
+  const dueSoon=maintenance.filter(m=>m.nextDueAt&&m.nextDueAt>=today).sort((a,b)=>a.nextDueAt!.getTime()-b.nextDueAt!.getTime()).slice(0,6);
+
+  return <AppShell><div className="mx-auto max-w-7xl space-y-6 pb-24 text-[#493e45]">
+    <header className="rounded-[32px] border border-white/80 bg-[linear-gradient(135deg,#fffaf5,#f0e7eb)] p-6 sm:p-8"><p className="text-[10px] font-bold uppercase tracking-[.2em] text-[#a47f91]">Beauty Calendar</p><h1 className="mt-2 font-serif text-4xl sm:text-5xl">Appointments + treatment rhythm + maintenance.</h1><p className="mt-3 max-w-3xl text-sm leading-6 text-[#7f7178]">External Calendar events stay in Calendar. Beauty treatment schedules and maintenance due dates stay in Beauty. This view brings them together without duplicating the source records.</p><div className="mt-5 flex flex-wrap gap-2"><Link href={monthHref(today)} className="rounded-full bg-[#4b3d46] px-4 py-2 text-xs text-white">Today</Link><Link href={monthHref(prev)} aria-label="Previous month" className="rounded-full bg-white px-4 py-2 text-xs">‹</Link><Link href={monthHref(next)} aria-label="Next month" className="rounded-full bg-white px-4 py-2 text-xs">›</Link><strong className="self-center px-2 font-serif text-lg">{base.toLocaleDateString('en-US',{month:'long',year:'numeric'})}</strong></div></header>
+
+    <section className="grid gap-4 lg:grid-cols-[1fr_300px]"><div className="rounded-[28px] border border-[#eee2e6] bg-white p-3 sm:p-5"><div className="grid grid-cols-7 gap-1 text-center text-[9px] font-bold uppercase tracking-[.1em] text-[#9b8c94]">{'SUN MON TUE WED THU FRI SAT'.split(' ').map(d=><span key={d} className="py-2">{d}</span>)}</div><div className="grid grid-cols-7 gap-1">{cells.map((date,i)=>{if(!date)return <div key={i} className="min-h-24 rounded-xl bg-[#fbf8f6]/60"/>;const dayEvents=monthEvents.filter(e=>dayKey(e.startAt)===dayKey(date));const dayTreatments=schedules.filter(s=>dueScheduleOn(s,date));const dayMaintenance=maintenance.filter(m=>m.nextDueAt&&dayKey(m.nextDueAt)===dayKey(date));const current=dayKey(date)===dayKey(today);return <div key={dayKey(date)} className={`min-h-28 rounded-xl border p-1.5 sm:p-2 ${current?'border-[#c69bac] bg-[#fff5f7]':'border-[#f1e7ea] bg-[#fdfaf9]'}`}><p className="text-[10px] font-semibold">{date.getDate()}</p><div className="mt-1 space-y-1">{dayTreatments.slice(0,2).map(t=><div key={`t-${t.id}`} className={`truncate rounded px-1.5 py-1 text-[8px] ${t.strongTreatment?'bg-[#eee6f3] text-[#725e7a]':'bg-[#eef3e9] text-[#66735f]'}`} title={t.treatmentName}>Treat · {t.treatmentName}</div>)}{dayMaintenance.slice(0,1).map(m=><div key={`m-${m.id}`} className="truncate rounded bg-[#f6ece3] px-1.5 py-1 text-[8px] text-[#846b5d]" title={m.title}>Due · {m.title}</div>)}{dayEvents.slice(0,1).map(e=><Link key={e.id} href={`/calendar?eventId=${e.id}`} className="block truncate rounded bg-[#f5e7eb] px-1.5 py-1 text-[8px] text-[#865d70]" title={e.title}>{e.title}</Link>)}</div></div>})}</div></div>
+      <aside className="space-y-4"><article className="rounded-[24px] border border-[#eee2e6] bg-white p-5"><h2 className="font-serif text-2xl">Treatment schedules</h2><p className="mt-2 text-[10px] leading-4 text-[#91848b]">Only schedules you explicitly saved appear here.</p><div className="mt-4 space-y-2">{schedules.length?schedules.slice(0,8).map(s=><div key={s.id} className="rounded-2xl bg-[#faf6f4] p-3"><div className="flex items-center justify-between gap-2"><p className="text-xs font-semibold">{s.treatmentName}</p>{s.strongTreatment?<span className="rounded-full bg-[#eee6f3] px-2 py-1 text-[8px]">strong</span>:null}</div><p className="mt-1 text-[9px] text-[#92858c]">{s.weekdays.length?`Days: ${s.weekdays.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join(', ')}`:s.nextDueAt?`Next: ${s.nextDueAt.toLocaleDateString()}`:'No recurrence set'}</p></div>):<p className="text-xs text-[#91848b]">No treatment schedules saved yet. Add them from Beauty Studio.</p>}</div></article>
+        <article className="rounded-[24px] border border-[#eee2e6] bg-white p-5"><h2 className="font-serif text-2xl">Coming up</h2><div className="mt-4 space-y-2">{upcomingEvents.map(e=><Link key={e.id} href={`/calendar?eventId=${e.id}`} className="block rounded-2xl bg-[#faf6f4] p-3"><p className="text-xs font-semibold">{e.title}</p><p className="mt-1 text-[9px] text-[#92858c]">{e.startAt.toLocaleString()}</p></Link>)}{dueSoon.map(m=><div key={m.id} className="rounded-2xl bg-[#f8f3ee] p-3"><p className="text-xs font-semibold">{m.title}</p><p className="mt-1 text-[9px] text-[#92858c]">Maintenance · {m.nextDueAt?.toLocaleDateString()}</p></div>)}{!upcomingEvents.length&&!dueSoon.length?<p className="text-xs text-[#91848b]">Nothing Beauty-related is scheduled soon.</p>:null}</div></article></aside></section>
+
+    <nav className="flex flex-wrap gap-2"><Link className="rounded-full border px-4 py-2 text-xs" href="/beauty">Beauty OS</Link><Link className="rounded-full border px-4 py-2 text-xs" href="/beauty/lab">Beauty Lab</Link><Link className="rounded-full border px-4 py-2 text-xs" href="/beauty/progress">Progress</Link><span className="rounded-full bg-[#4b3d46] px-4 py-2 text-xs text-white">Calendar</span></nav>
   </div></AppShell>;
 }
