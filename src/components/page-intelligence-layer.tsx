@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Brain, Focus, Search, Sparkles } from 'lucide-react';
+import { Focus, Plus, Search, Sparkles } from 'lucide-react';
 import { blueprintForPath } from '@/lib/glow-page-blueprints';
 
 function dispatch(name:string){ document.dispatchEvent(new Event(name)); }
@@ -26,10 +26,10 @@ export function PageIntelligenceLayer(){
       </div>
     </div>
     <div className="flex flex-wrap items-center gap-2 border-t border-[#f1e8e5] bg-white/62 px-4 py-2.5 sm:px-5 md:px-6">
-      <button type="button" onClick={()=>dispatch('glow:voice-open')} className="inline-flex min-h-9 items-center gap-2 rounded-full bg-[#c35f76] px-3.5 text-[10.5px] font-medium text-white shadow-[0_6px_18px_rgba(195,95,118,.18)]"><Brain size={13}/>Tell Glow anything</button>
+      <button type="button" onClick={()=>router.push(`/intake?from=${encodeURIComponent(pathname)}`)} className="inline-flex min-h-9 items-center gap-2 rounded-full bg-[#c35f76] px-3.5 text-[10.5px] font-medium text-white shadow-[0_6px_18px_rgba(195,95,118,.18)]"><Plus size={13}/>Add to Glow</button>
       <button type="button" onClick={()=>dispatch('glow:search-open')} className="inline-flex min-h-9 items-center gap-2 rounded-full border border-[#eadfdb] bg-white px-3.5 text-[10.5px] font-medium text-[#5d5550]"><Search size={13}/>Search this life</button>
       <button type="button" onClick={()=>router.push(`${pathname}${pathname.includes('?')?'&':'?'}focus=1`)} className="inline-flex min-h-9 items-center gap-2 rounded-full border border-[#eadfdb] bg-white px-3.5 text-[10.5px] font-medium text-[#5d5550]"><Focus size={13}/>Focus mode</button>
-      <span className="ml-auto hidden text-[9px] text-[#aaa09a] md:block">Enter once → Glow routes it everywhere it belongs</span>
+      <span className="ml-auto hidden text-[9px] text-[#aaa09a] md:block">Add once → Glow routes it where it belongs</span>
     </div>
   </section>;
 }
