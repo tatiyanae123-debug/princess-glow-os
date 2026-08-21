@@ -6,8 +6,14 @@ import { usePathname } from 'next/navigation';
 import { ArrowUp, Mic, MicOff, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 
 type Message={id:string;role:'user'|'assistant';content:string;actions?:{label:string;href:string}[]};
-type RecognitionLike={continuous:boolean;interimResults:boolean;lang:string;start:()=>void;stop:()=>void;onresult:((event:any)=>void)|null;onend:(()=>void)|null;onerror:((event:any)=>void)|null};
+type RecognitionAlternativeLike={transcript:string};
+type RecognitionResultLike={isFinal:boolean;[index:number]:RecognitionAlternativeLike};
+type RecognitionResultListLike={length:number;[index:number]:RecognitionResultLike};
+type RecognitionEventLike={resultIndex:number;results:RecognitionResultListLike};
+type RecognitionErrorLike={error?:string};
+type RecognitionLike={continuous:boolean;interimResults:boolean;lang:string;start:()=>void;stop:()=>void;onresult:((event:RecognitionEventLike)=>void)|null;onend:(()=>void)|null;onerror:((event:RecognitionErrorLike)=>void)|null};
 type RecognitionCtor=new()=>RecognitionLike;
+type SpeechWindow=Window&{SpeechRecognition?:RecognitionCtor;webkitSpeechRecognition?:RecognitionCtor};
 
 const STORAGE='glow-os:life-conversation:v1';
 const STARTERS=['What should I do right now?','Plan my next hour','What can I ignore today?','Talk me through my day'];
@@ -22,11 +28,11 @@ export function GlowLifeIntelligence(){
  useEffect(()=>{setMessages(readConversation())},[]);
  useEffect(()=>{saveConversation(messages);if(open)requestAnimationFrame(()=>scroller.current?.scrollTo({top:scroller.current.scrollHeight,behavior:'smooth'}))},[messages,open]);
  useEffect(()=>{const handler=()=>setOpen(true);document.addEventListener('glow:open-conversation',handler);return()=>document.removeEventListener('glow:open-conversation',handler)},[]);
- const canListen=useMemo(()=>typeof window!=='undefined'&&Boolean((window as any).SpeechRecognition||(window as any).webkitSpeechRecognition),[]);
+ const canListen=useMemo(()=>{if(typeof window==='undefined')return false;const speechWindow=window as SpeechWindow;return Boolean(speechWindow.SpeechRecognition||speechWindow.webkitSpeechRecognition)},[]);
  function speak(text:string){if(!speakBack||typeof document==='undefined')return;document.dispatchEvent(new CustomEvent('glow:speak',{detail:{text}}))}
  async function send(raw=input){const text=raw.trim();if(!text||thinking)return;const user:Message={id:id(),role:'user',content:text};const history=[...messages,user];setMessages(history);setInput('');setThinking(true);
   try{const response=await fetch('/api/glow/conversation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:history.map(({role,content})=>({role,content})),page:pathname})});const payload=await response.json();const reply=response.ok&&payload?.reply?String(payload.reply):'I hit a connection problem, but I’m still here. Open the page you need or try that again.';const assistant:Message={id:id(),role:'assistant',content:reply,actions:Array.isArray(payload?.actions)?payload.actions:undefined};setMessages(current=>[...current,assistant]);speak(reply)}catch{const reply='I could not reach the Glow intelligence service just then. Your information is still safe. Try the request again.';setMessages(current=>[...current,{id:id(),role:'assistant',content:reply}]);speak(reply)}finally{setThinking(false)}}
- function toggleListen(){if(!canListen)return;if(listening){recognition.current?.stop();setListening(false);return}const Ctor=((window as any).SpeechRecognition||(window as any).webkitSpeechRecognition) as RecognitionCtor;const rec=new Ctor();rec.continuous=false;rec.interimResults=true;rec.lang='en-US';rec.onresult=(event:any)=>{let transcript='';for(let i=event.resultIndex;i<event.results.length;i++)transcript+=event.results[i][0]?.transcript??'';setInput(transcript);if(event.results[event.results.length-1]?.isFinal){setListening(false);void send(transcript)}};rec.onend=()=>setListening(false);rec.onerror=()=>setListening(false);recognition.current=rec;setListening(true);rec.start()}
+ function toggleListen(){if(!canListen)return;if(listening){recognition.current?.stop();setListening(false);return}const speechWindow=window as SpeechWindow;const Ctor=speechWindow.SpeechRecognition||speechWindow.webkitSpeechRecognition;if(!Ctor)return;const rec=new Ctor();rec.continuous=false;rec.interimResults=true;rec.lang='en-US';rec.onresult=(event:RecognitionEventLike)=>{let transcript='';for(let i=event.resultIndex;i<event.results.length;i++)transcript+=event.results[i][0]?.transcript??'';setInput(transcript);if(event.results[event.results.length-1]?.isFinal){setListening(false);void send(transcript)}};rec.onend=()=>setListening(false);rec.onerror=()=>setListening(false);recognition.current=rec;setListening(true);rec.start()}
  return <>
   <button type="button" onClick={()=>setOpen(true)} className="fixed bottom-[1.05rem] right-4 z-[210] flex h-14 items-center gap-2 rounded-full border border-white/80 bg-[#4f4552]/95 px-4 text-white shadow-[0_18px_50px_rgba(45,34,43,.25)] backdrop-blur-xl md:bottom-5 md:right-5" aria-label="Talk to Glow"><span className="grid h-8 w-8 place-items-center rounded-full bg-white/14"><Sparkles size={16}/></span><span className="hidden text-[11px] font-semibold tracking-[.01em] sm:block">Talk to Glow</span></button>
   {open?<div className="fixed inset-0 z-[400] bg-[#1d171c]/20 p-2 backdrop-blur-[6px] sm:p-4" onMouseDown={event=>{if(event.target===event.currentTarget)setOpen(false)}}><section className="ml-auto flex h-[min(760px,calc(100vh-1rem))] w-full max-w-[470px] flex-col overflow-hidden rounded-[30px] border border-white/70 bg-[rgba(255,252,250,.96)] shadow-[0_28px_100px_rgba(42,30,38,.28)] sm:h-[min(760px,calc(100vh-2rem))]">
