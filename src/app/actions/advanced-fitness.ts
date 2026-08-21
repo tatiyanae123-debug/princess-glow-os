@@ -25,3 +25,9 @@ export async function advanceWorkoutAction(runId:string,index:number,activeSecon
 export async function finishWorkoutRunAction(raw:unknown){
  const userId=await requireUser();const parsed=z.object({runId:z.string().min(1),activeSeconds:z.number().int().min(1).max(86400),feelingAfter:z.string().max(40).optional(),notes:z.string().max(1200).optional()}).safeParse(raw);if(!parsed.success)return{error:'Glow could not finish that workout.'};const row=await data.finishWorkoutRun(userId,parsed.data.runId,{activeSeconds:parsed.data.activeSeconds,feelingAfter:parsed.data.feelingAfter,notes:parsed.data.notes});if(!row)return{error:'Workout run unavailable.'};refresh();return{data:row};
 }
+export async function createWorkoutTemplateAction(raw:unknown){
+ const userId=await requireUser();const parsed=z.object({name:z.string().min(2).max(120),category:z.string().min(1).max(40),equipment:z.string().min(1).max(80),minutes:z.number().int().min(5).max(180),exercises:z.array(z.object({name:z.string().min(1).max(120),sets:z.number().int().min(1).max(10),reps:z.number().int().min(1).max(100),restSeconds:z.number().int().min(0).max(600),muscleGroup:z.string().min(1).max(60)})).min(1).max(30)}).safeParse(raw);if(!parsed.success)return{error:'Glow could not save that workout.'};const row=await data.createWorkoutTemplate(userId,parsed.data);revalidatePath('/fitness');return{data:row};
+}
+export async function createWorkoutProgramAction(raw:unknown){
+ const userId=await requireUser();const parsed=z.object({name:z.string().min(2).max(120),weeks:z.number().int().min(2).max(24),templateIds:z.array(z.string().min(1)).min(1).max(30),goalId:z.string().nullable().optional()}).safeParse(raw);if(!parsed.success)return{error:'Glow could not create that training block.'};const row=await data.createWorkoutProgram(userId,parsed.data);revalidatePath('/fitness');return{data:row};
+}
