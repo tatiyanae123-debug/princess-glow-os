@@ -7,7 +7,7 @@ import { auth } from '@/auth';
 import * as data from '@/lib/data/advanced-fitness';
 
 async function requireUser(){const session=await auth();if(!session?.user?.id)redirect('/sign-in');return session.user.id;}
-function refresh(){['/fitness','/habits','/routines','/dashboard','/today','/tomorrow','/calendar','/briefings/morning','/briefings/evening'].forEach(revalidatePath);}
+function refresh(){['/fitness','/habits','/routines','/dashboard','/today','/tomorrow','/calendar','/briefings/morning','/briefings/evening'].forEach(path=>revalidatePath(path));}
 
 export async function saveWorkoutReadinessAction(raw:unknown){
  const userId=await requireUser();
