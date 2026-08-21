@@ -1,6 +1,6 @@
 import { db } from '@/db';
-import { and, desc, eq } from 'drizzle-orm';
-import { routineSteps } from '@/db/schema/routines';
+import { and, desc, eq, inArray } from 'drizzle-orm';
+import { routines, routineSteps } from '@/db/schema/routines';
 import {
   routineChains,
   routineRuns,
@@ -15,6 +15,28 @@ import { habitLogs } from '@/db/schema/habits';
 import { fitnessSessions } from '@/db/schema/completion-v1';
 
 export type RoutineMode = 'full' | 'normal' | 'quick' | 'minimum';
+
+async function ownedRoutine(userId: string, routineId: string) {
+  const [routine] = await db.select().from(routines).where(and(eq(routines.id, routineId), eq(routines.userId, userId))).limit(1);
+  return routine ?? null;
+}
+
+async function ownedStep(userId: string, stepId: string) {
+  const [step] = await db.select().from(routineSteps).where(and(eq(routineSteps.id, stepId), eq(routineSteps.userId, userId))).limit(1);
+  return step ?? null;
+}
+
+async function validatedQueue(userId: string, routineId: string, queueStepIds: string[]) {
+  const uniqueIds = Array.from(new Set(queueStepIds.filter(Boolean)));
+  if (!uniqueIds.length) return [] as string[];
+  const rows = await db.select({ id: routineSteps.id }).from(routineSteps).where(and(
+    eq(routineSteps.userId, userId),
+    eq(routineSteps.routineId, routineId),
+    inArray(routineSteps.id, uniqueIds),
+  ));
+  const allowed = new Set(rows.map((row) => row.id));
+  return uniqueIds.filter((id) => allowed.has(id));
+}
 
 export async function getRoutineEngineState(userId: string) {
   const [activeRuns, history, stats, links, triggers, rules, chains] = await Promise.all([
@@ -33,6 +55,9 @@ export async function startOrResumeRoutineRun(
   userId: string,
   input: { routineId: string; mode: RoutineMode; queueStepIds: string[]; context?: Record<string, unknown> },
 ) {
+  const routine = await ownedRoutine(userId, input.routineId);
+  if (!routine || routine.archived) return null;
+
   const [existing] = await db
     .select()
     .from(routineRuns)
@@ -42,14 +67,27 @@ export async function startOrResumeRoutineRun(
 
   if (existing) return existing;
 
-  const [run] = await db.insert(routineRuns).values({
-    userId,
-    routineId: input.routineId,
-    mode: input.mode,
-    queueStepIds: input.queueStepIds,
-    context: input.context ?? {},
-  }).returning();
-  return run;
+  const queueStepIds = await validatedQueue(userId, input.routineId, input.queueStepIds);
+  if (!queueStepIds.length) return null;
+
+  try {
+    const [run] = await db.insert(routineRuns).values({
+      userId,
+      routineId: input.routineId,
+      mode: input.mode,
+      queueStepIds,
+      context: input.context ?? {},
+    }).returning();
+    return run ?? null;
+  } catch {
+    const [raced] = await db
+      .select()
+      .from(routineRuns)
+      .where(and(eq(routineRuns.userId, userId), eq(routineRuns.routineId, input.routineId), eq(routineRuns.status, 'active')))
+      .orderBy(desc(routineRuns.lastActivityAt))
+      .limit(1);
+    return raced ?? null;
+  }
 }
 
 export async function updateRoutineRunProgress(
@@ -68,16 +106,23 @@ export async function updateRoutineRunProgress(
   const [run] = await db.select().from(routineRuns).where(and(eq(routineRuns.id, runId), eq(routineRuns.userId, userId))).limit(1);
   if (!run || run.status !== 'active') return null;
 
+  const queueStepIds = input.queueStepIds ? await validatedQueue(userId, run.routineId, input.queueStepIds) : run.queueStepIds;
+  if (!queueStepIds.length) return null;
+  const queueSet = new Set(queueStepIds);
+  const completedStepIds = input.completedStepIds ? Array.from(new Set(input.completedStepIds.filter((id) => queueSet.has(id)))) : undefined;
+  const skippedStepIds = input.skippedStepIds ? Array.from(new Set(input.skippedStepIds.filter((id) => queueSet.has(id)))) : undefined;
+  const currentIndex = typeof input.currentIndex === 'number' ? Math.max(0, Math.min(Math.floor(input.currentIndex), queueStepIds.length)) : undefined;
+
   const [updated] = await db.update(routineRuns).set({
     ...(input.mode ? { mode: input.mode } : {}),
-    ...(input.queueStepIds ? { queueStepIds: input.queueStepIds } : {}),
-    ...(input.completedStepIds ? { completedStepIds: input.completedStepIds } : {}),
-    ...(input.skippedStepIds ? { skippedStepIds: input.skippedStepIds } : {}),
-    ...(typeof input.currentIndex === 'number' ? { currentIndex: input.currentIndex } : {}),
+    ...(input.queueStepIds ? { queueStepIds } : {}),
+    ...(completedStepIds ? { completedStepIds } : {}),
+    ...(skippedStepIds ? { skippedStepIds } : {}),
+    ...(typeof currentIndex === 'number' ? { currentIndex } : {}),
     ...(input.context ? { context: { ...(run.context ?? {}), ...input.context } } : {}),
     actualSeconds: Math.max(0, run.actualSeconds + Math.max(0, input.actualSecondsDelta ?? 0)),
     lastActivityAt: new Date(),
-  }).where(and(eq(routineRuns.id, runId), eq(routineRuns.userId, userId))).returning();
+  }).where(and(eq(routineRuns.id, runId), eq(routineRuns.userId, userId), eq(routineRuns.status, 'active'))).returning();
   return updated ?? null;
 }
 
@@ -105,6 +150,12 @@ async function syncLinkedCompletion(
       }
     } else if (link.targetType === 'fitness') {
       const workoutType = String(link.metadata?.workoutType ?? link.targetId ?? 'Routine workout');
+      const [existing] = await db.select().from(fitnessSessions).where(and(eq(fitnessSessions.userId, userId), eq(fitnessSessions.workoutType, workoutType))).orderBy(desc(fitnessSessions.completedAt)).limit(1);
+      const existingDate = existing?.completedAt ? existing.completedAt.toLocaleDateString('en-CA') : null;
+      if (existing && existingDate === dateKey && String(existing.notes ?? '').includes(`routine step ${stepId}`)) {
+        updates.push(`fitness:${existing.id}`);
+        continue;
+      }
       const [session] = await db.insert(fitnessSessions).values({
         userId,
         workoutType,
@@ -122,7 +173,9 @@ export async function completeRoutineStep(
   input: { runId: string; stepId: string; actualSeconds: number; dateKey: string },
 ) {
   const [run] = await db.select().from(routineRuns).where(and(eq(routineRuns.id, input.runId), eq(routineRuns.userId, userId))).limit(1);
-  if (!run || run.status !== 'active') return { run: null, linkedUpdates: [] as string[], alreadyCompleted: false };
+  if (!run || run.status !== 'active' || !run.queueStepIds.includes(input.stepId)) return { run: null, linkedUpdates: [] as string[], alreadyCompleted: false };
+  const step = await ownedStep(userId, input.stepId);
+  if (!step || step.routineId !== run.routineId) return { run: null, linkedUpdates: [] as string[], alreadyCompleted: false };
 
   const [existingStepRun] = await db.select().from(routineStepRuns).where(and(eq(routineStepRuns.runId, input.runId), eq(routineStepRuns.stepId, input.stepId))).limit(1);
   if (existingStepRun?.status === 'completed') {
@@ -130,9 +183,9 @@ export async function completeRoutineStep(
   }
 
   const now = new Date();
-  const seconds = Math.max(0, Math.round(input.actualSeconds));
+  const seconds = Math.max(0, Math.min(86400, Math.round(input.actualSeconds)));
   if (existingStepRun) {
-    await db.update(routineStepRuns).set({ status: 'completed', completedAt: now, actualSeconds: seconds }).where(eq(routineStepRuns.id, existingStepRun.id));
+    await db.update(routineStepRuns).set({ status: 'completed', completedAt: now, actualSeconds: seconds }).where(and(eq(routineStepRuns.id, existingStepRun.id), eq(routineStepRuns.userId, userId)));
   } else {
     await db.insert(routineStepRuns).values({ userId, runId: input.runId, stepId: input.stepId, status: 'completed', startedAt: new Date(now.getTime() - seconds * 1000), completedAt: now, actualSeconds: seconds });
   }
@@ -141,7 +194,7 @@ export async function completeRoutineStep(
   if (stat) {
     const sampleCount = stat.sampleCount + 1;
     const totalSeconds = stat.totalSeconds + seconds;
-    await db.update(routineStepStats).set({ sampleCount, totalSeconds, averageSeconds: Math.round(totalSeconds / sampleCount), lastSeconds: seconds, updatedAt: now }).where(eq(routineStepStats.id, stat.id));
+    await db.update(routineStepStats).set({ sampleCount, totalSeconds, averageSeconds: Math.round(totalSeconds / sampleCount), lastSeconds: seconds, updatedAt: now }).where(and(eq(routineStepStats.id, stat.id), eq(routineStepStats.userId, userId)));
   } else {
     await db.insert(routineStepStats).values({ userId, stepId: input.stepId, sampleCount: 1, totalSeconds: seconds, averageSeconds: seconds, lastSeconds: seconds });
   }
@@ -151,7 +204,7 @@ export async function completeRoutineStep(
     completedStepIds,
     actualSeconds: run.actualSeconds + seconds,
     lastActivityAt: now,
-  }).where(and(eq(routineRuns.id, input.runId), eq(routineRuns.userId, userId))).returning();
+  }).where(and(eq(routineRuns.id, input.runId), eq(routineRuns.userId, userId), eq(routineRuns.status, 'active'))).returning();
 
   const linkedUpdates = await syncLinkedCompletion(userId, input.stepId, seconds, input.dateKey);
   return { run: updatedRun ?? run, linkedUpdates, alreadyCompleted: false };
@@ -159,9 +212,11 @@ export async function completeRoutineStep(
 
 export async function skipRoutineStep(userId: string, input: { runId: string; stepId: string }) {
   const [run] = await db.select().from(routineRuns).where(and(eq(routineRuns.id, input.runId), eq(routineRuns.userId, userId))).limit(1);
-  if (!run || run.status !== 'active') return null;
+  if (!run || run.status !== 'active' || !run.queueStepIds.includes(input.stepId)) return null;
+  const step = await ownedStep(userId, input.stepId);
+  if (!step || step.routineId !== run.routineId) return null;
   const skippedStepIds = Array.from(new Set([...(run.skippedStepIds ?? []), input.stepId]));
-  const [updated] = await db.update(routineRuns).set({ skippedStepIds, lastActivityAt: new Date() }).where(and(eq(routineRuns.id, input.runId), eq(routineRuns.userId, userId))).returning();
+  const [updated] = await db.update(routineRuns).set({ skippedStepIds, lastActivityAt: new Date() }).where(and(eq(routineRuns.id, input.runId), eq(routineRuns.userId, userId), eq(routineRuns.status, 'active'))).returning();
   return updated ?? null;
 }
 
@@ -169,22 +224,39 @@ export async function completeRoutineRun(userId: string, runId: string) {
   const [run] = await db.select().from(routineRuns).where(and(eq(routineRuns.id, runId), eq(routineRuns.userId, userId))).limit(1);
   if (!run) return { run: null, nextRun: null };
   if (run.status === 'completed') return { run, nextRun: null };
+  if (run.status !== 'active') return { run: null, nextRun: null };
+
+  const attempted = new Set([...(run.completedStepIds ?? []), ...(run.skippedStepIds ?? [])]);
+  if (!run.queueStepIds.length || attempted.size < run.queueStepIds.length) return { run: null, nextRun: null };
 
   const now = new Date();
-  const [completed] = await db.update(routineRuns).set({ status: 'completed', completedAt: now, lastActivityAt: now }).where(and(eq(routineRuns.id, runId), eq(routineRuns.userId, userId))).returning();
+  const [completed] = await db.update(routineRuns).set({ status: 'completed', completedAt: now, lastActivityAt: now, currentIndex: run.queueStepIds.length }).where(and(eq(routineRuns.id, runId), eq(routineRuns.userId, userId), eq(routineRuns.status, 'active'))).returning();
+  if (!completed) return { run: null, nextRun: null };
 
   const [chain] = await db.select().from(routineChains).where(and(eq(routineChains.userId, userId), eq(routineChains.sourceRoutineId, run.routineId), eq(routineChains.enabled, true))).limit(1);
-  if (!chain) return { run: completed ?? run, nextRun: null };
+  if (!chain) return { run: completed, nextRun: null };
 
+  const nextRoutine = await ownedRoutine(userId, chain.nextRoutineId);
+  if (!nextRoutine || nextRoutine.archived) return { run: completed, nextRun: null };
   const nextSteps = await db.select().from(routineSteps).where(and(eq(routineSteps.userId, userId), eq(routineSteps.routineId, chain.nextRoutineId))).orderBy(routineSteps.order);
-  const [nextRun] = await db.insert(routineRuns).values({
-    userId,
-    routineId: chain.nextRoutineId,
-    mode: run.mode,
-    queueStepIds: nextSteps.map((step) => step.id),
-    context: { chainedFromRunId: runId, chainedFromRoutineId: run.routineId },
-  }).returning();
-  return { run: completed ?? run, nextRun: nextRun ?? null };
+  if (!nextSteps.length) return { run: completed, nextRun: null };
+
+  const [existingNext] = await db.select().from(routineRuns).where(and(eq(routineRuns.userId, userId), eq(routineRuns.routineId, chain.nextRoutineId), eq(routineRuns.status, 'active'))).orderBy(desc(routineRuns.lastActivityAt)).limit(1);
+  if (existingNext) return { run: completed, nextRun: existingNext };
+
+  try {
+    const [nextRun] = await db.insert(routineRuns).values({
+      userId,
+      routineId: chain.nextRoutineId,
+      mode: run.mode,
+      queueStepIds: nextSteps.map((step) => step.id),
+      context: { chainedFromRunId: runId, chainedFromRoutineId: run.routineId },
+    }).returning();
+    return { run: completed, nextRun: nextRun ?? null };
+  } catch {
+    const [racedNext] = await db.select().from(routineRuns).where(and(eq(routineRuns.userId, userId), eq(routineRuns.routineId, chain.nextRoutineId), eq(routineRuns.status, 'active'))).orderBy(desc(routineRuns.lastActivityAt)).limit(1);
+    return { run: completed, nextRun: racedNext ?? null };
+  }
 }
 
 export async function abandonRoutineRun(userId: string, runId: string) {
@@ -196,10 +268,16 @@ export async function upsertRoutineStepLink(
   userId: string,
   input: { stepId: string; targetType: 'task' | 'habit' | 'fitness'; targetId: string; metadata?: Record<string, unknown> },
 ) {
-  const [existing] = await db.select().from(routineStepLinks).where(and(eq(routineStepLinks.stepId, input.stepId), eq(routineStepLinks.targetType, input.targetType), eq(routineStepLinks.targetId, input.targetId))).limit(1);
+  const step = await ownedStep(userId, input.stepId);
+  if (!step || !input.targetId.trim()) return null;
+  if (input.targetType === 'task') {
+    const [target] = await db.select({ id: tasks.id }).from(tasks).where(and(eq(tasks.id, input.targetId), eq(tasks.userId, userId))).limit(1);
+    if (!target) return null;
+  }
+  const [existing] = await db.select().from(routineStepLinks).where(and(eq(routineStepLinks.userId, userId), eq(routineStepLinks.stepId, input.stepId), eq(routineStepLinks.targetType, input.targetType), eq(routineStepLinks.targetId, input.targetId))).limit(1);
   if (existing) return existing;
   const [link] = await db.insert(routineStepLinks).values({ userId, ...input, metadata: input.metadata ?? {} }).returning();
-  return link;
+  return link ?? null;
 }
 
 export async function removeRoutineStepLink(userId: string, id: string) {
@@ -208,8 +286,10 @@ export async function removeRoutineStepLink(userId: string, id: string) {
 }
 
 export async function createRoutineTrigger(userId: string, input: { routineId: string; triggerType: string; config: Record<string, unknown> }) {
+  const routine = await ownedRoutine(userId, input.routineId);
+  if (!routine || routine.archived) return null;
   const [trigger] = await db.insert(routineTriggers).values({ userId, ...input }).returning();
-  return trigger;
+  return trigger ?? null;
 }
 
 export async function toggleRoutineTrigger(userId: string, id: string, enabled: boolean) {
@@ -218,8 +298,10 @@ export async function toggleRoutineTrigger(userId: string, id: string, enabled: 
 }
 
 export async function createRoutineStepRule(userId: string, input: { stepId: string; ruleType: string; config: Record<string, unknown> }) {
+  const step = await ownedStep(userId, input.stepId);
+  if (!step) return null;
   const [rule] = await db.insert(routineStepRules).values({ userId, ...input }).returning();
-  return rule;
+  return rule ?? null;
 }
 
 export async function toggleRoutineStepRule(userId: string, id: string, enabled: boolean) {
@@ -228,16 +310,21 @@ export async function toggleRoutineStepRule(userId: string, id: string, enabled:
 }
 
 export async function setRoutineChain(userId: string, sourceRoutineId: string, nextRoutineId: string | null) {
+  const source = await ownedRoutine(userId, sourceRoutineId);
+  if (!source || source.archived) return null;
   const [existing] = await db.select().from(routineChains).where(and(eq(routineChains.userId, userId), eq(routineChains.sourceRoutineId, sourceRoutineId))).limit(1);
   if (!nextRoutineId) {
     if (!existing) return null;
-    const [removed] = await db.delete(routineChains).where(eq(routineChains.id, existing.id)).returning();
+    const [removed] = await db.delete(routineChains).where(and(eq(routineChains.id, existing.id), eq(routineChains.userId, userId))).returning();
     return removed ?? null;
   }
+  if (nextRoutineId === sourceRoutineId) return null;
+  const next = await ownedRoutine(userId, nextRoutineId);
+  if (!next || next.archived) return null;
   if (existing) {
-    const [updated] = await db.update(routineChains).set({ nextRoutineId, enabled: true }).where(eq(routineChains.id, existing.id)).returning();
+    const [updated] = await db.update(routineChains).set({ nextRoutineId, enabled: true }).where(and(eq(routineChains.id, existing.id), eq(routineChains.userId, userId))).returning();
     return updated ?? null;
   }
   const [chain] = await db.insert(routineChains).values({ userId, sourceRoutineId, nextRoutineId }).returning();
-  return chain;
+  return chain ?? null;
 }
