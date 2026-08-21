@@ -5,7 +5,20 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Dialog } from '@/components/ui/dialog';
 import { HabitForm } from '@/components/habits/habit-form';
 import { HabitsExperience } from '@/components/habits/habits-experience';
-import type { Habit, HabitLog } from '@/lib/types';
+import type {
+  CalendarEvent,
+  Goal,
+  Habit,
+  HabitCompletionDetail,
+  HabitExperiment,
+  HabitLog,
+  HabitProfile,
+  HabitSourceLink,
+  HabitStack,
+  HabitTimingStat,
+  HabitTrigger,
+  Routine,
+} from '@/lib/types';
 
 function withoutHabitParams(params: URLSearchParams) {
   const next = new URLSearchParams(params.toString());
@@ -14,7 +27,33 @@ function withoutHabitParams(params: URLSearchParams) {
   return next;
 }
 
-export function HabitsRouteExperience({ initialHabits, initialLogs }: { initialHabits: Habit[]; initialLogs: HabitLog[] }) {
+export function HabitsRouteExperience({
+  initialHabits,
+  initialLogs,
+  profiles,
+  details,
+  timingStats,
+  triggers,
+  stacks,
+  experiments,
+  sourceLinks,
+  calendarEvents,
+  routines,
+  goals,
+}: {
+  initialHabits: Habit[];
+  initialLogs: HabitLog[];
+  profiles: HabitProfile[];
+  details: HabitCompletionDetail[];
+  timingStats: HabitTimingStat[];
+  triggers: HabitTrigger[];
+  stacks: HabitStack[];
+  experiments: HabitExperiment[];
+  sourceLinks: HabitSourceLink[];
+  calendarEvents: CalendarEvent[];
+  routines: Routine[];
+  goals: Goal[];
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedId = searchParams.get('habitId') ?? searchParams.get('selected');
@@ -30,7 +69,20 @@ export function HabitsRouteExperience({ initialHabits, initialLogs }: { initialH
 
   return (
     <>
-      <HabitsExperience initialHabits={initialHabits} initialLogs={initialLogs} />
+      <HabitsExperience
+        initialHabits={initialHabits}
+        initialLogs={initialLogs}
+        profiles={profiles}
+        details={details}
+        timingStats={timingStats}
+        triggers={triggers}
+        stacks={stacks}
+        experiments={experiments}
+        sourceLinks={sourceLinks}
+        calendarEvents={calendarEvents}
+        routines={routines}
+        goals={goals}
+      />
       <Dialog open={Boolean(requestedId && selectedHabit)} onClose={closeRecord} title={selectedHabit ? `Habit · ${selectedHabit.name}` : 'Habit'}>
         {selectedHabit ? (
           <HabitForm
