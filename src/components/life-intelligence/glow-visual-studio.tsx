@@ -1,0 +1,58 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { Download, Image as ImageIcon, Loader2, Sparkles, WandSparkles, X } from 'lucide-react';
+
+type VisualSize='1024x1024'|'1024x1536'|'1536x1024';
+type Style='glow'|'minimal'|'bold'|'photo';
+type StoredMessage={role?:string;content?:string};
+
+const CONVERSATION_STORAGE='glow-os:life-conversation:v1';
+const VOICE_STORAGE='glow-os:human-voice:v1';
+const PRESETS=[
+ 'Generate a visual card of what I should do next',
+ 'Generate an image of my schedule today',
+ 'Generate my routine as a step-by-step card',
+ 'Generate my habits as a visual checklist',
+ 'Generate my workout as an easy-to-follow workout card',
+ 'Generate a grocery list image',
+ 'Generate step-by-step instructions as a visual guide',
+];
+
+function readOpenAiKey(){try{const value=JSON.parse(localStorage.getItem(VOICE_STORAGE)??'{}') as {openAiKey?:unknown};return typeof value.openAiKey==='string'?value.openAiKey.trim():''}catch{return''}}
+function latestUserRequest(){try{const value=JSON.parse(localStorage.getItem(CONVERSATION_STORAGE)??'[]') as StoredMessage[];for(let i=value.length-1;i>=0;i--){if(value[i]?.role==='user'&&typeof value[i]?.content==='string'&&value[i]!.content!.trim())return value[i]!.content!.trim()}}catch{/* ignore */}return''}
+function fileName(prompt:string){const slug=prompt.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,42)||'glow-visual';return`${slug}.jpg`}
+
+export function GlowVisualStudio(){
+ const pathname=usePathname();
+ const[open,setOpen]=useState(false);const[prompt,setPrompt]=useState('');const[size,setSize]=useState<VisualSize>('1024x1536');const[style,setStyle]=useState<Style>('glow');const[generating,setGenerating]=useState(false);const[image,setImage]=useState<string|null>(null);const[error,setError]=useState('');const[brief,setBrief]=useState('');
+ useEffect(()=>{const openStudio=(event:Event)=>{const detail=(event as CustomEvent<{prompt?:string}>).detail;setPrompt(detail?.prompt?.trim()||latestUserRequest());setOpen(true)};document.addEventListener('glow:visualize',openStudio);return()=>document.removeEventListener('glow:visualize',openStudio)},[]);
+ const aspectLabel=useMemo(()=>size==='1024x1536'?'Portrait':size==='1536x1024'?'Landscape':'Square',[size]);
+ async function generate(){const request=prompt.trim();if(!request||generating)return;setGenerating(true);setError('');try{const key=readOpenAiKey();const response=await fetch('/api/glow/visualize',{method:'POST',headers:{'Content-Type':'application/json',...(key?{'x-glow-openai-key':key}:{})},body:JSON.stringify({request,page:pathname,size,style})});const payload=await response.json();if(!response.ok||!payload?.image)throw new Error(String(payload?.error||'Glow could not generate that visual.'));setImage(String(payload.image));setBrief(String(payload.brief??''))}catch(err){setError(err instanceof Error?err.message:'Glow could not generate that visual.')}finally{setGenerating(false)}}
+ function useLatest(){const latest=latestUserRequest();if(latest)setPrompt(latest)}
+ function download(){if(!image)return;const anchor=document.createElement('a');anchor.href=image;anchor.download=fileName(prompt);document.body.appendChild(anchor);anchor.click();anchor.remove()}
+ return <>
+  <button type="button" onClick={()=>{if(!prompt)setPrompt(latestUserRequest());setOpen(true)}} className="fixed bottom-[calc(env(safe-area-inset-bottom)+150px)] right-4 z-[2147483048] grid h-12 w-12 place-items-center rounded-full border border-white/80 bg-[linear-gradient(145deg,rgba(255,255,255,.96),rgba(239,232,244,.95))] text-[#66566b] shadow-[0_14px_42px_rgba(58,43,62,.18)] backdrop-blur-xl lg:bottom-[84px] lg:right-5" aria-label="Open Glow Visual Studio"><ImageIcon size={17}/></button>
+  {open?<div className="fixed inset-0 z-[2147483639] overflow-y-auto bg-[rgba(28,23,29,.24)] p-2 backdrop-blur-[8px] sm:p-5" onMouseDown={event=>{if(event.target===event.currentTarget)setOpen(false)}}>
+   <section className="mx-auto my-2 w-full max-w-[760px] overflow-hidden rounded-[32px] border border-white/75 bg-[rgba(255,252,251,.97)] shadow-[0_32px_100px_rgba(39,29,41,.28)]">
+    <header className="flex items-center justify-between border-b border-[#eee5e3] px-5 py-4 sm:px-6"><div className="flex items-center gap-3"><span className="grid h-11 w-11 place-items-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#fff,#ddd2e4_38%,#716175_100%)] text-white shadow-[0_0_28px_rgba(255,255,255,.7)]"><Sparkles size={18}/></span><div><p className="font-serif text-[23px] leading-none text-[#393138]">Glow Visual Studio</p><p className="mt-1 text-[8px] font-semibold uppercase tracking-[.17em] text-[#9a8c93]">Turn your life into something you can see</p></div></div><button type="button" onClick={()=>setOpen(false)} className="grid h-10 w-10 place-items-center rounded-full border border-[#eadfdd] bg-white text-[#6e6268]" aria-label="Close Visual Studio"><X size={16}/></button></header>
+    <div className="grid gap-0 lg:grid-cols-[.9fr_1.1fr]">
+     <div className="border-b border-[#eee4e2] p-5 sm:p-6 lg:border-b-0 lg:border-r">
+      <p className="text-[8px] font-semibold uppercase tracking-[.18em] text-[#987f89]">What should Glow create?</p>
+      <textarea value={prompt} onChange={event=>setPrompt(event.target.value)} rows={6} placeholder="Generate my evening routine as a beautiful step-by-step card…" className="mt-3 w-full resize-none rounded-[22px] border border-[#e4d9d7] bg-white p-4 text-[13px] leading-6 text-[#423a3f] outline-none transition focus:border-[#ae98a4] focus:ring-2 focus:ring-[#eadfe6]"/>
+      <div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={useLatest} className="rounded-full border border-[#e5d9dd] bg-[#fffafb] px-3 py-2 text-[9px] font-semibold text-[#6f5d67]">Use latest Glow request</button></div>
+      <div className="mt-5"><p className="text-[8px] font-semibold uppercase tracking-[.15em] text-[#9a8c92]">Quick ideas</p><div className="mt-2 flex flex-wrap gap-2">{PRESETS.map(item=><button key={item} type="button" onClick={()=>setPrompt(item)} className="rounded-full border border-[#e8dddb] bg-[#faf6f5] px-3 py-2 text-[8.5px] text-[#6e6267]">{item.replace(/^Generate /,'')}</button>)}</div></div>
+      <div className="mt-5 grid grid-cols-2 gap-3"><label className="text-[8px] font-semibold uppercase tracking-[.12em] text-[#94868c]">Format<select value={size} onChange={event=>setSize(event.target.value as VisualSize)} className="mt-2 w-full rounded-[16px] border border-[#e2d8d5] bg-white px-3 py-3 text-[11px] font-normal normal-case tracking-normal text-[#554b50] outline-none"><option value="1024x1536">Portrait</option><option value="1024x1024">Square</option><option value="1536x1024">Landscape</option></select></label><label className="text-[8px] font-semibold uppercase tracking-[.12em] text-[#94868c]">Style<select value={style} onChange={event=>setStyle(event.target.value as Style)} className="mt-2 w-full rounded-[16px] border border-[#e2d8d5] bg-white px-3 py-3 text-[11px] font-normal normal-case tracking-normal text-[#554b50] outline-none"><option value="glow">Glow OS</option><option value="minimal">Minimal</option><option value="bold">Bold</option><option value="photo">Photoreal</option></select></label></div>
+      <button type="button" disabled={!prompt.trim()||generating} onClick={()=>void generate()} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-[#554958] px-5 py-3.5 text-[10px] font-semibold uppercase tracking-[.08em] text-white shadow-[0_12px_30px_rgba(63,49,62,.18)] disabled:opacity-40">{generating?<><Loader2 size={15} className="animate-spin"/>Glow is creating…</>:<><WandSparkles size={15}/>Generate visual</>}</button>
+      <p className="mt-3 text-[8px] leading-4 text-[#9a8f94]">Glow uses verified life context when it has it. It should not invent appointments, tasks, steps, ingredients, or times just to fill the picture.</p>
+      {error?<p className="mt-3 rounded-[14px] bg-[#f7e9e8] p-3 text-[9px] leading-4 text-[#875d5c]">{error}</p>:null}
+     </div>
+     <div className="min-h-[360px] bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,.96),rgba(246,240,244,.9)_44%,rgba(232,235,243,.82))] p-5 sm:p-6">
+      {image?<div><div className="overflow-hidden rounded-[24px] border border-white/80 bg-white shadow-[0_18px_55px_rgba(58,43,61,.14)]"><img src={image} alt={`Glow generated visual: ${prompt}`} className="block h-auto w-full"/></div><div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={download} className="inline-flex items-center gap-2 rounded-full border border-[#ded2d8] bg-white px-4 py-2.5 text-[9px] font-semibold text-[#685761]"><Download size={13}/>Save image</button><button type="button" onClick={()=>void generate()} disabled={generating} className="inline-flex items-center gap-2 rounded-full border border-[#ded2d8] bg-white px-4 py-2.5 text-[9px] font-semibold text-[#685761]"><WandSparkles size={13}/>Generate again</button></div>{brief?<details className="mt-3 rounded-[16px] border border-[#e7dddf] bg-white/70 p-3"><summary className="cursor-pointer text-[8px] font-semibold uppercase tracking-[.12em] text-[#8f7e86]">What Glow used</summary><p className="mt-2 whitespace-pre-wrap text-[8.5px] leading-4 text-[#7b7075]">{brief}</p></details>:null}</div>:<div className="grid min-h-[360px] place-items-center text-center"><div className="max-w-[300px]"><div className="mx-auto grid h-24 w-24 place-items-center rounded-full bg-[radial-gradient(circle,#fff_0_14%,rgba(255,255,255,.95)_20%,rgba(227,236,255,.55)_42%,rgba(245,218,237,.28)_65%,transparent_72%)] shadow-[0_0_48px_rgba(255,255,255,.85)]"><Sparkles size={25} className="text-[#796b7b]"/></div><p className="mt-5 font-serif text-[22px] text-[#4b4147]">Anything can become visual.</p><p className="mt-2 text-[10px] leading-5 text-[#857a80]">Schedules, routines, workouts, instructions, grocery lists, habits, beauty plans, checklists, or a completely new picture.</p><p className="mt-3 text-[8px] uppercase tracking-[.14em] text-[#a09298]">Current format · {aspectLabel}</p></div></div>}
+     </div>
+    </div>
+   </section>
+  </div>:null}
+ </>;
+}
