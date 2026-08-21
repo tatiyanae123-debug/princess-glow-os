@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { CalendarDays, Check, ChevronRight, Heart, PackageOpen, Shirt, Sparkles, Star, WashingMachine } from 'lucide-react';
+import { CalendarDays, Check, ChevronRight, Heart, PackageOpen, Sparkles, Star, WashingMachine } from 'lucide-react';
 import { EditableRoomImage } from '@/components/media/editable-room-image';
 
 type ClosetItem = {
