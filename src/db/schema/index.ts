@@ -1,6 +1,7 @@
 export * from './auth';
 export * from './tasks';
 export * from './habits';
+export * from './advanced-habits';
 export * from './routines';
 export * from './advanced-routines';
 export * from './goals';
