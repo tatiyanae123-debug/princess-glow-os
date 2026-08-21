@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowRight,
@@ -71,8 +71,11 @@ type Props = {
 const MODE_LABEL: Record<RoutineMode, string> = { full: 'Full', normal: 'Standard', quick: 'Quick', minimum: 'Minimum' };
 const TIME_OPTIONS = [10, 20, 35, 60, 120];
 
-function localDayName(date: Date) {
-  return date.toLocaleDateString(undefined, { weekday: 'long' }).toLowerCase();
+function localDateKey(date: Date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 function timeBand(date: Date) {
@@ -93,8 +96,8 @@ function routineMinutes(routine: Routine, stepsByRoutine: Map<string, RoutineSte
   return (stepsByRoutine.get(routine.id) ?? []).reduce((sum, step) => sum + learnedMinutes(step, stats), 0);
 }
 
-function elapsedLabel(date: Date) {
-  const minutes = Math.max(0, Math.round((Date.now() - date.getTime()) / 60000));
+function elapsedLabel(date: Date, now: Date) {
+  const minutes = Math.max(0, Math.round((now.getTime() - date.getTime()) / 60000));
   if (minutes < 60) return `${minutes}m ago`;
   return `${Math.floor(minutes / 60)}h ${minutes % 60}m ago`;
 }
@@ -139,8 +142,30 @@ function classifyLibrary(routine: Routine) {
   return maintenance ? maintenance.label : 'Other';
 }
 
+function moveBefore(list: RoutineStep[], first: RegExp, second: RegExp) {
+  const a = list.findIndex((step) => first.test(`${step.title} ${step.notes ?? ''}`));
+  const b = list.findIndex((step) => second.test(`${step.title} ${step.notes ?? ''}`));
+  if (a < 0 || b < 0 || a < b) return list;
+  const next = [...list];
+  const [item] = next.splice(a, 1);
+  const target = next.findIndex((step) => second.test(`${step.title} ${step.notes ?? ''}`));
+  next.splice(Math.max(0, target), 0, item);
+  return next;
+}
+
+function sourceOrderedSteps(input: RoutineStep[]) {
+  let list = [...input].sort((a, b) => a.order - b.order);
+  list = moveBefore(list, /brain dump/i, /top 3|goal|calendar|plan/i);
+  list = moveBefore(list, /water|hydrat/i, /supplement/i);
+  list = moveBefore(list, /pilates|workout|movement/i, /breakfast|protein meal|nourish/i);
+  list = moveBefore(list, /skincare|skin ritual/i, /makeup/i);
+  const front = list.filter((step) => /front (hair|piece)|face.?framing|curl front/i.test(`${step.title} ${step.notes ?? ''}`));
+  if (front.length) list = [...list.filter((step) => !front.includes(step)), ...front];
+  return list;
+}
+
 export function RoutineIntelligenceStudio(props: Props) {
-  const { initialRoutines, initialSteps, initialEngine, calendarEvents, tasks, habits } = props;
+  const { initialRoutines, initialSteps, initialEngine, calendarEvents } = props;
   const router = useRouter();
   const [engine, setEngine] = useState(initialEngine);
   const [now, setNow] = useState(() => new Date());
@@ -172,16 +197,21 @@ export function RoutineIntelligenceStudio(props: Props) {
   }, [initialSteps]);
 
   const activeByRoutine = useMemo(() => new Map(engine.activeRuns.map((run) => [run.routineId, run])), [engine.activeRuns]);
-  const todayName = localDayName(now);
+  const completedTodayByRoutine = useMemo(() => {
+    const key = localDateKey(now);
+    return new Map(engine.history.filter((run) => run.status === 'completed' && run.completedAt && localDateKey(run.completedAt) === key).map((run) => [run.routineId, run]));
+  }, [engine.history, now]);
   const currentBand = timeBand(now);
   const suggestedMode = adaptiveMode(energy, availableMinutes);
   const anchors = DAILY_ANCHORS.map((blueprint) => ({ blueprint, routine: findAnchorRoutine(routines, blueprint.key) }));
-  const currentAnchor = anchors.find((item) => item.blueprint.key === currentBand && item.routine) ?? anchors.find((item) => item.routine) ?? null;
+  const currentIndex = Math.max(0, anchors.findIndex((item) => item.blueprint.key === currentBand));
+  const bandAnchor = anchors[currentIndex] ?? null;
+  const bandComplete = bandAnchor?.routine ? completedTodayByRoutine.has(bandAnchor.routine.id) : false;
+  const nextAnchor = anchors.slice(currentIndex + (bandComplete ? 1 : 0)).find((item) => item.routine && !completedTodayByRoutine.has(item.routine.id)) ?? anchors.find((item) => item.routine && !completedTodayByRoutine.has(item.routine.id)) ?? null;
+  const currentAnchor = bandComplete ? nextAnchor : (bandAnchor?.routine ? bandAnchor : nextAnchor);
   const currentRoutine = currentAnchor?.routine ?? null;
   const currentFullMinutes = currentRoutine ? routineMinutes(currentRoutine, stepsByRoutine, engine.stats) : 0;
-  const upcomingEvent = [...calendarEvents]
-    .filter((event) => !event.allDay && event.startAt > now)
-    .sort((a, b) => a.startAt.getTime() - b.startAt.getTime())[0] ?? null;
+  const upcomingEvent = [...calendarEvents].filter((event) => !event.allDay && event.startAt > now).sort((a, b) => a.startAt.getTime() - b.startAt.getTime())[0] ?? null;
   const minutesUntilEvent = upcomingEvent ? Math.max(0, Math.floor((upcomingEvent.startAt.getTime() - now.getTime()) / 60000)) : null;
   const calendarFitMinutes = minutesUntilEvent == null ? availableMinutes : Math.min(availableMinutes, minutesUntilEvent);
   const calendarMode = adaptiveMode(energy, calendarFitMinutes);
@@ -225,7 +255,7 @@ export function RoutineIntelligenceStudio(props: Props) {
       <div className="space-y-4">
         <div className="sticky top-2 z-30 mx-auto flex w-fit items-center gap-2 rounded-full border border-white/70 bg-white/90 p-1 shadow-lg backdrop-blur-xl">
           <button type="button" onClick={() => setSurface('studio')} className="rounded-full px-4 py-2 text-xs font-semibold text-[#5f5360]">Routine Studio</button>
-          <button type="button" className="rounded-full bg-[#4f4054] px-4 py-2 text-xs font-semibold text-white">Planning + Advanced</button>
+          <button type="button" disabled aria-current="page" className="rounded-full bg-[#4f4054] px-4 py-2 text-xs font-semibold text-white disabled:opacity-100">Planning + Advanced</button>
         </div>
         <RoutinesExperience {...props} initialEngine={engine} />
       </div>
@@ -233,7 +263,7 @@ export function RoutineIntelligenceStudio(props: Props) {
   }
 
   const playerSteps = playing
-    ? (stepsByRoutine.get(playing.id) ?? []).filter((step) => stepFitsHairContext(step.title, step.notes, hairContext))
+    ? sourceOrderedSteps((stepsByRoutine.get(playing.id) ?? []).filter((step) => stepFitsHairContext(step.title, step.notes, hairContext)))
     : [];
   const playerRun = playing ? activeByRoutine.get(playing.id) ?? null : null;
 
@@ -260,14 +290,14 @@ export function RoutineIntelligenceStudio(props: Props) {
                 <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#a28b98]">Routine Right Now</p>
                 <p className="mt-1 text-sm text-[#7b6c77]">{now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })} · {now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
               </div>
-              {upcomingEvent ? <div className="rounded-full bg-[#f6f1ec] px-3 py-2 text-[11px] text-[#746773]">Next calendar · {upcomingEvent.title} · {minutesUntilEvent}m</div> : null}
+              {upcomingEvent ? <div className="max-w-full truncate rounded-full bg-[#f6f1ec] px-3 py-2 text-[11px] text-[#746773]">Next calendar · {upcomingEvent.title} · {minutesUntilEvent}m</div> : null}
             </div>
 
             {currentRoutine ? (
               <div className="mt-5 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
                 <div>
-                  <p className="text-xs font-semibold text-[#8f7b88]">Best routine for this moment</p>
-                  <h2 className="mt-1 font-serif text-3xl text-[#4d404d]">{currentRoutine.name}</h2>
+                  <p className="text-xs font-semibold text-[#8f7b88]">{bandComplete ? 'You are between routines. Next best anchor' : 'Best routine for this moment'}</p>
+                  <h2 className="mt-1 break-words font-serif text-3xl text-[#4d404d]">{currentRoutine.name}</h2>
                   <p className="mt-2 text-sm leading-6 text-[#746672]">{currentAnchor?.blueprint.purpose ?? currentRoutine.description}</p>
                   <div className="mt-4 flex flex-wrap gap-2 text-[11px]">
                     <span className="rounded-full bg-[#f7f1e8] px-3 py-1.5">{MODE_LABEL[recommendedMode]} suggested</span>
@@ -277,23 +307,12 @@ export function RoutineIntelligenceStudio(props: Props) {
                 </div>
                 <button type="button" onClick={() => startRoutine(currentRoutine, recommendedMode)} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#4f4054] px-6 py-3 text-sm font-semibold text-white shadow-lg"><Play size={16} /> {activeByRoutine.has(currentRoutine.id) ? 'Continue' : `Start ${MODE_LABEL[recommendedMode]}`}</button>
               </div>
-            ) : <p className="mt-5 text-sm text-[#756875]">No daily anchor routine exists for this time window yet. Open Planning + Advanced to create or map one.</p>}
+            ) : <p className="mt-5 text-sm text-[#756875]">Your daily anchors are covered or no matching routine exists for this window. Open Planning + Advanced to manage the source routines.</p>}
 
             <div className="mt-6 grid gap-4 border-t border-[#eee5e9] pt-5 md:grid-cols-3">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9e8a97]">Energy</p>
-                <div className="mt-2 flex flex-wrap gap-1.5">{(['high','normal','low','exhausted'] as Energy[]).map((value) => <button key={value} type="button" onClick={() => setEnergy(value)} className={`rounded-full px-3 py-1.5 text-[11px] capitalize ${energy === value ? 'bg-[#594a5b] text-white' : 'bg-[#f4efec]'}`}>{value}</button>)}</div>
-              </div>
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9e8a97]">I have</p>
-                <div className="mt-2 flex flex-wrap gap-1.5">{TIME_OPTIONS.map((value) => <button key={value} type="button" onClick={() => setAvailableMinutes(value)} className={`rounded-full px-3 py-1.5 text-[11px] ${availableMinutes === value ? 'bg-[#594a5b] text-white' : 'bg-[#f4efec]'}`}>{value >= 120 ? '2h+' : `${value}m`}</button>)}</div>
-              </div>
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9e8a97]">Hair today</p>
-                <select value={hairContext} onChange={(event) => setHairContext(event.target.value as HairContext)} className="mt-2 w-full rounded-2xl border border-[#e7dce2] bg-white px-3 py-2 text-xs outline-none">
-                  <option value="u-part">U-Part Wig</option><option value="natural">Natural</option><option value="straightened">Straightened</option><option value="braids">Braids</option><option value="other">Other</option>
-                </select>
-              </div>
+              <div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9e8a97]">Energy</p><div className="mt-2 flex flex-wrap gap-1.5">{(['high','normal','low','exhausted'] as Energy[]).map((value) => <button key={value} type="button" onClick={() => setEnergy(value)} className={`rounded-full px-3 py-1.5 text-[11px] capitalize ${energy === value ? 'bg-[#594a5b] text-white' : 'bg-[#f4efec]'}`}>{value}</button>)}</div></div>
+              <div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9e8a97]">I have</p><div className="mt-2 flex flex-wrap gap-1.5">{TIME_OPTIONS.map((value) => <button key={value} type="button" onClick={() => setAvailableMinutes(value)} className={`rounded-full px-3 py-1.5 text-[11px] ${availableMinutes === value ? 'bg-[#594a5b] text-white' : 'bg-[#f4efec]'}`}>{value >= 120 ? '2h+' : `${value}m`}</button>)}</div></div>
+              <div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9e8a97]">Hair today</p><select value={hairContext} onChange={(event) => setHairContext(event.target.value as HairContext)} className="mt-2 w-full rounded-2xl border border-[#e7dce2] bg-white px-3 py-2 text-xs outline-none"><option value="u-part">U-Part Wig</option><option value="natural">Natural</option><option value="straightened">Straightened</option><option value="braids">Braids</option><option value="other">Other</option></select></div>
             </div>
           </article>
 
@@ -310,67 +329,54 @@ export function RoutineIntelligenceStudio(props: Props) {
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {anchors.map(({ blueprint, routine }) => {
               const steps = routine ? stepsByRoutine.get(routine.id) ?? [] : [];
-              const run = routine ? activeByRoutine.get(routine.id) : null;
-              const complete = run?.completedStepIds?.length ?? 0;
+              const active = routine ? activeByRoutine.get(routine.id) : null;
+              const completed = routine ? completedTodayByRoutine.get(routine.id) : null;
+              const run = active ?? completed;
+              const complete = completed ? steps.length : (active?.completedStepIds?.length ?? 0);
               const progress = steps.length ? Math.min(100, Math.round((complete / steps.length) * 100)) : 0;
               const isCurrent = blueprint.key === currentBand;
-              return (
-                <article key={blueprint.key} className={`overflow-hidden rounded-[28px] border p-4 shadow-sm transition ${isCurrent ? 'border-[#cbb8ca] bg-white shadow-[0_16px_44px_rgba(89,74,91,.13)]' : 'border-white/80 bg-white/70'}`}>
-                  <div className={`-mx-4 -mt-4 mb-4 h-16 bg-gradient-to-br ${blueprint.tone}`} />
-                  <div className="flex items-start justify-between gap-3"><div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9c8895]">{blueprint.verb}</p><h3 className="mt-1 font-serif text-2xl">{blueprint.label}</h3></div>{blueprint.key === 'night' ? <MoonStar size={20} /> : <SunMedium size={20} />}</div>
-                  <p className="mt-2 text-[11px] text-[#887985]">{blueprint.timeLabel}</p>
-                  {routine ? <><div className="mt-4 flex items-center justify-between text-xs"><span>{steps.length} steps · ~{routineMinutes(routine, stepsByRoutine, engine.stats)}m</span><span>{run ? `${complete}/${steps.length}` : 'Ready'}</span></div><div className="mt-2 h-1 overflow-hidden rounded-full bg-[#ece5e8]"><div className="h-full rounded-full bg-[#8e7a8d]" style={{ width: `${progress}%` }} /></div><div className="mt-4 flex gap-2"><button type="button" onClick={() => startRoutine(routine, adaptiveMode(energy, availableMinutes))} className="flex-1 rounded-full bg-[#594a5b] px-3 py-2 text-xs font-semibold text-white">{run ? 'Continue' : 'Start'}</button><button type="button" onClick={() => setExpandedAnchor(expandedAnchor === routine.id ? null : routine.id)} className="rounded-full border border-[#e6dce1] bg-white px-3 py-2" aria-label={`Show ${blueprint.label} chapters`}><ChevronDown size={14} /></button></div></> : <p className="mt-4 text-xs text-[#8e8089]">No matching master routine yet.</p>}
-                  {routine && expandedAnchor === routine.id ? <div className="mt-4 space-y-2 border-t border-[#eee5e9] pt-4">{blueprint.chapters.map((chapter) => { const chapterSteps = steps.filter((step) => sectionForStep(step, routine) === chapter.title); if (!chapterSteps.length) return null; return <div key={chapter.title} className="rounded-2xl bg-[#faf7f4] p-3"><div className="flex items-center justify-between"><p className="text-xs font-semibold">{chapter.title}</p><span className="text-[10px] text-[#9b8994]">{chapterSteps.length} steps</span></div><p className="mt-1 text-[10px] leading-4 text-[#8a7a85]">{chapter.description}</p></div>; })}</div> : null}
-                </article>
-              );
+              return <article key={blueprint.key} className={`overflow-hidden rounded-[28px] border p-4 shadow-sm transition ${isCurrent ? 'border-[#cbb8ca] bg-white shadow-[0_16px_44px_rgba(89,74,91,.13)]' : 'border-white/80 bg-white/70'}`}>
+                <div className={`-mx-4 -mt-4 mb-4 h-16 bg-gradient-to-br ${blueprint.tone}`} />
+                <div className="flex items-start justify-between gap-3"><div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9c8895]">{blueprint.verb}</p><h3 className="mt-1 font-serif text-2xl">{blueprint.label}</h3></div>{blueprint.key === 'night' ? <MoonStar size={20} /> : <SunMedium size={20} />}</div>
+                <p className="mt-2 text-[11px] text-[#887985]">{blueprint.timeLabel}</p>
+                {routine ? <><div className="mt-4 flex items-center justify-between gap-2 text-xs"><span>{steps.length} steps · ~{routineMinutes(routine, stepsByRoutine, engine.stats)}m</span><span>{completed ? '✓ Complete' : run ? `${complete}/${steps.length}` : 'Ready'}</span></div><div className="mt-2 h-1 overflow-hidden rounded-full bg-[#ece5e8]"><div className="h-full rounded-full bg-[#8e7a8d]" style={{ width: `${progress}%` }} /></div><div className="mt-4 flex gap-2"><button type="button" onClick={() => startRoutine(routine, adaptiveMode(energy, availableMinutes))} className="flex-1 rounded-full bg-[#594a5b] px-3 py-2 text-xs font-semibold text-white">{active ? 'Continue' : completed ? 'Run Again' : 'Start'}</button><button type="button" onClick={() => setExpandedAnchor(expandedAnchor === routine.id ? null : routine.id)} className="rounded-full border border-[#e6dce1] bg-white px-3 py-2" aria-label={`Show ${blueprint.label} chapters`}><ChevronDown size={14} /></button></div></> : <p className="mt-4 text-xs text-[#8e8089]">No matching master routine yet.</p>}
+                {routine && expandedAnchor === routine.id ? <div className="mt-4 space-y-2 border-t border-[#eee5e9] pt-4">{blueprint.chapters.map((chapter) => { const chapterSteps = steps.filter((step) => sectionForStep(step, routine) === chapter.title); if (!chapterSteps.length) return null; return <div key={chapter.title} className="rounded-2xl bg-[#faf7f4] p-3"><div className="flex items-center justify-between"><p className="text-xs font-semibold">{chapter.title}</p><span className="text-[10px] text-[#9b8994]">{chapterSteps.length} steps</span></div><p className="mt-1 text-[10px] leading-4 text-[#8a7a85]">{chapter.description}</p></div>; })}</div> : null}
+              </article>;
             })}
           </div>
         </section>
 
-        {engine.activeRuns.length ? <section className="rounded-[28px] border border-[#e5dbe4] bg-[#f4eef7] p-5"><p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8c768d]">Where was I?</p><div className="mt-3 grid gap-3 md:grid-cols-2">{engine.activeRuns.slice(0, 4).map((run) => { const routine = routines.find((item) => item.id === run.routineId); if (!routine) return null; return <button key={run.id} type="button" onClick={() => startRoutine(routine, (run.mode as RoutineMode) || 'normal')} className="flex items-center justify-between rounded-2xl bg-white p-4 text-left"><div><p className="font-semibold">Resume {routine.name}</p><p className="mt-1 text-xs text-[#8a7985]">{run.completedStepIds.length}/{run.queueStepIds.length} complete · {elapsedLabel(run.lastActivityAt)}</p></div><ChevronRight size={18} /></button>; })}</div></section> : null}
+        <WeekRhythm history={engine.history} now={now} />
+
+        {engine.activeRuns.length ? <section className="rounded-[28px] border border-[#e5dbe4] bg-[#f4eef7] p-5"><p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8c768d]">Where was I?</p><div className="mt-3 grid gap-3 md:grid-cols-2">{engine.activeRuns.slice(0, 4).map((run) => { const routine = routines.find((item) => item.id === run.routineId); if (!routine) return null; return <button key={run.id} type="button" onClick={() => startRoutine(routine, (run.mode as RoutineMode) || 'normal')} className="flex items-center justify-between rounded-2xl bg-white p-4 text-left"><div><p className="font-semibold">Resume {routine.name}</p><p className="mt-1 text-xs text-[#8a7985]">{run.completedStepIds.length}/{run.queueStepIds.length} complete · {elapsedLabel(run.lastActivityAt, now)}</p></div><ChevronRight size={18} /></button>; })}</div></section> : null}
 
         {now.getDay() === 0 && sundayReset ? <section className="rounded-[32px] border border-[#ead9cb] bg-gradient-to-br from-[#fffaf2] to-[#f3e8dc] p-5 sm:p-7"><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#a38775]">Sunday Reset Mode</p><h2 className="mt-1 font-serif text-3xl">Reset body, home, appearance + life</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-[#7c6d65]">Treat this as a reset operating session, not a 40-item checklist. Use running/waiting steps as opportunities to move another category forward.</p></div><button type="button" onClick={() => startRoutine(sundayReset, 'full')} className="rounded-full bg-[#67554b] px-5 py-3 text-sm font-semibold text-white">Start Reset Day</button></div><div className="mt-5 grid gap-3 sm:grid-cols-4">{['Home','Beauty','Body','Planning'].map((label) => <div key={label} className="rounded-2xl bg-white/70 p-4"><p className="text-xs font-semibold">{label}</p><p className="mt-2 text-[11px] text-[#8d7a70]">Grouped inside the reset instead of competing as separate cards.</p></div>)}</div><div className="mt-4 rounded-2xl bg-white/70 p-4 text-sm"><span className="font-semibold">Parallel-step idea:</span> while laundry or a hair treatment runs, use the waiting window for bathroom cleaning, grocery planning, or tomorrow prep.</div></section> : null}
 
         <section className="grid gap-4 lg:grid-cols-2">
-          <article className="rounded-[28px] border border-white/80 bg-white/75 p-5">
-            <div className="flex items-center gap-2"><HeartPulse size={18} /><h2 className="font-serif text-2xl">Routine Doctor</h2></div>
-            {friction.length ? <><p className="mt-2 text-sm text-[#776975]">The largest learned overruns inside {currentRoutine?.name}:</p><div className="mt-4 space-y-2">{friction.map((item) => <div key={item.step.id} className="flex items-center justify-between rounded-2xl bg-[#faf6f4] px-4 py-3"><div><p className="text-sm font-semibold">{item.step.title}</p><p className="text-[11px] text-[#95828f]">planned {item.planned}m · learned {item.learned}m · {item.samples} samples</p></div><span className="rounded-full bg-[#f3e5e7] px-2.5 py-1 text-[11px] text-[#8f656e]">+{item.delta}m</span></div>)}</div></> : <p className="mt-3 text-sm leading-6 text-[#7c6f79]">Glow needs at least two real timing samples per step before it calls something friction. No fake pattern is shown before that.</p>}
-          </article>
-
-          <article className="rounded-[28px] border border-white/80 bg-white/75 p-5">
-            <div className="flex items-center gap-2"><WandSparkles size={18} /><h2 className="font-serif text-2xl">Prepare Morning</h2></div>
-            <p className="mt-2 text-sm text-[#786a75]">Make tomorrow’s first routine easier tonight.</p>
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">{PREP_FOR_MORNING.map((item) => <div key={item} className="flex items-center gap-2 rounded-2xl bg-[#faf7f3] px-3 py-2.5 text-sm"><Check size={14} className="text-[#8b9b78]" />{item}</div>)}</div>
-            <p className="mt-4 text-[11px] leading-5 text-[#91818b]">These are preparation prompts from the source routine architecture. They do not mark tomorrow’s execution steps complete.</p>
-          </article>
+          <article className="rounded-[28px] border border-white/80 bg-white/75 p-5"><div className="flex items-center gap-2"><HeartPulse size={18} /><h2 className="font-serif text-2xl">Routine Doctor</h2></div>{friction.length ? <><p className="mt-2 text-sm text-[#776975]">The largest learned overruns inside {currentRoutine?.name}:</p><div className="mt-4 space-y-2">{friction.map((item) => <div key={item.step.id} className="flex items-center justify-between gap-3 rounded-2xl bg-[#faf6f4] px-4 py-3"><div className="min-w-0"><p className="break-words text-sm font-semibold">{item.step.title}</p><p className="text-[11px] text-[#95828f]">planned {item.planned}m · learned {item.learned}m · {item.samples} samples</p></div><span className="shrink-0 rounded-full bg-[#f3e5e7] px-2.5 py-1 text-[11px] text-[#8f656e]">+{item.delta}m</span></div>)}</div></> : <p className="mt-3 text-sm leading-6 text-[#7c6f79]">Glow needs at least two real timing samples per step before it calls something friction. No fake pattern is shown before that.</p>}</article>
+          <article className="rounded-[28px] border border-white/80 bg-white/75 p-5"><div className="flex items-center gap-2"><WandSparkles size={18} /><h2 className="font-serif text-2xl">Prepare Morning</h2></div><p className="mt-2 text-sm text-[#786a75]">Make tomorrow’s first routine easier tonight.</p><div className="mt-4 grid gap-2 sm:grid-cols-2">{PREP_FOR_MORNING.map((item) => <div key={item} className="flex items-center gap-2 rounded-2xl bg-[#faf7f3] px-3 py-2.5 text-sm"><Check size={14} className="text-[#8b9b78]" />{item}</div>)}</div><p className="mt-4 text-[11px] leading-5 text-[#91818b]">Preparation prompts do not falsely mark tomorrow’s execution steps complete.</p></article>
         </section>
 
-        <section className="rounded-[28px] border border-white/80 bg-white/75 p-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#9b8794]">Rules + prerequisites</p><h2 className="font-serif text-2xl">The routine should understand order</h2></div><BookOpen size={20} /></div>
-          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{SOURCE_RULES.map((rule) => <div key={rule} className="rounded-2xl border border-[#eee5e9] bg-[#fbf8f6] px-3 py-3 text-xs leading-5">{rule}</div>)}</div>
-        </section>
+        <section className="rounded-[28px] border border-white/80 bg-white/75 p-5"><div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#9b8794]">Source order rules</p><h2 className="font-serif text-2xl">The player protects important prerequisites</h2></div><BookOpen size={20} /></div><div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{SOURCE_RULES.map((rule) => <div key={rule} className="rounded-2xl border border-[#eee5e9] bg-[#fbf8f6] px-3 py-3 text-xs leading-5">{rule}</div>)}</div><p className="mt-3 text-[11px] text-[#91818b]">The current player queue enforces the source ordering for brain dump/planning, water/supplements, movement/breakfast, skincare/makeup and front-hair finishing.</p></section>
 
-        <section className="grid gap-4 lg:grid-cols-3">
-          <LibrarySection title="This week" icon={<CalendarDays size={17} />} routines={weeklyRoutines} stepsByRoutine={stepsByRoutine} stats={engine.stats} onStart={startRoutine} />
-          <LibrarySection title="Maintenance systems" icon={<Layers3 size={17} />} routines={maintenanceRoutines} stepsByRoutine={stepsByRoutine} stats={engine.stats} onStart={startRoutine} />
-          <LibrarySection title="Long-cycle" icon={<Clock3 size={17} />} routines={longCycleRoutines} stepsByRoutine={stepsByRoutine} stats={engine.stats} onStart={startRoutine} />
-        </section>
+        <section className="grid gap-4 lg:grid-cols-3"><LibrarySection title="This week" icon={<CalendarDays size={17} />} routines={weeklyRoutines} stepsByRoutine={stepsByRoutine} stats={engine.stats} onStart={startRoutine} /><LibrarySection title="Maintenance systems" icon={<Layers3 size={17} />} routines={maintenanceRoutines} stepsByRoutine={stepsByRoutine} stats={engine.stats} onStart={startRoutine} /><LibrarySection title="Long-cycle" icon={<Clock3 size={17} />} routines={longCycleRoutines} stepsByRoutine={stepsByRoutine} stats={engine.stats} onStart={startRoutine} /></section>
 
-        {libraryOpen ? <section className="rounded-[30px] border border-white/80 bg-white/90 p-5 shadow-xl"><div className="flex items-center justify-between"><div><p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#9b8794]">Routine Library</p><h2 className="font-serif text-3xl">All systems, without the wall of cards</h2></div><button type="button" onClick={() => setLibraryOpen(false)} className="rounded-full border px-3 py-2 text-xs">Close</button></div><div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{['Daily rhythm','This week','Hair','Skin','Body','Home','Planning','Wellness','Long-cycle','Other'].map((group) => { const list = routines.filter((routine) => classifyLibrary(routine) === group); if (!list.length) return null; return <div key={group} className="rounded-2xl bg-[#faf7f4] p-4"><p className="font-serif text-xl">{group}</p><div className="mt-3 space-y-2">{list.slice(0, 10).map((routine) => <button key={routine.id} type="button" onClick={() => startRoutine(routine, 'normal')} className="flex w-full items-center justify-between rounded-xl bg-white px-3 py-2 text-left text-xs"><span>{routine.name}</span><ArrowRight size={13} /></button>)}</div></div>; })}</div></section> : null}
+        {libraryOpen ? <section className="rounded-[30px] border border-white/80 bg-white/90 p-5 shadow-xl"><div className="flex items-center justify-between gap-3"><div><p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#9b8794]">Routine Library</p><h2 className="font-serif text-3xl">All systems, without the wall of cards</h2></div><button type="button" onClick={() => setLibraryOpen(false)} className="rounded-full border px-3 py-2 text-xs">Close</button></div><div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{['Daily rhythm','This week','Hair','Skin','Body','Home','Planning','Wellness','Long-cycle','Other'].map((group) => { const list = routines.filter((routine) => classifyLibrary(routine) === group); if (!list.length) return null; return <div key={group} className="rounded-2xl bg-[#faf7f4] p-4"><p className="font-serif text-xl">{group}</p><div className="mt-3 space-y-2">{list.slice(0, 10).map((routine) => <button key={routine.id} type="button" onClick={() => startRoutine(routine, 'normal')} className="flex w-full items-center justify-between gap-3 rounded-xl bg-white px-3 py-2 text-left text-xs"><span className="break-words">{routine.name}</span><ArrowRight size={13} className="shrink-0" /></button>)}</div></div>; })}</div></section> : null}
       </div>
 
-      <div className="fixed inset-x-0 bottom-4 z-40 mx-auto flex w-[calc(100%-24px)] max-w-xl items-center justify-around rounded-full border border-white/75 bg-white/92 px-2 py-2 shadow-[0_16px_60px_rgba(75,61,76,.18)] backdrop-blur-xl">
-        <button type="button" disabled={!currentRoutine} onClick={() => currentRoutine && startRoutine(currentRoutine, recommendedMode)} className="rounded-full bg-[#554657] px-4 py-2 text-xs font-semibold text-white disabled:opacity-40">Do Next</button>
-        <button type="button" disabled={!currentRoutine} onClick={() => currentRoutine && startRoutine(currentRoutine, 'quick')} className="rounded-full px-4 py-2 text-xs font-semibold">Quick Version</button>
-        <button type="button" onClick={() => window.dispatchEvent(new CustomEvent('glow:speak', { detail: { text: currentRoutine ? `${currentRoutine.name}. ${currentAnchor?.blueprint.purpose ?? ''}` : 'Your routines are organized and safe.' } }))} className="rounded-full px-4 py-2 text-xs font-semibold">Speak</button>
-        <button type="button" onClick={() => router.push('/concierge')} className="rounded-full px-4 py-2 text-xs font-semibold">Ask Glow</button>
-      </div>
+      <div className="fixed inset-x-0 bottom-4 z-40 mx-auto grid w-[calc(100%-24px)] max-w-xl grid-cols-4 items-center rounded-full border border-white/75 bg-white/92 px-1 py-2 shadow-[0_16px_60px_rgba(75,61,76,.18)] backdrop-blur-xl"><button type="button" disabled={!currentRoutine} onClick={() => currentRoutine && startRoutine(currentRoutine, recommendedMode)} className="rounded-full bg-[#554657] px-2 py-2 text-[11px] font-semibold text-white disabled:opacity-40">Do Next</button><button type="button" disabled={!currentRoutine} onClick={() => currentRoutine && startRoutine(currentRoutine, 'quick')} className="rounded-full px-2 py-2 text-[11px] font-semibold">Quick</button><button type="button" onClick={() => window.dispatchEvent(new CustomEvent('glow:speak', { detail: { text: currentRoutine ? `${currentRoutine.name}. ${currentAnchor?.blueprint.purpose ?? ''}` : 'Your routines are organized and safe.' } }))} className="rounded-full px-2 py-2 text-[11px] font-semibold">Speak</button><button type="button" onClick={() => router.push('/concierge')} className="rounded-full px-2 py-2 text-[11px] font-semibold">Ask Glow</button></div>
 
-      {playing ? <div className="fixed inset-0 z-[180] bg-[#f7f2ec]"><RoutineStepPlayer routine={playing} steps={playerSteps} initialMode={playerMode} initialRun={playerRun} stats={engine.stats} rules={engine.rules} calendarEvents={calendarEvents} context={{ locationMode: 'anywhere', hairContext }} onClose={() => { setPlaying(null); router.refresh(); }} onRunChanged={runChanged} onChain={(routineId) => { const next = routines.find((routine) => routine.id === routineId); if (next) { setPlaying(next); setPlayerMode('normal'); } }} /></div> : null}
+      {playing ? <div className="fixed inset-0 z-[180] bg-[#f7f2ec]"><RoutineStepPlayer routine={playing} steps={playerSteps} initialMode={playerMode} initialRun={playerRun} stats={engine.stats} rules={engine.rules} calendarEvents={calendarEvents} context={{ locationMode: 'anywhere' }} onClose={() => { setPlaying(null); router.refresh(); }} onRunChanged={runChanged} onChain={(routineId) => { const next = routines.find((routine) => routine.id === routineId); if (next) { setPlaying(next); setPlayerMode('normal'); } }} /></div> : null}
     </div>
   );
 }
 
-function LibrarySection({ title, icon, routines, stepsByRoutine, stats, onStart }: { title: string; icon: React.ReactNode; routines: Routine[]; stepsByRoutine: Map<string, RoutineStep[]>; stats: RoutineStepStat[]; onStart: (routine: Routine, mode: RoutineMode) => void }) {
-  return <article className="rounded-[28px] border border-white/80 bg-white/75 p-5"><div className="flex items-center gap-2">{icon}<h2 className="font-serif text-2xl">{title}</h2></div><div className="mt-4 space-y-2">{routines.length ? routines.slice(0, 7).map((routine) => <button key={routine.id} type="button" onClick={() => onStart(routine, 'normal')} className="group flex w-full items-center justify-between rounded-2xl bg-[#faf7f4] px-3 py-3 text-left"><div><p className="text-sm font-semibold">{routine.name}</p><p className="mt-1 text-[10px] text-[#95828f]">{(stepsByRoutine.get(routine.id) ?? []).length} steps · ~{routineMinutes(routine, stepsByRoutine, stats)}m</p></div><ChevronRight size={16} className="transition group-hover:translate-x-0.5" /></button>) : <p className="text-sm text-[#8e7f89]">No routines in this layer yet.</p>}</div></article>;
+function WeekRhythm({ history, now }: { history: RoutineRun[]; now: Date }) {
+  const days = Array.from({ length: 7 }, (_, index) => { const date = new Date(now); date.setDate(now.getDate() - (6 - index)); date.setHours(12, 0, 0, 0); const key = localDateKey(date); const count = history.filter((run) => run.status === 'completed' && run.completedAt && localDateKey(run.completedAt) === key).length; return { date, count }; });
+  const max = Math.max(1, ...days.map((day) => day.count));
+  return <section className="rounded-[28px] border border-white/80 bg-white/72 p-5"><div className="flex items-center justify-between"><div><p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#9d8995]">Your week</p><h2 className="font-serif text-2xl">Routine rhythm</h2></div><span className="text-[11px] text-[#94838e]">real completed runs</span></div><div className="mt-5 grid grid-cols-7 gap-2">{days.map(({ date, count }) => <div key={localDateKey(date)} className="text-center"><div className="mx-auto flex aspect-square max-w-12 items-center justify-center rounded-full border border-[#e9e0e5] bg-[#faf7f4] text-xs font-semibold" style={{ boxShadow: count ? `inset 0 0 0 ${Math.max(2, Math.round((count / max) * 5))}px rgba(142,122,141,.18)` : undefined }}>{count}</div><p className="mt-2 text-[10px] uppercase text-[#96848f]">{date.toLocaleDateString(undefined, { weekday: 'narrow' })}</p></div>)}</div></section>;
+}
+
+function LibrarySection({ title, icon, routines, stepsByRoutine, stats, onStart }: { title: string; icon: ReactNode; routines: Routine[]; stepsByRoutine: Map<string, RoutineStep[]>; stats: RoutineStepStat[]; onStart: (routine: Routine, mode: RoutineMode) => void }) {
+  return <article className="rounded-[28px] border border-white/80 bg-white/75 p-5"><div className="flex items-center gap-2">{icon}<h2 className="font-serif text-2xl">{title}</h2></div><div className="mt-4 space-y-2">{routines.length ? routines.slice(0, 7).map((routine) => <button key={routine.id} type="button" onClick={() => onStart(routine, 'normal')} className="group flex w-full items-center justify-between gap-3 rounded-2xl bg-[#faf7f4] px-3 py-3 text-left"><div className="min-w-0"><p className="break-words text-sm font-semibold">{routine.name}</p><p className="mt-1 text-[10px] text-[#95828f]">{(stepsByRoutine.get(routine.id) ?? []).length} steps · ~{routineMinutes(routine, stepsByRoutine, stats)}m</p></div><ChevronRight size={16} className="shrink-0 transition group-hover:translate-x-0.5" /></button>) : <p className="text-sm text-[#8e7f89]">No routines in this layer yet.</p>}</div></article>;
 }
