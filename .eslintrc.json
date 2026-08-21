@@ -9,6 +9,16 @@
       "rules": {
         "react/no-unescaped-entities": "off"
       }
+    },
+    {
+      "files": [
+        "src/components/beauty/gua-sha-studio.tsx",
+        "src/components/media/editable-room-image.tsx",
+        "src/components/immersive/immersive-room-chrome.tsx"
+      ],
+      "rules": {
+        "@next/next/no-img-element": "off"
+      }
     }
   ]
 }
