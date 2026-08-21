@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
 import { getBeautyProducts } from '@/lib/data/completion-v1';
-import { CalendarDays, Camera, Clock3, FlaskConical, Sparkles } from 'lucide-react';
+import { CalendarDays, Camera, Clock3, FlaskConical, Hand, Sparkles } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,6 +58,9 @@ export default async function BeautyPage() {
     <AppShell>
       <SectionPage eyebrow="Beauty" title="Your personal beauty ritual" description="Run daily routines, keep appointments visible, review skin response, and stay ahead of maintenance from one place.">
         <div className="space-y-5">
+          <Link href="/beauty/gua-sha" className="group block overflow-hidden rounded-[22px] border border-[#e6d7d2] bg-[linear-gradient(120deg,#f9eeeb,#eee5f1)] p-5 shadow-[0_14px_45px_rgba(94,65,78,.08)] transition hover:-translate-y-0.5">
+            <div className="flex items-center gap-4"><div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/70 text-[#9b6a73]"><Hand size={20} strokeWidth={1.2}/></div><div className="min-w-0 flex-1"><p className="glow-eyebrow">New guided ritual</p><h2 className="glow-display mt-1 text-[20px] text-[#493733]">Open Gua Sha Studio</h2><p className="mt-1 text-[9px] leading-4 text-[#806b68]">Three hands-only follow-alongs for daily release, simple 10-rep massage, and a 10-minute de-puff reset.</p></div><span className="text-[18px] text-[#9d7b82] transition group-hover:translate-x-1">→</span></div>
+          </Link>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <Card className="relative overflow-hidden bg-[linear-gradient(145deg,#f6e7e4,#f2ddd6)]">
               <Sparkles size={34} strokeWidth={0.8} className="absolute right-4 top-3 text-[#a66c75]/20" />

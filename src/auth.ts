@@ -55,11 +55,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
       const isApiAuth = nextUrl.pathname.startsWith('/api/auth');
 
       if (isLoggedIn && isOnSignIn) {
-        return Response.redirect(new URL('/dashboard', nextUrl));
+        const requestedPath = nextUrl.searchParams.get('callbackUrl');
+        const safePath = requestedPath?.startsWith('/') && !requestedPath.startsWith('//')
+          ? requestedPath
+          : '/dashboard';
+        return Response.redirect(new URL(safePath, nextUrl));
       }
 
       if (!isLoggedIn && !isOnSignIn && !isApiAuth) {
-        return Response.redirect(new URL('/sign-in', nextUrl));
+        const signInUrl = new URL('/sign-in', nextUrl);
+        signInUrl.searchParams.set('callbackUrl', `${nextUrl.pathname}${nextUrl.search}`);
+        return Response.redirect(signInUrl);
       }
 
       return true;
