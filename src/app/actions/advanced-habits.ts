@@ -116,7 +116,7 @@ export async function createHabitExperimentAction(raw: unknown) {
 
 export async function createHabitSourceLinkAction(raw: unknown) {
   const userId = await requireUser();
-  const parsed = z.object({ habitId: z.string().min(1), sourceType: z.enum(['fitness','routine','task']), sourceId: z.string().min(1).max(200) }).safeParse(raw);
+  const parsed = z.object({ habitId: z.string().min(1), sourceType: z.enum(['fitness','routine','task','goal']), sourceId: z.string().min(1).max(200) }).safeParse(raw);
   if (!parsed.success) return { error: 'Glow could not create that source link.' };
   const row = await data.createHabitSourceLink(userId, parsed.data);
   revalidatePath('/habits');
