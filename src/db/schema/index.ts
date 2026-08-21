@@ -10,6 +10,7 @@ export * from './beauty-routines';
 export * from './advanced-beauty';
 export * from './wellness-entries';
 export * from './advanced-wellness';
+export * from './food-intelligence';
 export * from './finance-entries';
 export * from './notes';
 export * from './important-links';
