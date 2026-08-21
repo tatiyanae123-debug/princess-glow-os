@@ -1,0 +1,15 @@
+import { neon } from '@neondatabase/serverless';
+const databaseUrl=process.env.DATABASE_URL;if(!databaseUrl)throw new Error('Missing required environment variable: DATABASE_URL');const sql=neon(databaseUrl);
+console.log('Applying Glow OS Wellness Regulation schema...');
+await sql`CREATE TABLE IF NOT EXISTS wellness_check_ins (id text PRIMARY KEY,user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE,state text NOT NULL,need text NOT NULL,activation text,energy text,body_signals text[] NOT NULL DEFAULT '{}'::text[],notes text,created_at timestamp NOT NULL DEFAULT now())`;
+await sql`CREATE INDEX IF NOT EXISTS wellness_check_ins_user_date_idx ON wellness_check_ins(user_id,created_at)`;
+await sql`CREATE TABLE IF NOT EXISTS wellness_protocol_runs (id text PRIMARY KEY,user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE,protocol_key text NOT NULL,title text NOT NULL,mode text NOT NULL DEFAULT 'standard',status text NOT NULL DEFAULT 'active',queue jsonb NOT NULL DEFAULT '[]'::jsonb,completed_step_ids text[] NOT NULL DEFAULT '{}'::text[],skipped_step_ids text[] NOT NULL DEFAULT '{}'::text[],current_index integer NOT NULL DEFAULT 0,before_activation text,after_effect text,actual_seconds integer NOT NULL DEFAULT 0,context jsonb NOT NULL DEFAULT '{}'::jsonb,started_at timestamp NOT NULL DEFAULT now(),last_activity_at timestamp NOT NULL DEFAULT now(),completed_at timestamp)`;
+await sql`CREATE INDEX IF NOT EXISTS wellness_protocol_runs_user_status_idx ON wellness_protocol_runs(user_id,status)`;
+await sql`CREATE INDEX IF NOT EXISTS wellness_protocol_runs_user_started_idx ON wellness_protocol_runs(user_id,started_at)`;
+await sql`WITH ranked AS (SELECT id,row_number() OVER(PARTITION BY user_id,protocol_key ORDER BY last_activity_at DESC,id DESC) rn FROM wellness_protocol_runs WHERE status='active') UPDATE wellness_protocol_runs SET status='abandoned' WHERE id IN (SELECT id FROM ranked WHERE rn>1)`;
+await sql`CREATE UNIQUE INDEX IF NOT EXISTS wellness_protocol_runs_one_active_uidx ON wellness_protocol_runs(user_id,protocol_key) WHERE status='active'`;
+await sql`CREATE TABLE IF NOT EXISTS wellness_hydration_logs (id text PRIMARY KEY,user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE,kind text NOT NULL DEFAULT 'water',amount_ml integer,source text NOT NULL DEFAULT 'wellness',occurred_at timestamp NOT NULL DEFAULT now())`;
+await sql`CREATE INDEX IF NOT EXISTS wellness_hydration_logs_user_date_idx ON wellness_hydration_logs(user_id,occurred_at)`;
+await sql`CREATE TABLE IF NOT EXISTS wellness_observations (id text PRIMARY KEY,user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE,kind text NOT NULL,title text NOT NULL,body text NOT NULL,evidence jsonb NOT NULL DEFAULT '{}'::jsonb,confidence text NOT NULL DEFAULT 'user_reported',dismissed boolean NOT NULL DEFAULT false,created_at timestamp NOT NULL DEFAULT now())`;
+await sql`CREATE INDEX IF NOT EXISTS wellness_observations_user_date_idx ON wellness_observations(user_id,created_at)`;
+console.log('Glow OS Wellness Regulation schema complete.');
