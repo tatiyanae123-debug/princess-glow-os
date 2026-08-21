@@ -127,6 +127,14 @@ export async function completeHabit(userId: string, input: {
   return { log, detail, linkedUpdates };
 }
 
+export async function clearHabitCompletion(userId: string, habitId: string, dateKey: string) {
+  const [habit] = await db.select().from(habits).where(and(eq(habits.id, habitId), eq(habits.userId, userId))).limit(1);
+  if (!habit || habit.archived) return false;
+  await db.delete(habitLogs).where(and(eq(habitLogs.userId, userId), eq(habitLogs.habitId, habitId), eq(habitLogs.loggedDate, dateKey)));
+  await db.delete(habitCompletionDetails).where(and(eq(habitCompletionDetails.userId, userId), eq(habitCompletionDetails.habitId, habitId), eq(habitCompletionDetails.dateKey, dateKey)));
+  return true;
+}
+
 export async function intentionalSkipHabit(userId: string, habitId: string, dateKey: string, reason?: string | null) {
   const [habit] = await db.select().from(habits).where(and(eq(habits.id, habitId), eq(habits.userId, userId))).limit(1);
   if (!habit || habit.archived) return null;
@@ -141,12 +149,7 @@ export async function createHabitStack(userId: string, values: { name: string; a
 export async function createHabitExperiment(userId: string, values: { habitId: string; hypothesis: string; change: string; endsAt?: Date | null; baselineRate?: number | null }) { const [row] = await db.insert(habitExperiments).values({ userId, ...values }).returning(); return row; }
 export async function updateHabitExperiment(userId: string, id: string, values: Partial<typeof habitExperiments.$inferInsert>) { const [row] = await db.update(habitExperiments).set(values).where(and(eq(habitExperiments.id, id), eq(habitExperiments.userId, userId))).returning(); return row ?? null; }
 export async function createHabitSourceLink(userId: string, values: { habitId: string; sourceType: string; sourceId: string }) {
-  const [existing] = await db.select().from(habitSourceLinks).where(and(
-    eq(habitSourceLinks.userId, userId),
-    eq(habitSourceLinks.habitId, values.habitId),
-    eq(habitSourceLinks.sourceType, values.sourceType),
-    eq(habitSourceLinks.sourceId, values.sourceId),
-  )).limit(1);
+  const [existing] = await db.select().from(habitSourceLinks).where(and(eq(habitSourceLinks.userId, userId), eq(habitSourceLinks.habitId, values.habitId), eq(habitSourceLinks.sourceType, values.sourceType), eq(habitSourceLinks.sourceId, values.sourceId))).limit(1);
   if (existing) {
     if (!existing.enabled) {
       const [restored] = await db.update(habitSourceLinks).set({ enabled: true }).where(eq(habitSourceLinks.id, existing.id)).returning();
