@@ -52,18 +52,36 @@ export async function startBeautyRitual(userId: string, input: { ritualKey: stri
 export async function recordBeautyStep(userId: string, input: { runId: string; routineId: string; status: 'completed' | 'skipped'; actualSeconds: number; notes?: string }) {
   const [run] = await db.select().from(beautyRitualRuns).where(and(eq(beautyRitualRuns.id, input.runId), eq(beautyRitualRuns.userId, userId), eq(beautyRitualRuns.status, 'active'))).limit(1);
   if (!run || !run.queueRoutineIds.includes(input.routineId)) return null;
-  const [routine] = await db.select().from(beautyRoutines).where(and(eq(beautyRoutines.id, input.routineId), eq(beautyRoutines.userId, userId))).limit(1);
+  const [routine] = await db.select().from(beautyRoutines).where(and(eq(beautyRoutines.id, input.routineId), eq(beautyRoutines.userId, userId), eq(beautyRoutines.archived, false))).limit(1);
   if (!routine) return null;
+
   const seconds = Math.max(0, Math.min(7200, Math.round(input.actualSeconds)));
+  const now = new Date();
   const [existing] = await db.select().from(beautyStepLogs).where(and(eq(beautyStepLogs.runId, run.id), eq(beautyStepLogs.routineId, input.routineId))).limit(1);
-  if (!existing) {
-    await db.insert(beautyStepLogs).values({ userId, runId: run.id, routineId: routine.id, stepName: routine.name, status: input.status, actualSeconds: seconds, notes: input.notes?.trim() || null });
+  if (existing) {
+    await db.update(beautyStepLogs).set({ status: input.status, actualSeconds: seconds, notes: input.notes?.trim() || existing.notes, completedAt: now }).where(and(eq(beautyStepLogs.id, existing.id), eq(beautyStepLogs.userId, userId)));
+  } else {
+    await db.insert(beautyStepLogs).values({ userId, runId: run.id, routineId: routine.id, stepName: routine.name, status: input.status, actualSeconds: seconds, notes: input.notes?.trim() || null, completedAt: now });
   }
-  const completedRoutineIds = input.status === 'completed' ? Array.from(new Set([...run.completedRoutineIds, routine.id])) : run.completedRoutineIds;
-  const skippedRoutineIds = input.status === 'skipped' ? Array.from(new Set([...run.skippedRoutineIds, routine.id])) : run.skippedRoutineIds;
+
+  const completedRoutineIds = input.status === 'completed'
+    ? Array.from(new Set([...run.completedRoutineIds.filter((id) => id !== routine.id), routine.id]))
+    : run.completedRoutineIds.filter((id) => id !== routine.id);
+  const skippedRoutineIds = input.status === 'skipped'
+    ? Array.from(new Set([...run.skippedRoutineIds.filter((id) => id !== routine.id), routine.id]))
+    : run.skippedRoutineIds.filter((id) => id !== routine.id);
   const handled = new Set([...completedRoutineIds, ...skippedRoutineIds]);
-  const nextIndex = Math.min(run.queueRoutineIds.length, run.queueRoutineIds.findIndex((id) => !handled.has(id)) < 0 ? run.queueRoutineIds.length : run.queueRoutineIds.findIndex((id) => !handled.has(id)));
-  const [updated] = await db.update(beautyRitualRuns).set({ completedRoutineIds, skippedRoutineIds, currentIndex: nextIndex, actualSeconds: run.actualSeconds + (existing ? 0 : seconds), lastActivityAt: new Date() }).where(and(eq(beautyRitualRuns.id, run.id), eq(beautyRitualRuns.userId, userId))).returning();
+  const unresolvedIndex = run.queueRoutineIds.findIndex((id) => !handled.has(id));
+  const nextIndex = unresolvedIndex < 0 ? run.queueRoutineIds.length : unresolvedIndex;
+  const secondsDelta = existing ? Math.max(0, seconds - existing.actualSeconds) : seconds;
+
+  const [updated] = await db.update(beautyRitualRuns).set({
+    completedRoutineIds,
+    skippedRoutineIds,
+    currentIndex: nextIndex,
+    actualSeconds: run.actualSeconds + secondsDelta,
+    lastActivityAt: now,
+  }).where(and(eq(beautyRitualRuns.id, run.id), eq(beautyRitualRuns.userId, userId))).returning();
   return updated ?? null;
 }
 
@@ -104,7 +122,7 @@ export async function completeMaintenanceItem(userId: string, id: string) {
   const [item] = await db.select().from(beautyMaintenanceItems).where(and(eq(beautyMaintenanceItems.id, id), eq(beautyMaintenanceItems.userId, userId), eq(beautyMaintenanceItems.archived, false))).limit(1);
   if (!item) return null;
   const now = new Date();
-  const nextDueAt = item.cadenceDays ? new Date(now.getTime() + item.cadenceDays * 86400000) : item.nextDueAt;
+  const nextDueAt = item.cadenceDays ? new Date(now.getTime() + item.cadenceDays * 86400000) : null;
   const [updated] = await db.update(beautyMaintenanceItems).set({ lastCompletedAt: now, nextDueAt, updatedAt: now }).where(and(eq(beautyMaintenanceItems.id, id), eq(beautyMaintenanceItems.userId, userId))).returning();
   return updated ?? null;
 }
