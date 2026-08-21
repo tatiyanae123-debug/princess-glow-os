@@ -1,217 +1,134 @@
 /*
-  LOCKED REFERENCE LAYER
-  Source of truth: approved dark Liquid-Crystal Glow OS moodboard.
-  Visual-only overrides. Do not change pointer behavior, hit areas, routes or handlers here.
+  LOCKED REFERENCE LAYER — SAFE MODE
+  Source of truth: approved dark Liquid-Crystal Glow OS reference.
+
+  IMPORTANT:
+  This file is intentionally opt-in. It may style the world atmosphere,
+  global navigation, and elements explicitly marked with Glow reference
+  classes/data attributes. It must never theme arbitrary legacy divs,
+  text utilities, forms, cards, panels, buttons, or links.
 */
 
 :root {
   --glow-night-0:#090817;
   --glow-night-1:#0d0c20;
   --glow-night-2:#15132c;
-  --glow-text:rgba(255,255,255,.96);
-  --glow-text-2:rgba(255,255,255,.68);
-  --glow-text-3:rgba(255,255,255,.42);
-  --glow-edge:rgba(255,255,255,.18);
-  --glow-edge-bright:rgba(255,255,255,.34);
-  --glow-shadow:0 18px 55px rgba(1,2,16,.34), inset 0 1px 0 rgba(255,255,255,.18);
-  --glow-radius:24px;
-  --glow-surface:rgba(111,94,157,.20);
-  --glow-surface-strong:rgba(130,107,181,.29);
-  --glow-accent:#dfb1ff;
-  --glow-accent-rgb:223,177,255;
+  --glow-ref-text:rgba(255,255,255,.96);
+  --glow-ref-text-2:rgba(255,255,255,.68);
+  --glow-ref-edge:rgba(255,255,255,.16);
+  --glow-ref-shadow:0 18px 55px rgba(1,2,16,.34), inset 0 1px 0 rgba(255,255,255,.16);
+  --glow-ref-surface:rgba(111,94,157,.20);
+  --glow-ref-surface-strong:rgba(130,107,181,.29);
+  --glow-ref-accent:#dfb1ff;
+  --glow-ref-accent-rgb:223,177,255;
 }
 
 body[data-glow-zone='dawn'],[data-room='today'],[data-room='dashboard'],[data-room='briefings']{
- --glow-accent:#ffb4d1;--glow-accent-rgb:255,180,209;--glow-surface:rgba(188,92,145,.20);--glow-surface-strong:rgba(213,116,167,.30);
+ --glow-ref-accent:#ffb4d1;--glow-ref-accent-rgb:255,180,209;--glow-ref-surface:rgba(188,92,145,.20);--glow-ref-surface-strong:rgba(213,116,167,.30);
 }
 body[data-glow-zone='time'],[data-room='calendar'],[data-room='tasks'],[data-room='planning'],[data-room='reminders'],[data-room='goals'],[data-room='projects'],[data-room='routines'],[data-room='habits']{
- --glow-accent:#c9b2ff;--glow-accent-rgb:201,178,255;--glow-surface:rgba(92,78,173,.23);--glow-surface-strong:rgba(117,99,204,.31);
+ --glow-ref-accent:#c9b2ff;--glow-ref-accent-rgb:201,178,255;--glow-ref-surface:rgba(92,78,173,.23);--glow-ref-surface-strong:rgba(117,99,204,.31);
 }
 body[data-glow-zone='vital'],[data-room='fitness'],[data-room='wellness'],[data-room='food'],[data-room='workout-mode']{
- --glow-accent:#9ee7e0;--glow-accent-rgb:158,231,224;--glow-surface:rgba(37,125,139,.21);--glow-surface-strong:rgba(54,154,165,.28);
+ --glow-ref-accent:#9ee7e0;--glow-ref-accent-rgb:158,231,224;--glow-ref-surface:rgba(37,125,139,.21);--glow-ref-surface-strong:rgba(54,154,165,.28);
 }
 body[data-glow-zone='pearl'],[data-room='beauty'],[data-room='beauty-lab'],[data-room='hair'],[data-room='closet']{
- --glow-accent:#ffc0da;--glow-accent-rgb:255,192,218;--glow-surface:rgba(176,87,137,.22);--glow-surface-strong:rgba(205,109,158,.30);
+ --glow-ref-accent:#ffc0da;--glow-ref-accent-rgb:255,192,218;--glow-ref-surface:rgba(176,87,137,.22);--glow-ref-surface-strong:rgba(205,109,158,.30);
 }
 body[data-glow-zone='emerald'],[data-room='finance'],[data-room='financial-brain'],[data-room='money']{
- --glow-accent:#a4ead1;--glow-accent-rgb:164,234,209;--glow-surface:rgba(31,112,94,.24);--glow-surface-strong:rgba(43,139,112,.31);
+ --glow-ref-accent:#a4ead1;--glow-ref-accent-rgb:164,234,209;--glow-ref-surface:rgba(31,112,94,.24);--glow-ref-surface-strong:rgba(43,139,112,.31);
 }
 body[data-glow-zone='violet'],[data-room='brain'],[data-room='memory'],[data-room='timeline'],[data-room='observations'],[data-room='connections'],[data-room='concierge'],[data-room='graph'],[data-room='notices']{
- --glow-accent:#c1a8ff;--glow-accent-rgb:193,168,255;--glow-surface:rgba(75,58,151,.25);--glow-surface-strong:rgba(93,69,187,.33);
+ --glow-ref-accent:#c1a8ff;--glow-ref-accent-rgb:193,168,255;--glow-ref-surface:rgba(75,58,151,.25);--glow-ref-surface-strong:rgba(93,69,187,.33);
 }
 body[data-glow-zone='opal'],[data-room='create'],[data-room='creative-studio'],[data-room='notes'],[data-room='import'],[data-room='gmail'],[data-room='inbox']{
- --glow-accent:#cfc3ff;--glow-accent-rgb:207,195,255;--glow-surface:rgba(100,79,157,.23);--glow-surface-strong:rgba(133,101,191,.31);
+ --glow-ref-accent:#cfc3ff;--glow-ref-accent-rgb:207,195,255;--glow-ref-surface:rgba(100,79,157,.23);--glow-ref-surface-strong:rgba(133,101,191,.31);
 }
 body[data-glow-zone='earth'],[data-room='home'],[data-room='world'],[data-room='travel'],[data-room='life']{
- --glow-accent:#a9e1cb;--glow-accent-rgb:169,225,203;--glow-surface:rgba(43,117,101,.22);--glow-surface-strong:rgba(58,145,121,.29);
+ --glow-ref-accent:#a9e1cb;--glow-ref-accent-rgb:169,225,203;--glow-ref-surface:rgba(43,117,101,.22);--glow-ref-surface-strong:rgba(58,145,121,.29);
 }
 body[data-glow-zone='slate'],[data-room='work'],[data-room='interview-mode']{
- --glow-accent:#b6d5f7;--glow-accent-rgb:182,213,247;--glow-surface:rgba(47,83,119,.23);--glow-surface-strong:rgba(62,101,144,.31);
+ --glow-ref-accent:#b6d5f7;--glow-ref-accent-rgb:182,213,247;--glow-ref-surface:rgba(47,83,119,.23);--glow-ref-surface-strong:rgba(62,101,144,.31);
 }
 
-html[data-glow-world='liquid-crystal'],html[data-glow-world='liquid-crystal'] body{
- color-scheme:dark;
- background:var(--glow-night-0)!important;
-}
-
-html[data-glow-world='liquid-crystal'] body{
- color:var(--glow-text);
- min-height:100%;
-}
-
+/* Atmospheric world only. Never cover or recolor application content. */
 .glow-world-physics{
- z-index:0!important;
- background:
-  radial-gradient(68% 46% at 12% 10%,rgba(var(--glow-accent-rgb),.22),transparent 63%),
-  radial-gradient(50% 45% at 86% 14%,rgba(77,134,215,.18),transparent 67%),
-  radial-gradient(64% 52% at 52% 95%,rgba(58,181,156,.11),transparent 66%),
-  radial-gradient(45% 38% at 48% 45%,rgba(157,110,215,.09),transparent 68%),
-  linear-gradient(155deg,#080714 0%,#0b0a1a 38%,#0b0c1e 68%,#080914 100%)!important;
+  background:
+    radial-gradient(68% 46% at 12% 10%,rgba(var(--glow-ref-accent-rgb),.18),transparent 63%),
+    radial-gradient(50% 45% at 86% 14%,rgba(77,134,215,.13),transparent 67%),
+    radial-gradient(64% 52% at 52% 95%,rgba(58,181,156,.08),transparent 66%),
+    linear-gradient(155deg,#0b0a19 0%,#111027 38%,#111329 68%,#0c0d1b 100%) !important;
 }
-.glow-world-physics__depth{opacity:.78;filter:blur(54px) saturate(1.25)!important;mix-blend-mode:screen;}
-.glow-world-physics__caustics{opacity:.14!important;mix-blend-mode:screen!important;}
-.glow-world-physics__grain{opacity:.042!important;mix-blend-mode:screen!important;}
+.glow-world-physics__depth{opacity:.62;filter:blur(54px) saturate(1.2)!important;mix-blend-mode:screen;}
+.glow-world-physics__caustics{opacity:.10!important;mix-blend-mode:screen!important;}
+.glow-world-physics__grain{opacity:.026!important;}
 
-[data-glow-shell]{
- position:relative;
- z-index:1;
- background:transparent!important;
- color:var(--glow-text)!important;
+/* Explicit opt-in Glow Matter. Add data-glow-matter to a component only after
+   its contrast and interaction have been verified on iPhone/iPad/desktop. */
+[data-glow-matter],.glow-crystal-card,.glow-crystal-control{
+  color:var(--glow-ref-text);
+  border-color:var(--glow-ref-edge)!important;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.105),rgba(255,255,255,.035) 46%,rgba(var(--glow-ref-accent-rgb),.09)),
+    var(--glow-ref-surface)!important;
+  box-shadow:var(--glow-ref-shadow)!important;
+  backdrop-filter:blur(24px) saturate(1.22)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(1.22)!important;
 }
-[data-glow-shell] > div,[data-glow-shell] main,[data-glow-shell] .glow-reference-route-stage,[data-glow-shell] .glow-v3-route-stage{
- background:transparent!important;
-}
-
-/* Main page canvas. Keep structure, replace the white website appearance. */
-[data-glow-shell] main{
- color:var(--glow-text)!important;
- padding-top:14px!important;
-}
-[data-glow-shell] :is(h1,h2,h3,h4,h5,h6){color:var(--glow-text)!important;text-shadow:0 1px 18px rgba(var(--glow-accent-rgb),.08);}
-[data-glow-shell] :is(p,li,dd,dt,label){color:inherit;}
-[data-glow-shell] :is(.text-black,.text-neutral-900,.text-stone-900,.text-zinc-900,.text-slate-900,.text-gray-900){color:var(--glow-text)!important;}
-[data-glow-shell] :is(.text-neutral-800,.text-stone-800,.text-zinc-800,.text-slate-800,.text-gray-800,.text-neutral-700,.text-stone-700,.text-zinc-700,.text-slate-700,.text-gray-700){color:var(--glow-text-2)!important;}
-[data-glow-shell] :is(.text-neutral-600,.text-stone-600,.text-zinc-600,.text-slate-600,.text-gray-600,.text-neutral-500,.text-stone-500,.text-zinc-500,.text-slate-500,.text-gray-500){color:var(--glow-text-3)!important;}
-
-/* Convert obvious legacy light surfaces without changing their layout or interaction. */
-[data-glow-shell] :is(.bg-white,.bg-white\/95,.bg-white\/90,.bg-white\/80,.bg-white\/70,.bg-white\/60,.bg-\[\#FAFAFA\],.bg-\[\#fafafa\]){
- background:transparent!important;
+[data-glow-matter='strong']{
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.045) 46%,rgba(var(--glow-ref-accent-rgb),.12)),
+    var(--glow-ref-surface-strong)!important;
 }
 
-[data-glow-shell] :is(.paper-card,.editorial-surface,[class*='Card'],[class*='card'],[class*='panel'],[class*='Panel'],[class*='surface'],[class*='Surface']){
- color:var(--glow-text)!important;
- border-color:var(--glow-edge)!important;
- background:
-  linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.035) 43%,rgba(var(--glow-accent-rgb),.08)),
-  var(--glow-surface)!important;
- box-shadow:var(--glow-shadow)!important;
- backdrop-filter:blur(24px) saturate(1.2)!important;
- -webkit-backdrop-filter:blur(24px) saturate(1.2)!important;
-}
-
-/* Common bordered boxes become reference-style liquid crystal. */
-[data-glow-shell] :is(section,article,aside,div)[class*='rounded-'][class*='border']{
- border-color:var(--glow-edge)!important;
-}
-[data-glow-shell] :is(section,article,aside,div)[class*='rounded-'][class*='border'][class*='bg-']{
- background:
-  linear-gradient(145deg,rgba(255,255,255,.085),rgba(255,255,255,.028) 45%,rgba(var(--glow-accent-rgb),.075)),
-  var(--glow-surface)!important;
- box-shadow:var(--glow-shadow)!important;
- backdrop-filter:blur(22px) saturate(1.18)!important;
- -webkit-backdrop-filter:blur(22px) saturate(1.18)!important;
-}
-
-/* Controls stay mechanically untouched; only material/color changes. */
-[data-glow-shell] :is(button,a,[role='button']){
- color:inherit;
- -webkit-tap-highlight-color:transparent;
-}
-[data-glow-shell] :is(button,a,[role='button'])[class*='border']{
- border-color:var(--glow-edge)!important;
-}
-[data-glow-shell] :is(button,a,[role='button'])[class*='bg-white'],
-[data-glow-shell] :is(button,a,[role='button'])[class*='bg-\[\#fff'],
-[data-glow-shell] :is(button,a,[role='button'])[class*='bg-\[white']{
- color:var(--glow-text)!important;
- background:rgba(255,255,255,.075)!important;
- box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 10px 28px rgba(1,2,15,.16)!important;
-}
-[data-glow-shell] :is(button,a,[role='button']):focus-visible{
- outline:2px solid rgba(var(--glow-accent-rgb),.85)!important;
- outline-offset:3px!important;
-}
-
-[data-glow-shell] :is(input,textarea,select){
- color:var(--glow-text)!important;
- border-color:var(--glow-edge)!important;
- background:rgba(255,255,255,.065)!important;
- box-shadow:inset 0 1px 0 rgba(255,255,255,.12)!important;
-}
-[data-glow-shell] :is(input,textarea)::placeholder{color:rgba(255,255,255,.36)!important;}
-
-/* System header mirrors the approved moodboard. */
+/* The global reference navigation is authored for dark crystal, so it can be
+   themed safely without touching page-local controls. */
 .glow-reference-header>div{
- border:1px solid rgba(255,255,255,.10);
- background:linear-gradient(180deg,rgba(19,18,38,.88),rgba(10,10,24,.80));
- box-shadow:0 12px 42px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.08);
- backdrop-filter:blur(28px) saturate(1.25);
- -webkit-backdrop-filter:blur(28px) saturate(1.25);
+  color:var(--glow-ref-text);
+  border:1px solid rgba(255,255,255,.10);
+  background:linear-gradient(180deg,rgba(19,18,38,.92),rgba(10,10,24,.88));
+  box-shadow:0 12px 42px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter:blur(28px) saturate(1.25);
+  -webkit-backdrop-filter:blur(28px) saturate(1.25);
 }
-.glow-crystal-control{
- border:1px solid rgba(255,255,255,.13)!important;
- background:linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.04))!important;
- box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 10px 30px rgba(0,0,0,.18)!important;
- backdrop-filter:blur(20px) saturate(1.22)!important;
- -webkit-backdrop-filter:blur(20px) saturate(1.22)!important;
-}
-
 .glow-reference-bottom-nav>div{
- border:1px solid rgba(255,255,255,.12);
- background:linear-gradient(180deg,rgba(30,28,55,.88),rgba(12,11,29,.90));
- box-shadow:0 18px 60px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.10);
- backdrop-filter:blur(30px) saturate(1.28);
- -webkit-backdrop-filter:blur(30px) saturate(1.28);
+  color:var(--glow-ref-text);
+  border:1px solid rgba(255,255,255,.12);
+  background:linear-gradient(180deg,rgba(30,28,55,.92),rgba(12,11,29,.94));
+  box-shadow:0 18px 60px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.10);
+  backdrop-filter:blur(30px) saturate(1.28);
+  -webkit-backdrop-filter:blur(30px) saturate(1.28);
 }
-.glow-primary-nav-item{color:rgba(255,255,255,.52)!important;transition:color .24s ease,background .24s ease,box-shadow .24s ease,transform .24s ease!important;}
-.glow-primary-nav-item.is-active{color:#fff!important;background:linear-gradient(145deg,rgba(var(--glow-accent-rgb),.22),rgba(255,255,255,.07))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 8px 24px rgba(var(--glow-accent-rgb),.10)!important;}
-.glow-primary-nav-item.is-active svg{filter:drop-shadow(0 0 8px rgba(var(--glow-accent-rgb),.72));}
+.glow-primary-nav-item{color:rgba(255,255,255,.56)!important;}
+.glow-primary-nav-item.is-active{
+  color:#fff!important;
+  background:linear-gradient(145deg,rgba(var(--glow-ref-accent-rgb),.22),rgba(255,255,255,.07))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 8px 24px rgba(var(--glow-ref-accent-rgb),.10)!important;
+}
+.glow-primary-nav-item.is-active svg{filter:drop-shadow(0 0 8px rgba(var(--glow-ref-accent-rgb),.72));}
 
 .glow-world-switcher{
- background:
-  radial-gradient(64% 48% at 20% 0%,rgba(var(--glow-accent-rgb),.22),transparent 68%),
-  radial-gradient(52% 42% at 85% 20%,rgba(85,125,226,.17),transparent 70%),
-  linear-gradient(150deg,rgba(8,7,20,.98),rgba(13,12,32,.98));
+  color:var(--glow-ref-text);
+  background:
+    radial-gradient(64% 48% at 20% 0%,rgba(var(--glow-ref-accent-rgb),.22),transparent 68%),
+    radial-gradient(52% 42% at 85% 20%,rgba(85,125,226,.17),transparent 70%),
+    linear-gradient(150deg,rgba(8,7,20,.985),rgba(13,12,32,.985));
 }
-.glow-crystal-card{
- color:var(--glow-text)!important;
- border:1px solid rgba(255,255,255,.13)!important;
- background:linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.035) 48%,rgba(var(--glow-accent-rgb),.10))!important;
- box-shadow:var(--glow-shadow)!important;
- backdrop-filter:blur(24px) saturate(1.24)!important;
- -webkit-backdrop-filter:blur(24px) saturate(1.24)!important;
-}
-.glow-world-active{border-color:rgba(var(--glow-accent-rgb),.46)!important;background:linear-gradient(145deg,rgba(var(--glow-accent-rgb),.20),rgba(255,255,255,.055))!important;}
-
-/* Accent semantic helpers. */
-[data-glow-shell] :is(.text-rose-500,.text-pink-500,.text-purple-500,.text-violet-500){color:var(--glow-accent)!important;}
-[data-glow-shell] :is(.bg-rose-500,.bg-pink-500,.bg-purple-500,.bg-violet-500){background:linear-gradient(135deg,rgba(var(--glow-accent-rgb),.88),rgba(var(--glow-accent-rgb),.52))!important;color:#fff!important;}
-
-/* Reference-like compactness on tablets/phones. */
-@media(max-width:900px){
- [data-glow-shell] main{padding-left:14px!important;padding-right:14px!important;padding-bottom:92px!important;}
- .glow-reference-header{padding-left:10px!important;padding-right:10px!important;}
- .glow-reference-header>div{min-height:54px!important;border-radius:20px!important;}
+.glow-world-active{
+  border-color:rgba(var(--glow-ref-accent-rgb),.46)!important;
+  background:linear-gradient(145deg,rgba(var(--glow-ref-accent-rgb),.20),rgba(255,255,255,.055))!important;
 }
 
-@media(max-width:640px){
- [data-glow-shell] main{padding-left:12px!important;padding-right:12px!important;}
- [data-glow-shell] :is(.paper-card,.editorial-surface,[class*='Card'],[class*='card']){border-radius:20px!important;}
- .glow-reference-bottom-nav{bottom:max(8px,env(safe-area-inset-bottom))!important;width:min(96vw,540px)!important;}
- .glow-reference-bottom-nav>div{border-radius:22px!important;}
+/* Explicit completion/intelligence visual hooks only. */
+[data-glow-matter][data-glow-complete='true']{animation:glow-dissolve-to-light 680ms var(--glow-liquid-ease) forwards!important;}
+[data-glow-matter][data-glow-intelligence]{box-shadow:var(--glow-ref-shadow),0 0 40px rgba(var(--glow-ref-accent-rgb),.14)!important;}
+
+/* Never interfere with interaction geometry. */
+[data-glow-matter],.glow-crystal-card,.glow-crystal-control,.glow-reference-header,.glow-reference-bottom-nav,.glow-world-switcher{
+  pointer-events:auto;
 }
+.glow-world-physics,.glow-world-physics *{pointer-events:none!important;}
 
 @media(prefers-reduced-motion:reduce){
- .glow-world-physics__depth,.glow-world-physics__caustics,.glow-world-physics__aurora{animation:none!important;}
- [data-glow-shell] *{scroll-behavior:auto!important;}
+  .glow-world-physics__depth,.glow-world-physics__caustics{animation:none!important;}
 }
