@@ -30,7 +30,7 @@ export function AppShell({children}:{children:React.ReactNode}){
  return <GlowProvider>
   <div className={`min-h-screen w-full overflow-x-clip text-[#25211f] ${(isDashboard||isImmersive)?'bg-[#eadbd8]':'bg-white'}`} data-room={room} data-glow-shell="v4" data-reference-shell={referenceRoute?'true':'false'} data-focus-mode={focus?'true':'false'} data-daypart={daypart}>
    <div className={`flex min-h-screen w-full flex-col ${(isDashboard||isImmersive)?'bg-transparent':'bg-white'} xl:flex-row`}>
-    {!focus&&!isDashboard?<>
+    {!focus?<>
       <div className="w-full xl:hidden"><UniversalMobileNav/></div>
       <div className="sticky top-0 hidden h-screen w-[238px] shrink-0 overflow-y-auto overflow-x-hidden border-r border-[#ebe6e3] bg-white xl:block"><Sidebar variant="dashboard-reference"/></div>
     </>:null}
