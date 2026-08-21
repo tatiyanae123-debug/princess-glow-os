@@ -115,7 +115,9 @@ export async function completeHabit(userId: string, input: {
         const workoutType = link.sourceId || habit.name;
         const [existing] = await db.select().from(fitnessSessions).where(and(eq(fitnessSessions.userId, userId), eq(fitnessSessions.workoutType, workoutType), gte(fitnessSessions.occurredAt, start), lte(fitnessSessions.occurredAt, end))).limit(1);
         if (!existing) {
-          const occurredAt = input.dateKey === `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}` ? new Date() : start;
+          const today = new Date();
+          const localTodayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+          const occurredAt = input.dateKey === localTodayKey ? today : start;
           await db.insert(fitnessSessions).values({ userId, workoutType, occurredAt, durationMinutes: input.actualSeconds ? Math.max(1, Math.round(input.actualSeconds / 60)) : null, notes: `Synced from habit: ${habit.name}` });
           linkedUpdates.push('fitness');
         }
@@ -138,7 +140,27 @@ export async function deleteHabitTrigger(userId: string, id: string) { const [ro
 export async function createHabitStack(userId: string, values: { name: string; anchorType?: string; anchorValue?: string | null; habitIds: string[] }) { const [row] = await db.insert(habitStacks).values({ userId, name: values.name, anchorType: values.anchorType ?? 'manual', anchorValue: values.anchorValue ?? null, habitIds: values.habitIds }).returning(); return row; }
 export async function createHabitExperiment(userId: string, values: { habitId: string; hypothesis: string; change: string; endsAt?: Date | null; baselineRate?: number | null }) { const [row] = await db.insert(habitExperiments).values({ userId, ...values }).returning(); return row; }
 export async function updateHabitExperiment(userId: string, id: string, values: Partial<typeof habitExperiments.$inferInsert>) { const [row] = await db.update(habitExperiments).set(values).where(and(eq(habitExperiments.id, id), eq(habitExperiments.userId, userId))).returning(); return row ?? null; }
-export async function createHabitSourceLink(userId: string, values: { habitId: string; sourceType: string; sourceId: string }) { const [row] = await db.insert(habitSourceLinks).values({ userId, ...values }).onConflictDoNothing().returning(); return row ?? null; }
+export async function createHabitSourceLink(userId: string, values: { habitId: string; sourceType: string; sourceId: string }) {
+  const [existing] = await db.select().from(habitSourceLinks).where(and(
+    eq(habitSourceLinks.userId, userId),
+    eq(habitSourceLinks.habitId, values.habitId),
+    eq(habitSourceLinks.sourceType, values.sourceType),
+    eq(habitSourceLinks.sourceId, values.sourceId),
+  )).limit(1);
+  if (existing) {
+    if (!existing.enabled) {
+      const [restored] = await db.update(habitSourceLinks).set({ enabled: true }).where(eq(habitSourceLinks.id, existing.id)).returning();
+      return restored;
+    }
+    return existing;
+  }
+  const [row] = await db.insert(habitSourceLinks).values({ userId, ...values }).returning();
+  return row;
+}
+export async function deleteHabitSourceLink(userId: string, id: string) {
+  const [row] = await db.delete(habitSourceLinks).where(and(eq(habitSourceLinks.id, id), eq(habitSourceLinks.userId, userId))).returning();
+  return row ?? null;
+}
 export async function syncHabitsFromFitnessSession(userId: string, workoutType: string, occurredAt: Date, durationMinutes?: number | null) {
   const links = await db.select().from(habitSourceLinks).where(and(eq(habitSourceLinks.userId, userId), eq(habitSourceLinks.sourceType, 'fitness'), eq(habitSourceLinks.enabled, true)));
   const normalized = workoutType.trim().toLowerCase();
