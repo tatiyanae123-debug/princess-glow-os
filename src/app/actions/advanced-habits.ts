@@ -69,6 +69,16 @@ export async function completeHabitIntelligenceAction(raw: unknown) {
   return { data: result };
 }
 
+export async function clearHabitCompletionAction(raw: unknown) {
+  const userId = await requireUser();
+  const parsed = z.object({ habitId: z.string().min(1), dateKey: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }).safeParse(raw);
+  if (!parsed.success) return { error: 'Glow could not clear that habit count.' };
+  const cleared = await data.clearHabitCompletion(userId, parsed.data.habitId, parsed.data.dateKey);
+  if (!cleared) return { error: 'That habit is no longer available.' };
+  refreshHabitSurfaces();
+  return { data: true };
+}
+
 export async function intentionalSkipHabitAction(raw: unknown) {
   const userId = await requireUser();
   const parsed = z.object({ habitId: z.string().min(1), dateKey: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), reason: z.string().max(180).nullable().optional() }).parse(raw);
