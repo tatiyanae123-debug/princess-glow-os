@@ -2,52 +2,41 @@
 
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-
-const ZONES: Array<[RegExp, string]> = [
-  [/^\/(today|dashboard|briefings?)/, 'dawn'],
-  [/^\/(calendar|planning|tasks|reminders|goals|projects|routines|habits|tomorrow|focus)/, 'time'],
-  [/^\/(fitness|wellness|body|food|maintenance|workout-mode)/, 'vital'],
-  [/^\/(beauty|beauty-lab|makeup|skincare|hair|closet)/, 'pearl'],
-  [/^\/(finance|financial-brain|money)/, 'emerald'],
-  [/^\/(brain|memory|timeline|observations|graph|connections|notices|concierge|knowledge)/, 'violet'],
-  [/^\/(create|capture|creative|creative-studio|notes|inbox|gmail|import|resources|settings|vault)/, 'opal'],
-  [/^\/(home|world|life|travel|saint-space)/, 'earth'],
-  [/^\/(work|interview-mode)/, 'slate'],
-];
+import { getGlowVisualConfig } from '@/lib/glow-visual-migration';
 
 const INTELLIGENCE_EVENTS = ['glow:intelligence', 'glow:command-complete', 'glow:action-complete'] as const;
-
-function zoneFor(pathname: string) {
-  return ZONES.find(([pattern]) => pattern.test(pathname))?.[1] ?? 'dawn';
-}
 
 export function GlowWorldPhysics() {
   const pathname = usePathname();
 
   useEffect(() => {
+    const { climate, version } = getGlowVisualConfig(pathname);
     document.documentElement.dataset.glowWorld = 'liquid-crystal';
-    document.body.dataset.glowZone = zoneFor(pathname);
+    document.body.dataset.glowZone = climate;
+    document.body.dataset.glowVisualVersion = version;
+
     return () => {
       delete document.body.dataset.glowZone;
+      delete document.body.dataset.glowVisualVersion;
     };
   }, [pathname]);
 
   useEffect(() => {
     const root = document.documentElement;
+    const field = document.querySelector('.glow-world-physics__ripples') as HTMLElement | null;
 
     const ripple = (event: PointerEvent) => {
+      if (!field) return;
       if (event.pointerType === 'mouse' && event.button !== 0) return;
       const target = event.target as HTMLElement | null;
-      const interactive = target?.closest('button, a, [role="button"], input, textarea, select, [data-glow-interactive]') as HTMLElement | null;
+      const interactive = target?.closest('button, a, [role="button"], input, textarea, select, [data-glow-interactive]');
       if (!interactive) return;
 
-      const rect = interactive.getBoundingClientRect();
       const wave = document.createElement('span');
       wave.className = 'glow-touch-ripple';
-      wave.style.setProperty('--ripple-x', `${event.clientX - rect.left}px`);
-      wave.style.setProperty('--ripple-y', `${event.clientY - rect.top}px`);
-      interactive.classList.add('glow-ripple-host');
-      interactive.appendChild(wave);
+      wave.style.left = `${event.clientX}px`;
+      wave.style.top = `${event.clientY}px`;
+      field.appendChild(wave);
       window.setTimeout(() => wave.remove(), 850);
     };
 
@@ -75,6 +64,7 @@ export function GlowWorldPhysics() {
       <div className="glow-world-physics__depth" />
       <div className="glow-world-physics__caustics" />
       <div className="glow-world-physics__aurora" />
+      <div className="glow-world-physics__ripples" />
       <div className="glow-world-physics__grain" />
     </div>
   );
