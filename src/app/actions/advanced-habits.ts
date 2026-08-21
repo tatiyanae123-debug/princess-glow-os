@@ -71,9 +71,9 @@ export async function completeHabitIntelligenceAction(raw: unknown) {
 
 export async function intentionalSkipHabitAction(raw: unknown) {
   const userId = await requireUser();
-  const parsed = z.object({ habitId: z.string().min(1), dateKey: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), reason: z.string().max(180).nullable().optional() }).safeParse(raw);
-  if (!parsed.success) return { error: 'Glow could not save the intentional rest day.' };
-  const result = await data.intentionalSkipHabit(userId, parsed.data.habitId, parsed.data.dateKey, parsed.data.reason);
+  const parsed = z.object({ habitId: z.string().min(1), dateKey: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), reason: z.string().max(180).nullable().optional() }).parse(raw);
+  const result = await data.intentionalSkipHabit(userId, parsed.habitId, parsed.dateKey, parsed.reason);
+  if (!result) throw new Error('That habit is no longer available.');
   refreshHabitSurfaces();
   return { data: result };
 }
