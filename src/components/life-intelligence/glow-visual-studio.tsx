@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Download, Loader2, Sparkles, WandSparkles, X } from 'lucide-react';
 
@@ -21,8 +21,8 @@ export function GlowVisualStudio(){
  const[open,setOpen]=useState(false);const[prompt,setPrompt]=useState('');const[size,setSize]=useState<VisualSize>('1024x1536');const[style,setStyle]=useState<Style>('glow');const[generating,setGenerating]=useState(false);const[image,setImage]=useState<string|null>(null);const[error,setError]=useState('');const[brief,setBrief]=useState('');const[autoRequest,setAutoRequest]=useState('');
  const aspectLabel=useMemo(()=>size==='1024x1536'?'Portrait':size==='1536x1024'?'Landscape':'Square',[size]);
  useEffect(()=>{const openStudio=(event:Event)=>{const detail=(event as CustomEvent<{prompt?:string;auto?:boolean}>).detail;const request=detail?.prompt?.trim()||latestUserRequest();setPrompt(request);setImage(null);setError('');setOpen(true);if(detail?.auto&&request)setAutoRequest(request)};document.addEventListener('glow:visualize',openStudio);return()=>document.removeEventListener('glow:visualize',openStudio)},[]);
- useEffect(()=>{if(!autoRequest||!open)return;const request=autoRequest;setAutoRequest('');void generate(request)},[autoRequest,open]);
- async function generate(override?:string){const request=(override??prompt).trim();if(!request||generating)return;setGenerating(true);setError('');try{const key=readOpenAiKey();const response=await fetch('/api/glow/visualize',{method:'POST',headers:{'Content-Type':'application/json',...(key?{'x-glow-openai-key':key}:{})},body:JSON.stringify({request,page:pathname,size,style})});const payload=await response.json();if(!response.ok||!payload?.image)throw new Error(String(payload?.error||'Glow could not generate that visual.'));setImage(String(payload.image));setBrief(String(payload.brief??''))}catch(err){setError(err instanceof Error?err.message:'Glow could not generate that visual.')}finally{setGenerating(false)}}
+ const generate=useCallback(async(override?:string)=>{const request=(override??prompt).trim();if(!request||generating)return;setGenerating(true);setError('');try{const key=readOpenAiKey();const response=await fetch('/api/glow/visualize',{method:'POST',headers:{'Content-Type':'application/json',...(key?{'x-glow-openai-key':key}:{})},body:JSON.stringify({request,page:pathname,size,style})});const payload=await response.json();if(!response.ok||!payload?.image)throw new Error(String(payload?.error||'Glow could not generate that visual.'));setImage(String(payload.image));setBrief(String(payload.brief??''))}catch(err){setError(err instanceof Error?err.message:'Glow could not generate that visual.')}finally{setGenerating(false)}},[generating,pathname,prompt,size,style]);
+ useEffect(()=>{if(!autoRequest||!open)return;const request=autoRequest;setAutoRequest('');void generate(request)},[autoRequest,generate,open]);
  function useLatest(){const latest=latestUserRequest();if(latest)setPrompt(latest)}
  function download(){if(!image)return;const anchor=document.createElement('a');anchor.href=image;anchor.download=fileName(prompt);document.body.appendChild(anchor);anchor.click();anchor.remove()}
  if(!open)return null;
