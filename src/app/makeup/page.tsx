@@ -1,14 +1,12 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
+import { MakeupStudio } from '@/components/beauty/makeup-studio';
 
-const products=[
- {name:'Complexion',detail:'Foundation · concealer · powder',image:'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=82'},
- {name:'Cheeks',detail:'Blush · bronzer · highlight',image:'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=700&q=82'},
- {name:'Eyes',detail:'Shadow · liner · mascara',image:'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?auto=format&fit=crop&w=700&q=82'},
- {name:'Lips',detail:'Liner · lipstick · gloss',image:'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=700&q=82'}
-];
 export const dynamic='force-dynamic';
-export default async function MakeupPage(){const session=await auth();if(!session?.user?.id)redirect('/sign-in');return <AppShell><SectionPage eyebrow="Beauty / Makeup" title="Makeup" description="Your products, looks, routines and inspiration in one clean beauty room."><div className="space-y-4"><section className="rounded-[18px] border border-[#EEE9E6] bg-white p-4 sm:p-5"><div className="flex flex-wrap items-end justify-between gap-3"><div><p className="glow-eyebrow">My makeup</p><h2 className="glow-display mt-1 text-[22px] text-[#2D2927]">Products as a visual collection</h2></div><Link href="/import" className="rounded-full bg-[#D37687] px-4 py-2 text-[11px] font-medium text-white">+ Add Product</Link></div><div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{products.map(p=><Link href="/import" key={p.name} className="overflow-hidden rounded-[16px] border border-[#EEE9E6] bg-white transition hover:-translate-y-0.5 hover:shadow-sm"><div className="h-36 bg-[#F8F5F3]"><img src={p.image} alt={p.name} className="h-full w-full object-cover" loading="lazy"/></div><div className="p-3"><h3 className="glow-display text-[15px] text-[#2D2927]">{p.name}</h3><p className="mt-1 text-[10.5px] text-[#928A85]">{p.detail}</p></div></Link>)}</div></section><section className="grid gap-3 md:grid-cols-3"><Link href="/beauty" className="rounded-[16px] border border-[#EEE9E6] bg-[#FFF7F8] p-4"><p className="text-[9px] uppercase tracking-[.12em] text-[#C86F80]">Routine</p><h3 className="glow-display mt-2 text-[17px]">Today&apos;s makeup</h3><p className="mt-2 text-[11px] text-[#8D8580]">Build a quick everyday face or event look.</p></Link><Link href="/beauty/lab" className="rounded-[16px] border border-[#EEE9E6] bg-[#F7F6FA] p-4"><p className="text-[9px] uppercase tracking-[.12em] text-[#8B7CA6]">Inventory</p><h3 className="glow-display mt-2 text-[17px]">Product cabinet</h3><p className="mt-2 text-[11px] text-[#8D8580]">Track products, cost, reactions and repurchase.</p></Link><Link href="/closet" className="rounded-[16px] border border-[#EEE9E6] bg-[#F6F8F4] p-4"><p className="text-[9px] uppercase tracking-[.12em] text-[#7B9273]">Looks</p><h3 className="glow-display mt-2 text-[17px]">Outfit + makeup</h3><p className="mt-2 text-[11px] text-[#8D8580]">Coordinate makeup with outfits and occasions.</p></Link></section></div></SectionPage></AppShell>}
+
+export default async function MakeupPage(){
+ const session=await auth();
+ if(!session?.user?.id)redirect('/sign-in');
+ return <AppShell><MakeupStudio/></AppShell>;
+}
