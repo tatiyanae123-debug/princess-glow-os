@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
-import { Sidebar } from '@/components/ui/sidebar';
 import { UniversalMobileNav } from '@/components/universal-mobile-nav';
 import { Batch6TopControls } from '@/components/batch6/batch6-top-controls';
 import { GlowCustomizationStudio } from '@/components/customization/glow-customization-studio';
@@ -28,15 +27,12 @@ export function AppShell({children}:{children:React.ReactNode}){
  const content=<div key={pathname} className={(isDashboard||isImmersive)?'w-full min-w-0':referenceRoute?'glow-reference-route-stage mx-auto w-full min-w-0':'glow-v3-route-stage mx-auto w-full max-w-[1500px]'}>{!focus&&!isDashboard&&!isImmersive?<PageIntelligenceLayer/>:null}{children}</div>;
 
  return <GlowProvider>
-  <div className={`min-h-screen w-full overflow-x-clip text-[#25211f] ${(isDashboard||isImmersive)?'bg-[#eadbd8]':'bg-white'}`} data-room={room} data-glow-shell="v4" data-reference-shell={referenceRoute?'true':'false'} data-focus-mode={focus?'true':'false'} data-daypart={daypart}>
-   <div className={`flex min-h-screen w-full flex-col ${(isDashboard||isImmersive)?'bg-transparent':'bg-white'} xl:flex-row`}>
-    {!focus?<>
-      <div className="w-full xl:hidden"><UniversalMobileNav/></div>
-      <div className="sticky top-0 hidden h-screen w-[238px] shrink-0 overflow-y-auto overflow-x-hidden border-r border-[#ebe6e3] bg-white xl:block"><Sidebar variant="dashboard-reference"/></div>
-    </>:null}
+  <div className={`min-h-screen w-full overflow-x-clip text-[#25211f] ${(isDashboard||isImmersive)?'bg-[#eadbd8]':'bg-white'}`} data-room={room} data-glow-shell="v5-world-navigator" data-reference-shell={referenceRoute?'true':'false'} data-focus-mode={focus?'true':'false'} data-daypart={daypart}>
+   {!focus?<UniversalMobileNav/>:null}
+   <div className={`flex min-h-screen w-full flex-col ${(isDashboard||isImmersive)?'bg-transparent':'bg-white'}`}>
     <div className={`min-w-0 flex-1 ${(isDashboard||isImmersive)?'bg-transparent':'bg-white'}`}>
       {!focus&&!isDashboard&&!isImmersive&&!compact?<GlobalHeader/>:null}
-      <main className={`${compact?'relative ':''}${(isDashboard||isImmersive)?'min-w-0 w-full flex-1 overflow-x-clip bg-transparent p-0':'min-h-screen min-w-0 bg-white px-4 pb-20 pt-4 sm:px-5 md:px-6 lg:px-7 lg:pt-5'}`}>
+      <main className={`${compact?'relative ':''}${(isDashboard||isImmersive)?'min-w-0 w-full flex-1 overflow-x-clip bg-transparent p-0':'min-h-screen min-w-0 bg-white px-4 pb-28 pt-4 sm:px-5 md:px-6 lg:px-7 lg:pt-5'}`}>
         {!focus&&compact&&!isImmersive?<Batch6TopControls/>:null}{content}
       </main>
     </div>
