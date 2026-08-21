@@ -8,102 +8,14 @@ import { Dialog } from '@/components/ui/dialog';
 import { WellnessEntryForm } from '@/components/wellness/wellness-entry-form';
 import type { WellnessEntry } from '@/lib/types';
 
-const MOODS = [
-  { key: 'great', label: 'Amazing', face: '☺' },
-  { key: 'good', label: 'Good', face: '◉' },
-  { key: 'okay', label: 'Okay', face: '⊙' },
-  { key: 'low', label: 'Tired', face: '◌' },
-  { key: 'rough', label: 'Struggling', face: '☹' },
-] as const;
-
-function sleepLabel(hours: number | null | undefined) {
-  if (hours == null) return '—';
-  const whole = Math.floor(hours);
-  const mins = Math.round((hours - whole) * 60);
-  return mins ? `${whole}h ${mins}m` : `${whole}h`;
+const MOODS=[{key:'great',label:'Amazing',face:'☺'},{key:'good',label:'Good',face:'◉'},{key:'okay',label:'Okay',face:'⊙'},{key:'low',label:'Tired',face:'◌'},{key:'rough',label:'Struggling',face:'☹'}] as const;
+function sleepLabel(hours:number|null|undefined){if(hours==null)return'—';const whole=Math.floor(hours),mins=Math.round((hours-whole)*60);return mins?`${whole}h ${mins}m`:`${whole}h`}
+export function HealthCareExperience({entries}:{entries:WellnessEntry[]}){
+ const [checkInOpen,setCheckInOpen]=useState(false);const latest=entries[0]??null;const weekly=useMemo(()=>entries.slice(0,7),[entries]);const averageSleep=useMemo(()=>{const values=weekly.map(e=>e.sleepHours).filter((v):v is number=>v!=null);return values.length?values.reduce((a,b)=>a+b,0)/values.length:null},[weekly]);const hydration=latest?.waterGlasses??null;const energy=latest?.energy??null;const mood=latest?.mood??null;const stress=latest?.stressLevel??null;
+ return <div className="batch3-wellness-reference space-y-4"><header className="grid items-stretch gap-3 lg:grid-cols-[1.05fr_.95fr]"><div className="flex min-h-[230px] flex-col justify-between rounded-[10px] border border-[#eee8e4] bg-white p-5 shadow-[0_10px_30px_rgba(67,48,40,.04)]"><div><p className="text-[9px] font-medium uppercase tracking-[.12em] text-[#6f6762]">Wellness records</p><h1 className="glow-display mt-2 text-[34px] leading-none text-[#29231f]">General check-in history</h1><p className="mt-2 text-[10.5px] text-[#887e77]">Logged values only. No wellness score is generated here.</p></div><div><p className="mb-3 text-[10px] font-medium text-[#46403c]">How are you feeling?</p><div className="grid grid-cols-5 gap-2">{MOODS.map(item=>{const active=mood===item.key;return <button key={item.key} type="button" onClick={()=>setCheckInOpen(true)} className="group text-center"><span className={`mx-auto grid h-9 w-9 place-items-center rounded-full border text-[14px] ${active?'border-[#75866c] bg-[#75866c] text-white':'border-[#e9e3df] bg-white text-[#746c66]'}`}>{item.face}</span><span className="mt-1.5 block text-[8px] text-[#7f7772]">{item.label}</span></button>})}</div></div></div><div className="overflow-hidden rounded-[10px] border border-[#eee8e4] bg-[#f5f0eb]"><EditableRoomImage slot="wellness:hero" label="Wellness editorial still life" className="h-full min-h-[230px]"/></div></header>
+ <section><p className="mb-2 text-[10px] font-medium text-[#46403c]">Latest saved entry</p><div className="grid grid-cols-2 gap-2 sm:grid-cols-5"><Metric label="Energy" value={energy?`${energy[0].toUpperCase()}${energy.slice(1)}`:'—'} detail={energy?'Logged':'Not logged'}/><Metric label="Mood" value={mood?`${mood[0].toUpperCase()}${mood.slice(1)}`:'—'} detail={mood?'Logged':'Not logged'} icon={<Smile size={12}/>}/><Metric label="Sleep" value={sleepLabel(latest?.sleepHours)} detail={latest?.sleepHours!=null?'Logged hours':'Not logged'}/><Metric label="Hydration" value={hydration==null?'—':`${hydration}`} detail={hydration==null?'Not logged':'glasses logged'} icon={<Droplets size={12}/>}/><Metric label="Stress" value={stress==null?'—':String(stress)} detail={stress==null?'Not logged':'Self-reported'} /></div></section>
+ <section className="rounded-[10px] border border-[#eee8e4] bg-white p-4"><p className="text-[10px] font-medium text-[#46403c]">Connected areas</p><div className="mt-3 grid gap-x-5 gap-y-3 sm:grid-cols-2 lg:grid-cols-4"><Area href="/wellness/sleep" icon={<Moon size={13}/>} label="Sleep" value={averageSleep==null?'Not enough logged data':`${sleepLabel(averageSleep)} logged average`} state="Open"/><Area href="/wellness" icon={<Droplets size={13}/>} label="Hydration" value={hydration==null?'Not logged':`${hydration} glasses logged`} state="Log"/><Area href="/food" icon={<HeartPulse size={13}/>} label="Nutrition" value="Open Food" state="Open"/><Area href="/fitness" icon={<Footprints size={13}/>} label="Movement" value="Open Fitness" state="Open"/><Area href="/wellness/recovery" icon={<Activity size={13}/>} label="Symptoms" value="Recovery view" state="Track"/><Area href="/wellness/recovery" icon={<Sparkles size={13}/>} label="Recovery" value={stress==null?'No stress check-in':`Stress logged: ${stress}`} state="Open"/></div></section>
+ <section className="grid gap-2 sm:grid-cols-3"><Link href="/wellness/sleep" className="rounded-[9px] border border-[#eee8e4] bg-white px-4 py-3 text-[9px] text-[#69615c]">Sleep details →</Link><Link href="/wellness/recovery" className="rounded-[9px] border border-[#eee8e4] bg-white px-4 py-3 text-[9px] text-[#69615c]">Symptoms & recovery →</Link><button type="button" onClick={()=>setCheckInOpen(true)} className="rounded-[9px] border border-[#dfe7d9] bg-[#f1f5ed] px-4 py-3 text-left text-[9px] font-medium text-[#5f7058]">+ Log general check-in</button></section><Dialog open={checkInOpen} onClose={()=>setCheckInOpen(false)} title="Today’s wellness check-in"><WellnessEntryForm entry={latest&&new Date(latest.entryDate).toDateString()===new Date().toDateString()?latest:null} onSaved={()=>setCheckInOpen(false)} onCancel={()=>setCheckInOpen(false)}/></Dialog></div>
 }
-
-export function HealthCareExperience({ entries }: { entries: WellnessEntry[] }) {
-  const [checkInOpen, setCheckInOpen] = useState(false);
-  const latest = entries[0] ?? null;
-  const weekly = useMemo(() => entries.slice(0, 7), [entries]);
-  const averageSleep = useMemo(() => {
-    const values = weekly.map((entry) => entry.sleepHours).filter((value): value is number => value != null);
-    return values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
-  }, [weekly]);
-  const hydration = latest?.waterGlasses ?? null;
-  const energy = latest?.energy ?? null;
-  const mood = latest?.mood ?? null;
-  const stress = latest?.stressLevel ?? null;
-
-  return (
-    <div className="batch3-wellness-reference space-y-4">
-      <header className="grid items-stretch gap-3 lg:grid-cols-[1.05fr_.95fr]">
-        <div className="flex min-h-[230px] flex-col justify-between rounded-[10px] border border-[#eee8e4] bg-white p-5 shadow-[0_10px_30px_rgba(67,48,40,.04)]">
-          <div>
-            <p className="text-[9px] font-medium uppercase tracking-[.12em] text-[#6f6762]">1. Wellness</p>
-            <h1 className="glow-display mt-2 text-[42px] leading-none text-[#29231f]">Wellness</h1>
-            <p className="mt-2 text-[10.5px] text-[#887e77]">Check in. Listen to your body. Take care of you.</p>
-          </div>
-          <div>
-            <p className="mb-3 text-[10px] font-medium text-[#46403c]">How are you feeling?</p>
-            <div className="grid grid-cols-5 gap-2">
-              {MOODS.map((item) => {
-                const active = mood === item.key;
-                return (
-                  <button key={item.key} type="button" onClick={() => setCheckInOpen(true)} className="group text-center">
-                    <span className={`mx-auto grid h-9 w-9 place-items-center rounded-full border text-[14px] transition ${active ? 'border-[#75866c] bg-[#75866c] text-white shadow-[0_5px_14px_rgba(86,108,78,.16)]' : 'border-[#e9e3df] bg-white text-[#746c66] group-hover:bg-[#fbf8f5]'}`}>{item.face}</span>
-                    <span className={`mt-1.5 block text-[8px] ${active ? 'font-medium text-[#4c5847]' : 'text-[#7f7772]'}`}>{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-        <div className="overflow-hidden rounded-[10px] border border-[#eee8e4] bg-[#f5f0eb] shadow-[0_14px_34px_rgba(67,48,40,.055)]">
-          <EditableRoomImage slot="wellness:hero" label="Wellness editorial still life" className="h-full min-h-[230px]" />
-        </div>
-      </header>
-
-      <section>
-        <p className="mb-2 text-[10px] font-medium text-[#46403c]">Today&apos;s Overview</p>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-          <Metric label="Energy" value={energy ? `${energy[0].toUpperCase()}${energy.slice(1)}` : '—'} detail={energy === 'high' ? 'Strong' : energy ? 'Logged' : 'Check in'} />
-          <Metric label="Mood" value={mood ? `${mood[0].toUpperCase()}${mood.slice(1)}` : '—'} detail={mood ? 'Logged' : 'Check in'} icon={<Smile size={12} />} />
-          <Metric label="Sleep" value={sleepLabel(latest?.sleepHours)} detail={latest?.sleepHours != null ? (latest.sleepHours >= 7 ? 'Good' : 'Needs care') : 'Not logged'} />
-          <Metric label="Hydration" value={hydration == null ? '—' : `${hydration} / 8`} detail="glasses" icon={<Droplets size={12} />} />
-          <Metric label="Steps" value="—" detail="Not connected" icon={<Footprints size={12} />} />
-        </div>
-      </section>
-
-      <section className="rounded-[10px] border border-[#eee8e4] bg-white p-4 shadow-[0_9px_28px_rgba(67,48,40,.035)]">
-        <p className="text-[10px] font-medium text-[#46403c]">Key Areas</p>
-        <div className="mt-3 grid gap-x-5 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Area href="/wellness/sleep" icon={<Moon size={13} />} label="Sleep" value={averageSleep == null ? 'Not enough data' : `${sleepLabel(averageSleep)} avg`} state={averageSleep != null && averageSleep >= 7 ? 'On track' : 'Review'} />
-          <Area href="/wellness" icon={<Droplets size={13} />} label="Hydration" value={hydration == null ? 'Not logged' : `${hydration} glasses`} state={hydration != null && hydration >= 6 ? 'On track' : 'Review'} />
-          <Area href="/food" icon={<HeartPulse size={13} />} label="Nutrition" value="Open food plan" state="Plan" />
-          <Area href="/fitness" icon={<Footprints size={13} />} label="Movement" value="Fitness room" state="Open" />
-          <Area href="/wellness/recovery" icon={<Activity size={13} />} label="Symptoms" value="Recovery view" state="Track" />
-          <Area href="/wellness/recovery" icon={<Sparkles size={13} />} label="Recovery" value={stress == null ? 'Check in' : stress <= 2 ? 'Supported' : 'Needs care'} state={stress == null ? 'Open' : stress <= 2 ? 'Good' : 'Review'} />
-        </div>
-      </section>
-
-      <section className="grid gap-2 sm:grid-cols-3">
-        <Link href="/wellness/sleep" className="rounded-[9px] border border-[#eee8e4] bg-white px-4 py-3 text-[9px] text-[#69615c] hover:bg-[#fbf8f5]">Sleep details →</Link>
-        <Link href="/wellness/recovery" className="rounded-[9px] border border-[#eee8e4] bg-white px-4 py-3 text-[9px] text-[#69615c] hover:bg-[#fbf8f5]">Symptoms &amp; recovery →</Link>
-        <button type="button" onClick={() => setCheckInOpen(true)} className="rounded-[9px] border border-[#dfe7d9] bg-[#f1f5ed] px-4 py-3 text-left text-[9px] font-medium text-[#5f7058]">+ Log wellness check-in</button>
-      </section>
-
-      <Dialog open={checkInOpen} onClose={() => setCheckInOpen(false)} title="Today&apos;s wellness check-in">
-        <WellnessEntryForm entry={latest && new Date(latest.entryDate).toDateString() === new Date().toDateString() ? latest : null} onSaved={() => setCheckInOpen(false)} onCancel={() => setCheckInOpen(false)} />
-      </Dialog>
-    </div>
-  );
-}
-
-function Metric({ label, value, detail, icon }: { label: string; value: string; detail: string; icon?: React.ReactNode }) {
-  return <div className="min-h-[84px] rounded-[8px] border border-[#eee8e4] bg-white p-3 shadow-[0_5px_18px_rgba(67,48,40,.025)]"><div className="flex items-center justify-between text-[8px] text-[#837a74]"><span>{label}</span><span className="text-[#7a876d]">{icon}</span></div><p className="glow-display mt-2 text-[18px] leading-none text-[#29231f]">{value}</p><p className="mt-1.5 text-[8px] text-[#77866c]">{detail}</p></div>;
-}
-function Area({ href, icon, label, value, state }: { href: string; icon: React.ReactNode; label: string; value: string; state: string }) {
-  return <Link href={href} className="flex items-center gap-3 border-b border-[#f0ebe8] py-2.5 last:border-0"><span className="grid h-8 w-8 place-items-center rounded-full bg-[#eef2e9] text-[#687760]">{icon}</span><span className="min-w-0 flex-1"><span className="block text-[9px] font-medium text-[#49423e]">{label}</span><span className="mt-0.5 block truncate text-[8px] text-[#928980]">{value}</span></span><span className="text-[8px] text-[#6f8066]">{state}</span></Link>;
-}
+function Metric({label,value,detail,icon}:{label:string;value:string;detail:string;icon?:React.ReactNode}){return <div className="min-h-[84px] rounded-[8px] border border-[#eee8e4] bg-white p-3"><div className="flex items-center justify-between text-[8px] text-[#837a74]"><span>{label}</span><span className="text-[#7a876d]">{icon}</span></div><p className="glow-display mt-2 text-[18px] leading-none text-[#29231f]">{value}</p><p className="mt-1.5 text-[8px] text-[#77866c]">{detail}</p></div>}
+function Area({href,icon,label,value,state}:{href:string;icon:React.ReactNode;label:string;value:string;state:string}){return <Link href={href} className="flex items-center gap-3 border-b border-[#f0ebe8] py-2.5 last:border-0"><span className="grid h-8 w-8 place-items-center rounded-full bg-[#eef2e9] text-[#687760]">{icon}</span><span className="min-w-0 flex-1"><span className="block text-[9px] font-medium text-[#49423e]">{label}</span><span className="mt-0.5 block truncate text-[8px] text-[#928980]">{value}</span></span><span className="text-[8px] text-[#6f8066]">{state}</span></Link>}
