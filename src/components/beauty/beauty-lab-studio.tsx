@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { useMemo, useState, useTransition } from 'react';
-import { Beaker, CalendarDays, FlaskConical, Heart, Package, Play, Plus, Sparkles, SprayCan, WandSparkles } from 'lucide-react';
+import { ArrowRight, Beaker, CalendarDays, Heart, Package, Play, Sparkles, SprayCan, WandSparkles } from 'lucide-react';
 import { createBeautyProductAction } from '@/app/actions/completion-v1';
-import { createBeautyFragranceAction, createBeautyLookAction, createBeautyTreatmentScheduleAction, toggleBeautyTreatmentScheduleAction, useBeautyLookAction } from '@/app/actions/advanced-beauty';
+import { createBeautyFragranceAction, createBeautyLookAction, createBeautyTreatmentScheduleAction, toggleBeautyTreatmentScheduleAction, useBeautyLookAction as markBeautyLookUsedAction } from '@/app/actions/advanced-beauty';
 import type { BeautyRoutine } from '@/lib/types';
 
 type Product={id:string;name:string;category:string;ingredients:string|null;openedAt:Date|null;expiresAt:Date|null;routinePosition:string|null;reaction:string|null;costCents:number|null;repurchase:string|null;usageFrequency:string|null};
@@ -29,7 +29,7 @@ export function BeautyLabStudio({products,routines,intelligence}:{products:Produ
   const currentSteps=stepsFor(minutes); const experiments=products.filter(p=>!p.repurchase||p.repurchase==='maybe'); const favorites=products.filter(p=>p.repurchase==='yes'); const reactions=products.filter(p=>p.reaction?.trim());
   function flash(text:string){setNotice(text);window.setTimeout(()=>setNotice(''),4500)}
   function saveLook(){startTransition(async()=>{const result=await createBeautyLookAction({name:`${mood} ${occasion} Look`,occasion,mood,plannedMinutes:minutes,steps:currentSteps,productIds:makeupProducts.map(p=>p.id)});if(result.data){setLooks(c=>[result.data as Look,...c]);flash('Look saved across Glow.')}else flash(result.error??'Could not save look.')})}
-  function repeatLook(id:string){startTransition(async()=>{const result=await useBeautyLookAction(id);if(result.data){setLooks(c=>c.map(x=>x.id===id?result.data as Look:x));flash('Look marked as repeated.')}else flash(result.error??'Could not update look history.')})}
+  function repeatLook(id:string){startTransition(async()=>{const result=await markBeautyLookUsedAction(id);if(result.data){setLooks(c=>c.map(x=>x.id===id?result.data as Look:x));flash('Look marked as repeated.')}else flash(result.error??'Could not update look history.')})}
   function addFragrance(){if(!fragranceName.trim())return;startTransition(async()=>{const result=await createBeautyFragranceAction({name:fragranceName.trim(),family:family.trim()||undefined,dayparts:[daypart],occasions:[fragranceOccasion]});if(result.data){setFragrances(c=>[result.data as Fragrance,...c]);setFragranceName('');setFamily('');flash('Fragrance added to your wardrobe.')}else flash(result.error??'Could not save fragrance.')})}
   function addSchedule(){if(!treatmentName.trim())return;startTransition(async()=>{const result=await createBeautyTreatmentScheduleAction({treatmentKey:treatmentName.toLowerCase().replace(/[^a-z0-9]+/g,'-'),treatmentName:treatmentName.trim(),area:treatmentArea,weekdays:selectedDays,strongTreatment:strong});if(result.data){setSchedules(c=>[result.data as Schedule,...c]);setTreatmentName('');setSelectedDays([]);setStrong(false);flash('Treatment schedule saved to Beauty Calendar.')}else flash(result.error??'Could not save treatment schedule.')})}
   function toggleSchedule(item:Schedule){startTransition(async()=>{const result=await toggleBeautyTreatmentScheduleAction(item.id,!item.enabled);if(result.data)setSchedules(c=>c.map(x=>x.id===item.id?result.data as Schedule:x));else flash(result.error??'Could not update schedule.')})}
