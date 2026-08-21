@@ -15,6 +15,7 @@ import {
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
 import { getRoutinesByUser } from '@/lib/data/routines';
 import { getGoalsByUser } from '@/lib/data/goals';
+import { getTasksByUser } from '@/lib/data/tasks';
 import { ensurePersonalOsInstalled } from '@/lib/personal-os/install';
 
 export const dynamic = 'force-dynamic';
@@ -37,7 +38,7 @@ export default async function HabitsPage() {
   const startKey = localDateKey(start);
   const todayKey = localDateKey(now);
 
-  const [habits, logs, profiles, details, timingStats, triggers, stacks, experiments, sourceLinks, calendarEvents, routines, goals] = await Promise.all([
+  const [habits, logs, profiles, details, timingStats, triggers, stacks, experiments, sourceLinks, calendarEvents, routines, goals, tasks] = await Promise.all([
     getHabitsByUser(session.user.id),
     getHabitLogsForUser(session.user.id, startKey, todayKey),
     getHabitProfiles(session.user.id),
@@ -50,6 +51,7 @@ export default async function HabitsPage() {
     getCalendarEventsByUser(session.user.id),
     getRoutinesByUser(session.user.id),
     getGoalsByUser(session.user.id),
+    getTasksByUser(session.user.id),
   ]);
 
   return (
@@ -67,6 +69,7 @@ export default async function HabitsPage() {
         calendarEvents={calendarEvents}
         routines={routines}
         goals={goals}
+        tasks={tasks}
       />
     </AppShell>
   );
