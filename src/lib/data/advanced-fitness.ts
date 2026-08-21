@@ -49,3 +49,14 @@ export async function finishWorkoutRun(userId:string,runId:string,input:{activeS
 }
 export async function getExerciseHistory(userId:string,name:string){ return db.select().from(workoutSetLogs).where(and(eq(workoutSetLogs.userId,userId),eq(workoutSetLogs.exerciseName,name),eq(workoutSetLogs.completed,true))).orderBy(desc(workoutSetLogs.completedAt)).limit(20); }
 export async function getRecentFitnessSessions(userId:string){ const since=new Date();since.setDate(since.getDate()-35);return db.select().from(fitnessSessions).where(and(eq(fitnessSessions.userId,userId),gte(fitnessSessions.occurredAt,since))).orderBy(desc(fitnessSessions.occurredAt)); }
+
+export async function createWorkoutTemplate(userId:string,input:{name:string;category:string;equipment:string;minutes:number;exercises:Array<{name:string;sets:number;reps:number;restSeconds:number;muscleGroup:string}>}){
+  const full=Math.max(5,input.minutes),quick=Math.max(5,Math.round(full*.6)),minimum=Math.max(5,Math.round(full*.3));
+  const muscles=[...new Set(input.exercises.map(x=>x.muscleGroup).filter(Boolean))];
+  const [template]=await db.insert(workoutTemplates).values({userId,name:input.name,category:input.category,equipment:input.equipment,fullMinutes:full,quickMinutes:quick,minimumMinutes:minimum,primaryMuscles:muscles,lowImpact:/mobility|pilates|walk/i.test(input.category)}).returning();
+  await db.insert(workoutExercises).values(input.exercises.map((x,i)=>({userId,templateId:template.id,name:x.name,position:i,sets:x.sets,reps:x.reps,restSeconds:x.restSeconds,muscleGroup:x.muscleGroup,equipment:input.equipment,substitutions:[]})));
+  return template;
+}
+export async function createWorkoutProgram(userId:string,input:{name:string;weeks:number;templateIds:string[];goalId?:string|null}){
+ const [row]=await db.insert(workoutPrograms).values({userId,name:input.name,weeks:input.weeks,currentWeek:1,status:'active',templateIds:input.templateIds,goalId:input.goalId??null}).returning();return row;
+}
