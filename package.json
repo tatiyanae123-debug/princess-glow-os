@@ -7,7 +7,7 @@
     "build": "next build",
     "audit:interactions": "node scripts/interaction-audit.mjs",
     "vercel-build": "npm run audit:interactions && npm run db:migrate && next build",
-    "db:migrate": "node scripts/migrate.mjs",
+    "db:migrate": "node scripts/migrate.mjs && node scripts/migrate-habit-sync.mjs",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
