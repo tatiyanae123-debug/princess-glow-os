@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { GlowLifeIntelligence } from '@/components/life-intelligence/glow-life-intelligence';
 import { GlowVisualStudio } from '@/components/life-intelligence/glow-visual-studio';
+import { GlobalSpeakingPresence } from '@/components/life-intelligence/global-speaking-presence';
 
 const HIDDEN_PREFIXES=['/sign-in','/api','/auth'];
 
@@ -15,5 +16,5 @@ export function GlobalGlowIntelligence(){
   return()=>document.removeEventListener('glow:voice-open',openConversation);
  },[]);
  if(HIDDEN_PREFIXES.some(prefix=>pathname.startsWith(prefix)))return null;
- return <><GlowLifeIntelligence/><GlowVisualStudio/></>;
+ return <><GlowLifeIntelligence/><GlowVisualStudio/><GlobalSpeakingPresence/></>;
 }
