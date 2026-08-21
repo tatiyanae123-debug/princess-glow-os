@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Dialog } from '@/components/ui/dialog';
 import { HabitForm } from '@/components/habits/habit-form';
 import { HabitsExperience } from '@/components/habits/habits-experience';
+import { HabitConnectionsPanel } from '@/components/habits/habit-connections-panel';
 import type {
   CalendarEvent,
   Goal,
@@ -18,6 +19,7 @@ import type {
   HabitTimingStat,
   HabitTrigger,
   Routine,
+  Task,
 } from '@/lib/types';
 
 function withoutHabitParams(params: URLSearchParams) {
@@ -40,6 +42,7 @@ export function HabitsRouteExperience({
   calendarEvents,
   routines,
   goals,
+  tasks,
 }: {
   initialHabits: Habit[];
   initialLogs: HabitLog[];
@@ -53,6 +56,7 @@ export function HabitsRouteExperience({
   calendarEvents: CalendarEvent[];
   routines: Routine[];
   goals: Goal[];
+  tasks: Task[];
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -83,6 +87,9 @@ export function HabitsRouteExperience({
         routines={routines}
         goals={goals}
       />
+      <div className="mx-auto mt-6 max-w-[1380px] pb-20">
+        <HabitConnectionsPanel habits={initialHabits} tasks={tasks} goals={goals} routines={routines} initialLinks={sourceLinks} />
+      </div>
       <Dialog open={Boolean(requestedId && selectedHabit)} onClose={closeRecord} title={selectedHabit ? `Habit · ${selectedHabit.name}` : 'Habit'}>
         {selectedHabit ? (
           <HabitForm
