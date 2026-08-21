@@ -1,81 +1,29 @@
 /*
   GLOW LIQUID-CRYSTAL CONSTITUTION
-  Permanent system-wide material + motion language for Glow OS.
+  Safe migration edition. Global CSS owns atmosphere only.
+  Working page UI is never selected by generic class names or element types.
 */
 
 :root {
   --glow-crystal-blur: 28px;
   --glow-crystal-border: rgba(255,255,255,.48);
   --glow-crystal-shadow: 0 20px 60px rgba(83,70,95,.10), inset 0 1px 0 rgba(255,255,255,.72);
-  --glow-crystal-highlight: rgba(255,255,255,.72);
   --glow-liquid-ease: cubic-bezier(.22,.78,.18,1);
-  --glow-liquid-slow: 900ms;
-  --glow-liquid-fast: 240ms;
   --glow-zone-a: 236,205,219;
   --glow-zone-b: 205,220,235;
   --glow-zone-c: 246,231,202;
   --glow-zone-ink: 87,72,89;
 }
 
-body[data-glow-zone='dawn'] {
-  --glow-zone-a: 246,213,221;
-  --glow-zone-b: 226,214,242;
-  --glow-zone-c: 249,238,207;
-  --glow-zone-ink: 112,76,96;
-}
-body[data-glow-zone='time'] {
-  --glow-zone-a: 217,208,241;
-  --glow-zone-b: 198,221,238;
-  --glow-zone-c: 236,223,246;
-  --glow-zone-ink: 82,74,115;
-}
-body[data-glow-zone='vital'] {
-  --glow-zone-a: 199,228,211;
-  --glow-zone-b: 202,221,239;
-  --glow-zone-c: 239,230,190;
-  --glow-zone-ink: 67,104,88;
-}
-body[data-glow-zone='pearl'] {
-  --glow-zone-a: 249,205,219;
-  --glow-zone-b: 231,216,244;
-  --glow-zone-c: 249,230,205;
-  --glow-zone-ink: 127,76,98;
-}
-body[data-glow-zone='emerald'] {
-  --glow-zone-a: 193,224,208;
-  --glow-zone-b: 211,228,216;
-  --glow-zone-c: 232,219,178;
-  --glow-zone-ink: 56,91,75;
-}
-body[data-glow-zone='violet'] {
-  --glow-zone-a: 213,197,240;
-  --glow-zone-b: 194,212,239;
-  --glow-zone-c: 234,217,246;
-  --glow-zone-ink: 82,66,117;
-}
-body[data-glow-zone='opal'] {
-  --glow-zone-a: 236,205,228;
-  --glow-zone-b: 204,226,239;
-  --glow-zone-c: 243,226,197;
-  --glow-zone-ink: 92,74,98;
-}
-body[data-glow-zone='earth'] {
-  --glow-zone-a: 211,225,203;
-  --glow-zone-b: 208,221,230;
-  --glow-zone-c: 237,222,193;
-  --glow-zone-ink: 75,91,74;
-}
-body[data-glow-zone='slate'] {
-  --glow-zone-a: 204,215,225;
-  --glow-zone-b: 219,214,231;
-  --glow-zone-c: 235,225,207;
-  --glow-zone-ink: 69,78,91;
-}
-
-html[data-glow-world='liquid-crystal'],
-html[data-glow-world='liquid-crystal'] body {
-  background: rgb(247,244,241);
-}
+body[data-glow-zone='dawn'] { --glow-zone-a:246,213,221; --glow-zone-b:226,214,242; --glow-zone-c:249,238,207; --glow-zone-ink:112,76,96; }
+body[data-glow-zone='time'] { --glow-zone-a:217,208,241; --glow-zone-b:198,221,238; --glow-zone-c:236,223,246; --glow-zone-ink:82,74,115; }
+body[data-glow-zone='vital'] { --glow-zone-a:199,228,211; --glow-zone-b:202,221,239; --glow-zone-c:239,230,190; --glow-zone-ink:67,104,88; }
+body[data-glow-zone='pearl'] { --glow-zone-a:249,205,219; --glow-zone-b:231,216,244; --glow-zone-c:249,230,205; --glow-zone-ink:127,76,98; }
+body[data-glow-zone='emerald'] { --glow-zone-a:193,224,208; --glow-zone-b:211,228,216; --glow-zone-c:232,219,178; --glow-zone-ink:56,91,75; }
+body[data-glow-zone='violet'] { --glow-zone-a:213,197,240; --glow-zone-b:194,212,239; --glow-zone-c:234,217,246; --glow-zone-ink:82,66,117; }
+body[data-glow-zone='opal'] { --glow-zone-a:236,205,228; --glow-zone-b:204,226,239; --glow-zone-c:243,226,197; --glow-zone-ink:92,74,98; }
+body[data-glow-zone='earth'] { --glow-zone-a:211,225,203; --glow-zone-b:208,221,230; --glow-zone-c:237,222,193; --glow-zone-ink:75,91,74; }
+body[data-glow-zone='slate'] { --glow-zone-a:204,215,225; --glow-zone-b:219,214,231; --glow-zone-c:235,225,207; --glow-zone-ink:69,78,91; }
 
 html[data-glow-world='liquid-crystal'] body {
   position: relative;
@@ -83,10 +31,11 @@ html[data-glow-world='liquid-crystal'] body {
   isolation: isolate;
 }
 
+/* Ambient world. It never receives pointer events and never changes page layout. */
 .glow-world-physics {
   position: fixed;
   inset: 0;
-  pointer-events: none;
+  pointer-events: none !important;
   overflow: hidden;
   z-index: -1;
   background:
@@ -100,9 +49,11 @@ html[data-glow-world='liquid-crystal'] body {
 .glow-world-physics__depth,
 .glow-world-physics__caustics,
 .glow-world-physics__aurora,
+.glow-world-physics__ripples,
 .glow-world-physics__grain {
   position: absolute;
   inset: -18%;
+  pointer-events: none !important;
 }
 
 .glow-world-physics__depth {
@@ -115,11 +66,11 @@ html[data-glow-world='liquid-crystal'] body {
 }
 
 .glow-world-physics__caustics {
-  opacity: .34;
+  opacity: .28;
   background:
     repeating-radial-gradient(ellipse at 32% 41%, rgba(255,255,255,.45) 0 1px, transparent 2px 18px),
     repeating-radial-gradient(ellipse at 71% 62%, rgba(var(--glow-zone-b),.13) 0 2px, transparent 3px 24px);
-  filter: blur(2px) url('#none');
+  filter: blur(2px);
   transform: rotate(-7deg) scale(1.1);
   mix-blend-mode: soft-light;
   animation: glow-caustic-drift 16s ease-in-out infinite alternate;
@@ -136,138 +87,90 @@ html.glow-intelligence-awake .glow-world-physics__aurora {
   animation: glow-intelligence-aurora 1.4s var(--glow-liquid-ease) both;
 }
 
-.glow-world-physics__grain {
+.glow-world-physics__ripples {
   inset: 0;
-  opacity: .028;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E");
-  mix-blend-mode: multiply;
-}
-
-/* Glow Matter: shared physical material for cards, sheets and major surfaces. */
-html[data-glow-world='liquid-crystal'] :is(.paper-card,.editorial-surface,[class*='glass'],[class*='Glass'],[class*='card'],[class*='Card']) {
-  border-color: rgba(255,255,255,.52) !important;
-  background:
-    linear-gradient(145deg, rgba(255,255,255,.70), rgba(255,255,255,.39) 48%, rgba(var(--glow-zone-a),.10)) !important;
-  box-shadow: var(--glow-crystal-shadow) !important;
-  backdrop-filter: blur(var(--glow-crystal-blur)) saturate(1.18) !important;
-  -webkit-backdrop-filter: blur(var(--glow-crystal-blur)) saturate(1.18) !important;
-}
-
-html[data-glow-world='liquid-crystal'] :is(.paper-card,.editorial-surface,[class*='glass'],[class*='Glass']) {
-  position: relative;
   overflow: hidden;
 }
 
-html[data-glow-world='liquid-crystal'] :is(.paper-card,.editorial-surface,[class*='glass'],[class*='Glass'])::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  background:
-    linear-gradient(120deg, rgba(255,255,255,.52), transparent 31%),
-    radial-gradient(90% 65% at 80% 0%, rgba(var(--glow-zone-b),.13), transparent 64%);
-  opacity: .78;
-}
-
-/* Components feel buoyant rather than flat. */
-html[data-glow-world='liquid-crystal'] :is(button,a,[role='button'],input,textarea,select) {
-  -webkit-tap-highlight-color: transparent;
-}
-
-html[data-glow-world='liquid-crystal'] :is(button,a,[role='button']) {
-  transition:
-    transform var(--glow-liquid-fast) var(--glow-liquid-ease),
-    box-shadow 420ms var(--glow-liquid-ease),
-    background 420ms var(--glow-liquid-ease),
-    border-color 420ms var(--glow-liquid-ease),
-    filter 420ms var(--glow-liquid-ease) !important;
-}
-
-@media (hover:hover) {
-  html[data-glow-world='liquid-crystal'] :is(button,a,[role='button']):hover {
-    transform: translateY(-1px) scale(1.008);
-    filter: saturate(1.04) brightness(1.01);
-  }
-}
-
-html[data-glow-world='liquid-crystal'] :is(button,a,[role='button']):active {
-  transform: scale(.982) !important;
-}
-
-.glow-ripple-host {
-  position: relative !important;
-  overflow: hidden !important;
-  isolation: isolate;
-}
-
 .glow-touch-ripple {
-  position: absolute;
-  z-index: 999;
-  left: var(--ripple-x);
-  top: var(--ripple-y);
-  width: 10px;
-  height: 10px;
-  pointer-events: none;
-  border: 1px solid rgba(255,255,255,.80);
+  position: fixed;
+  width: 12px;
+  height: 12px;
+  pointer-events: none !important;
+  border: 1px solid rgba(255,255,255,.78);
   border-radius: 999px;
-  background: radial-gradient(circle, rgba(255,255,255,.45), rgba(var(--glow-zone-b),.20) 42%, transparent 70%);
-  box-shadow: 0 0 18px rgba(255,255,255,.45);
+  background: radial-gradient(circle, rgba(255,255,255,.42), rgba(var(--glow-zone-b),.18) 42%, transparent 70%);
+  box-shadow: 0 0 18px rgba(255,255,255,.38);
   transform: translate(-50%,-50%) scale(.4);
   animation: glow-touch-wave 800ms var(--glow-liquid-ease) forwards;
 }
 
-/* Inputs condense out of the surrounding atmosphere instead of looking like forms. */
-html[data-glow-world='liquid-crystal'] :is(input,textarea,select) {
-  border: 1px solid rgba(255,255,255,.55) !important;
-  background: rgba(255,255,255,.42) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 8px 30px rgba(var(--glow-zone-ink),.05) !important;
-  backdrop-filter: blur(18px) saturate(1.1) !important;
-  transition: box-shadow .38s var(--glow-liquid-ease), background .38s var(--glow-liquid-ease), transform .38s var(--glow-liquid-ease) !important;
+.glow-world-physics__grain {
+  inset: 0;
+  opacity: .024;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
 }
 
-html[data-glow-world='liquid-crystal'] :is(input,textarea,select):focus {
-  outline: none !important;
-  background: rgba(255,255,255,.62) !important;
-  box-shadow: 0 0 0 4px rgba(var(--glow-zone-b),.12), 0 14px 36px rgba(var(--glow-zone-ink),.08), inset 0 1px 0 rgba(255,255,255,.75) !important;
+/* Hybrid pages keep their original UI. Only an extremely light climate veil is added. */
+body[data-glow-visual-version='hybrid']::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none !important;
+  z-index: 2147480000;
+  background:
+    radial-gradient(55% 34% at 10% 8%, rgba(var(--glow-zone-a),.065), transparent 72%),
+    radial-gradient(48% 30% at 90% 16%, rgba(var(--glow-zone-b),.055), transparent 72%);
+  mix-blend-mode: soft-light;
 }
 
-/* Page entrance: information condenses from mist into structure. */
-html[data-glow-world='liquid-crystal'] :is(main,.room-canvas,.glow-editorial-page) > * {
-  animation: glow-condense-in 640ms var(--glow-liquid-ease) both;
+/* Explicit Glow Matter only. No generic card/panel/button/input selectors are permitted here. */
+[data-glow-matter='true'] {
+  position: relative;
+  border: 1px solid var(--glow-crystal-border);
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.72), rgba(255,255,255,.40) 48%, rgba(var(--glow-zone-a),.10));
+  box-shadow:
+    0 calc(8px + (var(--glow-depth,2) * 5px)) calc(24px + (var(--glow-depth,2) * 9px)) rgba(var(--glow-zone-ink),.08),
+    inset 0 1px 0 rgba(255,255,255,.74);
+  backdrop-filter: blur(var(--glow-crystal-blur)) saturate(1.16);
+  -webkit-backdrop-filter: blur(var(--glow-crystal-blur)) saturate(1.16);
 }
-html[data-glow-world='liquid-crystal'] :is(main,.room-canvas,.glow-editorial-page) > *:nth-child(2) { animation-delay: 35ms; }
-html[data-glow-world='liquid-crystal'] :is(main,.room-canvas,.glow-editorial-page) > *:nth-child(3) { animation-delay: 70ms; }
-html[data-glow-world='liquid-crystal'] :is(main,.room-canvas,.glow-editorial-page) > *:nth-child(4) { animation-delay: 105ms; }
-html[data-glow-world='liquid-crystal'] :is(main,.room-canvas,.glow-editorial-page) > *:nth-child(n+5) { animation-delay: 125ms; }
 
-/* Page-specific climate refinements, while preserving a single world. */
-[data-room='calendar'] { --glow-zone-a: 217,208,241; --glow-zone-b: 197,221,239; }
-[data-room='tasks'],[data-room='planning'],[data-room='reminders'],[data-room='goals'],[data-room='projects'],[data-room='routines'],[data-room='habits'] { --glow-zone-a: 230,210,234; --glow-zone-b: 207,223,240; }
-[data-room='fitness'],[data-room='wellness'] { --glow-zone-a: 195,227,210; --glow-zone-b: 205,224,239; }
-[data-room='beauty'],[data-room='beauty-lab'],[data-room='hair'],[data-room='closet'] { --glow-zone-a: 247,203,219; --glow-zone-b: 229,214,244; }
-[data-room='finance'],[data-room='financial-brain'] { --glow-zone-a: 190,224,204; --glow-zone-b: 217,228,210; }
-[data-room='brain'],[data-room='concierge'],[data-room='observations'],[data-room='memory'],[data-room='timeline'],[data-room='connections'] { --glow-zone-a: 211,197,239; --glow-zone-b: 197,213,240; }
-[data-room='home'],[data-room='world'] { --glow-zone-a: 208,225,201; --glow-zone-b: 208,222,231; }
+[data-glow-matter='true']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none !important;
+  border-radius: inherit;
+  background:
+    linear-gradient(120deg, rgba(255,255,255,.48), transparent 31%),
+    radial-gradient(90% 65% at 80% 0%, rgba(var(--glow-zone-b),.12), transparent 64%);
+  opacity: .72;
+}
 
-/* Completion can dissolve into light by adding data-glow-complete="true" to any item. */
+[data-glow-page='true'] {
+  animation: glow-condense-in 420ms var(--glow-liquid-ease) both;
+}
+
 [data-glow-complete='true'] {
   animation: glow-dissolve-to-light 680ms var(--glow-liquid-ease) forwards !important;
 }
 
-/* Intelligence can be surfaced anywhere with data-glow-intelligence. */
-[data-glow-intelligence] {
+[data-glow-intelligence='true'] {
   position: relative;
 }
-[data-glow-intelligence]::after {
+
+[data-glow-intelligence='true']::after {
   content: '';
   position: absolute;
-  pointer-events: none;
+  pointer-events: none !important;
   inset: -1px;
   border-radius: inherit;
-  background: linear-gradient(110deg, transparent 8%, rgba(var(--glow-zone-a),.20), rgba(255,255,255,.58), rgba(var(--glow-zone-b),.19), transparent 92%);
+  background: linear-gradient(110deg, transparent 8%, rgba(var(--glow-zone-a),.18), rgba(255,255,255,.54), rgba(var(--glow-zone-b),.17), transparent 92%);
   background-size: 220% 100%;
-  opacity: .6;
+  opacity: .55;
   mix-blend-mode: soft-light;
   animation: glow-intelligence-sheen 5.5s ease-in-out infinite;
 }
@@ -276,49 +179,48 @@ html[data-glow-world='liquid-crystal'] :is(main,.room-canvas,.glow-editorial-pag
   from { transform: translate3d(-2%,-1%,0) scale(1.02); }
   to { transform: translate3d(3%,2%,0) scale(1.08); }
 }
+
 @keyframes glow-caustic-drift {
   from { transform: rotate(-8deg) scale(1.06) translate3d(-1%,0,0); }
-  to { transform: rotate(-4deg) scale(1.14) translate3d(2%,-1%,0); }
-}
-@keyframes glow-intelligence-aurora {
-  0% { opacity: 0; transform: scale(.5) rotate(-16deg); }
-  42% { opacity: .78; }
-  100% { opacity: 0; transform: scale(1.24) rotate(8deg); }
-}
-@keyframes glow-touch-wave {
-  0% { opacity: .85; transform: translate(-50%,-50%) scale(.3); }
-  60% { opacity: .34; }
-  100% { opacity: 0; transform: translate(-50%,-50%) scale(18); }
-}
-@keyframes glow-condense-in {
-  from { opacity: 0; transform: translateY(9px) scale(.992); filter: blur(7px); }
-  to { opacity: 1; transform: none; filter: none; }
-}
-@keyframes glow-dissolve-to-light {
-  0% { opacity: 1; transform: scale(1); filter: blur(0) brightness(1); }
-  50% { opacity: .58; transform: scale(1.015); filter: blur(2px) brightness(1.3); }
-  100% { opacity: 0; transform: scale(.985); filter: blur(9px) brightness(1.65); }
-}
-@keyframes glow-intelligence-sheen {
-  0%,72%,100% { background-position: 120% 0; opacity: .24; }
-  84% { background-position: -120% 0; opacity: .7; }
+  to { transform: rotate(-5deg) scale(1.14) translate3d(2%,1%,0); }
 }
 
-@media (max-width: 900px) {
-  :root { --glow-crystal-blur: 22px; }
-  .glow-world-physics__caustics { opacity: .24; }
-  html[data-glow-world='liquid-crystal'] :is(.paper-card,.editorial-surface,[class*='glass'],[class*='Glass'],[class*='card'],[class*='Card']) {
-    box-shadow: 0 14px 42px rgba(83,70,95,.08), inset 0 1px 0 rgba(255,255,255,.68) !important;
-  }
+@keyframes glow-intelligence-aurora {
+  0% { opacity:0; transform:scale(.55) rotate(-15deg); }
+  36% { opacity:.72; }
+  100% { opacity:0; transform:scale(1.28) rotate(10deg); }
+}
+
+@keyframes glow-touch-wave {
+  0% { opacity:.78; transform:translate(-50%,-50%) scale(.4); }
+  100% { opacity:0; transform:translate(-50%,-50%) scale(16); }
+}
+
+@keyframes glow-condense-in {
+  from { opacity:.94; filter:blur(2px); transform:translateY(4px); }
+  to { opacity:1; filter:blur(0); transform:translateY(0); }
+}
+
+@keyframes glow-dissolve-to-light {
+  0% { opacity:1; filter:brightness(1); }
+  60% { opacity:.68; filter:brightness(1.18) blur(.5px); }
+  100% { opacity:0; filter:brightness(1.3) blur(5px); transform:translateY(-3px) scale(.985); }
+}
+
+@keyframes glow-intelligence-sheen {
+  0%,72%,100% { background-position:200% 0; opacity:.18; }
+  84% { background-position:0 0; opacity:.58; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .glow-world-physics__depth,
   .glow-world-physics__caustics,
-  .glow-world-physics__aurora,
-  [data-glow-intelligence]::after,
-  html[data-glow-world='liquid-crystal'] :is(main,.room-canvas,.glow-editorial-page) > * {
+  [data-glow-page='true'],
+  [data-glow-complete='true'],
+  [data-glow-intelligence='true']::after,
+  .glow-touch-ripple,
+  html.glow-intelligence-awake .glow-world-physics__aurora {
     animation: none !important;
+    transition: none !important;
   }
-  .glow-touch-ripple { display: none !important; }
 }
