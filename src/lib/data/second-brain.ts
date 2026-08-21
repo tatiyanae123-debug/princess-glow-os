@@ -160,7 +160,7 @@ export async function deriveBrainAnswer(state:Awaited<ReturnType<typeof getBrain
  if(/waiting|waiting on/.test(q)){state.loops.filter(x=>x.status==='waiting'||Boolean(x.waitingOn)).forEach(x=>sourceHits.unshift({type:'Open loop',id:x.id,title:x.title,detail:x.waitingOn?`Waiting on ${x.waitingOn}`:'Waiting',score:99}))}
  if(/decid|why did i/.test(q)){state.decisions.filter(x=>x.status==='decided').forEach(x=>sourceHits.unshift({type:'Decision',id:x.id,title:x.question,detail:`${x.outcome??''}${x.rationale?` — ${x.rationale}`:''}`,score:99}))}
  if(/idea/.test(q)){state.thoughts.filter(x=>x.kind==='idea').forEach(x=>sourceHits.unshift({type:'Idea',id:x.id,title:x.title,detail:x.maturity,score:99}))}
- const unique=[...new Map(sourceHits.sort((a,b)=>b.score-a.score).map(({score:_,...x})=>[`${x.type}:${x.id}`,x])).values()].slice(0,8);
+ const unique=[...new Map(sourceHits.sort((a,b)=>b.score-a.score).map(hit=>[`${hit.type}:${hit.id}`,{type:hit.type,id:hit.id,title:hit.title,detail:hit.detail}])).values()].slice(0,8);
  if(!unique.length)return{answer:'I could not find a confident match in your stored Second Brain data yet.',sources:[]};
  return{answer:unique.slice(0,3).map(x=>x.title).join(' · '),sources:unique};
 }
