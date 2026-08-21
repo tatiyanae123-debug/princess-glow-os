@@ -65,6 +65,12 @@ export function HabitsRouteExperience({
     () => (requestedId ? initialHabits.find((habit) => habit.id === requestedId) ?? null : null),
     [initialHabits, requestedId],
   );
+  const serverStateKey = useMemo(() => {
+    const logState = initialLogs.map((log) => `${log.id}:${log.count}:${log.loggedDate}`).join('|');
+    const detailState = details.map((detail) => `${detail.id}:${detail.quantity}:${detail.intentionalSkip ? 1 : 0}:${detail.completedAt.getTime()}`).join('|');
+    const profileState = profiles.map((profile) => `${profile.id}:${profile.updatedAt.getTime()}`).join('|');
+    return `${logState}::${detailState}::${profileState}`;
+  }, [details, initialLogs, profiles]);
 
   function closeRecord() {
     const next = withoutHabitParams(new URLSearchParams(searchParams.toString()));
@@ -74,6 +80,7 @@ export function HabitsRouteExperience({
   return (
     <>
       <HabitsExperience
+        key={serverStateKey}
         initialHabits={initialHabits}
         initialLogs={initialLogs}
         profiles={profiles}
