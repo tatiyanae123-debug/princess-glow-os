@@ -11,7 +11,7 @@ import {
   routineTriggers,
 } from '@/db/schema/advanced-routines';
 import { tasks } from '@/db/schema/tasks';
-import { habitLogs } from '@/db/schema/habits';
+import { habits, habitLogs } from '@/db/schema/habits';
 import { fitnessSessions } from '@/db/schema/completion-v1';
 
 export type RoutineMode = 'full' | 'normal' | 'quick' | 'minimum';
@@ -150,10 +150,15 @@ async function syncLinkedCompletion(
       }
     } else if (link.targetType === 'fitness') {
       const workoutType = String(link.metadata?.workoutType ?? link.targetId ?? 'Routine workout');
-      const [existing] = await db.select().from(fitnessSessions).where(and(eq(fitnessSessions.userId, userId), eq(fitnessSessions.workoutType, workoutType))).orderBy(desc(fitnessSessions.completedAt)).limit(1);
-      const existingDate = existing?.completedAt ? existing.completedAt.toLocaleDateString('en-CA') : null;
-      if (existing && existingDate === dateKey && String(existing.notes ?? '').includes(`routine step ${stepId}`)) {
-        updates.push(`fitness:${existing.id}`);
+      const recent = await db.select().from(fitnessSessions).where(and(eq(fitnessSessions.userId, userId), eq(fitnessSessions.workoutType, workoutType))).orderBy(desc(fitnessSessions.occurredAt)).limit(12);
+      const duplicate = recent.find((session) => {
+        const y = session.occurredAt.getFullYear();
+        const m = String(session.occurredAt.getMonth() + 1).padStart(2, '0');
+        const d = String(session.occurredAt.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}` === dateKey && String(session.notes ?? '').includes(`routine step ${stepId}`);
+      });
+      if (duplicate) {
+        updates.push(`fitness:${duplicate.id}`);
         continue;
       }
       const [session] = await db.insert(fitnessSessions).values({
@@ -272,6 +277,10 @@ export async function upsertRoutineStepLink(
   if (!step || !input.targetId.trim()) return null;
   if (input.targetType === 'task') {
     const [target] = await db.select({ id: tasks.id }).from(tasks).where(and(eq(tasks.id, input.targetId), eq(tasks.userId, userId))).limit(1);
+    if (!target) return null;
+  }
+  if (input.targetType === 'habit') {
+    const [target] = await db.select({ id: habits.id }).from(habits).where(and(eq(habits.id, input.targetId), eq(habits.userId, userId))).limit(1);
     if (!target) return null;
   }
   const [existing] = await db.select().from(routineStepLinks).where(and(eq(routineStepLinks.userId, userId), eq(routineStepLinks.stepId, input.stepId), eq(routineStepLinks.targetType, input.targetType), eq(routineStepLinks.targetId, input.targetId))).limit(1);
