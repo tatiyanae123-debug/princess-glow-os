@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Check, ChevronLeft, ChevronRight, Clock3, Eye, FlaskConical, Heart, Mic, Package, Play, RotateCcw, Search, Sparkles, Star, Volume2, WandSparkles } from 'lucide-react';
+import { ArrowRight, Check, ChevronLeft, ChevronRight, Clock3, Eye, FlaskConical, Mic, Package, Play, RotateCcw, Search, Sparkles, Volume2, WandSparkles } from 'lucide-react';
 
 type Tab='Today'|'Looks'|'Vanity'|'Collection'|'Learn';
 type FaceArea='Complexion'|'Brows'|'Eyes'|'Cheeks'|'Lips';
