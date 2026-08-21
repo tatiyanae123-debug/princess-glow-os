@@ -9,6 +9,7 @@ export * from './calendar-events';
 export * from './beauty-routines';
 export * from './advanced-beauty';
 export * from './wellness-entries';
+export * from './advanced-wellness';
 export * from './finance-entries';
 export * from './notes';
 export * from './important-links';
