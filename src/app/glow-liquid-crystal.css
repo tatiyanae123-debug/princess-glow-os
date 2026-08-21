@@ -1,0 +1,353 @@
+/* Glow OS — Living Liquid-Crystal Constitution
+   Shared material physics first, room climate second. Operational clarity remains mandatory. */
+
+:root {
+  --glow-ink: #1c1c1e;
+  --glow-muted: #6e6e73;
+  --glow-line: rgba(77, 72, 86, 0.10);
+  --glow-pearl: rgba(255, 255, 255, 0.74);
+  --glow-pearl-strong: rgba(255, 255, 255, 0.88);
+  --glow-shadow: 0 18px 60px rgba(47, 41, 61, 0.07), 0 2px 14px rgba(47, 41, 61, 0.04);
+  --glow-accent: 184 111 125;
+  --glow-accent-2: 154 145 205;
+  --glow-accent-3: 216 190 166;
+  --glow-climate-a: rgba(244, 222, 230, 0.34);
+  --glow-climate-b: rgba(225, 229, 249, 0.28);
+  --glow-climate-c: rgba(246, 239, 225, 0.24);
+  --glow-movement: 22s;
+}
+
+html, body {
+  min-height: 100%;
+  background: #fff;
+  color: var(--glow-ink);
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.room-canvas,
+.dashboard-shell-grid {
+  --glow-accent: 184 111 125;
+  --glow-accent-2: 154 145 205;
+  --glow-accent-3: 216 190 166;
+  --glow-climate-a: rgba(244, 222, 230, 0.34);
+  --glow-climate-b: rgba(225, 229, 249, 0.28);
+  --glow-climate-c: rgba(246, 239, 225, 0.24);
+  --glow-movement: 22s;
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(120% 90% at 8% -10%, var(--glow-climate-a), transparent 58%),
+    radial-gradient(90% 75% at 98% 4%, var(--glow-climate-b), transparent 56%),
+    radial-gradient(70% 70% at 52% 105%, var(--glow-climate-c), transparent 62%),
+    #fff !important;
+}
+
+.room-canvas > :not(.glow-matter-field),
+.dashboard-shell-grid > :not(.glow-matter-field) {
+  position: relative;
+  z-index: 2;
+}
+
+/* Room climates: same physics, different light. */
+[data-room='dashboard'] {
+  --glow-accent: 199 118 143;
+  --glow-accent-2: 184 170 225;
+  --glow-accent-3: 244 207 169;
+  --glow-climate-a: rgba(255, 223, 228, 0.42);
+  --glow-climate-b: rgba(229, 222, 250, 0.34);
+  --glow-climate-c: rgba(255, 237, 207, 0.30);
+}
+
+[data-room='calendar'], [data-room='planning'], [data-room='tasks'], [data-room='reminders'],
+[data-room='routines'], [data-room='goals'], [data-room='projects'] {
+  --glow-accent: 143 137 205;
+  --glow-accent-2: 114 156 208;
+  --glow-accent-3: 205 163 204;
+  --glow-climate-a: rgba(226, 225, 252, 0.40);
+  --glow-climate-b: rgba(218, 236, 250, 0.32);
+  --glow-climate-c: rgba(244, 225, 243, 0.25);
+  --glow-movement: 26s;
+}
+
+[data-room='fitness'], [data-room='wellness'], [data-room='food'] {
+  --glow-accent: 108 157 151;
+  --glow-accent-2: 117 164 206;
+  --glow-accent-3: 171 191 157;
+  --glow-climate-a: rgba(219, 242, 236, 0.38);
+  --glow-climate-b: rgba(219, 235, 249, 0.32);
+  --glow-climate-c: rgba(235, 242, 220, 0.24);
+  --glow-movement: 30s;
+}
+
+[data-room='beauty'], [data-room='beauty-lab'], [data-room='hair'], [data-room='closet'] {
+  --glow-accent: 201 129 151;
+  --glow-accent-2: 170 139 210;
+  --glow-accent-3: 221 182 146;
+  --glow-climate-a: rgba(252, 222, 231, 0.42);
+  --glow-climate-b: rgba(235, 222, 249, 0.31);
+  --glow-climate-c: rgba(252, 236, 216, 0.28);
+  --glow-movement: 24s;
+}
+
+[data-room='finance'], [data-room='financial-brain'] {
+  --glow-accent: 86 135 117;
+  --glow-accent-2: 164 142 91;
+  --glow-accent-3: 97 126 135;
+  --glow-climate-a: rgba(213, 236, 226, 0.36);
+  --glow-climate-b: rgba(241, 230, 199, 0.27);
+  --glow-climate-c: rgba(221, 232, 235, 0.22);
+  --glow-movement: 34s;
+}
+
+[data-room='brain'], [data-room='concierge'], [data-room='observations'], [data-room='memory'],
+[data-room='timeline'], [data-room='briefings'], [data-room='connections'] {
+  --glow-accent: 124 116 199;
+  --glow-accent-2: 104 148 205;
+  --glow-accent-3: 176 145 208;
+  --glow-climate-a: rgba(224, 220, 251, 0.39);
+  --glow-climate-b: rgba(216, 233, 250, 0.30);
+  --glow-climate-c: rgba(239, 222, 247, 0.22);
+  --glow-movement: 28s;
+}
+
+[data-room='home'], [data-room='world'] {
+  --glow-accent: 122 154 132;
+  --glow-accent-2: 152 135 187;
+  --glow-accent-3: 206 173 139;
+  --glow-climate-a: rgba(225, 240, 225, 0.40);
+  --glow-climate-b: rgba(232, 224, 244, 0.26);
+  --glow-climate-c: rgba(247, 230, 210, 0.25);
+  --glow-movement: 36s;
+}
+
+[data-room='notes'], [data-room='gmail'], [data-room='import'], [data-room='settings'], [data-room='work'] {
+  --glow-accent: 134 129 160;
+  --glow-accent-2: 147 165 186;
+  --glow-accent-3: 187 153 145;
+  --glow-climate-a: rgba(235, 232, 245, 0.31);
+  --glow-climate-b: rgba(228, 237, 246, 0.25);
+  --glow-climate-c: rgba(246, 232, 227, 0.20);
+  --glow-movement: 32s;
+}
+
+/* The living material layer. */
+.glow-matter-field {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.94;
+  contain: strict;
+}
+
+.glow-caustic {
+  position: absolute;
+  width: 58vw;
+  height: 58vw;
+  min-width: 520px;
+  min-height: 520px;
+  border-radius: 43% 57% 61% 39% / 52% 41% 59% 48%;
+  filter: blur(44px);
+  opacity: 0.18;
+  mix-blend-mode: multiply;
+  background:
+    radial-gradient(circle at 31% 28%, rgba(var(--glow-accent), .40), transparent 28%),
+    radial-gradient(circle at 67% 42%, rgba(var(--glow-accent-2), .32), transparent 33%),
+    radial-gradient(circle at 44% 72%, rgba(var(--glow-accent-3), .28), transparent 29%);
+  animation: glow-caustic-drift var(--glow-movement) ease-in-out infinite alternate;
+}
+
+.glow-caustic-one { left: -17vw; top: -25vw; transform: rotate(13deg); }
+.glow-caustic-two { right: -23vw; bottom: -31vw; transform: rotate(164deg); animation-delay: -11s; }
+
+.glow-crystal-orbit {
+  position: absolute;
+  border: 1px solid rgba(var(--glow-accent-2), .10);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 45px rgba(255,255,255,.46),
+    0 0 48px rgba(var(--glow-accent), .06);
+  opacity: .58;
+}
+
+.glow-crystal-orbit-one { width: 34vw; height: 34vw; right: 8vw; top: -19vw; }
+.glow-crystal-orbit-two { width: 26vw; height: 26vw; left: 21vw; bottom: -19vw; }
+
+.glow-grain {
+  position: absolute;
+  inset: 0;
+  opacity: .025;
+  background-image: radial-gradient(rgba(31, 27, 36, .65) .45px, transparent .45px);
+  background-size: 4px 4px;
+}
+
+.glow-matter-ripple {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--glow-accent), .38);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.48),
+    inset 0 0 18px rgba(var(--glow-accent-2), .20),
+    0 0 28px rgba(var(--glow-accent), .16);
+  animation: glow-ripple 1.05s cubic-bezier(.18,.73,.22,1) forwards;
+}
+
+.glow-aurora-wave {
+  position: absolute;
+  left: -30%;
+  top: 10%;
+  width: 24%;
+  height: 80%;
+  opacity: 0;
+  transform: skewX(-14deg);
+  filter: blur(24px);
+  background: linear-gradient(90deg, transparent, rgba(var(--glow-accent-2), .20), rgba(var(--glow-accent), .25), rgba(255,255,255,.32), transparent);
+}
+
+.glow-intelligence-active .glow-aurora-wave {
+  animation: glow-intelligence-wave 1.65s cubic-bezier(.22,.74,.18,1) both;
+}
+
+/* Glow Matter surfaces: translucent, quiet, readable. */
+.board-card,
+.task-item,
+.moods button,
+.beauty-steps button,
+.cal-toolbar > button,
+.seg,
+.glow-search-pill,
+.glow-header-action,
+.glow-global-header,
+[data-focus-mode='true'] button.fixed {
+  border-color: rgba(var(--glow-accent), .14) !important;
+  background-color: var(--glow-pearl-strong) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,.86) inset, 0 10px 35px rgba(var(--glow-accent-2), .035) !important;
+  backdrop-filter: blur(20px) saturate(118%);
+  -webkit-backdrop-filter: blur(20px) saturate(118%);
+}
+
+.board-card,
+.task-item,
+.moods button,
+.beauty-steps button {
+  transition: transform .26s ease, border-color .26s ease, box-shadow .26s ease, background-color .26s ease;
+}
+
+.board-card:hover,
+.task-item:hover,
+.moods button:hover,
+.beauty-steps button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(var(--glow-accent), .23) !important;
+  box-shadow: var(--glow-shadow) !important;
+}
+
+.board-img {
+  border-color: rgba(var(--glow-accent), .12) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.58), 0 16px 44px rgba(var(--glow-accent-2), .05) !important;
+}
+
+.board-btn,
+.glow-header-create {
+  background: linear-gradient(135deg, rgba(var(--glow-accent), .98), rgba(var(--glow-accent-2), .86)) !important;
+  border-color: rgba(var(--glow-accent), .28) !important;
+  box-shadow: 0 8px 24px rgba(var(--glow-accent), .15), inset 0 1px 0 rgba(255,255,255,.30) !important;
+}
+
+.board-btn.outline {
+  color: var(--glow-ink) !important;
+  background: rgba(255,255,255,.76) !important;
+}
+
+.board-tabs button.active,
+.section-heading button,
+.link,
+.add-row {
+  color: rgb(var(--glow-accent)) !important;
+}
+
+.board-tabs button.active:after,
+.mini-progress {
+  background-color: rgb(var(--glow-accent)) !important;
+}
+
+input, textarea, select {
+  background-color: rgba(255,255,255,.78) !important;
+  border-color: rgba(var(--glow-accent), .13) !important;
+  backdrop-filter: blur(16px) saturate(115%);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+}
+
+input:focus, textarea:focus, select:focus, button:focus-visible, a:focus-visible {
+  outline: 2px solid rgba(var(--glow-accent-2), .42) !important;
+  outline-offset: 2px;
+}
+
+/* Depth without sacrificing white editorial clarity. */
+.room-canvas main,
+.dashboard-main-wrap,
+.dashboard-main {
+  background: transparent !important;
+}
+
+.room-canvas .bg-white,
+.dashboard-shell-grid .bg-white {
+  background-color: rgba(255,255,255,.82) !important;
+}
+
+.room-canvas h1,
+.room-canvas h2,
+.dashboard-shell-grid h1,
+.dashboard-shell-grid h2 {
+  text-wrap: balance;
+}
+
+@keyframes glow-caustic-drift {
+  0% { transform: translate3d(-1.5%, -1%, 0) rotate(4deg) scale(1); }
+  45% { transform: translate3d(3%, 2%, 0) rotate(12deg) scale(1.04); }
+  100% { transform: translate3d(-2%, 4%, 0) rotate(-5deg) scale(.98); }
+}
+
+@keyframes glow-ripple {
+  0% { opacity: .76; transform: scale(.6); }
+  55% { opacity: .30; }
+  100% { opacity: 0; transform: scale(9.5); }
+}
+
+@keyframes glow-intelligence-wave {
+  0% { opacity: 0; transform: translateX(0) skewX(-14deg); }
+  18% { opacity: .78; }
+  82% { opacity: .44; }
+  100% { opacity: 0; transform: translateX(650%) skewX(-14deg); }
+}
+
+@media (max-width: 767px) {
+  .glow-caustic { width: 110vw; height: 110vw; min-width: 0; min-height: 0; filter: blur(34px); opacity: .15; }
+  .glow-caustic-one { left: -48vw; top: -34vw; }
+  .glow-caustic-two { right: -55vw; bottom: -24vw; }
+  .glow-crystal-orbit-one { width: 78vw; height: 78vw; right: -35vw; top: -34vw; }
+  .glow-crystal-orbit-two { width: 62vw; height: 62vw; left: -26vw; bottom: -30vw; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-caustic,
+  .glow-matter-ripple,
+  .glow-intelligence-active .glow-aurora-wave,
+  .board-card,
+  .task-item,
+  .moods button,
+  .beauty-steps button {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+  .glow-matter-ripple { display: none; }
+  .glow-caustic { opacity: .09; }
+}
