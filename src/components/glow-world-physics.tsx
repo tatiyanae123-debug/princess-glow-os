@@ -14,16 +14,22 @@ export function GlowWorldPhysics() {
     document.documentElement.dataset.glowWorld = 'liquid-crystal';
     document.body.dataset.glowZone = climate;
     document.body.dataset.glowVisualVersion = version;
+    document.body.classList.remove('glow-route-condense');
+    void document.body.offsetWidth;
+    document.body.classList.add('glow-route-condense');
+    const timer = window.setTimeout(() => document.body.classList.remove('glow-route-condense'), 520);
 
     return () => {
+      window.clearTimeout(timer);
       delete document.body.dataset.glowZone;
       delete document.body.dataset.glowVisualVersion;
+      document.body.classList.remove('glow-route-condense');
     };
   }, [pathname]);
 
   useEffect(() => {
     const root = document.documentElement;
-    const field = document.querySelector('.glow-world-physics__ripples') as HTMLElement | null;
+    const field = document.querySelector('.glow-effects-overlay__ripples') as HTMLElement | null;
 
     const ripple = (event: PointerEvent) => {
       if (!field) return;
@@ -60,12 +66,16 @@ export function GlowWorldPhysics() {
   }, []);
 
   return (
-    <div className="glow-world-physics" aria-hidden="true">
-      <div className="glow-world-physics__depth" />
-      <div className="glow-world-physics__caustics" />
-      <div className="glow-world-physics__aurora" />
-      <div className="glow-world-physics__ripples" />
-      <div className="glow-world-physics__grain" />
-    </div>
+    <>
+      <div className="glow-world-physics" aria-hidden="true">
+        <div className="glow-world-physics__depth" />
+        <div className="glow-world-physics__caustics" />
+        <div className="glow-world-physics__aurora" />
+        <div className="glow-world-physics__grain" />
+      </div>
+      <div className="glow-effects-overlay" aria-hidden="true">
+        <div className="glow-effects-overlay__ripples" />
+      </div>
+    </>
   );
 }
