@@ -13,7 +13,6 @@ import {
   FlaskConical,
   Flower2,
   Layers3,
-  Leaf,
   Mic2,
   Minus,
   Pause,
@@ -29,6 +28,7 @@ import {
 import { Dialog } from '@/components/ui/dialog';
 import { HabitManager } from '@/components/habits/habit-manager';
 import {
+  clearHabitCompletionAction,
   completeHabitIntelligenceAction,
   createHabitExperimentAction,
   createHabitStackAction,
@@ -104,11 +104,6 @@ const ENERGY_OPTIONS: Energy[] = ['high', 'normal', 'low', 'exhausted'];
 
 function localDateKey(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-}
-function addDaysKey(offset: number) {
-  const date = new Date();
-  date.setDate(date.getDate() + offset);
-  return localDateKey(date);
 }
 function currentBand(date: Date): Exclude<Band, 'anytime'> {
   const hour = date.getHours() + date.getMinutes() / 60;
@@ -273,8 +268,8 @@ export function HabitsExperience({
   const [assistantReply, setAssistantReply] = useState('');
   const [timerHabitId, setTimerHabitId] = useState<string | null>(null);
   const [timerSeconds, setTimerSeconds] = useState(0);
+  const [timerInitialSeconds, setTimerInitialSeconds] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
-  const [timerStartedAt, setTimerStartedAt] = useState<number | null>(null);
   const [checkInOpen, setCheckInOpen] = useState(false);
   const [checkInIndex, setCheckInIndex] = useState(0);
   const [voiceListening, setVoiceListening] = useState(false);
@@ -312,6 +307,7 @@ export function HabitsExperience({
   const completedHabits = activeHabits.filter((habit) => loggedToday.has(habit.id));
   const intentionalRest = activeHabits.filter((habit) => detailToday.get(habit.id)?.intentionalSkip);
   const remainingHabits = activeHabits.filter((habit) => !loggedToday.has(habit.id) && !detailToday.get(habit.id)?.intentionalSkip);
+  const activeRoutineCount = routines.filter((routine) => !routine.archived).length;
 
   const upcomingEvent = useMemo(() => [...calendarEvents]
     .filter((event) => !event.allDay && event.startAt.getTime() > now.getTime())
@@ -365,9 +361,10 @@ export function HabitsExperience({
     setDetails((current) => [result.detail, ...current.filter((detail) => !(detail.habitId === habit.id && detail.dateKey === todayKey))]);
   }
 
-  function completeHabit(habit: Habit, version: Version, quantity?: number) {
+  function completeHabit(habit: Habit, version: Version, quantity?: number, learnDuration = true) {
     const profile = profileMap.get(habit.id)!;
-    const actualSeconds = timerHabitId === habit.id && timerStartedAt ? Math.max(1, Math.round((Date.now() - timerStartedAt) / 1000)) : versionMinutes(profile, version) * 60;
+    const elapsedTimerSeconds = timerHabitId === habit.id && timerInitialSeconds > 0 ? Math.max(1, timerInitialSeconds - timerSeconds) : null;
+    const actualSeconds = learnDuration ? (elapsedTimerSeconds ?? versionMinutes(profile, version) * 60) : null;
     startTransition(async () => {
       const result = await completeHabitIntelligenceAction({ habitId: habit.id, dateKey: todayKey, version, actualSeconds, quantity });
       if (!result.data) {
@@ -377,7 +374,8 @@ export function HabitsExperience({
       appendCompletion(habit, result.data);
       setTimerRunning(false);
       setTimerHabitId(null);
-      setTimerStartedAt(null);
+      setTimerSeconds(0);
+      setTimerInitialSeconds(0);
       setNotice(version === 'minimum' ? 'Habit kept. Minimum counts because you returned to the behavior.' : `${habit.name} saved as ${version}.`);
       router.refresh();
     });
@@ -390,6 +388,7 @@ export function HabitsExperience({
         setNotice(result.error ?? 'Glow could not protect this rest day.');
         return;
       }
+      setLogs((current) => current.filter((log) => !(log.habitId === habit.id && log.loggedDate === todayKey)));
       setDetails((current) => [result.data, ...current.filter((detail) => !(detail.habitId === habit.id && detail.dateKey === todayKey))]);
       setNotice('Protected rest day. Glow will not treat this as an accidental miss.');
       router.refresh();
@@ -410,17 +409,32 @@ export function HabitsExperience({
   }
 
   function startTimer(habit: Habit, minutes: number) {
+    const seconds = minutes * 60;
     setTimerHabitId(habit.id);
-    setTimerSeconds(minutes * 60);
-    setTimerStartedAt(Date.now());
+    setTimerSeconds(seconds);
+    setTimerInitialSeconds(seconds);
     setTimerRunning(true);
     setNotice(`${minutes}-minute ${habit.name} timer started.`);
   }
 
   function incrementHabit(habit: Habit, delta: number) {
     const current = loggedToday.get(habit.id)?.count ?? 0;
-    const next = Math.max(1, current + delta);
-    completeHabit(habit, 'full', next);
+    const next = Math.max(0, current + delta);
+    if (next === 0) {
+      startTransition(async () => {
+        const result = await clearHabitCompletionAction({ habitId: habit.id, dateKey: todayKey });
+        if (!result.data) {
+          setNotice(result.error ?? 'Glow could not clear that count.');
+          return;
+        }
+        setLogs((items) => items.filter((log) => !(log.habitId === habit.id && log.loggedDate === todayKey)));
+        setDetails((items) => items.filter((detail) => !(detail.habitId === habit.id && detail.dateKey === todayKey)));
+        setNotice(`${habit.name} reset to 0 for today.`);
+        router.refresh();
+      });
+      return;
+    }
+    completeHabit(habit, 'full', next, false);
   }
 
   function createDefaultStack() {
@@ -467,14 +481,23 @@ export function HabitsExperience({
     const value = raw.toLowerCase();
     if (!value) return;
     const minutes = value.match(/(2|5|10|15|20|30|45|60)\s*(?:min|minute)/)?.[1];
+    const commandMinutes = Number(minutes ?? availableMinutes);
+    let commandEnergy = energy;
     if (minutes) setAvailableMinutes(Number(minutes));
-    if (/exhaust|no energy|bare minimum/.test(value)) setEnergy('exhausted');
-    else if (/tired|low energy|easier/.test(value)) setEnergy('low');
-    else if (/high energy|lots of energy/.test(value)) setEnergy('high');
+    if (/exhaust|no energy|bare minimum/.test(value)) {
+      commandEnergy = 'exhausted';
+      setEnergy('exhausted');
+    } else if (/tired|low energy|easier/.test(value)) {
+      commandEnergy = 'low';
+      setEnergy('low');
+    } else if (/high energy|lots of energy/.test(value)) {
+      commandEnergy = 'high';
+      setEnergy('high');
+    }
 
     const namedHabit = initialHabits.find((habit) => value.includes(habit.name.toLowerCase()) || habit.name.toLowerCase().split(/\s+/).some((word) => word.length > 4 && value.includes(word)));
     if ((/mark|did|done|drank|completed/.test(value)) && namedHabit) {
-      completeHabit(namedHabit, versionFor(energy, Number(minutes ?? availableMinutes), profileMap.get(namedHabit.id)!));
+      completeHabit(namedHabit, versionFor(commandEnergy, commandMinutes, profileMap.get(namedHabit.id)!));
       setAssistantReply(`I marked ${namedHabit.name} complete using the version that fits your current time and energy.`);
       return;
     }
@@ -507,7 +530,7 @@ export function HabitsExperience({
   function speakCheckIn() {
     if (!checkHabit || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(new SpeechSynthesisUtterance(`Did you do ${checkHabit.name}? Say yes, not yet, or minimum.`));
+    window.speechSynthesis.speak(new SpeechSynthesisUtterance(`Did you do ${checkHabit.name}? Say yes, not yet, quick, or minimum.`));
   }
   function listenCheckIn() {
     if (!checkHabit) return;
@@ -524,9 +547,10 @@ export function HabitsExperience({
     recognition.onresult = (event) => {
       const transcript = event.results[0]?.[0]?.transcript?.toLowerCase() ?? '';
       if (/yes|done|did it|complete/.test(transcript)) completeHabit(checkHabit, 'full');
-      else if (/minimum|small|quick/.test(transcript)) completeHabit(checkHabit, 'minimum');
+      else if (/quick/.test(transcript)) completeHabit(checkHabit, 'quick');
+      else if (/minimum|small/.test(transcript)) completeHabit(checkHabit, 'minimum');
       else if (/not yet|no|later/.test(transcript)) advanceCheckIn();
-      else setNotice(`Glow heard “${transcript}”. Say yes, not yet, or minimum.`);
+      else setNotice(`Glow heard “${transcript}”. Say yes, not yet, quick, or minimum.`);
     };
     recognition.onerror = () => { setVoiceListening(false); setNotice('Voice check-in stopped because the browser reported a microphone/speech error.'); };
     recognition.onend = () => setVoiceListening(false);
@@ -589,11 +613,11 @@ export function HabitsExperience({
         <section className="rounded-[24px] border border-[#ece2dd] bg-white p-5"><p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#8d7d75]">Patterns</p><div className="mt-3 space-y-3"><div className="rounded-xl bg-[#f5f7f1] p-3"><p className="text-[9px] text-[#75816f]">Overall consistency</p><p className="glow-display mt-1 text-[24px]">{averageConsistency}%</p></div>{learnedTimingHabit?<div className="rounded-xl bg-[#f7f3f9] p-3"><p className="text-[9px] font-semibold uppercase tracking-[.1em] text-[#7d6e87]">Glow noticed</p><p className="mt-1 text-[10.5px] leading-4 text-[#685d6e]">{learnedTimingHabit.name} is most often completed in the {dominantBand(timingStats.find(s=>s.habitId===learnedTimingHabit.id))}, which differs from its saved time.</p><button type="button" onClick={()=>saveProfile(learnedTimingHabit,{timeBand:dominantBand(timingStats.find(s=>s.habitId===learnedTimingHabit.id)) as Band})} className="mt-2 text-[9px] text-[#806e89]">Move to learned time</button></div>:<div className="rounded-xl bg-[#f7f3f9] p-3 text-[10px] leading-4 text-[#827789]">Glow will suggest timing changes after at least three timed completions.</div>}</div></section>
       </div>
 
-      <section className="rounded-[24px] border border-[#ece2dd] bg-white p-5"><div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#8d7d75]">Glow Noticed</p><h2 className="glow-display mt-1 text-[27px] text-[#2B2420]">Patterns, not punishment</h2></div><Sparkles size={18} className="text-[#c37a84]"/></div><div className="mt-4 grid gap-3 sm:grid-cols-3"><div className="rounded-[17px] bg-[#f5f7f1] p-4"><p className="text-[9px] uppercase tracking-[.1em] text-[#75816f]">Strongest rhythm</p><p className="mt-2 text-[11px] font-medium">{strongestHabit?.name??'More history needed'}</p><p className="mt-1 text-[9.5px] text-[#837a74]">{strongestHabit?`${consistencyFor(strongestHabit.id,details)}% recent consistency`:''}</p></div><div className="rounded-[17px] bg-[#fff6f3] p-4"><p className="text-[9px] uppercase tracking-[.1em] text-[#a57370]">Needs redesign</p><p className="mt-2 text-[11px] font-medium">{hardestHabit?.name??'More history needed'}</p><p className="mt-1 text-[9.5px] text-[#8b7874]">{hardestHabit?'Try Quick/Minimum, a trigger, or a better anchor.':''}</p></div><div className="rounded-[17px] bg-[#f5f1f8] p-4"><p className="text-[9px] uppercase tracking-[.1em] text-[#7c6f8b]">Goal alignment</p><p className="mt-2 text-[11px] font-medium">{goals.length?`${goals.length} active goal${goals.length===1?'':'s'} available for alignment`:'Add goals to connect behavior to direction.'}</p><p className="mt-1 text-[9.5px] text-[#83798a]">Glow labels keyword matches as likely support, not proven causation.</p></div></div></section>
+      <section className="rounded-[24px] border border-[#ece2dd] bg-white p-5"><div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#8d7d75]">Glow Noticed</p><h2 className="glow-display mt-1 text-[27px] text-[#2B2420]">Patterns, not punishment</h2></div><Sparkles size={18} className="text-[#c37a84]"/></div><div className="mt-4 grid gap-3 sm:grid-cols-3"><div className="rounded-[17px] bg-[#f5f7f1] p-4"><p className="text-[9px] uppercase tracking-[.1em] text-[#75816f]">Strongest rhythm</p><p className="mt-2 text-[11px] font-medium">{strongestHabit?.name??'More history needed'}</p><p className="mt-1 text-[9.5px] text-[#837a74]">{strongestHabit?`${consistencyFor(strongestHabit.id,details)}% recent consistency`:''}</p></div><div className="rounded-[17px] bg-[#fff6f3] p-4"><p className="text-[9px] uppercase tracking-[.1em] text-[#a57370]">Needs redesign</p><p className="mt-2 text-[11px] font-medium">{hardestHabit?.name??'More history needed'}</p><p className="mt-1 text-[9.5px] text-[#8b7874]">{hardestHabit?'Try Quick/Minimum, a trigger, or a better anchor.':''}</p></div><div className="rounded-[17px] bg-[#f5f1f8] p-4"><p className="text-[9px] uppercase tracking-[.1em] text-[#7c6f8b]">Goal + routine context</p><p className="mt-2 text-[11px] font-medium">{goals.length?`${goals.length} active goal${goals.length===1?'':'s'} · ${activeRoutineCount} active routine${activeRoutineCount===1?'':'s'}`:`${activeRoutineCount} active routine${activeRoutineCount===1?'':'s'} available for habit context`}</p><p className="mt-1 text-[9.5px] text-[#83798a]">Glow labels relationship matches as likely support, not proven causation.</p></div></div></section>
 
-      <section className="rounded-[24px] border border-[#ece2dd] bg-white p-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#8d7d75]">Habit Library</p><h2 className="glow-display mt-1 text-[28px] text-[#2B2420]">Make each behavior easier to repeat</h2></div><button type="button" onClick={()=>setShowManager(true)} className="inline-flex items-center gap-2 rounded-full bg-[#2B2420] px-4 py-2.5 text-[10.5px] font-semibold text-white"><Plus size={12}/>Add / Manage</button></div><div className="mt-4 grid gap-3 lg:grid-cols-2">{initialHabits.map((habit)=>{const p=profileMap.get(habit.id)!;const detail=detailToday.get(habit.id);const done=loggedToday.has(habit.id);const stat=timingStats.find(s=>s.habitId===habit.id);const links=sourceLinks.filter(l=>l.habitId===habit.id&&l.enabled);const habitTriggers=triggers.filter(t=>t.habitId===habit.id&&t.enabled);const relatedGoal=goals.find(g=>habit.name.toLowerCase().split(/\s+/).some(word=>word.length>4&&`${g.title} ${g.description??''}`.toLowerCase().includes(word)));return <div key={habit.id} className="rounded-[19px] border border-[#f0e7e2] bg-[#fffdfc] p-4"><div className="flex items-start gap-3"><button type="button" disabled={done||Boolean(detail?.intentionalSkip)||isPending} onClick={()=>completeHabit(habit,versionFor(energy,availableMinutes,p))} className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${done?'bg-[#7d9474] text-white':detail?.intentionalSkip?'bg-[#ddd6e1] text-[#6f6576]':'border border-[#dacfc9] text-[#8b7f78]'}`}>{done?<Check size={14}/>:detail?.intentionalSkip?<CirclePause size={13}/>:<Sprout size={13}/>}</button><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><p className="text-[12px] font-medium text-[#3f3732]">{habit.name}</p><span className="rounded-full bg-[#f4efe9] px-2 py-0.5 text-[8.5px] text-[#7e716a]">{p.area}</span><span className="rounded-full bg-[#f3f5ef] px-2 py-0.5 text-[8.5px] text-[#6d7b68]">{p.importanceTier}</span>{p.focus?<span className="rounded-full bg-[#f7e8ea] px-2 py-0.5 text-[8.5px] text-[#a05e69]">focus</span>:null}</div><p className="mt-1 text-[9.5px] text-[#91867f]">Full {p.fullMinutes}m · Quick {p.quickMinutes}m · Minimum {p.minimumMinutes}m · {p.contextMode}</p><div className="mt-2 flex flex-wrap gap-1.5">{p.rollingGoalType==='quantity'||habit.targetCount>1?<><button type="button" disabled={isPending} onClick={()=>incrementHabit(habit,-1)} className="rounded-full border border-[#e5dbd5] p-1.5"><Minus size={10}/></button><span className="rounded-full bg-[#f6f1ed] px-3 py-1.5 text-[9px]">{loggedToday.get(habit.id)?.count??0}/{p.rollingTarget??habit.targetCount}</span><button type="button" disabled={isPending} onClick={()=>incrementHabit(habit,1)} className="rounded-full border border-[#e5dbd5] p-1.5"><Plus size={10}/></button></>:null}{/read|meditat|stretch|clean|walk|movement|workout|study/i.test(habit.name)?<button type="button" onClick={()=>startTimer(habit,p.quickMinutes)} className="inline-flex items-center gap-1 rounded-full border border-[#e5dbd5] px-3 py-1.5 text-[9px]"><Clock3 size={10}/>Start {p.quickMinutes}m</button>:null}<button type="button" onClick={()=>setExpandedHabitId(expandedHabitId===habit.id?null:habit.id)} className="rounded-full border border-[#e5dbd5] px-3 py-1.5 text-[9px]">Behavior Studio</button></div>{relatedGoal?<p className="mt-2 text-[9px] text-[#a07a57]">Likely supports · {relatedGoal.title}</p>:null}{stat?.sampleCount?<p className="mt-1 text-[9px] text-[#7d8a76]">Learned timing · {stat.sampleCount} sample{stat.sampleCount===1?'':'s'} · avg {Math.max(1,Math.round(stat.averageSeconds/60))}m · usually {dominantBand(stat)}</p>:null}{links.length?<p className="mt-1 text-[9px] text-[#758499]">One-source links · {links.map(l=>l.sourceType).join(', ')}</p>:null}{habitTriggers.length?<p className="mt-1 text-[9px] text-[#8b7d96]">Triggers · {habitTriggers.map(t=>`${t.triggerType}:${t.triggerValue}`).join(' · ')}</p>:null}</div><ChevronRight size={13} className="mt-1 shrink-0 text-[#b0a59f]"/></div>{expandedHabitId===habit.id?<div className="mt-4 rounded-[16px] bg-[#faf6f3] p-4"><div className="grid gap-3 sm:grid-cols-2"><label className="text-[9px] text-[#7c716b]">Time band<select value={p.timeBand} onChange={(e)=>saveProfile(habit,{timeBand:e.target.value as Band})} className="mt-1 w-full rounded-lg border border-[#e6ddd8] bg-white px-2 py-2 text-[10px]"><option value="anytime">Anytime</option><option value="morning">Morning</option><option value="afternoon">Midday</option><option value="evening">Evening</option><option value="night">Night</option></select></label><label className="text-[9px] text-[#7c716b]">Context<select value={p.contextMode} onChange={(e)=>saveProfile(habit,{contextMode:e.target.value})} className="mt-1 w-full rounded-lg border border-[#e6ddd8] bg-white px-2 py-2 text-[10px]"><option value="anywhere">Anywhere</option><option value="home">Home</option><option value="out">Out</option><option value="work">Work</option><option value="gym">Gym</option><option value="phone-free">Phone-free</option></select></label><label className="text-[9px] text-[#7c716b]">Importance<select value={p.importanceTier} onChange={(e)=>saveProfile(habit,{importanceTier:e.target.value as LocalProfile['importanceTier']})} className="mt-1 w-full rounded-lg border border-[#e6ddd8] bg-white px-2 py-2 text-[10px]"><option value="essential">Non-negotiable</option><option value="growth">Growth</option><option value="nice">Nice to have</option></select></label><label className="text-[9px] text-[#7c716b]">Difficulty · {p.difficulty}/5<input type="range" min="1" max="5" value={p.difficulty} onChange={(e)=>saveProfile(habit,{difficulty:Number(e.target.value)})} className="mt-2 w-full"/></label></div><div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={()=>saveProfile(habit,{focus:!p.focus})} className="rounded-full bg-white px-3 py-2 text-[9px]">{p.focus?'Remove weekly focus':'Make weekly focus'}</button><button type="button" onClick={()=>saveProfile(habit,{pausedUntil:nextMonday(),pausedIndefinitely:false})} className="rounded-full bg-white px-3 py-2 text-[9px]"><Pause className="mr-1 inline" size={9}/>Pause until Monday</button><button type="button" onClick={()=>saveProfile(habit,{pausedIndefinitely:true})} className="rounded-full bg-white px-3 py-2 text-[9px]">Pause indefinitely</button><button type="button" onClick={()=>saveProfile(habit,{pausedUntil:null,pausedIndefinitely:false})} className="rounded-full bg-white px-3 py-2 text-[9px]"><RotateCcw className="mr-1 inline" size={9}/>Resume</button><button type="button" onClick={()=>addTimeTrigger(habit)} className="rounded-full bg-white px-3 py-2 text-[9px]"><AlarmClock className="mr-1 inline" size={9}/>Add time trigger</button></div><div className="mt-3 rounded-xl bg-white p-3"><p className="text-[9px] font-semibold uppercase tracking-[.1em] text-[#98726f]">Make this easier</p><p className="mt-1 text-[10px] leading-4 text-[#756963]">Prepare what you need ahead of time. Anchor it to {p.preferredAnchor??'something you already do'}. On hard days, use “{p.minimumLabel}” for {p.minimumMinutes} minutes instead of abandoning the behavior.</p></div></div>:null}</div>})}</div></section>
+      <section className="rounded-[24px] border border-[#ece2dd] bg-white p-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#8d7d75]">Habit Library</p><h2 className="glow-display mt-1 text-[28px] text-[#2B2420]">Make each behavior easier to repeat</h2></div><button type="button" onClick={()=>setShowManager(true)} className="inline-flex items-center gap-2 rounded-full bg-[#2B2420] px-4 py-2.5 text-[10.5px] font-semibold text-white"><Plus size={12}/>Add / Manage</button></div><div className="mt-4 grid gap-3 lg:grid-cols-2">{initialHabits.map((habit)=>{const p=profileMap.get(habit.id)!;const detail=detailToday.get(habit.id);const done=loggedToday.has(habit.id);const stat=timingStats.find(s=>s.habitId===habit.id);const links=sourceLinks.filter(l=>l.habitId===habit.id&&l.enabled);const habitTriggers=triggers.filter(t=>t.habitId===habit.id&&t.enabled);const relatedGoal=goals.find(g=>habit.name.toLowerCase().split(/\s+/).some(word=>word.length>4&&`${g.title} ${g.description??''}`.toLowerCase().includes(word)));return <div key={habit.id} className="rounded-[19px] border border-[#f0e7e2] bg-[#fffdfc] p-4"><div className="flex items-start gap-3"><button type="button" disabled={done||Boolean(detail?.intentionalSkip)||isPending} onClick={()=>completeHabit(habit,versionFor(energy,availableMinutes,p))} className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${done?'bg-[#7d9474] text-white':detail?.intentionalSkip?'bg-[#ddd6e1] text-[#6f6576]':'border border-[#dacfc9] text-[#8b7f78]'}`}>{done?<Check size={14}/>:detail?.intentionalSkip?<CirclePause size={13}/>:<Sprout size={13}/>}</button><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><p className="text-[12px] font-medium text-[#3f3732]">{habit.name}</p><span className="rounded-full bg-[#f4efe9] px-2 py-0.5 text-[8.5px] text-[#7e716a]">{p.area}</span><span className="rounded-full bg-[#f3f5ef] px-2 py-0.5 text-[8.5px] text-[#6d7b68]">{p.importanceTier}</span>{p.focus?<span className="rounded-full bg-[#f7e8ea] px-2 py-0.5 text-[8.5px] text-[#a05e69]">focus</span>:null}</div><p className="mt-1 text-[9.5px] text-[#91867f]">Full {p.fullMinutes}m · Quick {p.quickMinutes}m · Minimum {p.minimumMinutes}m · {p.contextMode}</p><div className="mt-2 flex flex-wrap gap-1.5">{p.rollingGoalType==='quantity'||habit.targetCount>1?<><button type="button" disabled={isPending||(loggedToday.get(habit.id)?.count??0)<=0} onClick={()=>incrementHabit(habit,-1)} className="rounded-full border border-[#e5dbd5] p-1.5 disabled:opacity-35"><Minus size={10}/></button><span className="rounded-full bg-[#f6f1ed] px-3 py-1.5 text-[9px]">{loggedToday.get(habit.id)?.count??0}/{p.rollingTarget??habit.targetCount}</span><button type="button" disabled={isPending} onClick={()=>incrementHabit(habit,1)} className="rounded-full border border-[#e5dbd5] p-1.5"><Plus size={10}/></button></>:null}{/read|meditat|stretch|clean|walk|movement|workout|study/i.test(habit.name)?<button type="button" onClick={()=>startTimer(habit,p.quickMinutes)} className="inline-flex items-center gap-1 rounded-full border border-[#e5dbd5] px-3 py-1.5 text-[9px]"><Clock3 size={10}/>Start {p.quickMinutes}m</button>:null}<button type="button" onClick={()=>setExpandedHabitId(expandedHabitId===habit.id?null:habit.id)} className="rounded-full border border-[#e5dbd5] px-3 py-1.5 text-[9px]">Behavior Studio</button></div>{relatedGoal?<p className="mt-2 text-[9px] text-[#a07a57]">Likely supports · {relatedGoal.title}</p>:null}{stat?.sampleCount?<p className="mt-1 text-[9px] text-[#7d8a76]">Learned timing · {stat.sampleCount} sample{stat.sampleCount===1?'':'s'} · avg {Math.max(1,Math.round(stat.averageSeconds/60))}m · usually {dominantBand(stat)}</p>:null}{links.length?<p className="mt-1 text-[9px] text-[#758499]">One-source links · {links.map(l=>l.sourceType).join(', ')}</p>:null}{habitTriggers.length?<p className="mt-1 text-[9px] text-[#8b7d96]">Triggers · {habitTriggers.map(t=>`${t.triggerType}:${t.triggerValue}`).join(' · ')}</p>:null}</div><ChevronRight size={13} className="mt-1 shrink-0 text-[#b0a59f]"/></div>{expandedHabitId===habit.id?<div className="mt-4 rounded-[16px] bg-[#faf6f3] p-4"><div className="grid gap-3 sm:grid-cols-2"><label className="text-[9px] text-[#7c716b]">Time band<select value={p.timeBand} onChange={(e)=>saveProfile(habit,{timeBand:e.target.value as Band})} className="mt-1 w-full rounded-lg border border-[#e6ddd8] bg-white px-2 py-2 text-[10px]"><option value="anytime">Anytime</option><option value="morning">Morning</option><option value="afternoon">Midday</option><option value="evening">Evening</option><option value="night">Night</option></select></label><label className="text-[9px] text-[#7c716b]">Context<select value={p.contextMode} onChange={(e)=>saveProfile(habit,{contextMode:e.target.value})} className="mt-1 w-full rounded-lg border border-[#e6ddd8] bg-white px-2 py-2 text-[10px]"><option value="anywhere">Anywhere</option><option value="home">Home</option><option value="out">Out</option><option value="work">Work</option><option value="gym">Gym</option><option value="phone-free">Phone-free</option></select></label><label className="text-[9px] text-[#7c716b]">Importance<select value={p.importanceTier} onChange={(e)=>saveProfile(habit,{importanceTier:e.target.value as LocalProfile['importanceTier']})} className="mt-1 w-full rounded-lg border border-[#e6ddd8] bg-white px-2 py-2 text-[10px]"><option value="essential">Non-negotiable</option><option value="growth">Growth</option><option value="nice">Nice to have</option></select></label><label className="text-[9px] text-[#7c716b]">Difficulty · {p.difficulty}/5<input type="range" min="1" max="5" value={p.difficulty} onChange={(e)=>saveProfile(habit,{difficulty:Number(e.target.value)})} className="mt-2 w-full"/></label></div><div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={()=>saveProfile(habit,{focus:!p.focus})} className="rounded-full bg-white px-3 py-2 text-[9px]">{p.focus?'Remove weekly focus':'Make weekly focus'}</button><button type="button" onClick={()=>saveProfile(habit,{pausedUntil:nextMonday(),pausedIndefinitely:false})} className="rounded-full bg-white px-3 py-2 text-[9px]"><Pause className="mr-1 inline" size={9}/>Pause until Monday</button><button type="button" onClick={()=>saveProfile(habit,{pausedIndefinitely:true})} className="rounded-full bg-white px-3 py-2 text-[9px]">Pause indefinitely</button><button type="button" onClick={()=>saveProfile(habit,{pausedUntil:null,pausedIndefinitely:false})} className="rounded-full bg-white px-3 py-2 text-[9px]"><RotateCcw className="mr-1 inline" size={9}/>Resume</button><button type="button" onClick={()=>addTimeTrigger(habit)} className="rounded-full bg-white px-3 py-2 text-[9px]"><AlarmClock className="mr-1 inline" size={9}/>Add time trigger</button></div><div className="mt-3 rounded-xl bg-white p-3"><p className="text-[9px] font-semibold uppercase tracking-[.1em] text-[#98726f]">Make this easier</p><p className="mt-1 text-[10px] leading-4 text-[#756963]">Prepare what you need ahead of time. Anchor it to {p.preferredAnchor??'something you already do'}. On hard days, use “{p.minimumLabel}” for {p.minimumMinutes} minutes instead of abandoning the behavior.</p></div></div>:null}</div>})}</div></section>
 
-      {timerHabitId ? <section className="fixed bottom-20 left-1/2 z-[160] w-[min(420px,92vw)] -translate-x-1/2 rounded-[22px] border border-[#e8ddd7] bg-white p-4 shadow-2xl"><div className="flex items-center justify-between"><div><p className="text-[9px] uppercase tracking-[.12em] text-[#9a756f]">Habit timer</p><p className="mt-1 text-[11px] font-medium">{initialHabits.find(h=>h.id===timerHabitId)?.name}</p></div><button type="button" onClick={()=>{setTimerHabitId(null);setTimerRunning(false);setTimerStartedAt(null)}}><X size={15}/></button></div><div className="mt-3 flex items-center justify-between"><span className="font-mono text-[28px]">{String(Math.floor(timerSeconds/60)).padStart(2,'0')}:{String(timerSeconds%60).padStart(2,'0')}</span><button type="button" onClick={()=>setTimerRunning(current=>!current)} className="rounded-full bg-[#2B2420] p-3 text-white">{timerRunning?<Pause size={14}/>:<Play size={14}/>}</button></div></section> : null}
+      {timerHabitId ? <section className="fixed bottom-20 left-1/2 z-[160] w-[min(420px,92vw)] -translate-x-1/2 rounded-[22px] border border-[#e8ddd7] bg-white p-4 shadow-2xl"><div className="flex items-center justify-between"><div><p className="text-[9px] uppercase tracking-[.12em] text-[#9a756f]">Habit timer</p><p className="mt-1 text-[11px] font-medium">{initialHabits.find(h=>h.id===timerHabitId)?.name}</p></div><button type="button" onClick={()=>{setTimerHabitId(null);setTimerRunning(false);setTimerSeconds(0);setTimerInitialSeconds(0)}}><X size={15}/></button></div><div className="mt-3 flex items-center justify-between"><span className="font-mono text-[28px]">{String(Math.floor(timerSeconds/60)).padStart(2,'0')}:{String(timerSeconds%60).padStart(2,'0')}</span><button type="button" onClick={()=>setTimerRunning(current=>!current)} className="rounded-full bg-[#2B2420] p-3 text-white">{timerRunning?<Pause size={14}/>:<Play size={14}/>}</button></div></section> : null}
 
       <section className="rounded-[24px] border border-[#ece2dd] bg-[linear-gradient(135deg,#fffdfb,#f8f2ef)] p-5"><div className="flex items-center gap-2"><WandSparkles size={15} className="text-[#bd7580]"/><h2 className="glow-display text-[24px] text-[#2B2420]">Ask Glow about your habits</h2></div><div className="mt-3 flex flex-col gap-2 sm:flex-row"><input value={assistantInput} onChange={(e)=>setAssistantInput(e.target.value)} onKeyDown={(e)=>{if(e.key==='Enter')askGlow()}} placeholder='“I only have five minutes” or “mark skincare done”' className="min-w-0 flex-1 rounded-2xl border border-[#e6ddd8] bg-white px-4 py-3 text-[11px] outline-none"/><button type="button" onClick={askGlow} className="rounded-2xl bg-[#2B2420] px-5 py-3 text-[11px] font-semibold text-white">Ask / Act</button></div>{assistantReply?<p className="mt-3 rounded-2xl bg-white p-4 text-[11px] leading-5 text-[#6e625c]">{assistantReply}</p>:null}</section>
 
