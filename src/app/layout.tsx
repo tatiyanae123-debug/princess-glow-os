@@ -46,6 +46,7 @@ import './immersive-brain-concierge.css';
 import './immersive-brain-concierge-final-audit.css';
 import './system-wide-final-audit.css';
 import './glow-v4-calm-system.css';
+import './glow-speaking-presence.css';
 import { GlobalGlowIntelligence } from '@/components/life-intelligence/global-glow-intelligence';
 
 export const metadata: Metadata = {title:'Glow OS',description:'A calm intelligent personal life operating system'};
