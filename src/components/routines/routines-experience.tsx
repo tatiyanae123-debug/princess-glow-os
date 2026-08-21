@@ -4,9 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   CalendarClock,
-  Check,
   ChevronDown,
-  Clock3,
   CloudRain,
   Gauge,
   GripVertical,
