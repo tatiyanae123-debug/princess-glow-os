@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Dialog } from '@/components/ui/dialog';
 import { RoutineForm } from '@/components/routines/routine-form';
-import { RoutinesExperience } from '@/components/routines/routines-experience';
+import { RoutineIntelligenceStudio } from '@/components/routines/routine-intelligence-studio';
 import type {
   CalendarEvent,
   Habit,
@@ -66,7 +66,7 @@ export function RoutinesRouteExperience({
 
   return (
     <>
-      <RoutinesExperience
+      <RoutineIntelligenceStudio
         initialRoutines={initialRoutines}
         initialSteps={initialSteps}
         initialEngine={initialEngine}
