@@ -64,6 +64,12 @@ export async function completeHabit(userId: string, input: {
   if (!habit || habit.archived) return null;
 
   const requestedCount = Math.max(1, input.quantity ?? 1);
+  const [existingDetail] = await db.select().from(habitCompletionDetails).where(and(
+    eq(habitCompletionDetails.userId, userId),
+    eq(habitCompletionDetails.habitId, input.habitId),
+    eq(habitCompletionDetails.dateKey, input.dateKey),
+  )).limit(1);
+
   let [log] = await db.select().from(habitLogs).where(and(eq(habitLogs.userId, userId), eq(habitLogs.habitId, input.habitId), eq(habitLogs.loggedDate, input.dateKey))).limit(1);
   if (!log) {
     [log] = await db.insert(habitLogs).values({ userId, habitId: input.habitId, loggedDate: input.dateKey, count: requestedCount }).returning();
@@ -73,14 +79,15 @@ export async function completeHabit(userId: string, input: {
 
   const [detail] = await db.insert(habitCompletionDetails).values({
     userId, habitId: input.habitId, dateKey: input.dateKey, version: input.version ?? 'full', actualSeconds: input.actualSeconds ?? null,
-    quantity: requestedCount, intentionalSkip: false, sourceType: input.sourceType ?? 'habits', sourceId: input.sourceId ?? null,
+    quantity: requestedCount, intentionalSkip: false, skipReason: null, sourceType: input.sourceType ?? 'habits', sourceId: input.sourceId ?? null,
     helpedBy: input.helpedBy ?? null, friction: input.friction ?? null,
   }).onConflictDoUpdate({
     target: [habitCompletionDetails.userId, habitCompletionDetails.habitId, habitCompletionDetails.dateKey],
-    set: { version: input.version ?? 'full', actualSeconds: input.actualSeconds ?? null, quantity: requestedCount, intentionalSkip: false, sourceType: input.sourceType ?? 'habits', sourceId: input.sourceId ?? null, helpedBy: input.helpedBy ?? null, friction: input.friction ?? null, completedAt: new Date() },
+    set: { version: input.version ?? 'full', actualSeconds: input.actualSeconds ?? null, quantity: requestedCount, intentionalSkip: false, skipReason: null, sourceType: input.sourceType ?? 'habits', sourceId: input.sourceId ?? null, helpedBy: input.helpedBy ?? null, friction: input.friction ?? null, completedAt: new Date() },
   }).returning();
 
-  if (input.actualSeconds && input.actualSeconds > 0) {
+  const shouldLearnTiming = Boolean(input.actualSeconds && input.actualSeconds > 0 && (!existingDetail || existingDetail.intentionalSkip));
+  if (shouldLearnTiming && input.actualSeconds) {
     const [stat] = await db.select().from(habitTimingStats).where(and(eq(habitTimingStats.userId, userId), eq(habitTimingStats.habitId, input.habitId))).limit(1);
     const band = timeBand(new Date());
     if (stat) {
@@ -97,15 +104,19 @@ export async function completeHabit(userId: string, input: {
     const links = await db.select().from(habitSourceLinks).where(and(eq(habitSourceLinks.userId, userId), eq(habitSourceLinks.habitId, input.habitId), eq(habitSourceLinks.enabled, true)));
     for (const link of links) {
       if (link.sourceType === 'task') {
-        const [updated] = await db.update(tasks).set({ status: 'done', completedAt: new Date(), updatedAt: new Date() }).where(and(eq(tasks.id, link.sourceId), eq(tasks.userId, userId))).returning();
-        if (updated) linkedUpdates.push('task');
+        const [task] = await db.select().from(tasks).where(and(eq(tasks.id, link.sourceId), eq(tasks.userId, userId))).limit(1);
+        if (task && task.status !== 'done') {
+          const [updated] = await db.update(tasks).set({ status: 'done', completedAt: new Date(), updatedAt: new Date() }).where(and(eq(tasks.id, link.sourceId), eq(tasks.userId, userId))).returning();
+          if (updated) linkedUpdates.push('task');
+        }
       }
       if (link.sourceType === 'fitness') {
         const { start, end } = dateBounds(input.dateKey);
         const workoutType = link.sourceId || habit.name;
         const [existing] = await db.select().from(fitnessSessions).where(and(eq(fitnessSessions.userId, userId), eq(fitnessSessions.workoutType, workoutType), gte(fitnessSessions.occurredAt, start), lte(fitnessSessions.occurredAt, end))).limit(1);
         if (!existing) {
-          await db.insert(fitnessSessions).values({ userId, workoutType, occurredAt: new Date(), durationMinutes: input.actualSeconds ? Math.max(1, Math.round(input.actualSeconds / 60)) : null, notes: `Synced from habit: ${habit.name}` });
+          const occurredAt = input.dateKey === `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}` ? new Date() : start;
+          await db.insert(fitnessSessions).values({ userId, workoutType, occurredAt, durationMinutes: input.actualSeconds ? Math.max(1, Math.round(input.actualSeconds / 60)) : null, notes: `Synced from habit: ${habit.name}` });
           linkedUpdates.push('fitness');
         }
       }
@@ -117,7 +128,9 @@ export async function completeHabit(userId: string, input: {
 export async function intentionalSkipHabit(userId: string, habitId: string, dateKey: string, reason?: string | null) {
   const [habit] = await db.select().from(habits).where(and(eq(habits.id, habitId), eq(habits.userId, userId))).limit(1);
   if (!habit || habit.archived) return null;
-  const [detail] = await db.insert(habitCompletionDetails).values({ userId, habitId, dateKey, version: 'minimum', quantity: 0, intentionalSkip: true, skipReason: reason ?? 'Intentional rest', sourceType: 'habits' }).onConflictDoUpdate({ target: [habitCompletionDetails.userId, habitCompletionDetails.habitId, habitCompletionDetails.dateKey], set: { intentionalSkip: true, skipReason: reason ?? 'Intentional rest', quantity: 0, completedAt: new Date() } }).returning();
+
+  await db.delete(habitLogs).where(and(eq(habitLogs.userId, userId), eq(habitLogs.habitId, habitId), eq(habitLogs.loggedDate, dateKey)));
+  const [detail] = await db.insert(habitCompletionDetails).values({ userId, habitId, dateKey, version: 'minimum', actualSeconds: null, quantity: 0, intentionalSkip: true, skipReason: reason ?? 'Intentional rest', sourceType: 'habits', sourceId: null }).onConflictDoUpdate({ target: [habitCompletionDetails.userId, habitCompletionDetails.habitId, habitCompletionDetails.dateKey], set: { version: 'minimum', actualSeconds: null, intentionalSkip: true, skipReason: reason ?? 'Intentional rest', quantity: 0, sourceType: 'habits', sourceId: null, completedAt: new Date() } }).returning();
   return detail;
 }
 export async function createHabitTrigger(userId: string, values: { habitId: string; triggerType: string; triggerValue: string }) { const [row] = await db.insert(habitTriggers).values({ userId, ...values }).returning(); return row; }
