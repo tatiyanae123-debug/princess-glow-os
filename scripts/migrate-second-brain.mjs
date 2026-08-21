@@ -1,0 +1,31 @@
+import { neon } from '@neondatabase/serverless';
+
+const databaseUrl=process.env.DATABASE_URL;
+if(!databaseUrl)throw new Error('Missing required environment variable: DATABASE_URL');
+const sql=neon(databaseUrl);
+console.log('Applying Glow OS Second Brain intelligence schema...');
+
+await sql`CREATE TABLE IF NOT EXISTS brain_captures (id text PRIMARY KEY, user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, raw_text text NOT NULL, source text NOT NULL DEFAULT 'second-brain', status text NOT NULL DEFAULT 'inbox', detected jsonb NOT NULL DEFAULT '[]'::jsonb, created_at timestamp NOT NULL DEFAULT now(), processed_at timestamp)`;
+await sql`CREATE INDEX IF NOT EXISTS brain_captures_user_status_idx ON brain_captures(user_id,status)`;
+await sql`CREATE INDEX IF NOT EXISTS brain_captures_created_idx ON brain_captures(user_id,created_at)`;
+await sql`CREATE TABLE IF NOT EXISTS brain_threads (id text PRIMARY KEY, user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, title text NOT NULL, slug text NOT NULL, summary text, current_state text, next_action text, status text NOT NULL DEFAULT 'active', mention_count integer NOT NULL DEFAULT 1, first_seen_at timestamp NOT NULL DEFAULT now(), last_seen_at timestamp NOT NULL DEFAULT now(), created_at timestamp NOT NULL DEFAULT now(), updated_at timestamp NOT NULL DEFAULT now())`;
+await sql`CREATE UNIQUE INDEX IF NOT EXISTS brain_threads_user_slug_uidx ON brain_threads(user_id,slug)`;
+await sql`CREATE INDEX IF NOT EXISTS brain_threads_status_idx ON brain_threads(user_id,status)`;
+await sql`CREATE TABLE IF NOT EXISTS brain_thoughts (id text PRIMARY KEY, user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, thread_id text REFERENCES brain_threads(id) ON DELETE SET NULL, title text NOT NULL, body text, kind text NOT NULL DEFAULT 'thought', lifecycle text NOT NULL DEFAULT 'captured', maturity text NOT NULL DEFAULT 'seed', energy text NOT NULL DEFAULT 'normal', archived boolean NOT NULL DEFAULT false, source_capture_id text REFERENCES brain_captures(id) ON DELETE SET NULL, created_at timestamp NOT NULL DEFAULT now(), updated_at timestamp NOT NULL DEFAULT now())`;
+await sql`CREATE INDEX IF NOT EXISTS brain_thoughts_user_kind_idx ON brain_thoughts(user_id,kind)`;
+await sql`CREATE INDEX IF NOT EXISTS brain_thoughts_thread_idx ON brain_thoughts(thread_id)`;
+await sql`CREATE TABLE IF NOT EXISTS brain_decisions (id text PRIMARY KEY, user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, thread_id text REFERENCES brain_threads(id) ON DELETE SET NULL, question text NOT NULL, outcome text, rationale text, evidence_for text[] NOT NULL DEFAULT '{}'::text[], evidence_against text[] NOT NULL DEFAULT '{}'::text[], decision_type text NOT NULL DEFAULT 'permanent', status text NOT NULL DEFAULT 'waiting', review_at timestamp, decided_at timestamp, created_at timestamp NOT NULL DEFAULT now(), updated_at timestamp NOT NULL DEFAULT now())`;
+await sql`CREATE INDEX IF NOT EXISTS brain_decisions_user_status_idx ON brain_decisions(user_id,status)`;
+await sql`CREATE TABLE IF NOT EXISTS brain_open_loops (id text PRIMARY KEY, user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, thread_id text REFERENCES brain_threads(id) ON DELETE SET NULL, title text NOT NULL, loop_type text NOT NULL DEFAULT 'action', status text NOT NULL DEFAULT 'open', waiting_on text, follow_up_at timestamp, source_type text, source_id text, created_at timestamp NOT NULL DEFAULT now(), closed_at timestamp)`;
+await sql`CREATE INDEX IF NOT EXISTS brain_open_loops_user_status_idx ON brain_open_loops(user_id,status)`;
+await sql`CREATE INDEX IF NOT EXISTS brain_open_loops_followup_idx ON brain_open_loops(user_id,follow_up_at)`;
+await sql`CREATE TABLE IF NOT EXISTS brain_people (id text PRIMARY KEY, user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, name text NOT NULL, normalized_name text NOT NULL, context text, last_interaction text, last_interaction_at timestamp, notes text, created_at timestamp NOT NULL DEFAULT now(), updated_at timestamp NOT NULL DEFAULT now())`;
+await sql`CREATE UNIQUE INDEX IF NOT EXISTS brain_people_user_name_uidx ON brain_people(user_id,normalized_name)`;
+await sql`CREATE TABLE IF NOT EXISTS brain_memories (id text PRIMARY KEY, user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, title text NOT NULL, content text NOT NULL, memory_type text NOT NULL DEFAULT 'important_fact', source_type text, source_id text, reason text, status text NOT NULL DEFAULT 'active', last_used_at timestamp, created_at timestamp NOT NULL DEFAULT now(), updated_at timestamp NOT NULL DEFAULT now())`;
+await sql`CREATE INDEX IF NOT EXISTS brain_memories_user_status_idx ON brain_memories(user_id,status)`;
+await sql`CREATE TABLE IF NOT EXISTS brain_relationships (id text PRIMARY KEY, user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, from_type text NOT NULL, from_id text NOT NULL, to_type text NOT NULL, to_id text NOT NULL, relation text NOT NULL DEFAULT 'related_to', reason text, source_type text, source_id text, confidence real NOT NULL DEFAULT 1, created_at timestamp NOT NULL DEFAULT now())`;
+await sql`CREATE UNIQUE INDEX IF NOT EXISTS brain_relationships_uidx ON brain_relationships(user_id,from_type,from_id,to_type,to_id,relation)`;
+await sql`CREATE INDEX IF NOT EXISTS brain_relationships_user_idx ON brain_relationships(user_id)`;
+await sql`CREATE TABLE IF NOT EXISTS brain_workspaces (id text PRIMARY KEY, user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, title text NOT NULL, question text NOT NULL, criteria text[] NOT NULL DEFAULT '{}'::text[], evidence jsonb NOT NULL DEFAULT '[]'::jsonb, unknowns text[] NOT NULL DEFAULT '{}'::text[], outcome text, status text NOT NULL DEFAULT 'thinking', created_at timestamp NOT NULL DEFAULT now(), updated_at timestamp NOT NULL DEFAULT now())`;
+await sql`CREATE INDEX IF NOT EXISTS brain_workspaces_user_status_idx ON brain_workspaces(user_id,status)`;
+console.log('Glow OS Second Brain intelligence schema complete.');
