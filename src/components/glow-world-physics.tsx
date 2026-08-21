@@ -4,16 +4,18 @@ import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
 const ZONES: Array<[RegExp, string]> = [
-  [/^\/(today|briefings?)/, 'dawn'],
-  [/^\/(calendar|planning|tasks|reminders|goals|projects|routines|habits)/, 'time'],
-  [/^\/(fitness|wellness|body)/, 'vital'],
+  [/^\/(today|dashboard|briefings?)/, 'dawn'],
+  [/^\/(calendar|planning|tasks|reminders|goals|projects|routines|habits|tomorrow|focus)/, 'time'],
+  [/^\/(fitness|wellness|body|food|maintenance|workout-mode)/, 'vital'],
   [/^\/(beauty|beauty-lab|makeup|skincare|hair|closet)/, 'pearl'],
   [/^\/(finance|financial-brain|money)/, 'emerald'],
-  [/^\/(brain|memory|timeline|observations|graph|connections|notices|concierge)/, 'violet'],
-  [/^\/(create|capture|creative|notes|inbox|gmail|import)/, 'opal'],
-  [/^\/(home|world)/, 'earth'],
-  [/^\/work/, 'slate'],
+  [/^\/(brain|memory|timeline|observations|graph|connections|notices|concierge|knowledge)/, 'violet'],
+  [/^\/(create|capture|creative|creative-studio|notes|inbox|gmail|import|resources|settings|vault)/, 'opal'],
+  [/^\/(home|world|life|travel|saint-space)/, 'earth'],
+  [/^\/(work|interview-mode)/, 'slate'],
 ];
+
+const INTELLIGENCE_EVENTS = ['glow:intelligence', 'glow:command-complete', 'glow:action-complete'] as const;
 
 function zoneFor(pathname: string) {
   return ZONES.find(([pattern]) => pattern.test(pathname))?.[1] ?? 'dawn';
@@ -49,19 +51,22 @@ export function GlowWorldPhysics() {
       window.setTimeout(() => wave.remove(), 850);
     };
 
+    let auroraTimer: number | undefined;
     const intelligence = () => {
       root.classList.remove('glow-intelligence-awake');
       void root.offsetWidth;
       root.classList.add('glow-intelligence-awake');
-      window.setTimeout(() => root.classList.remove('glow-intelligence-awake'), 1450);
+      if (auroraTimer) window.clearTimeout(auroraTimer);
+      auroraTimer = window.setTimeout(() => root.classList.remove('glow-intelligence-awake'), 1450);
     };
 
     document.addEventListener('pointerdown', ripple, { passive: true });
-    window.addEventListener('glow:intelligence', intelligence as EventListener);
+    INTELLIGENCE_EVENTS.forEach((name) => document.addEventListener(name, intelligence));
 
     return () => {
       document.removeEventListener('pointerdown', ripple);
-      window.removeEventListener('glow:intelligence', intelligence as EventListener);
+      INTELLIGENCE_EVENTS.forEach((name) => document.removeEventListener(name, intelligence));
+      if (auroraTimer) window.clearTimeout(auroraTimer);
     };
   }, []);
 
