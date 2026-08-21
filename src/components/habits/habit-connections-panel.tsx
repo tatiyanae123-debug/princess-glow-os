@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Link2, Sparkles } from 'lucide-react';
-import { createHabitSourceLinkAction } from '@/app/actions/advanced-habits';
+import { Link2, Sparkles, X } from 'lucide-react';
+import { createHabitSourceLinkAction, deleteHabitSourceLinkAction } from '@/app/actions/advanced-habits';
 import type { Goal, Habit, HabitSourceLink, Routine, Task } from '@/lib/types';
 
 type LinkType = 'task' | 'fitness' | 'goal' | 'routine';
@@ -37,6 +37,18 @@ export function HabitConnectionsPanel({ habits, tasks, goals, routines, initialL
       }
       setLinks((current) => current.some((link) => link.id === result.data?.id) ? current : [...current, result.data!]);
       setNotice(linkType === 'task' || linkType === 'fitness' ? 'Connected. Completion now syncs in both directions.' : 'Relationship saved. This connection adds context without falsely auto-completing the related record.');
+    });
+  }
+
+  function removeLink(id: string) {
+    startTransition(async () => {
+      const result = await deleteHabitSourceLinkAction(id);
+      if (!result.data) {
+        setNotice(result.error ?? 'Glow could not remove that connection.');
+        return;
+      }
+      setLinks((current) => current.filter((link) => link.id !== id));
+      setNotice('Connection removed. Future completions will no longer sync through it.');
     });
   }
 
@@ -77,8 +89,8 @@ export function HabitConnectionsPanel({ habits, tasks, goals, routines, initialL
             <label className="text-[9px] text-[#786d67]">Real source
               <select value={targetId} onChange={(event) => setTargetId(event.target.value)} className="mt-1 w-full rounded-xl border border-[#e5dcd6] bg-[#fffdfc] px-3 py-2.5 text-[10.5px]">
                 <option value="">Choose…</option>
-                {linkType === 'task' ? tasks.filter((task) => task.status !== 'done' && !task.archived).map((task) => <option key={task.id} value={task.id}>{task.title}</option>) : null}
-                {linkType === 'goal' ? goals.filter((goal) => goal.status !== 'achieved' && goal.status !== 'abandoned').map((goal) => <option key={goal.id} value={goal.id}>{goal.title}</option>) : null}
+                {linkType === 'task' ? tasks.filter((task) => !task.archived).map((task) => <option key={task.id} value={task.id}>{task.title}{task.status === 'done' ? ' · done' : ''}</option>) : null}
+                {linkType === 'goal' ? goals.filter((goal) => goal.status !== 'abandoned').map((goal) => <option key={goal.id} value={goal.id}>{goal.title}</option>) : null}
                 {linkType === 'routine' ? routines.filter((routine) => !routine.archived).map((routine) => <option key={routine.id} value={routine.id}>{routine.name}</option>) : null}
               </select>
             </label>
@@ -87,7 +99,21 @@ export function HabitConnectionsPanel({ habits, tasks, goals, routines, initialL
         </div>
       ) : <p className="mt-4 text-[11px] text-[#8a7e77]">Create a habit first.</p>}
 
-      {selectedHabit ? <div className="mt-4 rounded-[16px] bg-[#f8f4f1] p-4"><div className="flex items-center gap-2"><Sparkles size={12} className="text-[#ae7079]"/><p className="text-[10px] font-medium text-[#4e433e]">{selectedHabit.name} connections</p></div>{habitLinks.length ? <div className="mt-2 flex flex-wrap gap-2">{habitLinks.map((link) => <span key={link.id} className="rounded-full bg-white px-3 py-1.5 text-[9px] text-[#756a64]">{link.sourceType} · {link.sourceType === 'task' ? tasks.find((task) => task.id === link.sourceId)?.title ?? 'Task' : link.sourceType === 'goal' ? goals.find((goal) => goal.id === link.sourceId)?.title ?? 'Goal' : link.sourceType === 'routine' ? routines.find((routine) => routine.id === link.sourceId)?.name ?? 'Routine' : link.sourceId}</span>)}</div> : <p className="mt-2 text-[9.5px] text-[#8d817a]">No explicit connections yet.</p>}</div> : null}
+      {selectedHabit ? (
+        <div className="mt-4 rounded-[16px] bg-[#f8f4f1] p-4">
+          <div className="flex items-center gap-2"><Sparkles size={12} className="text-[#ae7079]"/><p className="text-[10px] font-medium text-[#4e433e]">{selectedHabit.name} connections</p></div>
+          {habitLinks.length ? (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {habitLinks.map((link) => (
+                <span key={link.id} className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-[9px] text-[#756a64]">
+                  <span>{link.sourceType} · {link.sourceType === 'task' ? tasks.find((task) => task.id === link.sourceId)?.title ?? 'Task' : link.sourceType === 'goal' ? goals.find((goal) => goal.id === link.sourceId)?.title ?? 'Goal' : link.sourceType === 'routine' ? routines.find((routine) => routine.id === link.sourceId)?.name ?? 'Routine' : link.sourceId}</span>
+                  <button type="button" disabled={pending} onClick={() => removeLink(link.id)} aria-label={`Remove ${link.sourceType} connection`} className="rounded-full p-0.5 text-[#a08f87] hover:bg-[#f3ece8] disabled:opacity-40"><X size={10} /></button>
+                </span>
+              ))}
+            </div>
+          ) : <p className="mt-2 text-[9.5px] text-[#8d817a]">No explicit connections yet.</p>}
+        </div>
+      ) : null}
       {notice ? <p aria-live="polite" className="mt-3 text-[10px] text-[#8a6068]">{notice}</p> : null}
     </section>
   );
