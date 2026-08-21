@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, ne } from 'drizzle-orm';
+import { and, desc, eq, or } from 'drizzle-orm';
 import { db } from '@/db';
 import { notes } from '@/db/schema/notes';
 import { tasks } from '@/db/schema/tasks';
@@ -20,10 +20,10 @@ export function triageText(text:string){
  return parts.slice(0,30).map(part=>{
   const low=part.toLowerCase();
   let kind='note',confidence=.62;
-  if(/\b(i need to|need to|have to|remember to|buy |email |call |send |book |schedule |finish |do )\b/.test(low)){kind='task';confidence=.86}
+  if(/\b(waiting|waiting on|hear back|reply|response|follow up if|follow-up if)\b/.test(low)){kind='loop';confidence=.8}
+  else if(/\b(i need to|need to|have to|remember to|buy |email |call |send |book |schedule |finish |do )\b/.test(low)){kind='task';confidence=.86}
   else if(/\b(should i|decide|decision|whether|not sure if|which .* should)\b/.test(low)){kind='decision';confidence=.82}
   else if(/\b(maybe|idea|what if|could create|thinking about|i want to try)\b/.test(low)){kind='idea';confidence=.78}
-  else if(/\b(waiting|waiting on|hear back|reply|response|follow up)\b/.test(low)){kind='loop';confidence=.8}
   else if(/\b(remember that|important to remember|i prefer|i always|long-term)\b/.test(low)){kind='memory';confidence=.74}
   return {kind,text:titleFromText(part),confidence};
  });
@@ -63,7 +63,7 @@ export async function upsertThread(userId:string,title:string){
 
 export async function addThought(userId:string,input:{title:string;body?:string;kind?:string;captureId?:string|null;threadTitle?:string}){
  const thread=input.threadTitle?await upsertThread(userId,input.threadTitle):null;
- const [row]=await db.insert(brainThoughts).values({userId,threadId:thread?.id??null,title:titleFromText(input.title),body:input.body,kind:input.kind??'thought',sourceCaptureId:input.captureId??null,lifecycle:input.kind==='idea'?'exploring':'captured',maturity:input.kind==='idea'?'seed':'seed'}).returning();return row;
+ const [row]=await db.insert(brainThoughts).values({userId,threadId:thread?.id??null,title:titleFromText(input.title),body:input.body,kind:input.kind??'thought',sourceCaptureId:input.captureId??null,lifecycle:input.kind==='idea'?'exploring':'captured',maturity:'seed'}).returning();return row;
 }
 
 export async function addDecision(userId:string,input:{question:string;threadTitle?:string;decisionType?:string}){
@@ -76,54 +76,91 @@ export async function decide(userId:string,id:string,input:{outcome:string;ratio
 }
 
 export async function addLoop(userId:string,input:{title:string;loopType?:string;waitingOn?:string;followUpAt?:Date|null;sourceType?:string;sourceId?:string}){
- const [row]=await db.insert(brainOpenLoops).values({userId,title:titleFromText(input.title),loopType:input.loopType??(input.waitingOn?'waiting':'action'),waitingOn:input.waitingOn,followUpAt:input.followUpAt??null,sourceType:input.sourceType,sourceId:input.sourceId}).returning();return row;
+ const [row]=await db.insert(brainOpenLoops).values({userId,title:titleFromText(input.title),loopType:input.loopType??(input.waitingOn?'waiting':'action'),status:input.waitingOn?'waiting':'open',waitingOn:input.waitingOn,followUpAt:input.followUpAt??null,sourceType:input.sourceType,sourceId:input.sourceId}).returning();return row;
 }
-export async function updateLoop(userId:string,id:string,status:'open'|'waiting'|'closed'|'dropped',waitingOn?:string){const [row]=await db.update(brainOpenLoops).set({status,waitingOn:waitingOn??null,closedAt:status==='closed'||status==='dropped'?new Date():null}).where(and(eq(brainOpenLoops.id,id),eq(brainOpenLoops.userId,userId))).returning();return row??null}
+export async function updateLoop(userId:string,id:string,status:'open'|'waiting'|'closed'|'dropped',waitingOn?:string){const [row]=await db.update(brainOpenLoops).set({status,waitingOn:status==='waiting'?(waitingOn?.trim()||null):null,closedAt:status==='closed'||status==='dropped'?new Date():null}).where(and(eq(brainOpenLoops.id,id),eq(brainOpenLoops.userId,userId))).returning();return row??null}
 
 export async function addPerson(userId:string,name:string,context?:string){const normalized=name.toLowerCase().replace(/\s+/g,' ').trim();const [existing]=await db.select().from(brainPeople).where(and(eq(brainPeople.userId,userId),eq(brainPeople.normalizedName,normalized))).limit(1);if(existing){const [row]=await db.update(brainPeople).set({context:context??existing.context,updatedAt:new Date()}).where(eq(brainPeople.id,existing.id)).returning();return row}const [row]=await db.insert(brainPeople).values({userId,name:name.trim(),normalizedName:normalized,context}).returning();return row}
 export async function addMemory(userId:string,input:{title:string;content:string;memoryType?:string;sourceType?:string;sourceId?:string;reason?:string}){const [row]=await db.insert(brainMemories).values({userId,title:titleFromText(input.title),content:input.content,memoryType:input.memoryType??'important_fact',sourceType:input.sourceType,sourceId:input.sourceId,reason:input.reason}).returning();return row}
-export async function forgetMemory(userId:string,id:string){const [row]=await db.update(brainMemories).set({status:'forgotten',updatedAt:new Date()}).where(and(eq(brainMemories.id,id),eq(brainMemories.userId,userId))).returning();return row??null}
+export async function forgetMemory(userId:string,id:string){
+ await db.delete(brainRelationships).where(and(eq(brainRelationships.userId,userId),or(and(eq(brainRelationships.fromType,'memory'),eq(brainRelationships.fromId,id)),and(eq(brainRelationships.toType,'memory'),eq(brainRelationships.toId,id)))));
+ const [row]=await db.delete(brainMemories).where(and(eq(brainMemories.id,id),eq(brainMemories.userId,userId))).returning();return row??null;
+}
 
-export async function connect(userId:string,input:{fromType:string;fromId:string;toType:string;toId:string;relation:string;reason?:string}){const [row]=await db.insert(brainRelationships).values({userId,...input,confidence:1}).onConflictDoNothing().returning();return row??null}
+async function entityExists(userId:string,type:string,id:string){
+ if(type==='thought'||type==='idea')return Boolean((await db.select({id:brainThoughts.id}).from(brainThoughts).where(and(eq(brainThoughts.userId,userId),eq(brainThoughts.id,id))).limit(1))[0]);
+ if(type==='decision')return Boolean((await db.select({id:brainDecisions.id}).from(brainDecisions).where(and(eq(brainDecisions.userId,userId),eq(brainDecisions.id,id))).limit(1))[0]);
+ if(type==='loop')return Boolean((await db.select({id:brainOpenLoops.id}).from(brainOpenLoops).where(and(eq(brainOpenLoops.userId,userId),eq(brainOpenLoops.id,id))).limit(1))[0]);
+ if(type==='person')return Boolean((await db.select({id:brainPeople.id}).from(brainPeople).where(and(eq(brainPeople.userId,userId),eq(brainPeople.id,id))).limit(1))[0]);
+ if(type==='memory')return Boolean((await db.select({id:brainMemories.id}).from(brainMemories).where(and(eq(brainMemories.userId,userId),eq(brainMemories.id,id))).limit(1))[0]);
+ if(type==='workspace')return Boolean((await db.select({id:brainWorkspaces.id}).from(brainWorkspaces).where(and(eq(brainWorkspaces.userId,userId),eq(brainWorkspaces.id,id))).limit(1))[0]);
+ if(type==='task')return Boolean((await db.select({id:tasks.id}).from(tasks).where(and(eq(tasks.userId,userId),eq(tasks.id,id))).limit(1))[0]);
+ if(type==='goal')return Boolean((await db.select({id:goals.id}).from(goals).where(and(eq(goals.userId,userId),eq(goals.id,id))).limit(1))[0]);
+ if(type==='note')return Boolean((await db.select({id:notes.id}).from(notes).where(and(eq(notes.userId,userId),eq(notes.id,id))).limit(1))[0]);
+ return false;
+}
+export async function connect(userId:string,input:{fromType:string;fromId:string;toType:string;toId:string;relation:string;reason?:string}){
+ if(input.fromType===input.toType&&input.fromId===input.toId)return null;
+ const [fromExists,toExists]=await Promise.all([entityExists(userId,input.fromType,input.fromId),entityExists(userId,input.toType,input.toId)]);
+ if(!fromExists||!toExists)return null;
+ const [row]=await db.insert(brainRelationships).values({userId,...input,confidence:1}).onConflictDoNothing().returning();return row??null;
+}
+export async function disconnect(userId:string,id:string){const [row]=await db.delete(brainRelationships).where(and(eq(brainRelationships.userId,userId),eq(brainRelationships.id,id))).returning();return row??null}
 export async function archiveThought(userId:string,id:string){const [row]=await db.update(brainThoughts).set({archived:true,lifecycle:'archived',updatedAt:new Date()}).where(and(eq(brainThoughts.id,id),eq(brainThoughts.userId,userId))).returning();return row??null}
 export async function updateThoughtLifecycle(userId:string,id:string,lifecycle:string){const [row]=await db.update(brainThoughts).set({lifecycle,updatedAt:new Date()}).where(and(eq(brainThoughts.id,id),eq(brainThoughts.userId,userId))).returning();return row??null}
-export async function updateIdeaMaturity(userId:string,id:string,maturity:string){const [row]=await db.update(brainThoughts).set({maturity,lifecycle:maturity==='project'?'actioned':'exploring',updatedAt:new Date()}).where(and(eq(brainThoughts.id,id),eq(brainThoughts.userId,userId))).returning();return row??null}
+export async function updateIdeaMaturity(userId:string,id:string,maturity:string){const [row]=await db.update(brainThoughts).set({maturity,lifecycle:maturity==='project'?'actioned':maturity==='archived'?'archived':'exploring',archived:maturity==='archived',updatedAt:new Date()}).where(and(eq(brainThoughts.id,id),eq(brainThoughts.userId,userId))).returning();return row??null}
 
 export async function createThinkingWorkspace(userId:string,input:{question:string;criteria?:string[]}){
  const q=titleFromText(input.question);const [row]=await db.insert(brainWorkspaces).values({userId,title:q,question:input.question,criteria:input.criteria??['Impact','Time','Energy','Cost','Fit'],unknowns:['What information would change the decision?']}).returning();return row;
 }
 export async function updateWorkspace(userId:string,id:string,input:{outcome?:string;status?:string}){const [row]=await db.update(brainWorkspaces).set({...input,updatedAt:new Date()}).where(and(eq(brainWorkspaces.id,id),eq(brainWorkspaces.userId,userId))).returning();return row??null}
 
-export async function acceptCaptureItems(userId:string,captureId:string,kinds:string[]){
- const [capture]=await db.select().from(brainCaptures).where(and(eq(brainCaptures.id,captureId),eq(brainCaptures.userId,userId))).limit(1);if(!capture)return null;
- const detected=(capture.detected??[]).filter(x=>kinds.includes(x.kind));
- for(const item of detected){
-  if(item.kind==='task') await db.insert(tasks).values({userId,title:item.text,source:'second-brain'});
-  else if(item.kind==='decision') await addDecision(userId,{question:item.text,threadTitle:item.text});
-  else if(item.kind==='idea') await addThought(userId,{title:item.text,kind:'idea',captureId,threadTitle:item.text});
-  else if(item.kind==='loop') await addLoop(userId,{title:item.text});
-  else if(item.kind==='memory') await addMemory(userId,{title:item.text,content:item.text,sourceType:'capture',sourceId:captureId,reason:'Explicitly approved from Clear My Head'});
-  else await addThought(userId,{title:item.text,kind:'thought',captureId});
- }
- const [updated]=await db.update(brainCaptures).set({status:'processed',processedAt:new Date()}).where(eq(brainCaptures.id,captureId)).returning();return updated;
+export async function keepCaptureAsThought(userId:string,captureId:string){
+ const [claimed]=await db.update(brainCaptures).set({status:'processing'}).where(and(eq(brainCaptures.id,captureId),eq(brainCaptures.userId,userId),eq(brainCaptures.status,'inbox'))).returning();
+ if(!claimed)return null;
+ try{
+  const thought=await addThought(userId,{title:titleFromText(claimed.rawText),body:claimed.rawText,kind:'thought',captureId});
+  await db.update(brainCaptures).set({status:'processed',processedAt:new Date()}).where(eq(brainCaptures.id,captureId));
+  return thought;
+ }catch(error){await db.update(brainCaptures).set({status:'inbox'}).where(and(eq(brainCaptures.id,captureId),eq(brainCaptures.userId,userId),eq(brainCaptures.status,'processing')));throw error}
+}
+
+export async function acceptCaptureItems(userId:string,captureId:string,input:{kinds?:string[];indexes?:number[]}){
+ const [claimed]=await db.update(brainCaptures).set({status:'processing'}).where(and(eq(brainCaptures.id,captureId),eq(brainCaptures.userId,userId),eq(brainCaptures.status,'inbox'))).returning();
+ if(!claimed)return null;
+ try{
+  const all=claimed.detected??[];
+  const indexes=input.indexes?.filter(i=>Number.isInteger(i)&&i>=0&&i<all.length);
+  const detected=indexes?.length?indexes.map(i=>all[i]).filter(Boolean):(input.kinds?.length?all.filter(x=>input.kinds?.includes(x.kind)):[]);
+  if(!detected.length){await db.update(brainCaptures).set({status:'inbox'}).where(eq(brainCaptures.id,captureId));return null}
+  for(const item of detected){
+   if(item.kind==='task') await db.insert(tasks).values({userId,title:item.text,source:'second-brain'});
+   else if(item.kind==='decision') await addDecision(userId,{question:item.text,threadTitle:item.text});
+   else if(item.kind==='idea') await addThought(userId,{title:item.text,kind:'idea',captureId,threadTitle:item.text});
+   else if(item.kind==='loop') await addLoop(userId,{title:item.text});
+   else if(item.kind==='memory') await addMemory(userId,{title:item.text,content:item.text,sourceType:'capture',sourceId:captureId,reason:'Explicitly approved from Clear My Head'});
+   else await addThought(userId,{title:item.text,kind:'thought',captureId});
+  }
+  const [updated]=await db.update(brainCaptures).set({status:'processed',processedAt:new Date()}).where(and(eq(brainCaptures.id,captureId),eq(brainCaptures.userId,userId),eq(brainCaptures.status,'processing'))).returning();return updated??null;
+ }catch(error){await db.update(brainCaptures).set({status:'inbox'}).where(and(eq(brainCaptures.id,captureId),eq(brainCaptures.userId,userId),eq(brainCaptures.status,'processing')));throw error}
 }
 
 export async function deriveBrainAnswer(state:Awaited<ReturnType<typeof getBrainState>>,query:string){
  const q=query.toLowerCase();
- const sourceHits:Array<{type:string;id:string;title:string;detail:string}>=[];
+ const sourceHits:Array<{type:string;id:string;title:string;detail:string;score:number}>=[];
  const terms=keywords(query);
  const score=(text:string)=>terms.reduce((s,t)=>s+(text.toLowerCase().includes(t)?1:0),0);
- const push=(type:string,id:string,title:string,detail:string)=>{if(score(`${title} ${detail}`)>0)sourceHits.push({type,id,title,detail})};
+ const push=(type:string,id:string,title:string,detail:string)=>{const relevance=score(`${title} ${detail}`);if(relevance>0)sourceHits.push({type,id,title,detail,score:relevance})};
  state.notes.forEach(x=>push('Note',x.id,x.title,x.content??''));
  state.tasks.forEach(x=>push('Task',x.id,x.title,x.description??x.status));
  state.goals.forEach(x=>push('Goal',x.id,x.title,x.description??x.status));
  state.decisions.forEach(x=>push('Decision',x.id,x.question,`${x.outcome??''} ${x.rationale??''}`));
  state.thoughts.forEach(x=>push(x.kind==='idea'?'Idea':'Thought',x.id,x.title,x.body??''));
  state.loops.forEach(x=>push('Open loop',x.id,x.title,`${x.status} ${x.waitingOn??''}`));
- if(/waiting|waiting on/.test(q)){state.loops.filter(x=>x.status==='waiting'||Boolean(x.waitingOn)).forEach(x=>sourceHits.unshift({type:'Open loop',id:x.id,title:x.title,detail:x.waitingOn?`Waiting on ${x.waitingOn}`:'Waiting'}))}
- if(/decid|why did i/.test(q)){state.decisions.filter(x=>x.status==='decided').forEach(x=>sourceHits.unshift({type:'Decision',id:x.id,title:x.question,detail:`${x.outcome??''}${x.rationale?` — ${x.rationale}`:''}`}))}
- if(/idea/.test(q)){state.thoughts.filter(x=>x.kind==='idea').forEach(x=>sourceHits.unshift({type:'Idea',id:x.id,title:x.title,detail:x.maturity}))}
- const unique=[...new Map(sourceHits.map(x=>[`${x.type}:${x.id}`,x])).values()].slice(0,8);
+ if(/waiting|waiting on/.test(q)){state.loops.filter(x=>x.status==='waiting'||Boolean(x.waitingOn)).forEach(x=>sourceHits.unshift({type:'Open loop',id:x.id,title:x.title,detail:x.waitingOn?`Waiting on ${x.waitingOn}`:'Waiting',score:99}))}
+ if(/decid|why did i/.test(q)){state.decisions.filter(x=>x.status==='decided').forEach(x=>sourceHits.unshift({type:'Decision',id:x.id,title:x.question,detail:`${x.outcome??''}${x.rationale?` — ${x.rationale}`:''}`,score:99}))}
+ if(/idea/.test(q)){state.thoughts.filter(x=>x.kind==='idea').forEach(x=>sourceHits.unshift({type:'Idea',id:x.id,title:x.title,detail:x.maturity,score:99}))}
+ const unique=[...new Map(sourceHits.sort((a,b)=>b.score-a.score).map(({score:_,...x})=>[`${x.type}:${x.id}`,x])).values()].slice(0,8);
  if(!unique.length)return{answer:'I could not find a confident match in your stored Second Brain data yet.',sources:[]};
  return{answer:unique.slice(0,3).map(x=>x.title).join(' · '),sources:unique};
 }
