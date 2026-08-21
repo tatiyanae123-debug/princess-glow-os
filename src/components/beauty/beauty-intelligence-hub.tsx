@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { ArrowRight, CalendarDays, Check, Clock3, FlaskConical, Heart, Mic, Package, Play, Search, Sparkles, WandSparkles } from 'lucide-react';
+import { ArrowRight, Check, Clock3, FlaskConical, Heart, Mic, Package, Play, Search, Sparkles, WandSparkles } from 'lucide-react';
 import { BeautyOperatingStudio } from '@/components/beauty/beauty-operating-studio';
 import type { BeautyRoutine } from '@/lib/types';
 
