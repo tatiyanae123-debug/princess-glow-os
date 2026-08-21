@@ -10,6 +10,7 @@ import {
   NotebookTabs, Search, Settings, Shirt, Sparkles, TimerReset, Upload, UserRound,
   Utensils, WalletCards, WandSparkles, X,
 } from 'lucide-react';
+import { fuzzyMatch } from '@/lib/search/fuzzy';
 
 type Item={label:string;href:string;icon:typeof Home;keywords?:string[]};
 type World={label:string;icon:typeof Home;items:Item[]};
@@ -40,6 +41,7 @@ const WORLDS:World[]=[
  ]},
  {label:'Beauty',icon:WandSparkles,items:[
   {label:'Beauty',href:'/beauty',icon:Sparkles},
+  {label:'Gua Sha Studio',href:'/beauty/gua-sha',icon:WandSparkles,keywords:['gua sha','guasha','quasha','gosha','washa','facial massage','face massage','lymphatic','de-puff','depuff','jaw','tmj']},
   {label:'Beauty Lab',href:'/beauty/lab',icon:WandSparkles},
   {label:'Hair',href:'/hair',icon:Sparkles},
  ]},
@@ -86,7 +88,7 @@ export function UniversalMobileNav(){
  useEffect(()=>{let startX=0;const down=(e:TouchEvent)=>{startX=e.touches[0]?.clientX??0};const up=(e:TouchEvent)=>{const end=e.changedTouches[0]?.clientX??0;if(!open&&startX<22&&end-startX>70)setOpen(true);if(open&&startX-end>90)setOpen(false)};window.addEventListener('touchstart',down,{passive:true});window.addEventListener('touchend',up,{passive:true});return()=>{window.removeEventListener('touchstart',down);window.removeEventListener('touchend',up)}},[open]);
  useEffect(()=>{const fn=()=>setOpen(true);document.addEventListener('glow:worlds-open',fn);return()=>document.removeEventListener('glow:worlds-open',fn)},[]);
 
- const searchResults=useMemo(()=>{const q=query.trim().toLowerCase();if(!q)return[];return ALL.filter(i=>`${i.label} ${i.world} ${(i.keywords||[]).join(' ')}`.toLowerCase().includes(q)).slice(0,12)},[query]);
+ const searchResults=useMemo(()=>{const q=query.trim();if(!q)return[];return ALL.filter(i=>fuzzyMatch(q,`${i.label} ${i.world} ${(i.keywords||[]).join(' ')}`)).slice(0,12)},[query]);
  const recentItems=useMemo(()=>{const order=[...recent,...PINNED];const seen=new Set<string>();return order.map(h=>ALL.find(i=>h===i.href||h.startsWith(`${i.href}/`))).filter((x):x is (typeof ALL)[number]=>Boolean(x)&&!seen.has(x!.href)&&Boolean(seen.add(x!.href))).slice(0,6)},[recent]);
  const selected=WORLDS.find(w=>w.label===world)??null;
  const go=(href:string)=>{setOpen(false);router.push(href)};
