@@ -122,3 +122,11 @@ export async function createHabitSourceLinkAction(raw: unknown) {
   revalidatePath('/habits');
   return { data: row };
 }
+
+export async function deleteHabitSourceLinkAction(id: string) {
+  const userId = await requireUser();
+  const row = await data.deleteHabitSourceLink(userId, id);
+  if (!row) return { error: 'That connection is already gone.' };
+  refreshHabitSurfaces();
+  return { data: row };
+}
