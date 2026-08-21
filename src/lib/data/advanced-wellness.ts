@@ -7,11 +7,11 @@ export type WellnessMode='full'|'standard'|'quick'|'minimum';
 export type ProtocolStep={id:string;title:string;seconds:number;detail?:string};
 
 export async function getWellnessIntelligenceState(userId:string){
-  const weekAgo=new Date(Date.now()-7*86400000);const monthAgo=new Date(Date.now()-30*86400000);
+  const monthAgo=new Date(Date.now()-30*86400000);
   const [checkIns,runs,hydration,observations]=await Promise.all([
     db.select().from(wellnessCheckIns).where(and(eq(wellnessCheckIns.userId,userId),gte(wellnessCheckIns.createdAt,monthAgo))).orderBy(desc(wellnessCheckIns.createdAt)).limit(120),
     db.select().from(wellnessProtocolRuns).where(and(eq(wellnessProtocolRuns.userId,userId),gte(wellnessProtocolRuns.startedAt,monthAgo))).orderBy(desc(wellnessProtocolRuns.startedAt)).limit(120),
-    db.select().from(wellnessHydrationLogs).where(and(eq(wellnessHydrationLogs.userId,userId),gte(wellnessHydrationLogs.occurredAt,weekAgo))).orderBy(desc(wellnessHydrationLogs.occurredAt)).limit(250),
+    db.select().from(wellnessHydrationLogs).where(and(eq(wellnessHydrationLogs.userId,userId),gte(wellnessHydrationLogs.occurredAt,monthAgo))).orderBy(desc(wellnessHydrationLogs.occurredAt)).limit(500),
     db.select().from(wellnessObservations).where(and(eq(wellnessObservations.userId,userId),eq(wellnessObservations.dismissed,false))).orderBy(desc(wellnessObservations.createdAt)).limit(40),
   ]);
   return {checkIns,runs,hydration,observations};
