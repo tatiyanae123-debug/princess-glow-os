@@ -1,0 +1,18 @@
+import { neon } from '@neondatabase/serverless';
+const databaseUrl=process.env.DATABASE_URL;
+if(!databaseUrl)throw new Error('Missing required environment variable: DATABASE_URL');
+const sql=neon(databaseUrl);
+console.log('Applying Glow OS Notes transcription intelligence schema...');
+await sql`CREATE TABLE IF NOT EXISTS note_media_sources (id text PRIMARY KEY, user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, note_id text REFERENCES notes(id) ON DELETE SET NULL, source_type text NOT NULL DEFAULT 'upload', source_url text, platform text, title text NOT NULL, mime_type text, duration_seconds integer, status text NOT NULL DEFAULT 'pending', error text, created_at timestamp NOT NULL DEFAULT now(), updated_at timestamp NOT NULL DEFAULT now())`;
+await sql`CREATE INDEX IF NOT EXISTS note_media_sources_user_idx ON note_media_sources(user_id,created_at)`;
+await sql`CREATE INDEX IF NOT EXISTS note_media_sources_note_idx ON note_media_sources(note_id)`;
+await sql`CREATE TABLE IF NOT EXISTS note_transcript_chunks (id text PRIMARY KEY, source_id text NOT NULL REFERENCES note_media_sources(id) ON DELETE CASCADE, user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, chunk_index integer NOT NULL, start_seconds integer, end_seconds integer, text text NOT NULL, analysis text, created_at timestamp NOT NULL DEFAULT now())`;
+await sql`CREATE UNIQUE INDEX IF NOT EXISTS note_transcript_chunks_source_chunk_uidx ON note_transcript_chunks(source_id,chunk_index)`;
+await sql`CREATE INDEX IF NOT EXISTS note_transcript_chunks_user_idx ON note_transcript_chunks(user_id)`;
+await sql`CREATE TABLE IF NOT EXISTS note_transcript_analyses (id text PRIMARY KEY, source_id text NOT NULL REFERENCES note_media_sources(id) ON DELETE CASCADE, user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, summary text, key_points jsonb NOT NULL DEFAULT '[]'::jsonb, decisions jsonb NOT NULL DEFAULT '[]'::jsonb, action_items jsonb NOT NULL DEFAULT '[]'::jsonb, questions jsonb NOT NULL DEFAULT '[]'::jsonb, themes jsonb NOT NULL DEFAULT '[]'::jsonb, status text NOT NULL DEFAULT 'pending', model text, updated_at timestamp NOT NULL DEFAULT now(), created_at timestamp NOT NULL DEFAULT now())`;
+await sql`CREATE UNIQUE INDEX IF NOT EXISTS note_transcript_analyses_source_uidx ON note_transcript_analyses(source_id)`;
+await sql`CREATE INDEX IF NOT EXISTS note_transcript_analyses_user_idx ON note_transcript_analyses(user_id)`;
+await sql`CREATE TABLE IF NOT EXISTS note_transcript_questions (id text PRIMARY KEY, source_id text NOT NULL REFERENCES note_media_sources(id) ON DELETE CASCADE, user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, question text NOT NULL, answer text NOT NULL, evidence jsonb NOT NULL DEFAULT '[]'::jsonb, model text, created_at timestamp NOT NULL DEFAULT now())`;
+await sql`CREATE INDEX IF NOT EXISTS note_transcript_questions_source_idx ON note_transcript_questions(source_id,created_at)`;
+await sql`CREATE INDEX IF NOT EXISTS note_transcript_questions_user_idx ON note_transcript_questions(user_id)`;
+console.log('Glow OS Notes transcription intelligence schema complete.');
