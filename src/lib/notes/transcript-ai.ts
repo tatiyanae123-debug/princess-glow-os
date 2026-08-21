@@ -1,5 +1,5 @@
 const OPENAI_BASE='https://api.openai.com/v1';
-export function resolveAiKey(request:Request){return process.env.OPENAI_API_KEY||request.headers.get('x-glow-ai-key')||''}
+export function resolveAiKey(request:Request){return request.headers.get('x-glow-ai-key')?.trim()||process.env.OPENAI_API_KEY?.trim()||''}
 export async function transcribeBlob(apiKey:string,blob:Blob,filename:string){
  if(!apiKey)throw new Error('No transcription provider is connected. Add an OpenAI API key in Notes Transcription Settings or configure OPENAI_API_KEY on Vercel.');
  const form=new FormData();form.append('file',blob,filename);form.append('model','gpt-4o-mini-transcribe');form.append('response_format','json');
