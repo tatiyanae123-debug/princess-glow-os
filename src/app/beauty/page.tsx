@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { BeautyIntelligenceStudio } from '@/components/beauty/beauty-intelligence-studio';
+import { BeautyOperatingStudio } from '@/components/beauty/beauty-operating-studio';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
 import { getBeautyProducts } from '@/lib/data/completion-v1';
@@ -40,7 +40,7 @@ export default async function BeautyPage() {
 
   return (
     <AppShell>
-      <BeautyIntelligenceStudio
+      <BeautyOperatingStudio
         routines={routines}
         products={products}
         upcomingAppointments={upcomingAppointments}
