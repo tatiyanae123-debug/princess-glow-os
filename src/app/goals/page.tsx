@@ -31,6 +31,6 @@ export default async function GoalsPage(){
   getHabitLogsForUserByDate(userId,today),
  ]);
  const tasks=allTasks.filter(task=>task.status!=='done'&&task.status!=='cancelled');
- const events=allEvents.filter(event=>event.endAt.getTime()>=now.getTime()).sort((a,b)=>a.startAt.getTime()-b.startAt.getTime()).slice(0,40);
+ const events=allEvents.filter(event=>(event.endAt??event.startAt).getTime()>=now.getTime()).sort((a,b)=>a.startAt.getTime()-b.startAt.getTime()).slice(0,40);
  return <AppShell><GoalIntelligenceStudio goals={goals} tasks={tasks} events={events} projects={projects} habits={habits} habitLogs={habitLogs} nowIso={now.toISOString()}/></AppShell>;
 }
