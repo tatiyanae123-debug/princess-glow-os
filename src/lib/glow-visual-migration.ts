@@ -4,7 +4,8 @@ export type GlowClimate = 'dawn' | 'time' | 'vital' | 'pearl' | 'emerald' | 'vio
 type Rule = { pattern: RegExp; climate: GlowClimate; version: GlowVisualVersion };
 
 const RULES: Rule[] = [
-  { pattern: /^\/(today|dashboard|briefings?)/, climate: 'dawn', version: 'hybrid' },
+  { pattern: /^\/today(?:\/|$)/, climate: 'dawn', version: 'liquid-v1' },
+  { pattern: /^\/(dashboard|briefings?)/, climate: 'dawn', version: 'hybrid' },
   { pattern: /^\/(calendar|planning|tasks|reminders|goals|projects|routines|habits|tomorrow|focus)/, climate: 'time', version: 'hybrid' },
   { pattern: /^\/(fitness|wellness|body|food|maintenance|workout-mode)/, climate: 'vital', version: 'hybrid' },
   { pattern: /^\/(beauty|beauty-lab|makeup|skincare|hair|closet)/, climate: 'pearl', version: 'hybrid' },
