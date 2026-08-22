@@ -1,151 +1,34 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
 import { createFinanceGoalAction } from '@/app/actions/completion-v1';
 import { getFinanceGoals } from '@/lib/data/completion-v1';
 import { getFinanceEntriesByUser } from '@/lib/data/finance-entries';
-import { ArrowRight, CircleDollarSign, PiggyBank, Plane, Scissors, Sparkles, Target } from 'lucide-react';
+import { ArrowRight, CircleDollarSign, PiggyBank, Sparkles } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
+const fieldClass='w-full rounded-xl border border-white/75 bg-white/70 px-3.5 py-2.5 text-[11px] text-[#343430] placeholder:text-[#9A9790] focus:border-[#83968A] focus:outline-none';
+const money=(value:number)=>value.toLocaleString('en-US',{style:'currency',currency:'USD'});
+const month=(value:string)=>value.slice(0,7);
+const recurring=(title:string,category:string,notes:string|null)=>`${title} ${category} ${notes??''}`.toLowerCase().match(/subscription|rent|mortgage|insurance|phone|internet|utility|membership|bill/);
 
-const fieldClass = 'w-full rounded-lg border border-[#E8E1DC] bg-white px-3.5 py-2.5 text-[11px] text-[#2B2420] placeholder:text-[#A69E98] focus:border-[#71806A] focus:outline-none';
-
-function money(value: number) {
-  return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+export default async function FinanceBrainPage(){
+ const session=await auth();if(!session?.user?.id)redirect('/sign-in');
+ const [goals,entries]=await Promise.all([getFinanceGoals(session.user.id),getFinanceEntriesByUser(session.user.id)]);
+ const now=new Date();const currentKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;const prevDate=new Date(now.getFullYear(),now.getMonth()-1,1);const prevKey=`${prevDate.getFullYear()}-${String(prevDate.getMonth()+1).padStart(2,'0')}`;
+ const current=entries.filter(e=>month(e.entryDate)===currentKey);const previous=entries.filter(e=>month(e.entryDate)===prevKey);
+ const sum=(list:typeof entries,type:'income'|'expense'|'saving'|'investment')=>list.filter(e=>e.type===type).reduce((s,e)=>s+Number(e.amount),0);
+ const income=sum(current,'income'),expenses=sum(current,'expense'),savings=sum(current,'saving'),investments=sum(current,'investment');const previousExpenses=sum(previous,'expense');const recordedPosition=income-expenses-savings-investments;
+ const spendingChange=previousExpenses>0?((expenses-previousExpenses)/previousExpenses)*100:null;const savingsShare=income>0?savings/income*100:null;
+ const categories=[...current.filter(e=>e.type==='expense').reduce<Map<string,number>>((m,e)=>m.set(e.category,(m.get(e.category)??0)+Number(e.amount)),new Map()).entries()].sort((a,b)=>b[1]-a[1]);
+ const recurringLatest=[...entries.filter(e=>e.type==='expense'&&recurring(e.title,e.category,e.notes)).sort((a,b)=>b.entryDate.localeCompare(a.entryDate)).reduce<Map<string,typeof entries[number]>>((m,e)=>{const k=`${e.title.trim().toLowerCase()}|${e.category}`;if(!m.has(k))m.set(k,e);return m;},new Map()).values()];
+ const observations=[spendingChange===null?'Another prior month of expense records is needed for a month-over-month spending comparison.':`Recorded spending is ${Math.abs(spendingChange).toFixed(0)}% ${spendingChange>=0?'higher':'lower'} than the prior month.`,savingsShare===null?'No current-month income baseline is recorded, so a savings share is not calculated.':`${Math.max(0,savingsShare).toFixed(0)}% of recorded current-month income has been logged as savings.`,categories[0]?`${categories[0][0]} is the largest recorded expense category this month at ${money(categories[0][1])}.`:'No current-month expenses are recorded.',recurringLatest.length?`${recurringLatest.length} recurring-looking cost${recurringLatest.length===1?'':'s'} can be reviewed from existing Finance entries.`:'No recurring-looking costs are currently detected from titles, categories or notes.'];
+ return <AppShell><div className="min-h-screen rounded-[38px] bg-[radial-gradient(circle_at_12%_3%,rgba(255,244,224,.85),transparent_29%),radial-gradient(circle_at_84%_12%,rgba(216,228,226,.78),transparent_31%),linear-gradient(150deg,#fbf9f3,#eef2f0_55%,#f2ecee)] p-4 text-[#343430] sm:p-6">
+  <header className="rounded-[30px] border border-white/75 bg-white/40 p-6 shadow-[0_30px_100px_rgba(72,72,65,.1)] backdrop-blur-2xl"><div className="text-[10px] uppercase tracking-[.3em] text-[#77756f]">Finance · Financial Brain</div><h1 className="mt-2 glow-display text-4xl">Understand what changed. Decide what matters.</h1><p className="mt-3 max-w-3xl text-sm text-[#74736e]">This page interprets recorded Finance history. It does not treat the ledger as a bank account, invent future bills, or score your financial health with arbitrary points.</p><div className="mt-5 flex flex-wrap gap-2"><Link href="/finance" className="couture-primary">Back to Money Decision Studio</Link><Link href="/finance#finance-manager" className="couture-secondary">Open finance records</Link></div></header>
+  <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_.8fr]"><section className="rounded-[28px] border border-white/70 bg-white/48 p-5"><div className="text-[10px] uppercase tracking-[.2em]">Current recorded position</div><div className="mt-2 glow-display text-4xl">{money(recordedPosition)}</div><p className="mt-2 text-xs text-[#77756f]">Current-month income minus recorded expenses, savings and investments. This is not net worth or a live cash balance.</p><div className="mt-5 grid gap-3 sm:grid-cols-4"><Metric label="Income" value={money(income)}/><Metric label="Expenses" value={money(expenses)}/><Metric label="Savings" value={money(savings)}/><Metric label="Investments" value={money(investments)}/></div></section><section className="rounded-[28px] border border-white/70 bg-white/48 p-5"><div className="flex items-center gap-2"><Sparkles className="h-4 w-4"/><div className="text-[10px] uppercase tracking-[.2em]">What Glow notices</div></div><div className="mt-4 space-y-3">{observations.map((x,i)=><div key={x} className="flex gap-3 rounded-[18px] bg-white/45 p-3"><span className="text-xs">{i+1}</span><p className="text-sm text-[#6f706b]">{x}</p></div>)}</div></section></div>
+  <div className="mt-4 grid gap-4 lg:grid-cols-2"><section className="rounded-[28px] border border-white/70 bg-white/48 p-5"><div className="text-[10px] uppercase tracking-[.2em]">Decision prompts</div><div className="mt-4 space-y-2">{['Can I afford a purchase without weakening my current recorded buffer?','Which recurring costs deserve review?','What happens if I increase savings?','What changed most from last month?'].map(x=><Link key={x} href="/finance" className="flex items-center justify-between rounded-[19px] bg-white/45 p-4 text-sm"><span>{x}</span><ArrowRight className="h-4 w-4"/></Link>)}</div></section><section className="rounded-[28px] border border-white/70 bg-white/48 p-5"><div className="text-[10px] uppercase tracking-[.2em]">Recurring-cost evidence</div><div className="mt-4 space-y-2">{recurringLatest.length?recurringLatest.slice(0,8).map(e=><Link href={`/finance?entryId=${e.id}`} key={e.id} className="flex justify-between gap-4 rounded-[19px] bg-white/45 p-4"><div><div className="text-sm font-medium">{e.title}</div><div className="mt-1 text-[10px] text-[#85827b]">Last recorded {e.entryDate} · {e.category}</div></div><span className="text-sm">{money(Number(e.amount))}</span></Link>):<div className="text-sm text-[#77756f]">No recurring-looking entries detected yet.</div>}</div></section></div>
+  <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_1fr]"><section className="rounded-[28px] border border-white/70 bg-white/48 p-5"><div className="text-[10px] uppercase tracking-[.2em]">Finance goals</div><div className="mt-4 space-y-3">{goals.length?goals.slice(0,6).map(g=>{const pct=g.targetCents?Math.min(100,Math.round(g.currentCents/g.targetCents*100)):0;return <div key={g.id} className="rounded-[20px] bg-white/45 p-4"><div className="flex justify-between gap-3"><span>{g.name}</span><span>{pct}%</span></div><div className="mt-1 text-xs text-[#77756f]">{money(g.currentCents/100)} of {money(g.targetCents/100)}</div><div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white"><div className="h-full rounded-full bg-[#aabaae]" style={{width:`${pct}%`}}/></div></div>}):<div className="text-sm text-[#77756f]">No financial goals recorded.</div>}</div></section><section id="add-finance-goal" className="rounded-[28px] border border-white/70 bg-white/48 p-5"><div className="flex items-center gap-2"><CircleDollarSign className="h-4 w-4"/><div className="text-[10px] uppercase tracking-[.2em]">Add Financial Goal</div></div><form action={createFinanceGoalAction} className="mt-4 grid gap-3"><input name="name" required placeholder="Goal name" className={fieldClass}/><select name="goalType" defaultValue="savings" className={fieldClass}><option value="savings">Savings</option><option value="debt">Debt payoff</option><option value="travel">Travel</option><option value="emergency">Emergency fund</option><option value="purchase">Purchase</option></select><div className="grid gap-3 sm:grid-cols-2"><input name="target" required inputMode="decimal" placeholder="Target amount" className={fieldClass}/><input name="current" inputMode="decimal" placeholder="Current amount" className={fieldClass}/></div><input name="targetDate" type="date" className={fieldClass}/><textarea name="notes" rows={2} placeholder="Notes / scenario" className={fieldClass}/><button className="couture-primary w-fit"><PiggyBank className="mr-2 inline h-4 w-4"/>Save goal</button></form></section></div>
+ </div></AppShell>;
 }
-
-function dateValue(value: string | Date) {
-  return value instanceof Date ? value : new Date(`${value}T12:00:00`);
-}
-
-function monthKey(value: string | Date) {
-  const date = dateValue(value);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-}
-
-function clamp(value: number) {
-  return Math.max(0, Math.min(100, value));
-}
-
-export default async function FinanceBrainPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/sign-in');
-
-  const [goals, entries] = await Promise.all([
-    getFinanceGoals(session.user.id),
-    getFinanceEntriesByUser(session.user.id),
-  ]);
-
-  const now = new Date();
-  const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  const previousDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const previousKey = `${previousDate.getFullYear()}-${String(previousDate.getMonth() + 1).padStart(2, '0')}`;
-
-  const current = entries.filter((entry) => monthKey(entry.entryDate) === currentKey);
-  const previous = entries.filter((entry) => monthKey(entry.entryDate) === previousKey);
-  const allIncome = entries.filter((entry) => entry.type === 'income').reduce((sum, entry) => sum + Number(entry.amount), 0);
-  const allExpenses = entries.filter((entry) => entry.type === 'expense').reduce((sum, entry) => sum + Number(entry.amount), 0);
-  const allSavings = entries.filter((entry) => entry.type === 'saving').reduce((sum, entry) => sum + Number(entry.amount), 0);
-  const income = current.filter((entry) => entry.type === 'income').reduce((sum, entry) => sum + Number(entry.amount), 0);
-  const expenses = current.filter((entry) => entry.type === 'expense').reduce((sum, entry) => sum + Number(entry.amount), 0);
-  const savings = current.filter((entry) => entry.type === 'saving').reduce((sum, entry) => sum + Number(entry.amount), 0);
-  const previousExpenses = previous.filter((entry) => entry.type === 'expense').reduce((sum, entry) => sum + Number(entry.amount), 0);
-  const cashFlow = income - expenses;
-  const netWorthProxy = allIncome - allExpenses + allSavings;
-  const savingsRate = income > 0 ? ((savings + Math.max(0, cashFlow)) / income) * 100 : 0;
-  const spendingChange = previousExpenses > 0 ? ((expenses - previousExpenses) / previousExpenses) * 100 : 0;
-  const subscriptionEntries = current.filter((entry) => entry.type === 'expense' && (entry.category || '').toLowerCase().includes('subscription'));
-
-  const cashFlowScore = income > 0 ? clamp(50 + (cashFlow / income) * 100) : 50;
-  const savingsScore = clamp(savingsRate * 3.2);
-  const spendingScore = previousExpenses > 0 ? clamp(82 - Math.max(0, spendingChange) * 1.8) : 72;
-  const goalScore = goals.length ? clamp(goals.reduce((sum, goal) => sum + (goal.targetCents ? goal.currentCents / goal.targetCents * 100 : 0), 0) / goals.length) : 65;
-  const healthScore = Math.round((cashFlowScore + savingsScore + spendingScore + goalScore) / 4);
-  const healthLabel = healthScore >= 80 ? 'Strong' : healthScore >= 65 ? 'Good' : healthScore >= 50 ? 'Steady' : 'Needs attention';
-
-  const scenarios = [
-    { icon: Target, title: 'What if I save $300 more?', detail: `${money(Math.max(0, cashFlow) + 300)} potential monthly surplus` },
-    { icon: Scissors, title: 'What if I cut subscriptions?', detail: `${money(subscriptionEntries.reduce((sum, entry) => sum + Number(entry.amount), 0))} currently recorded` },
-    { icon: Plane, title: 'What if I take this trip?', detail: goals.find((goal) => goal.goalType === 'travel')?.name || 'Add a travel goal to model it' },
-  ];
-
-  const notices = [
-    previousExpenses > 0
-      ? `You spent ${Math.abs(spendingChange).toFixed(0)}% ${spendingChange >= 0 ? 'more' : 'less'} than last month.`
-      : 'Log another month of spending to unlock month-over-month patterns.',
-    income > 0
-      ? `Your savings rate is ${Math.max(0, savingsRate).toFixed(0)}% this month.${savingsRate >= 20 ? ' Great job staying consistent.' : ''}`
-      : 'Add this month’s income to calculate your savings rate.',
-    subscriptionEntries.length
-      ? `You have ${subscriptionEntries.length} subscription ${subscriptionEntries.length === 1 ? 'charge' : 'charges'} recorded this month.`
-      : 'No subscription expenses are recorded this month.',
-  ];
-
-  return (
-    <AppShell>
-      <SectionPage eyebrow="1. Financial Brain" title="Financial Brain" description="Understand your money. Make confident decisions.">
-        <div className="batch5-brain-root">
-          <section className="batch5-brain-position batch5-card">
-            <div className="batch5-brain-position-main">
-              <p className="batch5-eyebrow">Current Position</p>
-              <span>Net Worth</span>
-              <strong>{money(netWorthProxy)}</strong>
-              <small>{cashFlow >= 0 ? '+' : '−'} {money(Math.abs(cashFlow))} this month</small>
-            </div>
-            <div className="batch5-brain-position-metrics">
-              <div><span>Income (Month)</span><strong>{money(income)}</strong></div>
-              <div><span>Expenses (Month)</span><strong>{money(expenses)}</strong></div>
-              <div><span>Cash Flow</span><strong className={cashFlow >= 0 ? 'positive' : 'negative'}>{cashFlow >= 0 ? '+' : '−'}{money(Math.abs(cashFlow))}</strong></div>
-            </div>
-          </section>
-
-          <div className="batch5-brain-two">
-            <section className="batch5-card batch5-brain-notices">
-              <div className="batch5-card-head"><h2>What Glow Notices</h2><Sparkles size={14} /></div>
-              <div className="batch5-brain-notice-list">{notices.map((notice, index) => <div key={notice}><span>{index + 1}</span><p>{notice}</p></div>)}</div>
-            </section>
-
-            <section className="batch5-card batch5-brain-scenarios">
-              <div className="batch5-card-head"><h2>Scenario Planner</h2><span>Explore</span></div>
-              {scenarios.map(({ icon: Icon, title, detail }) => <div className="batch5-brain-scenario" key={title}><span><Icon size={14} /></span><div><strong>{title}</strong><small>{detail}</small></div><ArrowRight size={12} /></div>)}
-            </section>
-          </div>
-
-          <div className="batch5-brain-two batch5-brain-lower">
-            <section className="batch5-card batch5-brain-health">
-              <div className="batch5-card-head"><h2>Financial Health</h2><span>From logged data</span></div>
-              <div className="batch5-brain-health-grid">
-                <div className="batch5-brain-score" style={{ background: `conic-gradient(#61715b ${healthScore * 3.6}deg,#ebe7e2 0deg)` }}><span><strong>{healthScore}</strong><small>/100</small><em>{healthLabel}</em></span></div>
-                <div className="batch5-brain-bars">
-                  {[['Cash Flow', cashFlowScore], ['Savings Rate', savingsScore], ['Goal Pace', goalScore], ['Spending', spendingScore]].map(([label, value]) => <div key={String(label)}><div><span>{label}</span><small>{Number(value) >= 70 ? 'Good' : Number(value) >= 50 ? 'Steady' : 'Needs attention'}</small></div><i><b style={{ width: `${Number(value)}%` }} /></i></div>)}
-                </div>
-              </div>
-            </section>
-
-            <section className="batch5-card batch5-brain-priorities">
-              <div className="batch5-card-head"><h2>Top Priorities</h2><a href="#add-finance-goal">Add goal</a></div>
-              {goals.length ? goals.slice(0, 4).map((goal, index) => {
-                const progress = goal.targetCents ? clamp(goal.currentCents / goal.targetCents * 100) : 0;
-                return <div className="batch5-brain-priority" key={goal.id}><span>{index + 1}</span><div><strong>{goal.name}</strong><small>{money(goal.currentCents / 100)} of {money(goal.targetCents / 100)}</small><i><b style={{ width: `${progress}%` }} /></i></div><em>{Math.round(progress)}%</em></div>;
-              }) : <div className="batch5-empty">Add a financial goal and Glow will keep your priorities visible here.</div>}
-            </section>
-          </div>
-
-          <section id="add-finance-goal" className="batch5-card batch5-brain-goal-form">
-            <div className="batch5-card-head"><h2>Add Financial Goal</h2><CircleDollarSign size={14} /></div>
-            <form action={createFinanceGoalAction}>
-              <input name="name" required placeholder="Goal name" className={fieldClass} />
-              <select name="goalType" defaultValue="savings" className={fieldClass}><option value="savings">Savings</option><option value="debt">Debt payoff</option><option value="travel">Travel</option><option value="emergency">Emergency fund</option><option value="purchase">Purchase</option></select>
-              <input name="target" required inputMode="decimal" placeholder="Target amount" className={fieldClass} />
-              <input name="current" inputMode="decimal" placeholder="Current amount" className={fieldClass} />
-              <input name="targetDate" type="date" className={fieldClass} />
-              <textarea name="notes" rows={2} placeholder="Notes / scenario" className={fieldClass} />
-              <button><PiggyBank size={13} /> Save goal</button>
-            </form>
-          </section>
-        </div>
-      </SectionPage>
-    </AppShell>
-  );
-}
+function Metric({label,value}:{label:string;value:string}){return <div className="rounded-[18px] bg-white/45 p-3"><div className="text-[9px] uppercase tracking-[.16em] text-[#85827b]">{label}</div><div className="mt-2 text-sm font-medium">{value}</div></div>}
