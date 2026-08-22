@@ -1,0 +1,183 @@
+/* TODAY · LIQUID CRYSTAL V1
+   Page-scoped conversion. Nothing here applies outside /today because the
+   migration registry is the gate and every selector is anchored to the
+   Today shell plus data-glow-visual-version='liquid-v1'. */
+
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] {
+  --today-rose: 244, 159, 196;
+  --today-violet: 153, 135, 255;
+  --today-blue: 111, 178, 255;
+  --today-gold: 255, 214, 153;
+  --today-ink: 250, 247, 255;
+  background:
+    radial-gradient(78% 55% at 18% 4%, rgba(var(--today-rose), .34), transparent 66%),
+    radial-gradient(70% 52% at 88% 15%, rgba(var(--today-violet), .34), transparent 68%),
+    radial-gradient(62% 54% at 46% 92%, rgba(var(--today-blue), .20), transparent 70%),
+    linear-gradient(180deg, #171225 0%, #0f1020 48%, #0a1020 100%) !important;
+  color: rgb(var(--today-ink));
+}
+
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] .glow-world-physics {
+  z-index: 0;
+  opacity: .92;
+  background:
+    radial-gradient(72% 48% at 15% 7%, rgba(var(--today-rose), .30), transparent 66%),
+    radial-gradient(67% 50% at 88% 12%, rgba(var(--today-violet), .30), transparent 70%),
+    radial-gradient(62% 50% at 62% 94%, rgba(var(--today-blue), .17), transparent 72%),
+    linear-gradient(165deg, rgba(18,13,34,.96), rgba(11,13,29,.97));
+}
+
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] {
+  position: relative;
+  z-index: 1;
+  background: transparent !important;
+  color: rgba(255,255,255,.94) !important;
+}
+
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] > div,
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] > div > div,
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] main {
+  background: transparent !important;
+}
+
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] main {
+  min-height: 100vh;
+  color: rgba(255,255,255,.94);
+}
+
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] .glow-reference-route-stage {
+  position: relative;
+  z-index: 2;
+  max-width: 1480px;
+  animation: today-condense .52s cubic-bezier(.22,.78,.18,1) both;
+}
+
+/* Existing Today surfaces become Glow Matter only on Today. */
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] main section,
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] main header,
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] main aside > a {
+  border-color: rgba(255,255,255,.18) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.17), rgba(255,255,255,.075) 52%, rgba(var(--today-violet),.085)) !important;
+  box-shadow:
+    0 24px 65px rgba(4,5,18,.30),
+    inset 0 1px 0 rgba(255,255,255,.25),
+    inset 0 -1px 0 rgba(255,255,255,.05) !important;
+  backdrop-filter: blur(28px) saturate(1.24) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(1.24) !important;
+}
+
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] main header {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(90% 120% at 0% 0%, rgba(var(--today-rose),.28), transparent 58%),
+    radial-gradient(90% 100% at 100% 0%, rgba(var(--today-violet),.24), transparent 64%),
+    linear-gradient(145deg, rgba(255,255,255,.20), rgba(255,255,255,.07)) !important;
+}
+
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] main header::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(116deg, rgba(255,255,255,.30), transparent 24%, transparent 68%, rgba(var(--today-rose),.12)),
+    radial-gradient(65% 40% at 70% 0%, rgba(var(--today-gold),.11), transparent 70%);
+  mix-blend-mode: screen;
+}
+
+/* Priority card becomes the deepest Today surface. */
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] main section.bg-\[\#2B2420\] {
+  background:
+    radial-gradient(80% 110% at 0% 0%, rgba(var(--today-rose),.20), transparent 62%),
+    radial-gradient(90% 100% at 100% 0%, rgba(var(--today-violet),.22), transparent 68%),
+    linear-gradient(145deg, rgba(18,15,34,.90), rgba(19,17,38,.70)) !important;
+  border-color: rgba(255,255,255,.22) !important;
+  box-shadow: 0 32px 90px rgba(2,4,16,.42), inset 0 1px 0 rgba(255,255,255,.24) !important;
+}
+
+/* Remap the old editorial text palette only within Today. */
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] .text-\[\#2B2420\],
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] .text-\[\#4A4440\] {
+  color: rgba(255,255,255,.94) !important;
+}
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] .text-\[\#8A8078\],
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] .text-\[\#B5ACA5\] {
+  color: rgba(235,230,247,.64) !important;
+}
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] .text-\[\#C9727E\],
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] .text-\[\#B15A68\] {
+  color: rgb(255,181,211) !important;
+}
+
+/* Old pale separators become refractive crystal seams. */
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] .border-\[\#F1E7E3\] {
+  border-color: rgba(255,255,255,.16) !important;
+}
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] .bg-\[\#F1E7E3\] {
+  background: rgba(255,255,255,.11) !important;
+}
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] .bg-white,
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] .bg-white\/70,
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] .bg-\[\#FDF3F2\],
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] .bg-\[\#FBE4E8\] {
+  background: rgba(255,255,255,.10) !important;
+}
+
+/* Buttons and links keep their handlers; only their material changes. */
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] main a.rounded-full,
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] main button.rounded-full {
+  border-color: rgba(255,255,255,.22) !important;
+  background: linear-gradient(145deg, rgba(255,255,255,.16), rgba(255,255,255,.075)) !important;
+  color: rgba(255,255,255,.90) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.20), 0 10px 28px rgba(5,5,20,.16);
+  backdrop-filter: blur(20px) saturate(1.22);
+  -webkit-backdrop-filter: blur(20px) saturate(1.22);
+}
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] main a.rounded-full:hover,
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] main button.rounded-full:hover {
+  border-color: rgba(255,255,255,.35) !important;
+  background: linear-gradient(145deg, rgba(255,255,255,.22), rgba(var(--today-rose),.10)) !important;
+}
+
+/* Keep dark functional text inside explicitly light pills readable where needed. */
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] .text-\[\#44302f\] {
+  color: rgba(255,255,255,.95) !important;
+}
+
+/* Adaptive and weather components get optical containment without structural changes. */
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] main > div > div > * {
+  position: relative;
+}
+
+/* Intelligence wakes the dawn atmosphere instead of covering controls. */
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] .glow-world-physics__aurora {
+  background:
+    conic-gradient(from 120deg at 50% 50%, transparent 4%, rgba(var(--today-rose),.38), rgba(255,255,255,.48), rgba(var(--today-violet),.40), rgba(var(--today-blue),.24), transparent 70%);
+}
+
+@keyframes today-condense {
+  from { opacity: .94; filter: blur(2px); transform: translateY(4px); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+@media (max-width: 767px) {
+  body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] main {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] main section,
+  body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] main header,
+  body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] main aside > a {
+    backdrop-filter: blur(22px) saturate(1.18) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(1.18) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] .glow-reference-route-stage {
+    animation: none !important;
+  }
+}
