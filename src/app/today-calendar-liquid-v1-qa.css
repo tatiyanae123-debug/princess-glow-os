@@ -1,0 +1,126 @@
+/* TODAY + CALENDAR · LIQUID V1 FINAL QA
+   Corrective layer only. Scoped to the two approved liquid-v1 routes.
+   No page behavior, navigation, data, event handlers, or geometry is owned here.
+*/
+
+/* The route-specific pages already provide their own mist animation.
+   Prevent the global route animation from stacking on top of it. */
+body[data-glow-visual-version='liquid-v1'].glow-route-condense main {
+  animation: none !important;
+}
+
+/* Keep the page-owned condense effect as the single entrance animation. */
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] .glow-reference-route-stage {
+  animation: today-condense .52s cubic-bezier(.22,.78,.18,1) both;
+}
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference {
+  animation: calendar-condense .48s cubic-bezier(.22,.78,.18,1) both;
+}
+
+/* Keyboard users must always see where focus is, even on translucent material. */
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] :is(a,button,input,textarea,select):focus-visible,
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference :is(a,button,input,textarea,select):focus-visible {
+  outline: 2px solid rgba(232,239,255,.96) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 5px rgba(142,157,255,.20), 0 0 28px rgba(154,142,255,.20) !important;
+}
+
+/* Disabled controls remain visibly disabled rather than looking broken. */
+body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] :is(button,input,textarea,select):disabled,
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference :is(button,input,textarea,select):disabled {
+  opacity: .46 !important;
+  cursor: not-allowed !important;
+  filter: saturate(.65) !important;
+}
+
+/* Calendar's earlier first-of-type rule was intentionally attractive but too broad.
+   Reset every first section to normal temporal Glow Matter, then re-apply the hero
+   only to the actual top-level Calendar hero. */
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference section:first-of-type {
+  overflow: visible;
+  background: linear-gradient(145deg, rgba(255,255,255,.145), rgba(255,255,255,.065) 54%, rgba(155,139,255,.075)) !important;
+}
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference section:first-of-type::after {
+  content: none !important;
+}
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference > div > section:first-of-type {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(88% 100% at 0% 0%, rgba(155,139,255,.27), transparent 60%),
+    radial-gradient(82% 95% at 100% 0%, rgba(98,174,255,.21), transparent 65%),
+    linear-gradient(145deg, rgba(255,255,255,.16), rgba(255,255,255,.055)) !important;
+}
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference > div > section:first-of-type::after {
+  content: '' !important;
+  position: absolute;
+  inset: -1px;
+  pointer-events: none !important;
+  border-radius: inherit;
+  background:
+    linear-gradient(118deg, rgba(255,255,255,.28), transparent 24%, transparent 72%, rgba(115,224,238,.08)),
+    radial-gradient(70% 40% at 72% 0%, rgba(98,174,255,.11), transparent 72%);
+  mix-blend-mode: screen;
+}
+
+/* Preserve category readability inside Calendar event chips. */
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference button[class*='bg-[#'] :is(span,p) {
+  text-shadow: 0 1px 8px rgba(5,8,22,.18);
+}
+
+/* Event/new-event dialogs remain a bright pearl crystal over the darker Calendar.
+   Keeping the modal light preserves all existing EventForm contrast and native controls. */
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference [role='dialog'] .paper-card {
+  border: 1px solid rgba(255,255,255,.72) !important;
+  background:
+    radial-gradient(100% 70% at 100% 0%, rgba(202,211,255,.32), transparent 64%),
+    linear-gradient(150deg, rgba(255,255,255,.97), rgba(244,245,253,.94)) !important;
+  color: #332f3d !important;
+  box-shadow: 0 38px 110px rgba(2,5,20,.48), inset 0 1px 0 rgba(255,255,255,.96) !important;
+  backdrop-filter: blur(32px) saturate(1.12) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(1.12) !important;
+}
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference [role='dialog'] .paper-card :is(input,textarea,select) {
+  border-color: rgba(91,88,126,.18) !important;
+  background: rgba(255,255,255,.76) !important;
+  color: #332f3d !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.92) !important;
+}
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference [role='dialog'] .paper-card :is(input,textarea)::placeholder {
+  color: rgba(74,70,94,.46) !important;
+}
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference [role='dialog'] .paper-card :is(.text-\[\#2B2420\],.text-\[\#4A4440\]) {
+  color: #332f3d !important;
+}
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference [role='dialog'] .paper-card :is(.text-\[\#8A8078\],.text-\[\#B5ACA5\]) {
+  color: rgba(70,66,87,.65) !important;
+}
+
+/* Native select menus should remain readable in browsers that paint their own popup. */
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference select option {
+  background: #f4f5fb;
+  color: #332f3d;
+}
+
+/* Prevent decorative page sheen from ever being considered part of hit testing. */
+body[data-glow-visual-version='liquid-v1'] :is(.glow-world-physics,.glow-world-physics *, .glow-effects-overlay,.glow-effects-overlay *) {
+  pointer-events: none !important;
+}
+
+/* Small screens: maintain minimum comfortable hit targets without changing layout. */
+@media (max-width: 767px) {
+  body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] :is(button,a.rounded-full),
+  body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference :is(button,a.rounded-full) {
+    min-height: 40px;
+  }
+  body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference [role='dialog'] .paper-card {
+    max-height: 90dvh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-glow-zone='dawn'][data-glow-visual-version='liquid-v1'] [data-room='today'] .glow-reference-route-stage,
+  body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference {
+    animation: none !important;
+  }
+}
