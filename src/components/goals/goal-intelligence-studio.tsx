@@ -7,7 +7,7 @@ import { GoalsRouteExperience } from '@/components/goals/goals-route-experience'
 
 type GoalLite={id:string;title:string;description:string|null;category:string;status:string;targetDate:Date|null;progress:number;createdAt:Date;updatedAt:Date};
 type TaskLite={id:string;title:string;description:string|null;status:string;priority:string;dueDate:Date|null};
-type EventLite={id:string;title:string;startAt:Date;endAt:Date;allDay:boolean};
+type EventLite={id:string;title:string;startAt:Date;endAt:Date|null;allDay:boolean};
 type ProjectLite={id:string;title:string;area:string;status:string;progress:number;nextAction:string|null;deadline:Date|null};
 type HabitLite={id:string;name:string;description:string|null;frequency:string;targetCount:number};
 type HabitLogLite={id:string;habitId:string;loggedDate:string;count:number};
@@ -60,7 +60,6 @@ export function GoalIntelligenceStudio({goals,tasks,events,projects,habits,habit
  const stale=activeGoals.filter(goal=>now.getTime()-new Date(goal.updatedAt).getTime()>1000*60*60*24*14);
  const completed=goals.filter(goal=>goal.status==='achieved'||goal.progress>=100).length;
  const avgProgress=activeGoals.length?Math.round(activeGoals.reduce((sum,goal)=>sum+goal.progress,0)/activeGoals.length):0;
- const actionForEffort=selectedGoal?(lowEnergy?`Keep ${selectedGoal.title} alive with one 5-minute preparation step.`:effort<=5?`Do the smallest useful piece of: ${selectedAction}`:selectedAction):'Create your first active goal.';
 
  function patchMemory(goalId:string,patch:Partial<Memory>){setStore(current=>({...current,goalMemory:{...current.goalMemory,[goalId]:{...defaultMemory,...current.goalMemory[goalId],...patch}}}))}
  function startFocusFor(goal:GoalLite,memory:Memory){const base=lowEnergy?`Keep ${goal.title} alive with one 5-minute preparation step.`:effort<=5?`Do the smallest useful piece of: ${nextFromGoal(goal,memory)}`:nextFromGoal(goal,memory);const steps=base.length>70?[`Clarify what “done” means for this action.`,`Work only on the first visible piece.`,`Finish or record the exact next step.`]:[base];setSelectedGoalId(goal.id);setFocus({goalId:goal.id,title:goal.title,seconds:(lowEnergy?5:effort)*60,steps,index:0});setRunning(true)}
