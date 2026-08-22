@@ -1,0 +1,244 @@
+/* CALENDAR · LIQUID CRYSTAL V1
+   Scoped to the real Calendar page only. Existing event state, drag/drop,
+   dialogs, view switching, actions and data remain owned by React.
+*/
+
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] {
+  --cal-lilac: 155, 139, 255;
+  --cal-blue: 98, 174, 255;
+  --cal-cyan: 115, 224, 238;
+  --cal-rose: 221, 153, 220;
+  --cal-ink: 246, 247, 255;
+  background:
+    radial-gradient(72% 50% at 10% 4%, rgba(var(--cal-lilac), .34), transparent 66%),
+    radial-gradient(70% 50% at 92% 12%, rgba(var(--cal-blue), .27), transparent 68%),
+    radial-gradient(64% 52% at 48% 94%, rgba(var(--cal-cyan), .16), transparent 72%),
+    linear-gradient(180deg, #12152b 0%, #0d1224 48%, #090e1c 100%) !important;
+  color: rgb(var(--cal-ink));
+}
+
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .glow-world-physics {
+  z-index: 0;
+  opacity: .95;
+  background:
+    radial-gradient(70% 50% at 12% 4%, rgba(var(--cal-lilac), .28), transparent 66%),
+    radial-gradient(65% 48% at 91% 14%, rgba(var(--cal-blue), .24), transparent 70%),
+    radial-gradient(62% 50% at 55% 95%, rgba(var(--cal-cyan), .14), transparent 72%),
+    linear-gradient(165deg, rgba(14,16,37,.97), rgba(8,12,27,.98));
+}
+
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] [data-room='calendar'] {
+  position: relative;
+  z-index: 1;
+  background: transparent !important;
+  color: rgba(255,255,255,.95) !important;
+}
+
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] [data-room='calendar'] > div,
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] [data-room='calendar'] > div > div,
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] [data-room='calendar'] main {
+  background: transparent !important;
+}
+
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] [data-room='calendar'] main {
+  min-height: 100vh;
+  color: rgba(255,255,255,.94);
+}
+
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference {
+  position: relative;
+  z-index: 2;
+  animation: calendar-condense .48s cubic-bezier(.22,.78,.18,1) both;
+}
+
+/* Primary Calendar surfaces become temporal Glow Matter. */
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference section,
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference aside > div {
+  border-color: rgba(255,255,255,.16) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.145), rgba(255,255,255,.065) 54%, rgba(var(--cal-lilac),.075)) !important;
+  box-shadow:
+    0 24px 70px rgba(3,6,20,.30),
+    inset 0 1px 0 rgba(255,255,255,.22),
+    inset 0 -1px 0 rgba(255,255,255,.035) !important;
+  backdrop-filter: blur(28px) saturate(1.22) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(1.22) !important;
+}
+
+/* Hero feels like time suspended in illuminated crystal. */
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference > div > section:first-of-type,
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference section:first-of-type {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(88% 100% at 0% 0%, rgba(var(--cal-lilac),.27), transparent 60%),
+    radial-gradient(82% 95% at 100% 0%, rgba(var(--cal-blue),.21), transparent 65%),
+    linear-gradient(145deg, rgba(255,255,255,.16), rgba(255,255,255,.055)) !important;
+}
+
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference section:first-of-type::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(118deg, rgba(255,255,255,.28), transparent 24%, transparent 72%, rgba(var(--cal-cyan),.08)),
+    radial-gradient(70% 40% at 72% 0%, rgba(var(--cal-blue),.11), transparent 72%);
+  mix-blend-mode: screen;
+}
+
+/* Existing white and cream sub-surfaces become depth-1 crystal. */
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference .bg-white,
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference .bg-white\/95,
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference .bg-white\/80,
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference .bg-white\/70,
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference .bg-white\/66,
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference .bg-white\/55,
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference .bg-\[\#faf7f2\],
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference .bg-\[\#faf8f3\],
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference .bg-\[\#fcfbf8\] {
+  background: rgba(255,255,255,.075) !important;
+  border-color: rgba(255,255,255,.13) !important;
+}
+
+/* Timeline receives a mineral-water temporal field without altering grid geometry. */
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference [class*='bg-[linear-gradient(180deg'] {
+  background:
+    linear-gradient(180deg,
+      rgba(156,140,255,.12) 0%,
+      rgba(111,174,255,.09) 36%,
+      rgba(112,222,236,.07) 68%,
+      rgba(221,153,220,.09) 100%) !important;
+  border-color: rgba(255,255,255,.13) !important;
+}
+
+/* Event blocks keep category distinctions but become translucent crystal chips. */
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference button[class*='bg-[#'] {
+  background: linear-gradient(145deg, rgba(255,255,255,.15), rgba(var(--cal-blue),.075)) !important;
+  border-color: rgba(255,255,255,.17) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14);
+}
+
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference button[class*='bg-[#f7e'],
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference button[class*='bg-[#f5e'] {
+  background: linear-gradient(145deg, rgba(225,159,221,.20), rgba(255,255,255,.07)) !important;
+}
+
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference button[class*='bg-[#eee'],
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference button[class*='bg-[#edf'] {
+  background: linear-gradient(145deg, rgba(159,143,255,.19), rgba(255,255,255,.065)) !important;
+}
+
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference button[class*='bg-[#e8e'],
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference button[class*='bg-[#e7e'] {
+  background: linear-gradient(145deg, rgba(103,181,255,.18), rgba(255,255,255,.065)) !important;
+}
+
+/* Old editorial text palette remapped only inside Calendar. */
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference :is(.text-\[\#302c28\],.text-\[\#3d3833\],.text-\[\#3c3732\],.text-\[\#4c4741\],.text-\[\#514943\],.text-\[\#574f47\],.text-\[\#625b54\]) {
+  color: rgba(255,255,255,.94) !important;
+}
+
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference :is(.text-\[\#69625c\],.text-\[\#777068\],.text-\[\#7e766f\],.text-\[\#817970\],.text-\[\#847c74\],.text-\[\#9a928a\],.text-\[\#9b9389\],.text-\[\#9c9389\],.text-\[\#9d948b\],.text-\[\#9e958d\],.text-\[\#aaa199\]) {
+  color: rgba(229,232,250,.63) !important;
+}
+
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference .text-\[\#a56f72\],
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference .text-\[\#a35f6b\] {
+  color: rgb(196,187,255) !important;
+}
+
+/* Buttons keep their click handlers; only material changes. */
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference button,
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference button.rounded-full,
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference a.rounded-full {
+  border-color: rgba(255,255,255,.19) !important;
+  background: linear-gradient(145deg, rgba(255,255,255,.14), rgba(255,255,255,.06)) !important;
+  color: rgba(255,255,255,.90) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 10px 28px rgba(3,5,17,.16);
+  backdrop-filter: blur(18px) saturate(1.18);
+  -webkit-backdrop-filter: blur(18px) saturate(1.18);
+}
+
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference button.rounded-full:hover,
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference a.rounded-full:hover {
+  border-color: rgba(255,255,255,.30) !important;
+  background: linear-gradient(145deg, rgba(255,255,255,.20), rgba(var(--cal-lilac),.09)) !important;
+}
+
+/* Strong primary controls remain visually obvious. */
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference .bg-\[\#38342f\],
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference .bg-\[\#3e3934\],
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference .bg-\[\#3b3732\],
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference .bg-\[\#b96d78\] {
+  background: linear-gradient(145deg, rgba(134,119,255,.62), rgba(78,124,225,.50)) !important;
+  border-color: rgba(214,221,255,.34) !important;
+  color: white !important;
+  box-shadow: 0 12px 34px rgba(75,83,190,.20), inset 0 1px 0 rgba(255,255,255,.25) !important;
+}
+
+/* Form controls and search fields become contained time crystal, not generic white boxes. */
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference input,
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference textarea,
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference select {
+  border-color: rgba(255,255,255,.17) !important;
+  background: rgba(255,255,255,.075) !important;
+  color: rgba(255,255,255,.92) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference input::placeholder,
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference textarea::placeholder {
+  color: rgba(226,230,248,.43) !important;
+}
+
+/* Current-time marker becomes luminous but does not change hit targets. */
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference .border-\[\#d8949f\] {
+  border-color: rgba(var(--cal-cyan),.52) !important;
+  box-shadow: 0 0 0 3px rgba(var(--cal-cyan),.09), inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference .bg-\[\#cb7784\] {
+  background: rgb(var(--cal-cyan)) !important;
+  box-shadow: 0 0 16px rgba(var(--cal-cyan),.60);
+}
+
+/* Sticky notices remain legible above the atmospheric field. */
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference [role='status'] {
+  border-color: rgba(255,255,255,.20) !important;
+  background: rgba(19,23,47,.88) !important;
+  color: rgba(255,255,255,.88) !important;
+  backdrop-filter: blur(22px) saturate(1.18) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(1.18) !important;
+}
+
+body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .glow-world-physics__aurora {
+  background: conic-gradient(from 115deg at 50% 50%, transparent 5%, rgba(var(--cal-lilac),.40), rgba(255,255,255,.44), rgba(var(--cal-blue),.38), rgba(var(--cal-cyan),.24), transparent 70%);
+}
+
+@keyframes calendar-condense {
+  from { opacity: .94; filter: blur(2px); transform: translateY(4px); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+@media (max-width: 767px) {
+  body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] [data-room='calendar'] main {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference section,
+  body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference aside > div {
+    backdrop-filter: blur(22px) saturate(1.17) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(1.17) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-glow-zone='time'][data-glow-visual-version='liquid-v1'] .batch1-calendar-reference {
+    animation: none !important;
+  }
+}
