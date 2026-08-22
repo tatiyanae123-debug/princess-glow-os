@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Focus, Plus, Search, Sparkles } from 'lucide-react';
+import { BookOpen, Focus, Plus, Search, Sparkles } from 'lucide-react';
 import { blueprintForPath } from '@/lib/glow-page-blueprints';
 
 function dispatch(name:string){ document.dispatchEvent(new Event(name)); }
@@ -12,24 +12,33 @@ export function PageIntelligenceLayer(){
   const page=blueprintForPath(pathname);
   if(!page || pathname.startsWith('/dashboard')) return null;
 
-  return <section aria-label={`${page.title} intelligence overview`} className="mb-5 overflow-hidden rounded-[26px] border border-[#eee4e1] bg-[linear-gradient(135deg,rgba(255,255,255,.98),rgba(252,246,245,.94))] shadow-[0_12px_42px_rgba(84,57,49,.055)]">
-    <div className="grid gap-4 px-4 py-4 sm:px-5 md:grid-cols-[1.05fr_1.95fr] md:items-center md:px-6">
+  return <section aria-label={`${page.title} intelligence overview`} className="relative mb-6 overflow-hidden rounded-[28px] border border-[#ddd8ce] bg-[radial-gradient(circle_at_12%_0%,rgba(255,255,255,.98),transparent_42%),linear-gradient(145deg,rgba(252,251,247,.98),rgba(244,242,236,.96))] shadow-[0_18px_64px_rgba(61,55,48,.07)]" data-glow-material="living-pearl">
+    <div aria-hidden="true" className="pointer-events-none absolute inset-x-[9%] top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(189,177,157,.7),transparent)]"/>
+    <div className="grid gap-5 px-5 py-5 sm:px-6 md:grid-cols-[1.05fr_1.95fr] md:items-center md:px-7">
       <div className="min-w-0">
-        <div className="flex items-center gap-2 text-[#bd5d73]"><Sparkles size={13}/><span className="text-[9px] font-semibold uppercase tracking-[.16em]">Glow Intelligence</span></div>
-        <h2 className="mt-1.5 font-serif text-[22px] leading-tight text-[#292320] sm:text-[25px]">{page.question}</h2>
-        <p className="mt-1 max-w-[520px] text-[11px] leading-5 text-[#837873] sm:text-[12px]">{page.purpose}</p>
+        <div className="flex items-center gap-2 text-[#8b7e6d]"><Sparkles size={12}/><span className="text-[9px] font-semibold uppercase tracking-[.19em]">Glow Intelligence</span></div>
+        <h2 className="mt-2 font-serif text-[23px] leading-tight text-[#35312d] sm:text-[27px]">{page.question}</h2>
+        <p className="mt-2 max-w-[540px] text-[11px] leading-5 text-[#756e66] sm:text-[12px]">{page.purpose}</p>
       </div>
-      <div className="grid gap-2 sm:grid-cols-3">
-        <div className="rounded-[17px] border border-[#f0e6e3] bg-white/88 px-3.5 py-3"><span className="text-[8.5px] font-semibold uppercase tracking-[.14em] text-[#b35c70]">Right now</span><p className="mt-1 text-[11px] leading-[1.45] text-[#4d4541]">{page.rightNow}</p></div>
-        <div className="rounded-[17px] border border-[#f0e6e3] bg-white/72 px-3.5 py-3"><span className="text-[8.5px] font-semibold uppercase tracking-[.14em] text-[#8c817b]">Overview</span><p className="mt-1 text-[11px] leading-[1.45] text-[#4d4541]">{page.overview}</p></div>
-        <div className="rounded-[17px] border border-[#f0e6e3] bg-white/58 px-3.5 py-3"><span className="text-[8.5px] font-semibold uppercase tracking-[.14em] text-[#8c817b]">Explore</span><p className="mt-1 text-[11px] leading-[1.45] text-[#4d4541]">{page.explore}</p></div>
+      <div className="grid gap-2.5 sm:grid-cols-3">
+        <QuietCell label="Right now" text={page.rightNow} emphasis/>
+        <QuietCell label="Overview" text={page.overview}/>
+        <QuietCell label="Explore" text={page.explore}/>
       </div>
     </div>
-    <div className="flex flex-wrap items-center gap-2 border-t border-[#f1e8e5] bg-white/62 px-4 py-2.5 sm:px-5 md:px-6">
-      <button type="button" onClick={()=>router.push(`/intake?from=${encodeURIComponent(pathname)}`)} className="inline-flex min-h-9 items-center gap-2 rounded-full bg-[#c35f76] px-3.5 text-[10.5px] font-medium text-white shadow-[0_6px_18px_rgba(195,95,118,.18)]"><Plus size={13}/>Add to Glow</button>
-      <button type="button" onClick={()=>dispatch('glow:search-open')} className="inline-flex min-h-9 items-center gap-2 rounded-full border border-[#eadfdb] bg-white px-3.5 text-[10.5px] font-medium text-[#5d5550]"><Search size={13}/>Search this life</button>
-      <button type="button" onClick={()=>router.push(`${pathname}${pathname.includes('?')?'&':'?'}focus=1`)} className="inline-flex min-h-9 items-center gap-2 rounded-full border border-[#eadfdb] bg-white px-3.5 text-[10.5px] font-medium text-[#5d5550]"><Focus size={13}/>Focus mode</button>
-      <span className="ml-auto hidden text-[9px] text-[#aaa09a] md:block">Add once → Glow routes it where it belongs</span>
+    <div className="flex flex-wrap items-center gap-2 border-t border-[#e6e1d8] bg-white/52 px-5 py-3 sm:px-6 md:px-7">
+      <button type="button" onClick={()=>router.push(`/intake?from=${encodeURIComponent(pathname)}`)} className="inline-flex min-h-9 items-center gap-2 rounded-full bg-[#49443f] px-3.5 text-[10.5px] font-medium text-white shadow-[0_7px_22px_rgba(60,55,49,.12)]"><Plus size={13}/>Add to Glow</button>
+      <button type="button" onClick={()=>dispatch('glow:search-open')} className="inline-flex min-h-9 items-center gap-2 rounded-full border border-[#ddd7ce] bg-white/82 px-3.5 text-[10.5px] font-medium text-[#625b53]"><Search size={13}/>Search this life</button>
+      <button type="button" onClick={()=>router.push('/create/source-library')} className="inline-flex min-h-9 items-center gap-2 rounded-full border border-[#ddd7ce] bg-white/72 px-3.5 text-[10.5px] font-medium text-[#625b53]"><BookOpen size={13}/>Sources</button>
+      <button type="button" onClick={()=>router.push(`${pathname}${pathname.includes('?')?'&':'?'}focus=1`)} className="inline-flex min-h-9 items-center gap-2 rounded-full border border-[#ddd7ce] bg-white/72 px-3.5 text-[10.5px] font-medium text-[#625b53]"><Focus size={13}/>Focus mode</button>
+      <span className="ml-auto hidden text-[9px] tracking-[.02em] text-[#9b9389] md:block">Information condenses into structure. Nothing is silently adopted.</span>
     </div>
   </section>;
+}
+
+function QuietCell({label,text,emphasis=false}:{label:string;text:string;emphasis?:boolean}){
+ return <div className={`rounded-[18px] border px-3.5 py-3.5 ${emphasis?'border-[#d8d0c3] bg-white/82 shadow-[0_10px_30px_rgba(67,58,49,.04)]':'border-[#e2ddd4] bg-white/58'}`}>
+   <span className={`text-[8.5px] font-semibold uppercase tracking-[.15em] ${emphasis?'text-[#82725f]':'text-[#918980]'}`}>{label}</span>
+   <p className="mt-1.5 text-[11px] leading-[1.5] text-[#4f4943]">{text}</p>
+ </div>
 }
