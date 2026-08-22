@@ -4,8 +4,9 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { Brain, Clock3, Compass, Flag, Layers3, Play, Target } from 'lucide-react';
 import { GoalsRouteExperience } from '@/components/goals/goals-route-experience';
+import type { Goal } from '@/lib/types';
 
-type GoalLite={id:string;title:string;description:string|null;category:string;status:string;targetDate:Date|null;progress:number;createdAt:Date;updatedAt:Date};
+type GoalLite=Goal;
 type TaskLite={id:string;title:string;description:string|null;status:string;priority:string;dueDate:Date|null};
 type EventLite={id:string;title:string;startAt:Date;endAt:Date|null;allDay:boolean};
 type ProjectLite={id:string;title:string;area:string;status:string;progress:number;nextAction:string|null;deadline:Date|null};
