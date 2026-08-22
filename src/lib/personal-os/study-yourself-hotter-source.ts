@@ -1,0 +1,120 @@
+import type { PersonalRoutineDefinition } from './source-of-truth';
+
+export const STUDY_HOTTER_SOURCE_VERSION = 'study-yourself-hotter-2026-08-22-v1';
+
+export const studyHotterHabits = [
+  { name: 'Capacity check', description: 'Choose Low, Normal or High capacity before deciding how much belongs in today.', icon: 'battery-medium' },
+  { name: 'Priority count', description: 'Low capacity: one priority. Normal: three. High: up to six ranked tasks if the day truly has room.', icon: 'target' },
+  { name: 'First 20 minutes low-scroll', description: 'Protect the opening of the day from infinite-scroll feeds and choose one grounding cue first.', icon: 'smartphone-off' },
+  { name: 'Mental energy check', description: 'Notice when thinking, focus and decision-making feel strongest or weakest.', icon: 'brain' },
+  { name: 'Physical energy check', description: 'Track physical drive separately from mental focus so movement can be planned around the body.', icon: 'activity' },
+  { name: '10-minute night tidy', description: 'Return objects to their homes, clear one visible surface and set out what tomorrow needs.', icon: 'home' },
+  { name: 'Micro identity practice', description: 'Do one small behavior that matches the person you are intentionally becoming.', icon: 'sparkles' },
+  { name: 'Proof of progress', description: 'Capture one concrete receipt that you showed up: a completion, photo, note, screenshot or result.', icon: 'camera' },
+] as const;
+
+export const studyHotterRoutines: PersonalRoutineDefinition[] = [
+  {
+    key: 'daily-priority-engine',
+    name: 'Daily Priority Engine',
+    description: 'Turn the brain dump into a realistic day based on capacity, goals and available time.',
+    timeOfDay: 'morning',
+    steps: [
+      { title: 'Capture first, organize second', notes: 'Put loose thoughts into the master list rather than directly overloading Today.' },
+      { title: 'Choose today’s capacity', notes: 'Low = 1 true priority. Normal = 3. High = up to 6 ranked tasks only when the schedule supports it.' },
+      { title: 'Choose needle-moving work first', notes: 'Prioritize work tied to a real goal, deadline, income, commitment or important life movement.' },
+      { title: 'Check fixed commitments', notes: 'Calendar commitments are protected before filling open time.' },
+      { title: 'Time block priorities', notes: 'Translate the priority list into actual time. Slightly overestimate duration.' },
+      { title: 'Protect blank space', notes: 'Leave room for breaks, transitions, rest and spontaneity.' },
+      { title: 'Move secondary tasks only if they fit', notes: 'Nice-to-do and future items stay outside Today when there is no room.' },
+    ],
+  },
+  {
+    key: 'workday-deep-focus-sop',
+    name: 'Workday Deep Focus SOP',
+    description: 'Reduce switching, notifications and environmental friction during focused work.',
+    timeOfDay: 'anytime',
+    steps: [
+      { title: 'Name the one outcome of this block', notes: 'Know what “done” means before starting.' },
+      { title: 'Batch similar work', notes: 'Group admin with admin, writing with writing, calls with calls when practical.' },
+      { title: 'Turn off nonessential notifications', notes: 'Use device/app boundaries during the deep-work window.' },
+      { title: 'Start a realistic time block', notes: 'Use enough time to finish without pretending transitions take zero minutes.' },
+      { title: 'Keep the workspace visually clear', notes: 'Remove obvious clutter that competes for attention.' },
+      { title: 'Take an outside or movement break', notes: 'Use a short walk, stretch or fresh-air reset between demanding blocks when possible.' },
+      { title: 'Close the block', notes: 'Mark the outcome, capture the next action and stop carrying it mentally.' },
+    ],
+  },
+  {
+    key: 'weekly-plan-reflect-v2',
+    name: 'Weekly Plan + Reflect',
+    description: 'Use the previous week as data, then build the next week from commitments, priorities and capacity.',
+    timeOfDay: 'anytime',
+    daysOfWeek: ['sunday'],
+    steps: [
+      { title: 'What worked this week?', notes: 'List systems, timing, habits or choices that made life easier.' },
+      { title: 'What did not work?', notes: 'Describe what failed without turning it into a character judgment.' },
+      { title: 'What needs to change?', notes: 'Change a system, estimate, environment or routine when the same friction repeats.' },
+      { title: 'Review monthly and calendar commitments', notes: 'Start with fixed appointments, shifts, events, travel and deadlines.' },
+      { title: 'Review weekly goals and projects', notes: 'Choose the few outcomes that matter most this week.' },
+      { title: 'Set or confirm daily themes', notes: 'Use themes only where they reduce switching and decision fatigue.' },
+      { title: 'Build Monday first', notes: 'Pull only what fits Monday, select priorities and time block them.' },
+      { title: 'Protect recovery and open time', notes: 'Do not fill every open hour.' },
+    ],
+  },
+  {
+    key: 'clean-slate-reset',
+    name: 'Clean Slate Reset',
+    description: 'Remove one physical and one digital source of drag without launching an overwhelming whole-life purge.',
+    timeOfDay: 'anytime',
+    steps: [
+      { title: 'Choose one avoided physical zone', notes: 'Bedroom, closet, bathroom, kitchen area, laundry pile, junk drawer or another real friction point.' },
+      { title: 'Finish that zone', notes: 'Do not add five more areas before the first one is complete.' },
+      { title: 'Give displaced objects a home', notes: 'Use a drawer, shelf, basket or named holding zone rather than creating a new pile.' },
+      { title: 'Choose one digital category', notes: 'Apps, contacts, notes, photos, files, email or social following.' },
+      { title: 'Archive, delete or organize stale items', notes: 'Remove what no longer belongs in the current season.' },
+      { title: 'Record what keeps creating clutter', notes: 'A repeated pile usually means the storage or workflow needs redesign.' },
+    ],
+  },
+  {
+    key: 'digital-reset',
+    name: 'Digital Reset',
+    description: 'Reduce automatic scrolling, comparison and digital clutter while keeping intentional use available.',
+    timeOfDay: 'anytime',
+    daysOfWeek: ['sunday'],
+    steps: [
+      { title: 'Review high-friction apps', notes: 'Keep blockers, limits or notification settings aligned with current needs.' },
+      { title: 'Unfollow or mute stale feeds', notes: 'Remove feeds you no longer want occupying attention.' },
+      { title: 'Clear unused apps and obvious clutter', notes: 'Delete or archive what is no longer used.' },
+      { title: 'Triage camera roll', notes: 'Remove obvious duplicates/screenshots only when this is helpful, not as a perfection requirement.' },
+      { title: 'Label files and email that matter', notes: 'Organize only the categories that repeatedly cause overwhelm.' },
+      { title: 'Protect morning and night boundaries', notes: 'Reconfirm when infinite-scroll feeds are intentionally off-limits.' },
+    ],
+  },
+  {
+    key: '321-proof-checkin',
+    name: '3-2-1 Proof Check-In',
+    description: 'A short evening reflection for a 30-day sprint or any season when visible progress would help.',
+    timeOfDay: 'night',
+    steps: [
+      { title: '3 gratitudes', notes: 'Write three specific things you appreciated today.' },
+      { title: '2 receipts that you showed up', notes: 'Use photos, screenshots, completed work, a cleaned space, a workout, a journal page or another concrete proof.' },
+      { title: '1 percent-better check-in', notes: 'Answer: What did I do today that made me 1% better?' },
+      { title: 'Keep it low pressure', notes: 'Proof does not need to be aesthetic or public.' },
+    ],
+  },
+  {
+    key: 'life-audit-identity-design',
+    name: 'Life Audit + Identity Design',
+    description: 'Understand the current version before forcing a new one, then choose a few behavior-level identity practices.',
+    timeOfDay: 'anytime',
+    steps: [
+      { title: 'Audit each life area', notes: 'Ask: Where am I now? What one change would have the greatest impact? What am I avoiding?' },
+      { title: 'Name recurring patterns and identities', notes: 'Examples might include overachiever, helper, survivor, avoider, planner or people pleaser, but use your own language.' },
+      { title: 'Ask what each pattern protected', notes: 'What did it help you solve or survive? Does it still serve you now?' },
+      { title: 'Close what no longer fits', notes: 'Use reflection or a private farewell/gratitude note if symbolic closure helps.' },
+      { title: 'Describe the next identity', notes: 'Focus on what this version naturally does, values and protects, not a fantasy finish line.' },
+      { title: 'Choose three micro identity practices', notes: 'Keep them small enough to repeat for a month.' },
+      { title: 'Review after one month', notes: 'Keep, adjust or retire based on what actually happened.' },
+    ],
+  },
+];
