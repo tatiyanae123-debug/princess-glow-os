@@ -1,34 +1,38 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
+import { FinancialBrainObservatory } from '@/components/finance/financial-brain-observatory';
 import { createFinanceGoalAction } from '@/app/actions/completion-v1';
 import { getFinanceGoals } from '@/lib/data/completion-v1';
 import { getFinanceEntriesByUser } from '@/lib/data/finance-entries';
-import { ArrowRight, CircleDollarSign, PiggyBank, Sparkles } from 'lucide-react';
+import { CircleDollarSign, PiggyBank } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
-const fieldClass='w-full rounded-xl border border-white/75 bg-white/70 px-3.5 py-2.5 text-[11px] text-[#343430] placeholder:text-[#9A9790] focus:border-[#83968A] focus:outline-none';
-const money=(value:number)=>value.toLocaleString('en-US',{style:'currency',currency:'USD'});
-const month=(value:string)=>value.slice(0,7);
-const recurring=(title:string,category:string,notes:string|null)=>`${title} ${category} ${notes??''}`.toLowerCase().match(/subscription|rent|mortgage|insurance|phone|internet|utility|membership|bill/);
+const fieldClass='w-full rounded-xl border border-white/15 bg-white/[.07] px-3.5 py-2.5 text-[11px] text-[#F4F1E8] placeholder:text-[#8E9098] focus:border-[#CDBF9B]/60 focus:outline-none';
 
 export default async function FinanceBrainPage(){
- const session=await auth();if(!session?.user?.id)redirect('/sign-in');
- const [goals,entries]=await Promise.all([getFinanceGoals(session.user.id),getFinanceEntriesByUser(session.user.id)]);
- const now=new Date();const currentKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;const prevDate=new Date(now.getFullYear(),now.getMonth()-1,1);const prevKey=`${prevDate.getFullYear()}-${String(prevDate.getMonth()+1).padStart(2,'0')}`;
- const current=entries.filter(e=>month(e.entryDate)===currentKey);const previous=entries.filter(e=>month(e.entryDate)===prevKey);
- const sum=(list:typeof entries,type:'income'|'expense'|'saving'|'investment')=>list.filter(e=>e.type===type).reduce((s,e)=>s+Number(e.amount),0);
- const income=sum(current,'income'),expenses=sum(current,'expense'),savings=sum(current,'saving'),investments=sum(current,'investment');const previousExpenses=sum(previous,'expense');const recordedPosition=income-expenses-savings-investments;
- const spendingChange=previousExpenses>0?((expenses-previousExpenses)/previousExpenses)*100:null;const savingsShare=income>0?savings/income*100:null;
- const categories=[...current.filter(e=>e.type==='expense').reduce<Map<string,number>>((m,e)=>m.set(e.category,(m.get(e.category)??0)+Number(e.amount)),new Map()).entries()].sort((a,b)=>b[1]-a[1]);
- const recurringLatest=[...entries.filter(e=>e.type==='expense'&&recurring(e.title,e.category,e.notes)).sort((a,b)=>b.entryDate.localeCompare(a.entryDate)).reduce<Map<string,typeof entries[number]>>((m,e)=>{const k=`${e.title.trim().toLowerCase()}|${e.category}`;if(!m.has(k))m.set(k,e);return m;},new Map()).values()];
- const observations=[spendingChange===null?'Another prior month of expense records is needed for a month-over-month spending comparison.':`Recorded spending is ${Math.abs(spendingChange).toFixed(0)}% ${spendingChange>=0?'higher':'lower'} than the prior month.`,savingsShare===null?'No current-month income baseline is recorded, so a savings share is not calculated.':`${Math.max(0,savingsShare).toFixed(0)}% of recorded current-month income has been logged as savings.`,categories[0]?`${categories[0][0]} is the largest recorded expense category this month at ${money(categories[0][1])}.`:'No current-month expenses are recorded.',recurringLatest.length?`${recurringLatest.length} recurring-looking cost${recurringLatest.length===1?'':'s'} can be reviewed from existing Finance entries.`:'No recurring-looking costs are currently detected from titles, categories or notes.'];
- return <AppShell><div className="min-h-screen rounded-[38px] bg-[radial-gradient(circle_at_12%_3%,rgba(255,244,224,.85),transparent_29%),radial-gradient(circle_at_84%_12%,rgba(216,228,226,.78),transparent_31%),linear-gradient(150deg,#fbf9f3,#eef2f0_55%,#f2ecee)] p-4 text-[#343430] sm:p-6">
-  <header className="rounded-[30px] border border-white/75 bg-white/40 p-6 shadow-[0_30px_100px_rgba(72,72,65,.1)] backdrop-blur-2xl"><div className="text-[10px] uppercase tracking-[.3em] text-[#77756f]">Finance · Financial Brain</div><h1 className="mt-2 glow-display text-4xl">Understand what changed. Decide what matters.</h1><p className="mt-3 max-w-3xl text-sm text-[#74736e]">This page interprets recorded Finance history. It does not treat the ledger as a bank account, invent future bills, or score your financial health with arbitrary points.</p><div className="mt-5 flex flex-wrap gap-2"><Link href="/finance" className="couture-primary">Back to Money Decision Studio</Link><Link href="/finance#finance-manager" className="couture-secondary">Open finance records</Link></div></header>
-  <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_.8fr]"><section className="rounded-[28px] border border-white/70 bg-white/48 p-5"><div className="text-[10px] uppercase tracking-[.2em]">Current recorded position</div><div className="mt-2 glow-display text-4xl">{money(recordedPosition)}</div><p className="mt-2 text-xs text-[#77756f]">Current-month income minus recorded expenses, savings and investments. This is not net worth or a live cash balance.</p><div className="mt-5 grid gap-3 sm:grid-cols-4"><Metric label="Income" value={money(income)}/><Metric label="Expenses" value={money(expenses)}/><Metric label="Savings" value={money(savings)}/><Metric label="Investments" value={money(investments)}/></div></section><section className="rounded-[28px] border border-white/70 bg-white/48 p-5"><div className="flex items-center gap-2"><Sparkles className="h-4 w-4"/><div className="text-[10px] uppercase tracking-[.2em]">What Glow notices</div></div><div className="mt-4 space-y-3">{observations.map((x,i)=><div key={x} className="flex gap-3 rounded-[18px] bg-white/45 p-3"><span className="text-xs">{i+1}</span><p className="text-sm text-[#6f706b]">{x}</p></div>)}</div></section></div>
-  <div className="mt-4 grid gap-4 lg:grid-cols-2"><section className="rounded-[28px] border border-white/70 bg-white/48 p-5"><div className="text-[10px] uppercase tracking-[.2em]">Decision prompts</div><div className="mt-4 space-y-2">{['Can I afford a purchase without weakening my current recorded buffer?','Which recurring costs deserve review?','What happens if I increase savings?','What changed most from last month?'].map(x=><Link key={x} href="/finance" className="flex items-center justify-between rounded-[19px] bg-white/45 p-4 text-sm"><span>{x}</span><ArrowRight className="h-4 w-4"/></Link>)}</div></section><section className="rounded-[28px] border border-white/70 bg-white/48 p-5"><div className="text-[10px] uppercase tracking-[.2em]">Recurring-cost evidence</div><div className="mt-4 space-y-2">{recurringLatest.length?recurringLatest.slice(0,8).map(e=><Link href={`/finance?entryId=${e.id}`} key={e.id} className="flex justify-between gap-4 rounded-[19px] bg-white/45 p-4"><div><div className="text-sm font-medium">{e.title}</div><div className="mt-1 text-[10px] text-[#85827b]">Last recorded {e.entryDate} · {e.category}</div></div><span className="text-sm">{money(Number(e.amount))}</span></Link>):<div className="text-sm text-[#77756f]">No recurring-looking entries detected yet.</div>}</div></section></div>
-  <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_1fr]"><section className="rounded-[28px] border border-white/70 bg-white/48 p-5"><div className="text-[10px] uppercase tracking-[.2em]">Finance goals</div><div className="mt-4 space-y-3">{goals.length?goals.slice(0,6).map(g=>{const pct=g.targetCents?Math.min(100,Math.round(g.currentCents/g.targetCents*100)):0;return <div key={g.id} className="rounded-[20px] bg-white/45 p-4"><div className="flex justify-between gap-3"><span>{g.name}</span><span>{pct}%</span></div><div className="mt-1 text-xs text-[#77756f]">{money(g.currentCents/100)} of {money(g.targetCents/100)}</div><div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white"><div className="h-full rounded-full bg-[#aabaae]" style={{width:`${pct}%`}}/></div></div>}):<div className="text-sm text-[#77756f]">No financial goals recorded.</div>}</div></section><section id="add-finance-goal" className="rounded-[28px] border border-white/70 bg-white/48 p-5"><div className="flex items-center gap-2"><CircleDollarSign className="h-4 w-4"/><div className="text-[10px] uppercase tracking-[.2em]">Add Financial Goal</div></div><form action={createFinanceGoalAction} className="mt-4 grid gap-3"><input name="name" required placeholder="Goal name" className={fieldClass}/><select name="goalType" defaultValue="savings" className={fieldClass}><option value="savings">Savings</option><option value="debt">Debt payoff</option><option value="travel">Travel</option><option value="emergency">Emergency fund</option><option value="purchase">Purchase</option></select><div className="grid gap-3 sm:grid-cols-2"><input name="target" required inputMode="decimal" placeholder="Target amount" className={fieldClass}/><input name="current" inputMode="decimal" placeholder="Current amount" className={fieldClass}/></div><input name="targetDate" type="date" className={fieldClass}/><textarea name="notes" rows={2} placeholder="Notes / scenario" className={fieldClass}/><button className="couture-primary w-fit"><PiggyBank className="mr-2 inline h-4 w-4"/>Save goal</button></form></section></div>
- </div></AppShell>;
+  const session=await auth();
+  if(!session?.user?.id)redirect('/sign-in');
+  const [goals,entries]=await Promise.all([
+    getFinanceGoals(session.user.id),
+    getFinanceEntriesByUser(session.user.id),
+  ]);
+  const generatedAt=new Date().toISOString();
+
+  return <AppShell>
+    <div className="space-y-5">
+      <FinancialBrainObservatory entries={entries} goals={goals} generatedAt={generatedAt}/>
+      <details id="add-finance-goal" className="rounded-[30px] border border-white/10 bg-[#1D2029] p-5 text-[#F4F1E8] shadow-[0_24px_90px_rgba(0,0,0,.18)]">
+        <summary className="cursor-pointer list-none"><div className="flex items-center gap-2"><CircleDollarSign className="h-4 w-4 text-[#D2C39B]"/><span className="glow-display text-[18px]">Add a Financial Goal</span></div><p className="mt-1 text-[10px] text-[#9698A1]">Server-backed Finance Goal. Expand only when you want to create a target.</p></summary>
+        <form action={createFinanceGoalAction} className="mt-5 grid gap-3">
+          <input name="name" required placeholder="Goal name" className={fieldClass}/>
+          <select name="goalType" defaultValue="savings" className={fieldClass}><option value="savings">Savings</option><option value="debt">Debt payoff</option><option value="travel">Travel</option><option value="emergency">Emergency fund</option><option value="purchase">Purchase</option></select>
+          <div className="grid gap-3 sm:grid-cols-2"><input name="target" required inputMode="decimal" placeholder="Target amount" className={fieldClass}/><input name="current" inputMode="decimal" placeholder="Current amount" className={fieldClass}/></div>
+          <input name="targetDate" type="date" className={fieldClass}/>
+          <textarea name="notes" rows={2} placeholder="Notes / scenario" className={fieldClass}/>
+          <button className="w-fit rounded-full bg-[#EEE7D6] px-4 py-2 text-xs font-medium text-[#242630]"><PiggyBank className="mr-2 inline h-4 w-4"/>Save goal</button>
+        </form>
+      </details>
+    </div>
+  </AppShell>;
 }
-function Metric({label,value}:{label:string;value:string}){return <div className="rounded-[18px] bg-white/45 p-3"><div className="text-[9px] uppercase tracking-[.16em] text-[#85827b]">{label}</div><div className="mt-2 text-sm font-medium">{value}</div></div>}
