@@ -50,6 +50,7 @@ import './glow-speaking-presence.css';
 import './glow-liquid-crystal-constitution.css';
 import './today-liquid-v1.css';
 import './calendar-liquid-v1.css';
+import './today-calendar-liquid-v1-qa.css';
 import { GlobalGlowIntelligence } from '@/components/life-intelligence/global-glow-intelligence';
 import { GlowWorldPhysics } from '@/components/glow-world-physics';
 
