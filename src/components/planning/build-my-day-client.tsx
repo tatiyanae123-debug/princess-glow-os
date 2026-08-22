@@ -15,6 +15,7 @@ export function BuildMyDayClient({ initialProposal }: { initialProposal: Schedul
   const [dismissed, setDismissed] = useState<string[]>([]);
   const [accepted, setAccepted] = useState<string[]>([]);
   const [pending, startTransition] = useTransition();
+  const visibleSuggestions = proposal.suggestions.filter((item) => !dismissed.includes(item.id));
 
   function rebuild(mode: 'standard' | 'lighter' | ScheduleProposal['mode']) {
     const legacyMode = mode === 'bare-minimum' || mode === 'clear-schedule' ? 'lighter' : 'standard';
@@ -29,7 +30,7 @@ export function BuildMyDayClient({ initialProposal }: { initialProposal: Schedul
   function accept(item: ScheduleProposal['suggestions'][number]) {
     startTransition(async () => {
       await acceptPlanningSuggestionAction({ proposalId: proposal.id, item });
-      setAccepted((current) => [...current, item.id]);
+      setAccepted((current) => current.includes(item.id) ? current : [...current, item.id]);
     });
   }
 
@@ -59,7 +60,7 @@ export function BuildMyDayClient({ initialProposal }: { initialProposal: Schedul
 
       <div className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Suggested blocks · {proposal.mode}</p>
-        {proposal.suggestions.filter((item) => !dismissed.includes(item.id)).map((item) => (
+        {visibleSuggestions.map((item) => (
           <div key={item.id} className="rounded-[22px] border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -70,11 +71,11 @@ export function BuildMyDayClient({ initialProposal }: { initialProposal: Schedul
             </div>
             <div className="mt-3 flex gap-2">
               <Button type="button" variant="secondary" disabled={pending || accepted.includes(item.id)} onClick={() => accept(item)}>{accepted.includes(item.id) ? 'Accepted' : 'Accept suggestion'}</Button>
-              <Button type="button" variant="ghost" disabled={accepted.includes(item.id)} onClick={() => setDismissed((current) => [...current, item.id])}>Dismiss</Button>
+              <Button type="button" variant="ghost" disabled={accepted.includes(item.id)} onClick={() => setDismissed((current) => current.includes(item.id) ? current : [...current, item.id])}>Dismiss</Button>
             </div>
           </div>
         ))}
-        {proposal.suggestions.length === 0 && <p className="text-sm text-slate-500">No schedule suggestions are needed right now.</p>}
+        {visibleSuggestions.length === 0 && <p className="text-sm text-slate-500">{proposal.suggestions.length === 0 ? 'No schedule suggestions are needed right now.' : 'All current suggestions are dismissed. Rebuild the plan whenever you want a fresh set.'}</p>}
       </div>
     </div>
   );
