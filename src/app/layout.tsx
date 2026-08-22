@@ -48,6 +48,7 @@ import './system-wide-final-audit.css';
 import './glow-v4-calm-system.css';
 import './glow-speaking-presence.css';
 import './glow-liquid-crystal-constitution.css';
+import './today-liquid-v1.css';
 import { GlobalGlowIntelligence } from '@/components/life-intelligence/global-glow-intelligence';
 import { GlowWorldPhysics } from '@/components/glow-world-physics';
 
