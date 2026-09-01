@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import Google from 'next-auth/providers/google';
+import GitHub from 'next-auth/providers/github';
 import { db } from '@/db';
 import { users, accounts, sessions, verificationTokens } from '@/db/schema/auth';
 
@@ -25,7 +26,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
     verificationTokensTable: verificationTokens,
   }),
   providers: [
-    Google({
+    ...(process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET ? [GitHub({
+      clientId: process.env.AUTH_GITHUB_ID,
+      clientSecret: process.env.AUTH_GITHUB_SECRET,
+    })] : []),
+    ...(process.env.PRINCESS_GOOGLE_CLIENT_ID && process.env.PRINCESS_GOOGLE_CLIENT_SECRET ? [Google({
       clientId: process.env.PRINCESS_GOOGLE_CLIENT_ID ?? '',
       clientSecret: process.env.PRINCESS_GOOGLE_CLIENT_SECRET ?? '',
       redirectProxyUrl: process.env.VERCEL_ENV === 'preview' ? PRODUCTION_AUTH_PROXY_URL : undefined,
@@ -43,7 +48,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
           ].join(' '),
         },
       },
-    }),
+    })] : []),
   ],
   pages: {
     signIn: '/sign-in',
