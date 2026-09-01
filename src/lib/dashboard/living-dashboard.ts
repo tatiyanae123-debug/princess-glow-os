@@ -13,6 +13,7 @@ import { getRecentInboxMessages } from '@/lib/google/gmail-client';
 import { getImportBatchesByUser } from '@/lib/importer/confirm';
 import { getWorkoutOfTheDay, getWeeklyTheme, type Weekday } from '@/lib/glow-content/library';
 import type { LivingDashboardData, GoogleWidgetStatus } from '@/lib/dashboard/types';
+import { dateKeyInTimeZone, hourInTimeZone, normalizeTimeZone, weekdayInTimeZone } from '@/lib/time/zone';
 
 const priorityRank: Record<Task['priority'], number> = {
   urgent: 0,
@@ -21,10 +22,7 @@ const priorityRank: Record<Task['priority'], number> = {
   low: 3,
 };
 
-const weekdayOrder = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
-
-function getTimeOfDayState(date: Date) {
-  const hour = date.getHours();
+function getTimeOfDayState(hour: number) {
   if (hour < 12) {
     return {
       label: 'Good morning',
@@ -57,12 +55,8 @@ function getTimeOfDayState(date: Date) {
   };
 }
 
-function isSameDay(left: Date, right: Date) {
-  return (
-    left.getFullYear() === right.getFullYear() &&
-    left.getMonth() === right.getMonth() &&
-    left.getDate() === right.getDate()
-  );
+function isSameDay(left: Date, right: Date, timeZone: string) {
+  return dateKeyInTimeZone(left, timeZone) === dateKeyInTimeZone(right, timeZone);
 }
 
 function sortTasksByPriority(tasks: Task[]) {
@@ -76,11 +70,12 @@ function sortTasksByPriority(tasks: Task[]) {
   });
 }
 
-export async function getLivingDashboardData(userId: string): Promise<LivingDashboardData> {
+export async function getLivingDashboardData(userId: string, requestedTimeZone?: string): Promise<LivingDashboardData> {
   const now = new Date();
-  const dayOfWeek = weekdayOrder[now.getDay()];
-  const timeState = getTimeOfDayState(now);
-  const todayKey = now.toISOString().slice(0, 10);
+  const timeZone = normalizeTimeZone(requestedTimeZone);
+  const dayOfWeek = weekdayInTimeZone(now, timeZone) as Weekday;
+  const timeState = getTimeOfDayState(hourInTimeZone(now, timeZone));
+  const todayKey = dateKeyInTimeZone(now, timeZone);
 
   const [
     tasks,
@@ -114,10 +109,10 @@ export async function getLivingDashboardData(userId: string): Promise<LivingDash
 
   const activeTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'cancelled');
   const topPriorityTasks = sortTasksByPriority(activeTasks).slice(0, 3);
-  const tasksDueToday = activeTasks.filter((task) => task.dueDate && isSameDay(task.dueDate, now)).length;
+  const tasksDueToday = activeTasks.filter((task) => task.dueDate && isSameDay(task.dueDate, now, timeZone)).length;
 
   const todaysEvents = events
-    .filter((event) => isSameDay(event.startAt, now))
+    .filter((event) => isSameDay(event.startAt, now, timeZone))
     .sort((a, b) => a.startAt.getTime() - b.startAt.getTime())
     .slice(0, 4);
 

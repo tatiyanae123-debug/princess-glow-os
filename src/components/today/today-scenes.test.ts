@@ -16,12 +16,21 @@ describe('Glow Today scene foundation', () => {
   });
 
   it.each([
-    'public/glow/today/home-v2.webp',
-    'public/glow/today/morning-brief-v2.webp',
-    'public/glow/today/day-flow-v2.webp',
-    'public/glow/today/evening-debrief-v2.webp',
+    'public/glow/today/home-v3.webp',
+    'public/glow/today/morning-brief-v3.webp',
+    'public/glow/today/day-flow-v3.webp',
+    'public/glow/today/evening-debrief-v3.webp',
   ])('ships a real environmental asset at %s', (path) => {
     expect(statSync(resolve(root, path)).size).toBeGreaterThan(50_000);
+  });
+
+  it('ships the opening experience and device-time synchronization', () => {
+    expect(statSync(resolve(root, 'public/glow/today/opening-v1.webp')).size).toBeGreaterThan(15_000);
+    const source = read('src/components/today/today-experience.tsx');
+    expect(source).toContain('glow:opening-seen-v3');
+    expect(source).toContain('glow-timezone');
+    expect(source).toContain("brief: 'Midday Brief'");
+    expect(source).toContain("brief: 'Night Brief'");
   });
 
   it('keeps dates, priorities, appointments, energy, and Ask Glow live', () => {

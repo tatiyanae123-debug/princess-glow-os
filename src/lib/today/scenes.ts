@@ -4,6 +4,7 @@ import { getTasksByUser } from '@/lib/data/tasks';
 import { getLivingDashboardData } from '@/lib/dashboard/living-dashboard';
 import type { LivingDashboardData } from '@/lib/dashboard/types';
 import { getTodayReview } from '@/lib/intelligence/adaptive-os';
+import { dateKeyInTimeZone, normalizeTimeZone } from '@/lib/time/zone';
 
 export type TodaySceneTask = {
   id: string;
@@ -29,10 +30,11 @@ export type TodaySceneData = {
   review: TodaySceneReview;
 };
 
-export async function getTodaySceneData(userId: string): Promise<TodaySceneData> {
-  const dateKey = new Date().toISOString().slice(0, 10);
+export async function getTodaySceneData(userId: string, requestedTimeZone?: string): Promise<TodaySceneData> {
+  const timeZone = normalizeTimeZone(requestedTimeZone);
+  const dateKey = dateKeyInTimeZone(new Date(), timeZone);
   const [dashboard, tasks, review] = await Promise.all([
-    getLivingDashboardData(userId),
+    getLivingDashboardData(userId, timeZone),
     getTasksByUser(userId),
     getTodayReview(userId, dateKey).catch(() => null),
   ]);
