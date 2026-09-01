@@ -50,4 +50,3 @@ describe('Glow Today scene foundation', () => {
     expect(source).not.toContain('status bar');
   });
 });
-
