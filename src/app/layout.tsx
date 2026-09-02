@@ -8,6 +8,7 @@ import './dashboard-reference-exact.css';
 import './dashboard-sidebar-exact.css';
 import './continuous-world.css';
 import './today-spatial-polish.css';
+import './reference-placement-enforcement.css';
 
 export const metadata: Metadata = {
   title: 'Glow OS',
