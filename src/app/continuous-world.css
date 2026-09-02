@@ -1,0 +1,99 @@
+/* Glow OS continuous-world layer — Sept 2, 2026.
+   Routes are addresses. The visual experience is one living world. */
+
+.glow-world-shell {
+  --world-pearl: #fbf8f2;
+  --world-stone: #eee8df;
+  --world-metal: #cbbba6;
+  --world-light: rgba(255,255,255,.84);
+  --world-haze: rgba(227,216,205,.22);
+  --world-depth: 18px;
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
+  background:
+    radial-gradient(80% 56% at 76% 3%, var(--world-haze), transparent 68%),
+    linear-gradient(180deg, rgba(255,255,255,.9), var(--world-pearl));
+  transition: background 520ms cubic-bezier(.2,.7,.2,1), color 360ms ease;
+}
+
+.glow-world-atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .9;
+  background:
+    radial-gradient(34rem 30rem at 78% 11%, rgba(255,255,255,.7), transparent 68%),
+    radial-gradient(42rem 28rem at 54% 88%, var(--world-haze), transparent 72%);
+  filter: blur(var(--world-depth));
+  transform: translateZ(0);
+  transition: opacity 420ms ease, filter 520ms ease, background 520ms ease;
+}
+
+.glow-room-body,
+.glow-room-stage,
+.glow-world-nav-wrap,
+.dashboard-main-wrap,
+.dashboard-sidebar-wrap {
+  position: relative;
+  z-index: 1;
+}
+
+[data-world='today'] { --world-pearl: #fbf7f1; --world-haze: rgba(231,205,187,.26); --world-depth: 16px; }
+[data-world='plan'] { --world-pearl: #f8f5f6; --world-haze: rgba(205,194,220,.28); --world-depth: 22px; }
+[data-world='life'] { --world-pearl: #faf6ef; --world-haze: rgba(213,208,188,.25); --world-depth: 15px; }
+[data-world='brain'] { --world-pearl: #f7f4f7; --world-haze: rgba(195,186,216,.28); --world-depth: 28px; }
+[data-world='create'] { --world-pearl: #faf8f4; --world-haze: rgba(220,205,190,.26); --world-depth: 24px; }
+
+[data-climate='cool-mint-ivory'] { --world-pearl: #f7faf6; --world-haze: rgba(185,211,199,.24); }
+[data-climate='reflective-blush-pearl'], [data-climate='warm-pearl-reflection'] { --world-pearl: #fbf5f2; --world-haze: rgba(234,194,195,.25); }
+[data-climate='restorative-pearl'] { --world-pearl: #f8faf6; --world-haze: rgba(194,211,190,.22); }
+[data-climate='lavender-time-haze'], [data-climate='champagne-lavender-horizon'] { --world-pearl: #f8f5f8; --world-haze: rgba(203,189,221,.27); }
+[data-climate='cinematic-amber-pearl'] { --world-pearl: #f9f5ed; --world-haze: rgba(219,197,162,.25); }
+[data-climate='deep-violet-pearl'], [data-climate='deep-pearl-atmosphere'] { --world-pearl: #f5f3f8; --world-haze: rgba(178,168,207,.28); }
+[data-climate='mist-pearl'], [data-climate='clear-prismatic-pearl'] { --world-pearl: #faf9f7; --world-haze: rgba(205,211,220,.24); }
+[data-climate='neutral-pearl'] { --world-pearl: #fafafa; --world-haze: rgba(212,212,212,.14); --world-depth: 8px; }
+
+[data-physics='temporal-depth'] .glow-room-stage { perspective: 1400px; }
+[data-physics='spatial-time'] .glow-room-stage, [data-physics='orbital-time'] .glow-room-stage { perspective: 1800px; }
+[data-physics='quiet-desk'] .glow-world-atmosphere, [data-physics='still-ledger'] .glow-world-atmosphere, [data-physics='minimal-motion'] .glow-world-atmosphere { opacity: .48; filter: blur(8px); }
+[data-physics='conceptual-depth'] .glow-world-atmosphere, [data-physics='relational-depth'] .glow-world-atmosphere { opacity: 1; filter: blur(32px); }
+[data-physics='slow-breath'] .glow-world-atmosphere { animation: glow-room-breathe 8s ease-in-out infinite alternate; }
+[data-physics='rhythmic-momentum'] .glow-room-stage { transform-origin: 50% 30%; }
+[data-physics='mist-to-structure'] .glow-world-atmosphere { animation: glow-mist-condense 7s ease-in-out infinite alternate; }
+
+.glow-world-rail {
+  background: linear-gradient(180deg, rgba(255,255,255,.76), rgba(249,246,241,.58)) !important;
+  border-color: rgba(151,134,117,.1) !important;
+  backdrop-filter: blur(24px) saturate(112%);
+}
+.glow-world-threshold { position: relative; isolation: isolate; border-radius: 999px !important; background: transparent !important; }
+.glow-world-threshold::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  z-index: -1;
+  border-radius: inherit;
+  opacity: 0;
+  background: radial-gradient(circle at 24% 50%, rgba(255,255,255,.94), rgba(226,211,197,.28) 42%, transparent 78%);
+  transition: opacity 260ms ease, transform 260ms ease;
+  transform: scale(.96);
+}
+.glow-world-threshold:hover::before, .glow-world-threshold.is-current::before { opacity: 1; transform: scale(1); }
+.glow-world-threshold.is-current { color: #65574f !important; box-shadow: inset 0 0 0 1px rgba(177,153,131,.13); }
+
+.glow-room-stage { animation: glow-room-arrival 440ms cubic-bezier(.2,.72,.22,1) both; }
+
+@keyframes glow-room-arrival { from { opacity: .72; transform: translateY(4px) scale(.997); filter: blur(3px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
+@keyframes glow-room-breathe { from { transform: scale(1); opacity: .72; } to { transform: scale(1.018); opacity: .96; } }
+@keyframes glow-mist-condense { from { filter: blur(30px); opacity: .6; } to { filter: blur(17px); opacity: .94; } }
+
+@media (max-width: 1023px) {
+  .glow-world-atmosphere { position: absolute; min-height: 100dvh; }
+  .glow-world-rail { backdrop-filter: blur(18px) saturate(108%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-room-stage, .glow-world-atmosphere { animation: none !important; }
+}
