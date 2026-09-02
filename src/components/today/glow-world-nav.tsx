@@ -24,8 +24,12 @@ export function GlowWorldNav({ immersive = false }: { immersive?: boolean }) {
   }, [pathname]);
 
   function move(href: string, label: string) {
+    if (label === 'Today') {
+      router.push('/dashboard');
+      return;
+    }
     const remembered = window.localStorage.getItem(`glow:last:${label.toLowerCase()}`);
-    const destination = remembered && remembered.startsWith(href === '/dashboard' ? '/today' : href) ? remembered : href;
+    const destination = remembered && remembered.startsWith(href) ? remembered : href;
     const navigate = () => router.push(destination);
     if ('startViewTransition' in document) {
       (document as Document & { startViewTransition: (callback: () => void) => void }).startViewTransition(navigate);

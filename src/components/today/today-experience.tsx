@@ -1,22 +1,30 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition, type CSSProperties } from 'react';
 import Link from 'next/link';
+import { ArrowRight, CalendarDays, Check, ChevronRight, Clock3, Home, Leaf, MoonStar, RotateCcw, Sparkles, SunMedium, Workflow } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, CalendarDays, Check, ChevronRight, Clock3, Leaf, MoonStar, Pencil, Sparkles, SunMedium } from 'lucide-react';
 import type { TodaySceneData } from '@/lib/today/scenes';
 import { completeTodayTaskAction, moveTodayTaskToTomorrowAction } from '@/app/actions/today-scenes';
 import { finishDayFormAction } from '@/app/actions/adaptive-os';
 
 export type TodaySceneView = 'home' | 'morning' | 'flow' | 'evening';
+type JourneyScene = 'opening' | 'home' | 'brief' | 'flow' | 'debrief';
 type TimePhase = 'morning' | 'afternoon' | 'evening' | 'night';
 
-const phaseCopy: Record<TimePhase, { greeting: string; brief: string; action: string }> = {
-  morning: { greeting: 'Good morning', brief: 'Morning Brief', action: 'Begin Morning' },
-  afternoon: { greeting: 'Good afternoon', brief: 'Midday Brief', action: 'Continue Today' },
-  evening: { greeting: 'Good evening', brief: 'Evening Brief', action: 'Open Debrief' },
-  night: { greeting: 'Good night', brief: 'Night Brief', action: 'Begin Wind-down' },
+const phaseLanguage: Record<TimePhase, { greeting: string; brief: string; message: string; action: string }> = {
+  morning: { greeting: 'Good morning', brief: 'Morning Brief', message: 'Your day is lighter than it looks.', action: 'Begin Morning' },
+  afternoon: { greeting: 'Good afternoon', brief: 'Midday Brief', message: 'Keep what matters close. The rest can wait.', action: 'Continue Today' },
+  evening: { greeting: 'Good evening', brief: 'Evening Brief', message: 'Let the day close with clarity and ease.', action: 'Review Today' },
+  night: { greeting: 'Good night', brief: 'Night Brief', message: 'You have done enough. Tomorrow can begin gently.', action: 'Begin Wind-down' },
 };
+
+const journeySteps: Array<{ id: Exclude<JourneyScene, 'opening'>; label: string; icon: typeof Home }> = [
+  { id: 'home', label: 'Home', icon: Home },
+  { id: 'brief', label: 'Brief', icon: SunMedium },
+  { id: 'flow', label: 'Day Flow', icon: Workflow },
+  { id: 'debrief', label: 'Debrief', icon: MoonStar },
+];
 
 function phaseFor(moment: Date | null): TimePhase {
   const hour = moment?.getHours() ?? 8;
@@ -50,8 +58,27 @@ function useTimeZoneSync() {
   }, [router]);
 }
 
+function useHidePreviewToolbar() {
+  useEffect(() => {
+    const hide = () => {
+      for (const element of document.querySelectorAll<HTMLElement>('vercel-live-feedback, [data-vercel-toolbar], iframe[src*="vercel.live"], iframe[title*="Vercel"]')) {
+        element.style.setProperty('display', 'none', 'important');
+        element.style.setProperty('pointer-events', 'none', 'important');
+      }
+    };
+    hide();
+    const observer = new MutationObserver(hide);
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+}
+
 function formatDate(moment: Date | null) {
   return moment ? new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(moment) : 'Today';
+}
+
+function formatClock(moment: Date | null) {
+  return moment ? new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(moment) : '';
 }
 
 function formatTime(value: Date | string | null | undefined) {
@@ -77,9 +104,9 @@ function energyReviewScore(value: string | number | null | undefined) {
   return percent === null ? '' : Math.max(1, Math.round(percent / 10));
 }
 
-function openTasks(data: TodaySceneData) {
-  if (data.dashboard.topPriorityTasks.length) return data.dashboard.topPriorityTasks.slice(0, 3);
-  return data.tasks.filter((task) => task.status !== 'done' && task.status !== 'cancelled').slice(0, 3);
+function openTasks(data: TodaySceneData, completedIds: Set<string>) {
+  const source = data.dashboard.topPriorityTasks.length ? data.dashboard.topPriorityTasks : data.tasks;
+  return source.filter((task) => task.status !== 'done' && task.status !== 'cancelled' && !completedIds.has(task.id)).slice(0, 3);
 }
 
 function nextEvent(data: TodaySceneData, moment: Date | null) {
@@ -89,133 +116,204 @@ function nextEvent(data: TodaySceneData, moment: Date | null) {
     .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())[0] ?? null;
 }
 
-function ScenePanel({ className = '', children }: { className?: string; children: React.ReactNode }) {
-  return <section className={`today-live-panel ${className}`}>{children}</section>;
+function Opening({ enter }: { enter: () => void }) {
+  return <button type="button" className="glow-opening" aria-label="Enter Glow" onClick={enter}>
+    <span className="glow-opening__live"><strong>Glow</strong><small>Your life, held in light.</small></span>
+    <span className="glow-opening__orb" aria-hidden="true" />
+    <span className="glow-opening__hint">Tap anywhere to enter</span>
+  </button>;
 }
 
-function PriorityList({ data, complete = false }: { data: TodaySceneData; complete?: boolean }) {
-  const tasks = openTasks(data);
+function JourneyControls({ scene, phase, setPhase, go, replay }: { scene: JourneyScene; phase: TimePhase; setPhase: (phase: TimePhase) => void; go: (scene: JourneyScene) => void; replay: () => void }) {
+  return <>
+    <nav className="today-journey-nav" aria-label="Today journey">
+      {journeySteps.map(({ id, label, icon: Icon }) => <button type="button" key={id} onClick={() => go(id)} aria-current={scene === id ? 'step' : undefined}><Icon/><span>{label}</span></button>)}
+    </nav>
+    <div className="today-utility-controls">
+      <label><span>View</span><select value={phase} onChange={(event) => setPhase(event.target.value as TimePhase)} aria-label="Preview part of day"><option value="morning">Morning</option><option value="afternoon">Afternoon</option><option value="evening">Evening</option><option value="night">Night</option></select></label>
+      <button type="button" onClick={replay} aria-label="Replay Glow opening"><RotateCcw/></button>
+    </div>
+  </>;
+}
+
+function PriorityList({ data, completedIds, completeTask, pending }: { data: TodaySceneData; completedIds: Set<string>; completeTask: (id: string, title: string) => void; pending: boolean }) {
+  const tasks = openTasks(data, completedIds);
   return <div className="today-priorities">{tasks.length ? tasks.map((task, index) => <div className="today-priority" key={task.id}>
-    <span>{index + 1}</span><p>{task.title}</p>
-    {complete ? <form action={completeTodayTaskAction.bind(null, task.id)}><button type="submit" aria-label={`Complete ${task.title}`}><Check /></button></form> : null}
-  </div>) : <Link className="today-empty-link" href="/tasks">Choose what matters today <ArrowRight /></Link>}</div>;
+    <span>{index + 1}</span><p>{task.title.replace(/[\p{Extended_Pictographic}\uFE0F]/gu, '').trim()}</p>
+    <button type="button" disabled={pending} onClick={() => completeTask(task.id, task.title)} aria-label={`Complete ${task.title}`}><Check /></button>
+  </div>) : <Link className="today-empty-link" href="/tasks">Your priority space is clear <ArrowRight /></Link>}</div>;
 }
 
-function AskGlowButton({ large = false }: { large?: boolean }) {
-  return <button type="button" className={large ? 'today-primary-action' : 'today-ask'} onClick={() => document.dispatchEvent(new Event('glow:voice-open'))}>
-    <Sparkles /><span>{large ? 'What should I do now?' : 'Ask Glow'}</span>{large ? <ChevronRight /> : null}
-  </button>;
+function AskGlowButton({ openGlow, large = false }: { openGlow: () => void; large?: boolean }) {
+  return <button type="button" className={large ? 'today-primary-action' : 'today-ask'} onClick={openGlow}><Sparkles/><span>{large ? 'What should I do now?' : 'Ask Glow'}</span>{large ? <ChevronRight/> : null}</button>;
 }
 
-function Opening() {
-  return <button type="button" className="glow-opening" aria-label="Enter Glow" onClick={() => document.dispatchEvent(new Event('glow:opening-complete'))}>
-    <span className="glow-opening__live"><strong>Glow</strong><small>Your life, held in light.</small></span><span className="glow-opening__hint">Tap to enter</span>
-  </button>;
-}
+type SceneProps = {
+  data: TodaySceneData;
+  moment: Date | null;
+  phase: TimePhase;
+  completedIds: Set<string>;
+  completeTask: (id: string, title: string) => void;
+  pending: boolean;
+  go: (scene: JourneyScene) => void;
+  openGlow: () => void;
+};
 
-function Home({ data, firstName, moment }: { data: TodaySceneData; firstName: string; moment: Date | null }) {
+function TodayHome({ data, moment, phase, completedIds, completeTask, pending, go, openGlow, firstName }: SceneProps & { firstName: string }) {
   const event = nextEvent(data, moment);
   const energy = data.dashboard.wellnessToday.entry?.energy ?? null;
   const capacity = energyPercent(energy);
-  return <main className="today-scene today-scene--home">
-    <header className="today-hero today-home__hero"><h1>{phaseCopy[phaseFor(moment)].greeting},<br/><em>{firstName}.</em></h1><div className="today-rule"><span/><Sparkles/><span/></div><p>{data.dashboard.greeting.message || 'Your day is lighter than it looks.'}</p><time>{formatDate(moment)}</time></header>
-    <ScenePanel className="today-home__priorities"><p className="today-eyebrow">Today&apos;s priorities</p><PriorityList data={data} complete /></ScenePanel>
-    <ScenePanel className="today-home__event"><p className="today-eyebrow">Next event</p><Link href="/calendar"><CalendarDays/><span><strong>{event?.title ?? 'Open time'}</strong><small>{event ? `${formatTime(event.startAt)}${event.endAt ? ` · ${formatTime(event.endAt)}` : ''}` : 'Your calendar has room'}</small></span></Link></ScenePanel>
-    <ScenePanel className="today-home__capacity"><p className="today-eyebrow">Current capacity</p><strong>{capacity === null ? '—' : `${capacity}%`}</strong><p>{capacity === null ? 'Check in so Glow can shape today.' : capacity < 50 ? 'Your day will stay intentionally gentle.' : 'You have enough for what matters most.'}</p><Link href="/wellness">View capacity factors <ArrowRight/></Link></ScenePanel>
-    <div className="today-actions"><AskGlowButton large/><AskGlowButton/></div>
-  </main>;
+  const calendarDisconnected = data.dashboard.googleCalendar.status !== 'connected' && data.dashboard.todaySchedule.events.length === 0;
+  return <section className="today-scene today-scene--home" aria-label="Today Home">
+    <header className="today-hero today-home__hero">
+      <p className="today-live-time"><time>{formatDate(moment)}</time><span>{formatClock(moment)}</span><b>{phase}</b></p>
+      <h1><span>{phaseLanguage[phase].greeting},</span><em>{firstName}.</em></h1>
+      <div className="today-rule"><span/><Sparkles/><span/></div><p>{phaseLanguage[phase].message}</p>
+    </header>
+    <article className="today-live-panel today-home__priorities"><p className="today-eyebrow">Today&apos;s priorities</p><PriorityList data={data} completedIds={completedIds} completeTask={completeTask} pending={pending}/></article>
+    <article className="today-live-panel today-home__event"><p className="today-eyebrow">Next event</p><Link href={calendarDisconnected ? '/connections' : '/calendar'}><CalendarDays/><span><strong>{calendarDisconnected ? 'Connect calendar' : event?.title ?? 'Open time'}</strong><small>{calendarDisconnected ? 'Show Glow your live schedule' : event ? `${formatTime(event.startAt)}${event.endAt ? ` · ${formatTime(event.endAt)}` : ''}` : 'Your calendar has room'}</small></span></Link></article>
+    <article className="today-live-panel today-home__capacity"><p className="today-eyebrow">Current capacity</p>{capacity === null ? <><strong className="today-capacity-check">Check in</strong><p>Tell Glow how you feel so today can adapt.</p><Link className="today-capacity-link" href="/wellness">Check in now <ArrowRight/></Link></> : <><strong>{capacity}%</strong><p>{capacity < 50 ? 'Glow will keep today intentionally gentle.' : 'You have enough for what matters most.'}</p><Link className="today-capacity-link" href="/wellness">View capacity factors <ArrowRight/></Link></>}</article>
+    <div className="today-actions"><button type="button" className="today-primary-action" onClick={() => go('brief')}><Sparkles/><span>{phaseLanguage[phase].action}</span><ChevronRight/></button><AskGlowButton openGlow={openGlow}/></div>
+  </section>;
 }
 
-function EarlyBrief({ data, moment }: { data: TodaySceneData; moment: Date | null }) {
-  const phase = phaseFor(moment);
+function TodayBrief({ data, moment, phase, completedIds, completeTask, pending, go, openGlow }: SceneProps) {
   const event = nextEvent(data, moment);
   const energy = data.dashboard.wellnessToday.entry?.energy ?? null;
   const intentions = [
-    { title: 'Clarity', icon: SunMedium, text: openTasks(data)[0]?.title ?? 'Set the tone with purpose.' },
+    { title: 'Clarity', icon: SunMedium, text: openTasks(data, completedIds)[0]?.title ?? 'Set the tone with purpose.' },
     { title: 'Wellness', icon: Leaf, text: energyPercent(energy) === null ? 'Nourish mind and body.' : `Move from ${energyLabel(energy).toLowerCase()} energy.` },
     { title: 'Purpose', icon: Sparkles, text: data.dashboard.weekTheme.note || 'Create meaningful progress today.' },
   ];
-  return <main className="today-scene today-scene--morning">
-    <header className="today-hero today-morning__hero"><h1>{phaseCopy[phase].brief.split(' ').map((word) => <span key={word}>{word}</span>)}</h1><div className="today-rule"><span/><Sparkles/><span/></div><time>{formatDate(moment)}</time><p>A new day of becoming.<br/>Move with clarity, grace, and purpose.</p></header>
-    <section className="morning-intentions">{intentions.map(({ title, icon: Icon, text }) => <ScenePanel key={title}><Icon/><h2>{title}</h2><p>{text}</p></ScenePanel>)}</section>
-    <div className="morning-brief__grid">
-      <ScenePanel><p className="today-eyebrow">Today&apos;s priorities</p><PriorityList data={data} complete /></ScenePanel>
-      <ScenePanel><p className="today-eyebrow">First appointment</p><Link className="today-event-row" href="/calendar"><CalendarDays/><span><strong>{event ? `${formatTime(event.startAt)}${event.endAt ? ` – ${formatTime(event.endAt)}` : ''}` : 'Open time'}</strong><small>{event ? `${event.title}${event.location ? ` · ${event.location}` : ''}` : 'Your calendar has room'}</small></span></Link></ScenePanel>
-      <ScenePanel><p className="today-eyebrow">Current energy</p><div className="today-energy"><span>{energyLabel(energy)}</span><strong>{energyPercent(energy) === null ? '—' : `${energyPercent(energy)}%`}</strong><i style={{ '--energy': `${energyPercent(energy) ?? 0}%` } as React.CSSProperties}/></div><Link className="today-inline-link" href="/wellness">{energy ? 'You are aligned and ready.' : 'Complete your check-in'} <ArrowRight/></Link></ScenePanel>
-      <ScenePanel><p className="today-eyebrow">Today&apos;s recommendation</p><Link className="today-recommendation" href="/brain"><SunMedium/><span>{data.dashboard.greeting.title}</span><ChevronRight/></Link></ScenePanel>
+  return <section className="today-scene today-scene--brief" aria-label={phaseLanguage[phase].brief}>
+    <header className="today-hero today-brief__hero"><p className="today-live-time"><time>{formatDate(moment)}</time><span>{formatClock(moment)}</span><b>{phase}</b></p><h1>{phaseLanguage[phase].brief.split(' ').map((word) => <span key={word}>{word}</span>)}</h1><div className="today-rule"><span/><Sparkles/><span/></div><p>A new part of your becoming.<br/>Move with clarity, grace, and purpose.</p></header>
+    <div className="today-intentions">{intentions.map(({ title, icon: Icon, text }) => <article className="today-live-panel" key={title}><Icon/><h2>{title}</h2><p>{text}</p></article>)}</div>
+    <div className="today-brief-grid">
+      <article className="today-live-panel"><p className="today-eyebrow">Today&apos;s priorities</p><PriorityList data={data} completedIds={completedIds} completeTask={completeTask} pending={pending}/></article>
+      <article className="today-live-panel"><p className="today-eyebrow">First appointment</p><Link className="today-event-row" href="/calendar"><CalendarDays/><span><strong>{event ? `${formatTime(event.startAt)}${event.endAt ? ` – ${formatTime(event.endAt)}` : ''}` : 'Open time'}</strong><small>{event?.title ?? 'Your calendar has room'}</small></span></Link></article>
+      <article className="today-live-panel"><p className="today-eyebrow">Current energy</p><div className="today-energy"><span>{energyLabel(energy)}</span><strong>{energyPercent(energy) === null ? 'Check in' : `${energyPercent(energy)}%`}</strong><i style={{ '--energy': `${energyPercent(energy) ?? 0}%` } as CSSProperties}/></div><Link className="today-inline-link" href="/wellness">{energy ? 'You are aligned and ready.' : 'Complete your check-in'} <ArrowRight/></Link></article>
+      <article className="today-live-panel"><p className="today-eyebrow">Today&apos;s recommendation</p><Link className="today-recommendation" href="/brain"><SunMedium/><span>{data.dashboard.greeting.title}</span><ChevronRight/></Link></article>
     </div>
-    <div className="today-actions"><Link href="/today/flow" className="today-primary-action"><SunMedium/><span>{phaseCopy[phase].action}</span><ChevronRight/></Link><AskGlowButton/></div>
-  </main>;
+    <div className="today-actions"><button type="button" className="today-primary-action" onClick={() => go('flow')}><SunMedium/><span>Enter Day Flow</span><ChevronRight/></button><AskGlowButton openGlow={openGlow}/></div>
+  </section>;
 }
 
-function DayFlow({ data, moment }: { data: TodaySceneData; moment: Date | null }) {
-  const livePhase = phaseFor(moment);
-  const [active, setActive] = useState<TimePhase>(livePhase);
-  useEffect(() => setActive(livePhase), [livePhase]);
-  const segments = [
-    { id: 'morning' as const, icon: SunMedium, title: 'Morning', detail: data.dashboard.routinesForNow[0]?.name ?? 'Hydrate · medication · sunlight · assess energy', href: '/routines' },
-    { id: 'afternoon' as const, icon: Clock3, title: 'Afternoon', detail: 'Priority block · meal · movement', href: '/planning' },
-    { id: 'evening' as const, icon: SunMedium, title: 'Evening', detail: 'Reset space · care routine · tomorrow setup', href: '/today/evening' },
-    { id: 'night' as const, icon: MoonStar, title: 'Night', detail: 'Low stimulation · medication check · sleep wind-down', href: '/wellness' },
-  ];
+function TodayFlow({ data, moment, phase, completedIds, completeTask, pending, go, openGlow }: SceneProps) {
+  const [active, setActive] = useState<TimePhase>(phase);
+  useEffect(() => setActive(phase), [phase]);
   const event = nextEvent(data, moment);
   const energy = data.dashboard.wellnessToday.entry?.energy ?? null;
-  return <main className="today-scene today-scene--flow">
-    <header className="today-hero today-flow__hero"><h1>Today</h1><div className="today-rule"><span/><Sparkles/><span/></div><time>{formatDate(moment)}</time></header>
-    <section className="day-flow__timeline" aria-label="Day flow">{segments.map(({ id, icon: Icon, title, detail, href }) => <Link href={href} key={id} onClick={(event) => { if (active !== id) { event.preventDefault(); setActive(id); } }} className={active === id ? 'is-active' : ''}><span><Icon/></span><span><strong>{title}</strong><small>{detail}</small></span></Link>)}</section>
-    <aside className="day-flow__facts">
-      <ScenePanel><p className="today-eyebrow">Today&apos;s priorities</p><PriorityList data={data} complete /></ScenePanel>
-      <ScenePanel><p className="today-eyebrow">Next appointment</p><Link className="today-event-row" href="/calendar"><CalendarDays/><span><strong>{event ? formatTime(event.startAt) : 'Open time'}</strong><small>{event?.title ?? 'No event is constraining your day'}</small></span></Link></ScenePanel>
-      <ScenePanel><p className="today-eyebrow">Current energy</p><div className="today-energy"><span>{energyLabel(energy)}</span><strong>{energyPercent(energy) === null ? '—' : `${energyPercent(energy)}%`}</strong><i style={{ '--energy': `${energyPercent(energy) ?? 0}%` } as React.CSSProperties}/></div></ScenePanel>
-      <ScenePanel><p className="today-eyebrow">Today&apos;s recommendation</p><Link className="today-recommendation" href="/brain"><Leaf/><span>{data.dashboard.greeting.title}</span><ChevronRight/></Link></ScenePanel>
+  const segments = [
+    { id: 'morning' as const, icon: SunMedium, title: 'Morning', detail: 'Hydrate · medication · sunlight · assess energy' },
+    { id: 'afternoon' as const, icon: Clock3, title: 'Afternoon', detail: 'Priority block · meal · movement' },
+    { id: 'evening' as const, icon: SunMedium, title: 'Evening', detail: 'Reset space · care routine · tomorrow setup' },
+    { id: 'night' as const, icon: MoonStar, title: 'Night', detail: 'Low stimulation · medication check · sleep wind-down' },
+  ];
+  return <section className="today-scene today-scene--flow" aria-label="Day Flow">
+    <header className="today-hero today-flow__hero"><p className="today-live-time"><time>{formatDate(moment)}</time><span>{formatClock(moment)}</span><b>{phase}</b></p><h1>Today</h1><div className="today-rule"><span/><Sparkles/><span/></div></header>
+    <div className="today-flow-timeline" aria-label="Parts of today">{segments.map(({ id, icon: Icon, title, detail }) => <button type="button" key={id} onClick={() => setActive(id)} className={active === id ? 'is-active' : ''} aria-pressed={active === id}><span><Icon/></span><span><strong>{title}</strong><small>{detail}</small></span></button>)}</div>
+    <aside className="today-flow-facts">
+      <article className="today-live-panel"><p className="today-eyebrow">Today&apos;s priorities</p><PriorityList data={data} completedIds={completedIds} completeTask={completeTask} pending={pending}/></article>
+      <article className="today-live-panel"><p className="today-eyebrow">Next appointment</p><Link className="today-event-row" href="/calendar"><CalendarDays/><span><strong>{event ? formatTime(event.startAt) : 'Open time'}</strong><small>{event?.title ?? 'No event is constraining your day'}</small></span></Link></article>
+      <article className="today-live-panel"><p className="today-eyebrow">Current energy</p><div className="today-energy"><span>{energyLabel(energy)}</span><strong>{energyPercent(energy) === null ? 'Check in' : `${energyPercent(energy)}%`}</strong><i style={{ '--energy': `${energyPercent(energy) ?? 0}%` } as CSSProperties}/></div></article>
+      <article className="today-live-panel"><p className="today-eyebrow">Now illuminated</p><p className="today-flow-now">{segments.find((segment) => segment.id === active)?.detail}</p></article>
     </aside>
-    <div className="today-actions"><AskGlowButton large/></div>
-  </main>;
+    <div className="today-actions"><button type="button" className="today-primary-action" onClick={() => go('debrief')}><MoonStar/><span>Reflect on Today</span><ChevronRight/></button><AskGlowButton openGlow={openGlow}/></div>
+  </section>;
 }
 
-function EveningDebrief({ data, moment, phase }: { data: TodaySceneData; moment: Date | null; phase: TimePhase }) {
-  const completed = data.tasks.filter((task) => task.status === 'done').slice(0, 2);
-  const open = openTasks(data);
-  return <main className="today-scene today-scene--evening">
-    <header className="today-hero today-evening__hero"><h1>{phase === 'night' ? 'Night' : 'Evening'}<span>Debrief</span></h1><div className="today-rule"><span/><Sparkles/><span/></div><time>{formatDate(moment)}</time><p>What do I carry forward?</p></header>
-    <div className="evening-grid">
-      <ScenePanel><p className="today-eyebrow">Today</p><p className="evening-summary"><Check/> {completed.length} priorities completed</p><p className="evening-summary"><Clock3/> {open.length} priorities still open</p></ScenePanel>
-      <ScenePanel><p className="today-eyebrow">Completed</p>{completed.length ? completed.map((task) => <p key={task.id} className="evening-summary"><Check/> {task.title}</p>) : <Link className="today-empty-link" href="/tasks">Review today <ArrowRight/></Link>}</ScenePanel>
-      <ScenePanel><p className="today-eyebrow">Move to tomorrow</p>{open[0] ? <form action={moveTodayTaskToTomorrowAction.bind(null, open[0].id)}><button type="submit" className="evening-move"><ArrowRight/> {open[0].title}</button></form> : <p className="evening-summary"><Check/> No carryover needed</p>}</ScenePanel>
+function TodayDebrief({ data, moment, phase, completedIds, pending, go, openGlow, moveTask, saveDay }: SceneProps & { moveTask: (id: string, title: string) => void; saveDay: (formData: FormData) => void }) {
+  const completed = data.tasks.filter((task) => task.status === 'done' || completedIds.has(task.id)).slice(0, 2);
+  const open = openTasks(data, completedIds);
+  return <section className="today-scene today-scene--debrief" aria-label="Evening Debrief">
+    <header className="today-hero today-debrief__hero"><p className="today-live-time"><time>{formatDate(moment)}</time><span>{formatClock(moment)}</span><b>{phase}</b></p><h1><span>{phase === 'night' ? 'Night' : 'Evening'}</span><span>Debrief</span></h1><div className="today-rule"><span/><Sparkles/><span/></div><p>What do I carry forward?</p></header>
+    <div className="today-debrief-stack">
+      <article className="today-live-panel"><p className="today-eyebrow">Today</p><p className="today-summary"><Check/> {completed.length} priorities completed</p><p className="today-summary"><Clock3/> {open.length} priorities remain</p></article>
+      <article className="today-live-panel"><p className="today-eyebrow">Completed</p>{completed.length ? completed.map((task) => <p key={task.id} className="today-summary"><Check/> {task.title.replace(/[\p{Extended_Pictographic}\uFE0F]/gu, '').trim()}</p>) : <p className="today-summary">Your reflection is open.</p>}</article>
+      <article className="today-live-panel"><p className="today-eyebrow">Move to tomorrow</p>{open[0] ? <button type="button" disabled={pending} className="today-move" onClick={() => moveTask(open[0].id, open[0].title)}><ArrowRight/> {open[0].title.replace(/[\p{Extended_Pictographic}\uFE0F]/gu, '').trim()}</button> : <p className="today-summary"><Check/> No carryover needed</p>}</article>
     </div>
-    <form action={finishDayFormAction} className="evening-reflection">
-      <ScenePanel><label><span className="today-eyebrow">What I noticed</span><textarea name="memoryNote" defaultValue={data.review?.memoryNote ?? ''} placeholder="Energy improved after lunch…"/></label></ScenePanel>
-      <ScenePanel><label><span className="today-eyebrow">Gratitude</span><textarea name="completedSummary" defaultValue={data.review?.completedSummary ?? ''} placeholder="One thing that felt good today…"/></label></ScenePanel>
-      <ScenePanel className="tomorrow-first"><label><span className="today-eyebrow">Tomorrow&apos;s first step</span><input name="tomorrow1" defaultValue={data.review?.tomorrowTopThree?.[0] ?? ''} placeholder="Begin with water, medication, and sunlight."/></label><input type="hidden" name="movedSummary" value={open.map((task) => task.title).join(', ')}/><input type="hidden" name="energy" value={energyReviewScore(data.dashboard.wellnessToday.entry?.energy)}/><input type="hidden" name="mood" value={data.dashboard.wellnessToday.entry?.mood ?? ''}/></ScenePanel>
-      <button type="submit" className="today-primary-action"><Check/><span>Close the day</span></button><Link href="/today" className="today-secondary-action"><Pencil/> Edit reflection</Link>
+    <form action={saveDay} className="today-reflection-form">
+      <article className="today-live-panel"><label><span className="today-eyebrow">What I noticed</span><textarea name="memoryNote" defaultValue={data.review?.memoryNote ?? ''} placeholder="Energy improved after lunch…"/></label></article>
+      <article className="today-live-panel"><label><span className="today-eyebrow">Gratitude</span><textarea name="completedSummary" defaultValue={data.review?.completedSummary ?? ''} placeholder="One thing that felt good today…"/></label></article>
+      <article className="today-live-panel today-tomorrow-first"><label><span className="today-eyebrow">Tomorrow&apos;s first step</span><input name="tomorrow1" defaultValue={data.review?.tomorrowTopThree?.[0] ?? ''} placeholder="Begin with water, medication, and sunlight."/></label><input type="hidden" name="movedSummary" value={open.map((task) => task.title).join(', ')}/><input type="hidden" name="energy" value={energyReviewScore(data.dashboard.wellnessToday.entry?.energy)}/><input type="hidden" name="mood" value={data.dashboard.wellnessToday.entry?.mood ?? ''}/></article>
+      <button type="submit" disabled={pending} className="today-primary-action"><Check/><span>{pending ? 'Saving…' : 'Close the day'}</span></button><button type="button" className="today-secondary-action" onClick={() => go('home')}>Return Home</button>
     </form>
-    <div className="today-actions"><AskGlowButton/></div>
-  </main>;
+    <div className="today-actions"><AskGlowButton openGlow={openGlow}/></div>
+  </section>;
 }
 
 export function TodayExperience({ view, data, userName }: { view: TodaySceneView; data: TodaySceneData; userName?: string | null }) {
+  const initialScene: JourneyScene = view === 'morning' ? 'brief' : view === 'flow' ? 'flow' : view === 'evening' ? 'debrief' : 'opening';
   const moment = useLiveMoment();
-  const phase = phaseFor(moment);
+  const livePhase = phaseFor(moment);
+  const [phase, setPhase] = useState<TimePhase>(livePhase);
+  const [scene, setScene] = useState<JourneyScene>(initialScene);
+  const [transitioning, setTransitioning] = useState(false);
+  const transitionTimer = useRef<number | null>(null);
+  const [feedback, setFeedback] = useState('');
+  const [completedIds, setCompletedIds] = useState<Set<string>>(() => new Set());
+  const [pending, startTransition] = useTransition();
   const firstName = useMemo(() => userName?.trim().split(/\s+/)[0] || 'Tatiyana', [userName]);
-  const [opening, setOpening] = useState(false);
   useTimeZoneSync();
+  useHidePreviewToolbar();
 
+  useEffect(() => setPhase(livePhase), [livePhase]);
   useEffect(() => {
-    if (view === 'home') setOpening(window.sessionStorage.getItem('glow:opening-seen-v3') !== 'yes');
-    const complete = () => { window.sessionStorage.setItem('glow:opening-seen-v3', 'yes'); setOpening(false); };
-    document.addEventListener('glow:opening-complete', complete);
-    return () => document.removeEventListener('glow:opening-complete', complete);
-  }, [view]);
-
-  useEffect(() => {
-    if (opening) document.documentElement.dataset.glowOpening = 'true';
+    if (scene === 'opening') document.documentElement.dataset.glowOpening = 'true';
     else delete document.documentElement.dataset.glowOpening;
     return () => { delete document.documentElement.dataset.glowOpening; };
-  }, [opening]);
+  }, [scene]);
+  useEffect(() => () => {
+    if (transitionTimer.current !== null) window.clearTimeout(transitionTimer.current);
+  }, []);
 
-  if (opening) return <Opening/>;
-  if (view === 'morning') return phase === 'evening' || phase === 'night' ? <EveningDebrief data={data} moment={moment} phase={phase}/> : <EarlyBrief data={data} moment={moment}/>;
-  if (view === 'flow') return <DayFlow data={data} moment={moment}/>;
-  if (view === 'evening') return <EveningDebrief data={data} moment={moment} phase={phase}/>;
-  return <Home data={data} firstName={firstName} moment={moment}/>;
+  function go(next: JourneyScene) {
+    if (next === scene || transitioning) return;
+    setTransitioning(true);
+    transitionTimer.current = window.setTimeout(() => { setScene(next); setTransitioning(false); }, 260);
+  }
+
+  function completeTask(id: string, title: string) {
+    setCompletedIds((current) => new Set(current).add(id));
+    setFeedback(`${title} completed.`);
+    startTransition(async () => {
+      try { await completeTodayTaskAction(id); }
+      catch { setCompletedIds((current) => { const next = new Set(current); next.delete(id); return next; }); setFeedback('Glow could not complete that priority. Try again.'); }
+    });
+  }
+
+  function moveTask(id: string, title: string) {
+    setCompletedIds((current) => new Set(current).add(id));
+    setFeedback(`${title} moved to tomorrow.`);
+    startTransition(async () => {
+      try { await moveTodayTaskToTomorrowAction(id); }
+      catch { setCompletedIds((current) => { const next = new Set(current); next.delete(id); return next; }); setFeedback('Glow could not move that priority. Try again.'); }
+    });
+  }
+
+  function saveDay(formData: FormData) {
+    formData.set('timeZone', Intl.DateTimeFormat().resolvedOptions().timeZone);
+    setFeedback('Saving your reflection…');
+    startTransition(async () => {
+      try { await finishDayFormAction(formData); setFeedback('Today is closed gently. Your reflection is saved.'); }
+      catch { setFeedback('Glow could not save the reflection. Your writing is still on this screen.'); }
+    });
+  }
+
+  function openGlow() {
+    setFeedback('Opening Ask Glow…');
+    document.dispatchEvent(new Event('glow:voice-open'));
+  }
+
+  if (scene === 'opening') return <Opening enter={() => go('home')}/>;
+
+  const shared = { data, moment, phase, completedIds, completeTask, pending, go, openGlow };
+  return <main className={`today-journey${transitioning ? ' is-transitioning' : ''}`} data-scene={scene} data-phase={phase}>
+    <JourneyControls scene={scene} phase={phase} setPhase={setPhase} go={go} replay={() => go('opening')}/>
+    {scene === 'home' ? <TodayHome {...shared} firstName={firstName}/> : null}
+    {scene === 'brief' ? <TodayBrief {...shared}/> : null}
+    {scene === 'flow' ? <TodayFlow {...shared}/> : null}
+    {scene === 'debrief' ? <TodayDebrief {...shared} moveTask={moveTask} saveDay={saveDay}/> : null}
+    <p className="today-feedback" role="status" aria-live="polite">{feedback}</p>
+  </main>;
 }

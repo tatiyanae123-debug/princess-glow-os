@@ -1,7 +1,7 @@
-import { TodayScenePage } from '@/components/today/today-scene-page';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default function MorningBriefPage() {
-  return <TodayScenePage view="morning"/>;
+  redirect('/dashboard');
 }
