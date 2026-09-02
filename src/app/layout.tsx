@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import './continuous-world.css';
 import './reference-rooms.css';
 import './glow-os-3.css';
 import './reference-board-exact-v2.css';
