@@ -1,0 +1,265 @@
+/* Glow OS Exact Reference Placement Enforcement
+   Constitutional implementation: the reference object's existing inner face is the UI.
+   No invented cards, plates, or translucent backing surfaces may substitute for it. */
+
+.today-scene--home .today-live-panel{
+  box-sizing:border-box;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.today-scene--home .today-live-panel::before,
+.today-scene--home .today-live-panel::after{
+  display:none!important;
+  content:none!important;
+}
+
+/* LEFT PRIORITY MONUMENT
+   The article already tracks the monument in the reference. Its live children now stay
+   inside the monument's actual central writable face instead of creating a second card. */
+.today-scene--home .today-home__priorities{
+  overflow:hidden!important;
+  padding:5.5% 7.5% 5.5%!important;
+  clip-path:inset(0 round 15% 15% 7% 7%);
+  transform:none!important;
+  text-shadow:0 1px 0 rgba(255,247,230,.48),0 1px 5px rgba(65,39,24,.08)!important;
+}
+.today-scene--home .today-home__priorities .today-eyebrow{
+  margin:0 0 3.5%!important;
+  padding:0!important;
+  font-size:clamp(.56rem,1.55cqw,.76rem)!important;
+  line-height:1.05!important;
+  letter-spacing:.13em!important;
+  color:rgba(66,45,33,.88)!important;
+}
+.today-scene--home .today-home__priorities .today-priorities{
+  width:100%!important;
+  min-width:0!important;
+}
+.today-scene--home .today-home__priorities .today-priority{
+  min-height:0!important;
+  height:auto!important;
+  grid-template-columns:clamp(24px,3.3cqw,31px) minmax(0,1fr) clamp(30px,4.3cqw,38px)!important;
+  gap:clamp(6px,1.35cqw,11px)!important;
+  padding:clamp(5px,.75cqw,8px) 0!important;
+  border-bottom:1px solid rgba(83,56,38,.12)!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.today-scene--home .today-home__priorities .today-priority>span{
+  width:clamp(23px,3.15cqw,29px)!important;
+  height:clamp(23px,3.15cqw,29px)!important;
+  border:1px solid rgba(91,61,39,.13)!important;
+  background:rgba(255,246,229,.32)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.45)!important;
+  color:#5b4130!important;
+  font-size:clamp(.68rem,1.7cqw,.86rem)!important;
+}
+.today-scene--home .today-home__priorities .today-priority p{
+  min-width:0!important;
+  margin:0!important;
+  color:#463126!important;
+  font-size:clamp(.72rem,2.05cqw,.91rem)!important;
+  line-height:1.18!important;
+  font-weight:600!important;
+  overflow:hidden!important;
+  display:-webkit-box!important;
+  -webkit-box-orient:vertical!important;
+  -webkit-line-clamp:2!important;
+  text-overflow:ellipsis!important;
+  text-wrap:balance;
+}
+.today-scene--home .today-home__priorities .today-priority button{
+  width:clamp(30px,4.2cqw,38px)!important;
+  height:clamp(30px,4.2cqw,38px)!important;
+  border:1px solid rgba(91,61,39,.12)!important;
+  background:radial-gradient(circle at 36% 28%,rgba(255,252,244,.62),rgba(245,218,183,.26))!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.55)!important;
+}
+.today-scene--home .today-home__priorities .today-view-all{
+  min-height:34px!important;
+  margin-top:1.5%!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  font-size:clamp(.58rem,1.65cqw,.72rem)!important;
+  color:#594131!important;
+}
+
+/* RIGHT TEMPORAL ARCH
+   The image itself contains a separate blank plaque in the lower portion of the arch.
+   That plaque, not the decorative window/aperture above it, is the text host. */
+.today-scene--home .today-home__event{
+  overflow:visible!important;
+  padding:0!important;
+  transform:none!important;
+  text-shadow:0 1px 0 rgba(255,247,230,.5),0 1px 5px rgba(61,35,21,.07)!important;
+}
+.today-scene--home .today-home__event .today-eyebrow{
+  position:absolute!important;
+  z-index:2!important;
+  left:14%!important;
+  right:14%!important;
+  top:66%!important;
+  margin:0!important;
+  padding:0!important;
+  color:#50382a!important;
+  font-size:clamp(.52rem,1.45cqw,.69rem)!important;
+  line-height:1!important;
+  letter-spacing:.13em!important;
+  text-align:left!important;
+  pointer-events:none!important;
+}
+.today-scene--home .today-home__event .today-monument-button{
+  position:absolute!important;
+  z-index:1!important;
+  left:10%!important;
+  right:10%!important;
+  top:69%!important;
+  width:80%!important;
+  height:25%!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:8% 5% 4%!important;
+  display:grid!important;
+  grid-template-columns:clamp(24px,3.4cqw,32px) minmax(0,1fr) clamp(12px,1.8cqw,16px)!important;
+  align-items:center!important;
+  gap:clamp(6px,1.15cqw,10px)!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  overflow:hidden!important;
+  clip-path:inset(0 round 13%);
+}
+.today-scene--home .today-home__event .today-monument-button>svg:first-child{
+  width:clamp(24px,3.4cqw,32px)!important;
+  height:clamp(24px,3.4cqw,32px)!important;
+  padding:clamp(5px,.7cqw,7px)!important;
+  border:1px solid rgba(91,61,39,.12)!important;
+  border-radius:50%!important;
+  background:rgba(255,246,229,.28)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.5)!important;
+}
+.today-scene--home .today-home__event .today-monument-button span{
+  min-width:0!important;
+  align-self:center!important;
+}
+.today-scene--home .today-home__event .today-monument-button strong{
+  display:-webkit-box!important;
+  -webkit-box-orient:vertical!important;
+  -webkit-line-clamp:1!important;
+  overflow:hidden!important;
+  color:#493125!important;
+  font-size:clamp(.76rem,2.15cqw,1rem)!important;
+  line-height:1.05!important;
+  text-overflow:ellipsis!important;
+  white-space:normal!important;
+}
+.today-scene--home .today-home__event .today-monument-button small{
+  display:-webkit-box!important;
+  -webkit-box-orient:vertical!important;
+  -webkit-line-clamp:1!important;
+  overflow:hidden!important;
+  margin-top:3px!important;
+  color:#6b5140!important;
+  font-size:clamp(.54rem,1.45cqw,.68rem)!important;
+  line-height:1.1!important;
+  text-overflow:ellipsis!important;
+}
+.today-scene--home .today-home__event .today-monument-button>svg:last-child{
+  width:clamp(11px,1.65cqw,15px)!important;
+  opacity:.58!important;
+}
+
+/* CENTRAL CAPACITY BASIN
+   Keep the inscription on the basin/ring face and above the foreground world threshold. */
+.today-scene--home .today-home__capacity{
+  z-index:8!important;
+  overflow:hidden!important;
+  padding:3% 8% 4%!important;
+  clip-path:ellipse(50% 48% at 50% 50%);
+  transform:translateY(-8%)!important;
+  background:transparent!important;
+}
+.today-scene--home .today-home__capacity .today-eyebrow{
+  margin:0 0 1%!important;
+  color:#50392d!important;
+  text-align:center!important;
+  font-size:clamp(.5rem,1.4cqw,.67rem)!important;
+  letter-spacing:.15em!important;
+}
+.today-scene--home .today-home__capacity .today-capacity-button{
+  min-height:0!important;
+  padding:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.today-scene--home .today-home__capacity .today-capacity-button>strong{
+  font-size:clamp(1.15rem,4.8cqw,2rem)!important;
+  line-height:1!important;
+  color:#493126!important;
+}
+.today-scene--home .today-home__capacity .today-capacity-button>span{
+  max-width:18rem!important;
+  margin:2px auto 0!important;
+  font-size:clamp(.52rem,1.45cqw,.68rem)!important;
+  line-height:1.18!important;
+  color:#6c5140!important;
+  display:-webkit-box!important;
+  -webkit-box-orient:vertical!important;
+  -webkit-line-clamp:1!important;
+  overflow:hidden!important;
+}
+.today-scene--home .today-home__capacity .today-capacity-button>small{
+  min-height:20px!important;
+  margin-top:1px!important;
+  font-size:clamp(.5rem,1.35cqw,.64rem)!important;
+  color:#624737!important;
+}
+.today-scene--home .today-capacity-check::after{content:none!important}
+
+/* No invented backing card when a real reference surface already exists. */
+.today-scene--home .today-priority,
+.today-scene--home .today-monument-button,
+.today-scene--home .today-capacity-button{
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+
+/* The scene owns the information. Controls may brighten locally on interaction,
+   but must not turn into generic cards. */
+.today-scene--home .today-home__priorities :is(button,a):focus-visible,
+.today-scene--home .today-home__event button:focus-visible,
+.today-scene--home .today-home__capacity button:focus-visible{
+  outline:2px solid rgba(255,240,198,.72)!important;
+  outline-offset:1px!important;
+  filter:drop-shadow(0 0 8px rgba(255,213,132,.36))!important;
+}
+
+/* iPad / wide reference alignment: retain the same hosts rather than switching to cards. */
+@media (min-width:700px){
+  .today-scene--home .today-home__priorities{padding:5% 7.2% 5%!important}
+  .today-scene--home .today-home__event .today-eyebrow{top:66.5%!important}
+  .today-scene--home .today-home__event .today-monument-button{top:69.5%!important;height:24%!important}
+  .today-scene--home .today-home__capacity{transform:translateY(-13%)!important}
+}
+
+/* Narrow portrait: preserve the same semantic surfaces and reduce inscription density. */
+@media (max-width:699px){
+  .today-scene--home .today-home__priorities{padding:5% 7% 5%!important}
+  .today-scene--home .today-home__priorities .today-priority:nth-child(n+4){display:none!important}
+  .today-scene--home .today-home__event .today-eyebrow{top:65%!important}
+  .today-scene--home .today-home__event .today-monument-button{top:68%!important;height:26%!important}
+  .today-scene--home .today-home__capacity{transform:translateY(-5%)!important}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .today-scene--home .today-live-panel,
+  .today-scene--home .today-live-panel *{transform:none!important;transition:none!important;animation:none!important}
+}
