@@ -12,6 +12,7 @@ import { GlowVoiceCommand } from '@/components/voice/glow-voice-command';
 import { DataConnectionVault } from '@/components/data-connection-vault';
 import { GlobalHeader } from '@/components/global-header';
 import { GlowActionButton } from '@/components/glow-action-button';
+import { GlowWorldNav } from '@/components/today/glow-world-nav';
 
 function roomFor(pathname: string) {
   if (pathname.startsWith('/beauty/lab')) return 'beauty-lab';
@@ -52,7 +53,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const room = roomFor(pathname);
-  const isDashboard = room === 'dashboard';
+  const isImmersiveToday = pathname === '/dashboard' || pathname === '/today/morning' || pathname === '/today/flow' || pathname === '/today/evening' || (process.env.NODE_ENV === 'development' && pathname === '/dev/today-preview');
   const [focus, setFocus] = useState(false);
 
   useEffect(() => {
@@ -73,15 +74,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setFocus(false);
   }
 
-  if (isDashboard && !focus) {
+  if (isImmersiveToday && !focus) {
     return <GlowProvider>
-      <div data-dashboard-shell className="dashboard-shell-grid min-h-screen bg-white text-[#171719]" data-room="dashboard">
-        <div className="dashboard-sidebar-wrap"><Sidebar /></div>
-        <div className="dashboard-main-wrap">
-          <GlobalHeader />
-          <main className="dashboard-main">{children}</main>
-        </div>
-      </div>
+      <div className="min-h-screen bg-[#f4efe9] text-[#2f2824]" data-room="dashboard">{children}</div>
+      <GlowWorldNav immersive />
       <GlowVoiceCommand />
       <QuickAdd />
     </GlowProvider>;
@@ -104,7 +100,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       {focus ? <button type="button" onClick={exitFocus} className="fixed right-5 top-5 z-[100] inline-flex h-10 items-center gap-2 rounded-full border border-[#E6E6E6] bg-white px-4 text-[13px] font-medium text-[#444448] shadow-sm"><X size={15}/>Exit Focus</button> : null}
-      {!focus ? <><ReferenceRoomInteractions /><GlowVoiceCommand /><QuickAdd /><GlowActionButton /></> : null}
+      {!focus ? <><ReferenceRoomInteractions /><GlowVoiceCommand /><QuickAdd /><GlowActionButton /><GlowWorldNav /></> : null}
     </GlowProvider>
   );
 }

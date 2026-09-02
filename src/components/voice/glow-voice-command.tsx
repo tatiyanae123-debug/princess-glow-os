@@ -1,44 +1,104 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { AlertTriangle, CheckCircle2, Mic, Paperclip, Search, Send, ShieldCheck, Sparkles, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { ArrowRight, Check, Clock3, Mic, Shield, Sparkles, Square, Volume2, VolumeX, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-type RecognitionEvent={results:ArrayLike<{0:{transcript:string}}>};
-type RecognitionError={error:string};
-type Recognition={continuous:boolean;interimResults:boolean;lang:string;start():void;stop():void;onresult:((event:RecognitionEvent)=>void)|null;onend:(()=>void)|null;onerror:((event:RecognitionError)=>void)|null};
-type RecognitionCtor=new()=>Recognition;
-type Risk='low'|'medium'|'high';
+type RecognitionEvent = { results: ArrayLike<{ 0: { transcript: string } }> };
+type RecognitionError = { error: string };
+type Recognition = { continuous: boolean; interimResults: boolean; lang: string; start(): void; stop(): void; onresult: ((event: RecognitionEvent) => void) | null; onend: (() => void) | null; onerror: ((event: RecognitionError) => void) | null };
+type RecognitionCtor = new () => Recognition;
+type Risk = 'low' | 'medium' | 'high';
+type AuraState = 'waking' | 'listening' | 'understanding' | 'speaking' | 'creating' | 'acting' | 'complete' | 'protecting' | 'error';
+type ActionTarget = 'today' | 'plan' | 'life' | 'brain' | 'create';
 
-const NAV:Record<string,string>={today:'/dashboard',dashboard:'/dashboard',tasks:'/tasks',planner:'/planning',calendar:'/calendar',planning:'/planning',routines:'/routines',habits:'/habits',fitness:'/fitness',wellness:'/wellness',food:'/food',nutrition:'/food',beauty:'/beauty','beauty lab':'/beauty/lab',hair:'/hair',finance:'/finance','financial brain':'/finance/brain',goals:'/goals',projects:'/projects',notes:'/notes',settings:'/settings',world:'/world',glow:'/brain'};
+const NAV: Record<string, string> = { today: '/dashboard', dashboard: '/dashboard', tasks: '/tasks', planner: '/planning', calendar: '/calendar', planning: '/planning', routines: '/routines', habits: '/habits', fitness: '/fitness', wellness: '/wellness', food: '/food', nutrition: '/food', beauty: '/beauty', 'beauty lab': '/beauty/lab', hair: '/hair', finance: '/finance', 'financial brain': '/finance/brain', goals: '/goals', projects: '/projects', notes: '/notes', settings: '/settings', world: '/world', glow: '/brain' };
+const SUGGESTIONS = [
+  { label: 'Protect what matters', icon: Shield, command: 'Protect what matters and simplify the rest of today' },
+  { label: 'Move what can wait', icon: Clock3, command: 'Move everything that can wait until tomorrow' },
+  { label: 'Show me the new plan', icon: Sparkles, command: 'Show me the best plan for the rest of today' },
+];
 
-function commandRisk(text:string):Risk{const value=text.toLowerCase();if(/delete|remove all|erase|cancel appointment|cancel event|clear all|archive all|send email|purchase|pay bill|transfer|external account/.test(value))return'high';if(/move|reschedule|change|edit|update|replace|bulk|everything|all unfinished|budget|financial/.test(value))return'medium';return'low';}
-function navigationTarget(text:string){const value=text.toLowerCase().replace(/[^a-z ]/g,' ').trim();const exact=Object.entries(NAV).sort((a,b)=>b[0].length-a[0].length).find(([label])=>value===label);if(exact)return exact[1];if(!/^(open|go to|show me|take me to|navigate to)\b/.test(value))return null;return Object.entries(NAV).sort((a,b)=>b[0].length-a[0].length).find(([label])=>value.includes(label))?.[1]??null;}
+function commandRisk(text: string): Risk { const value = text.toLowerCase(); if (/delete|remove all|erase|cancel appointment|cancel event|clear all|archive all|send email|purchase|pay bill|transfer|external account/.test(value)) return 'high'; if (/move|reschedule|change|edit|update|replace|bulk|everything|all unfinished|budget|financial|simplify the rest/.test(value)) return 'medium'; return 'low'; }
+function navigationTarget(text: string) { const value = text.toLowerCase().replace(/[^a-z ]/g, ' ').trim(); const entries = Object.entries(NAV).sort((a, b) => b[0].length - a[0].length); const exact = entries.find(([label]) => value === label); if (exact) return exact[1]; if (!/^(open|go to|show me|take me to|navigate to)\b/.test(value)) return null; return entries.find(([label]) => value.includes(label))?.[1] ?? null; }
+function actionTarget(text: string): ActionTarget { const value = text.toLowerCase(); if (/note|remember|search|find|brain/.test(value)) return 'brain'; if (/create|image|page|make/.test(value)) return 'create'; if (/wellness|energy|routine|habit|hair|beauty|fitness|workout|food|finance|goal|project/.test(value)) return 'life'; if (/task|calendar|event|schedule|plan|tomorrow|move|reschedule/.test(value)) return 'plan'; return 'today'; }
+function playSpokenMessage(message: string, onEnd: () => void) { if (!('speechSynthesis' in window)) return false; window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(message); const voices = window.speechSynthesis.getVoices(); utterance.voice = voices.find((voice) => /samantha|ava|serena|zoe|google us english/i.test(voice.name)) ?? voices.find((voice) => /^en-(US|GB)/.test(voice.lang) && voice.localService) ?? voices.find((voice) => /^en/.test(voice.lang)) ?? null; utterance.rate = 0.92; utterance.pitch = 1.03; utterance.volume = 0.78; utterance.onend = onEnd; utterance.onerror = onEnd; window.speechSynthesis.speak(utterance); return true; }
 
-export function GlowVoiceCommand(){
-  const pathname=usePathname();const router=useRouter();const recognitionRef=useRef<Recognition|null>(null);const fileRef=useRef<HTMLInputElement>(null);
-  const [open,setOpen]=useState(false);const [listening,setListening]=useState(false);const [text,setText]=useState('');const [status,setStatus]=useState('');const [pending,setPending]=useState(false);const risk=commandRisk(text);
+export function GlowVoiceCommand() {
+  const pathname = usePathname(); const router = useRouter();
+  const recognitionRef = useRef<Recognition | null>(null); const wakeTimer = useRef<ReturnType<typeof setTimeout> | null>(null); const textRef = useRef<HTMLTextAreaElement>(null); const rootRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false); const [text, setText] = useState(''); const [status, setStatus] = useState('I’m here. Tell me what you need.');
+  const [auraState, setAuraState] = useState<AuraState>('waking'); const [reviewing, setReviewing] = useState(false); const [pending, setPending] = useState(false); const [spokenVoice, setSpokenVoice] = useState(true); const [travelTarget, setTravelTarget] = useState<ActionTarget | null>(null);
+  const risk = commandRisk(text);
 
-  useEffect(()=>{const openGlow=()=>setOpen(true);const key=(event:KeyboardEvent)=>{if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='k'){event.preventDefault();setOpen(true);}if(event.key==='Escape')setOpen(false);};document.addEventListener('glow:voice-open',openGlow);document.addEventListener('keydown',key);return()=>{document.removeEventListener('glow:voice-open',openGlow);document.removeEventListener('keydown',key);};},[]);
+  const close = useCallback(() => { recognitionRef.current?.stop(); recognitionRef.current = null; window.speechSynthesis?.cancel(); if (wakeTimer.current) clearTimeout(wakeTimer.current); setOpen(false); setPending(false); setReviewing(false); setTravelTarget(null); }, []);
+  const awaken = useCallback(() => { if (wakeTimer.current) clearTimeout(wakeTimer.current); setOpen(true); setText(''); setStatus('Glow is arriving…'); setAuraState('waking'); setReviewing(false); wakeTimer.current = setTimeout(() => { const greeting = 'I’m here. Tell me what you need.'; setStatus(greeting); const finish = () => { setAuraState('listening'); textRef.current?.focus(); }; if (window.localStorage.getItem('glow:spoken-voice') !== 'off') { setAuraState('speaking'); if (!playSpokenMessage(greeting, finish)) finish(); } else finish(); }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 40 : 900); }, []);
 
-  function startListening(){setStatus('');const browser=window as Window&{SpeechRecognition?:RecognitionCtor;webkitSpeechRecognition?:RecognitionCtor};const Ctor=browser.SpeechRecognition??browser.webkitSpeechRecognition;if(!Ctor){setStatus('Voice recognition is not available here. Type your command instead.');return;}const recognition=new Ctor();recognition.continuous=false;recognition.interimResults=false;recognition.lang='en-US';recognition.onresult=(event)=>{setText(Array.from(event.results).map(result=>result[0]?.transcript??'').join(' ').trim());setListening(false);};recognition.onend=()=>setListening(false);recognition.onerror=(event)=>{setListening(false);setStatus(`Glow could not hear that clearly (${event.error}).`);};recognitionRef.current=recognition;setListening(true);recognition.start();}
-  function stopListening(){recognitionRef.current?.stop();setListening(false);}
+  useEffect(() => { const key = (event: KeyboardEvent) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); awaken(); } if (event.key === 'Escape' && open) close(); }; document.addEventListener('glow:voice-open', awaken); document.addEventListener('keydown', key); return () => { document.removeEventListener('glow:voice-open', awaken); document.removeEventListener('keydown', key); }; }, [awaken, close, open]);
+  useEffect(() => { if (!open) return; const previous = document.body.style.overflow; document.body.style.overflow = 'hidden'; return () => { document.body.style.overflow = previous; }; }, [open]);
+  useEffect(() => { setSpokenVoice(window.localStorage.getItem('glow:spoken-voice') !== 'off'); }, []);
 
-  async function runCommand(){const command=text.trim();if(!command||pending)return;const lower=command.toLowerCase();const destination=navigationTarget(command);if(destination){router.push(destination);setOpen(false);setText('');return;}if(/^(new task|add a task|add task)$/.test(lower)){document.dispatchEvent(new CustomEvent('glow:quick-add',{detail:{module:'task'}}));setOpen(false);return;}if(/^(new event|add event|add an event)$/.test(lower)){document.dispatchEvent(new CustomEvent('glow:quick-add',{detail:{module:'event'}}));setOpen(false);return;}if(/plan tomorrow/.test(lower)){router.push('/planning?view=tomorrow');setOpen(false);return;}if(/search/.test(lower)&&/doctor|note|notes/.test(lower)){router.push(`/brain?mode=search&q=${encodeURIComponent(command)}`);setOpen(false);return;}setPending(true);setStatus('Glow is routing this to the right part of your life…');try{const response=await fetch('/api/voice/command',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({text:command,sourceRoute:pathname,risk})});const payload=await response.json() as {ok?:boolean;message?:string};if(!response.ok||!payload.ok)throw new Error(payload.message||'Glow could not run that command.');setStatus(payload.message||'Done.');setText('');router.refresh();}catch(error){setStatus(error instanceof Error?error.message:'Glow could not run that command.');}finally{setPending(false);}}
+  function speak(message: string, nextState: AuraState = 'listening') {
+    if (!spokenVoice) { setAuraState(nextState); return; } setAuraState('speaking'); if (!playSpokenMessage(message, () => setAuraState(nextState))) setAuraState(nextState);
+  }
 
-  if(!open)return null;
-  return <div className="fixed inset-0 z-[110] flex items-start justify-center bg-black/20 px-3 pt-[10vh] backdrop-blur-[2px]" onMouseDown={event=>{if(event.target===event.currentTarget)setOpen(false);}}>
-    <section className="w-full max-w-[640px] overflow-hidden rounded-[22px] border border-[#E7E7E7] bg-white shadow-[0_28px_90px_rgba(0,0,0,.18)]">
-      <div className="flex items-start justify-between border-b border-[#EFEFEF] px-5 py-5 sm:px-6"><div><div className="flex items-center gap-2 text-[#B86F7D]"><Sparkles size={14}/><p className="text-[11px] font-semibold uppercase tracking-[.16em]">Glow</p></div><h2 className="glow-display mt-2 text-[28px] leading-tight text-[#1C1C1E]">What do you want to do?</h2><p className="mt-2 text-[13px] leading-5 text-[#6E6E73]">Type, speak, search, create, move, log, plan or ask. Glow uses the room you are in as context.</p></div><button type="button" onClick={()=>setOpen(false)} aria-label="Close Glow" className="rounded-full p-2 text-[#77777B] hover:bg-[#F5F5F5]"><X size={18}/></button></div>
-      <div className="space-y-4 p-5 sm:p-6">
-        <div className="relative"><Search className="absolute left-4 top-4 text-[#9A9A9F]" size={17}/><textarea autoFocus value={text} onChange={event=>setText(event.target.value)} onKeyDown={event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();void runCommand();}}} rows={3} placeholder="Add a task, open Hair, plan tomorrow, search doctor notes…" className="w-full resize-none rounded-[16px] border border-[#E4E4E4] bg-[#FAFAFA] py-3.5 pl-11 pr-4 text-[14px] leading-6 text-[#1C1C1E] outline-none focus:border-[#B86F7D]"/></div>
-        <div className="flex flex-wrap gap-2"><button type="button" onClick={listening?stopListening:startListening} className="glow-command-chip"><Mic size={14}/>{listening?'Listening…':'Speak'}</button><button type="button" onClick={()=>fileRef.current?.click()} className="glow-command-chip"><Paperclip size={14}/>Attach</button><button type="button" onClick={()=>document.dispatchEvent(new CustomEvent('glow:quick-add'))} className="glow-command-chip">+ Create</button><span className="ml-auto hidden self-center text-[11px] text-[#A0A0A5] sm:inline">⌘K / Ctrl-K</span></div>
-        <input ref={fileRef} type="file" className="sr-only" onChange={event=>{const file=event.target.files?.[0];if(file)setStatus(`${file.name} is ready to use with this Glow command.`);}}/>
-        {text?<div className={`flex items-start gap-2 rounded-[12px] px-3 py-2.5 text-[12px] leading-5 ${risk==='high'?'bg-amber-50 text-amber-900':risk==='medium'?'bg-[#FAF4F0] text-[#705A4C]':'bg-[#F4F8F4] text-[#436047]'}`}>{risk==='high'?<AlertTriangle size={14}/>:risk==='medium'?<ShieldCheck size={14}/>:<CheckCircle2 size={14}/>}<span>{risk==='high'?<><b>Confirmation required.</b> Glow will ask before destructive or external changes.</>:risk==='medium'?<><b>Review first.</b> Glow will preserve context before larger changes.</>:<><b>Ready.</b> This can be routed safely.</>}</span></div>:null}
-        {status?<div role="status" className="rounded-[12px] bg-[#F7F7F7] px-3 py-2.5 text-[12px] leading-5 text-[#5F5F64]">{status}</div>:null}
-        <button type="button" disabled={!text.trim()||pending} onClick={()=>void runCommand()} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[12px] bg-[#1C1C1E] px-4 text-[13px] font-semibold text-white disabled:opacity-40"><Send size={14}/>{pending?'Working…':risk==='high'?'Review action':'Do it'}</button>
-        <div className="grid gap-2 sm:grid-cols-3">{['Add a task','Plan tomorrow','Log my water','Open Hair','Move my workout','Search doctor notes'].map(example=><button type="button" key={example} onClick={()=>setText(example)} className="rounded-[11px] border border-[#ECECEC] bg-white px-3 py-2.5 text-left text-[12px] text-[#59595E] hover:bg-[#FAFAFA]">{example}</button>)}</div>
-      </div>
+  function toggleSpokenVoice() { const next = !spokenVoice; setSpokenVoice(next); window.localStorage.setItem('glow:spoken-voice', next ? 'on' : 'off'); if (!next) { window.speechSynthesis?.cancel(); setAuraState('listening'); } else { setAuraState('speaking'); if (!playSpokenMessage('Glow voice is on.', () => setAuraState('listening'))) setAuraState('listening'); } }
+
+  async function travelTo(target: ActionTarget) {
+    const root = rootRef.current; const destination = document.querySelector<HTMLElement>(`[data-glow-world="${target}"]`); setTravelTarget(target);
+    if (root && destination) {
+      const rootBox = root.getBoundingClientRect(); const destinationBox = destination.getBoundingClientRect(); const wide = window.matchMedia('(min-width: 760px) and (orientation: landscape)').matches;
+      const startX = rootBox.width * (wide ? 0.70 : 0.50); const startY = rootBox.height * (wide ? 0.43 : 0.31); const endX = destinationBox.left + destinationBox.width / 2 - rootBox.left; const endY = destinationBox.top + destinationBox.height / 2 - rootBox.top; const deltaX = endX - startX; const deltaY = endY - startY;
+      root.style.setProperty('--travel-start-x', `${startX}px`); root.style.setProperty('--travel-start-y', `${startY}px`); root.style.setProperty('--travel-distance', `${Math.hypot(deltaX, deltaY)}px`); root.style.setProperty('--travel-angle', `${Math.atan2(deltaY, deltaX)}rad`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 40 : 920)); setTravelTarget(null);
+  }
+
+  function startListening() {
+    setReviewing(false); const browser = window as Window & { SpeechRecognition?: RecognitionCtor; webkitSpeechRecognition?: RecognitionCtor }; const Ctor = browser.SpeechRecognition ?? browser.webkitSpeechRecognition;
+    if (!Ctor) { setAuraState('protecting'); setStatus('Voice is not available in this browser. You can type to me instead.'); textRef.current?.focus(); return; }
+    const recognition = new Ctor(); recognition.continuous = false; recognition.interimResults = false; recognition.lang = 'en-US';
+    recognition.onresult = (event) => { const words = Array.from(event.results).map((result) => result[0]?.transcript ?? '').join(' ').trim(); setText(words); setAuraState('understanding'); setStatus('I heard you. I’m understanding what should happen next.'); };
+    recognition.onend = () => { recognitionRef.current = null; setAuraState((current) => current === 'listening' ? 'understanding' : current); };
+    recognition.onerror = (event) => { recognitionRef.current = null; setAuraState('protecting'); setStatus(event.error === 'not-allowed' ? 'Microphone access is off. Type to me, or allow microphone access in your browser settings.' : 'I could not hear that clearly. Try again or type your request.'); };
+    recognitionRef.current = recognition; setAuraState('listening'); setStatus('Listening…'); recognition.start();
+  }
+  function stopListening() { recognitionRef.current?.stop(); recognitionRef.current = null; setAuraState(text.trim() ? 'understanding' : 'listening'); setStatus(text.trim() ? 'I’m understanding your request.' : 'Listening paused. Type or tap the microphone when you are ready.'); }
+
+  async function executeCommand(command: string) {
+    const lower = command.toLowerCase(); const destination = navigationTarget(command); const target = actionTarget(command); setPending(true); setAuraState(/create|make|image|page/.test(lower) ? 'creating' : 'acting'); setStatus(`Glow is carrying this to ${target === 'plan' ? 'your plan' : target === 'brain' ? 'your brain' : target === 'life' ? 'your life' : target === 'create' ? 'Create' : 'Today'}…`);
+    try {
+      await travelTo(target);
+      if (destination) { router.push(destination); close(); return; }
+      if (/^(new task|add a task|add task)$/.test(lower)) { document.dispatchEvent(new CustomEvent('glow:quick-add', { detail: { module: 'task' } })); close(); return; }
+      if (/^(new event|add event|add an event)$/.test(lower)) { document.dispatchEvent(new CustomEvent('glow:quick-add', { detail: { module: 'event' } })); close(); return; }
+      if (/^(new note|add note|add a note)$/.test(lower)) { document.dispatchEvent(new CustomEvent('glow:quick-add', { detail: { module: 'note' } })); close(); return; }
+      if (/plan tomorrow/.test(lower)) { router.push('/planning?view=tomorrow'); close(); return; }
+      if (/search/.test(lower) && /doctor|note|notes/.test(lower)) { router.push(`/brain?mode=search&q=${encodeURIComponent(command)}`); close(); return; }
+      const response = await fetch('/api/voice/command', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ text: command, sourceRoute: pathname, risk }) }); const payload = await response.json() as { ok?: boolean; message?: string };
+      if (!response.ok || !payload.ok) throw new Error(payload.message || 'I could not complete that yet.');
+      const message = payload.message || 'Done. I kept everything else in place.'; setAuraState('complete'); setStatus(message); setText(''); setReviewing(false); router.refresh(); speak(message, 'complete');
+    } catch (error) { const message = error instanceof Error ? error.message : 'I could not complete that. Nothing was changed. Please try again.'; setAuraState('error'); setStatus(message); speak(message, 'error'); }
+    finally { setPending(false); }
+  }
+
+  function submit() { const command = text.trim(); if (!command || pending) return; if (risk !== 'low' && !reviewing) { setReviewing(true); setAuraState('understanding'); setStatus('I prepared this, but nothing changes until you approve.'); return; } void executeCommand(command); }
+  function chooseSuggestion(command: string) { setText(command); setReviewing(false); setAuraState('understanding'); setStatus('I’m shaping a safe next step. Review it when you are ready.'); textRef.current?.focus(); }
+
+  if (!open) return null;
+  return <div ref={rootRef} className="living-glow" data-aura-state={auraState} data-action-target={travelTarget ?? undefined} role="dialog" aria-modal="true" aria-labelledby="living-glow-title">
+    <button type="button" className="living-glow__backdrop" onClick={close} aria-label="Close Ask Glow" />
+    <picture className="living-glow__art"><source media="(min-width: 760px) and (orientation: landscape)" srcSet="/glow/aura/living-aura-wide-v1.webp" /><img src="/glow/aura/living-aura-portrait-v1.webp" alt="" /></picture>
+    <div className="living-glow__refraction" aria-hidden="true"><i /><i /><i /><i /></div><div className="living-glow__beam" aria-hidden="true" /><div className="living-glow__ripple" aria-hidden="true" /><div className="living-glow__travel" aria-hidden="true"><i /></div>
+    <button type="button" className="living-glow__close" onClick={close} aria-label="Close Ask Glow"><X /></button>
+    <section className="living-glow__conversation">
+      <header><div><p><span id="living-glow-title">Glow</span> · {auraState === 'acting' ? 'taking action' : auraState}</p><button type="button" className="living-glow__voice-toggle" aria-pressed={spokenVoice} onClick={toggleSpokenVoice} aria-label={spokenVoice ? 'Turn Glow voice off' : 'Turn Glow voice on'}>{spokenVoice ? <Volume2 /> : <VolumeX />}<span>{spokenVoice ? 'Voice on' : 'Voice off'}</span></button></div><span className="living-glow__status" role="status" aria-live="polite">{status}</span></header>
+      <label className="living-glow__input"><span className="sr-only">Ask Glow anything</span><textarea ref={textRef} value={text} onChange={(event) => { setText(event.target.value); setReviewing(false); setAuraState('listening'); }} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); submit(); } }} rows={2} placeholder="Tell me what you need…" /><button type="button" onClick={recognitionRef.current ? stopListening : startListening} aria-label={recognitionRef.current ? 'Pause listening' : 'Speak to Glow'}>{recognitionRef.current ? <Square /> : <Mic />}</button></label>
+      <div className="living-glow__suggestions" aria-label="Suggested actions">{SUGGESTIONS.map(({ label, icon: Icon, command }) => <button type="button" key={label} onClick={() => chooseSuggestion(command)}><Icon /><span>{label}</span></button>)}</div>
+      {reviewing ? <div className="living-glow__review"><Shield /><span><strong>Ready for your approval.</strong> Glow will only apply the request shown above. Everything else stays where it is.</span></div> : null}
+      {auraState === 'complete' ? <div className="living-glow__review is-complete"><Check /><span><strong>Your change is complete.</strong> You can ask for something else or return to your day.</span></div> : null}
+      <p className="living-glow__safety"><Shield /> Nothing meaningful changes until you approve.</p>
+      <button type="button" className="living-glow__primary" disabled={!text.trim() || pending} onClick={submit}><span>{pending ? 'Glow is working…' : reviewing ? 'Approve changes' : risk === 'low' ? 'Continue with Glow' : 'Review proposed changes'}</span><ArrowRight /></button>
     </section>
   </div>;
 }

@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import Google from 'next-auth/providers/google';
+import GitHub from 'next-auth/providers/github';
 import { db } from '@/db';
 import { users, accounts, sessions, verificationTokens } from '@/db/schema/auth';
 
@@ -25,7 +26,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
     verificationTokensTable: verificationTokens,
   }),
   providers: [
-    Google({
+    ...(process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET ? [GitHub({
+      clientId: process.env.AUTH_GITHUB_ID,
+      clientSecret: process.env.AUTH_GITHUB_SECRET,
+    })] : []),
+    ...(process.env.PRINCESS_GOOGLE_CLIENT_ID && process.env.PRINCESS_GOOGLE_CLIENT_SECRET ? [Google({
       clientId: process.env.PRINCESS_GOOGLE_CLIENT_ID ?? '',
       clientSecret: process.env.PRINCESS_GOOGLE_CLIENT_SECRET ?? '',
       redirectProxyUrl: process.env.VERCEL_ENV === 'preview' ? PRODUCTION_AUTH_PROXY_URL : undefined,
@@ -43,7 +48,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
           ].join(' '),
         },
       },
-    }),
+    })] : []),
   ],
   pages: {
     signIn: '/sign-in',
@@ -53,12 +58,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
       const isLoggedIn = !!session?.user;
       const isOnSignIn = nextUrl.pathname === '/sign-in';
       const isApiAuth = nextUrl.pathname.startsWith('/api/auth');
+      const isLocalTodayPreview = process.env.NODE_ENV === 'development' && nextUrl.pathname === '/dev/today-preview';
+      const isPublicAsset = nextUrl.pathname.startsWith('/glow/') || /\.(?:avif|gif|ico|jpe?g|png|svg|webp|woff2?)$/i.test(nextUrl.pathname);
 
       if (isLoggedIn && isOnSignIn) {
         return Response.redirect(new URL('/dashboard', nextUrl));
       }
 
-      if (!isLoggedIn && !isOnSignIn && !isApiAuth) {
+      if (!isLoggedIn && !isOnSignIn && !isApiAuth && !isLocalTodayPreview && !isPublicAsset) {
         return Response.redirect(new URL('/sign-in', nextUrl));
       }
 
