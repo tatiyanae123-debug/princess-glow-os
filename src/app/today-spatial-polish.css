@@ -1,0 +1,295 @@
+/* Glow Today spatial polish — Sept 2, 2026
+   Makes live HTML inhabit the cinematic world instead of floating above it. */
+
+.today-journey{
+  --glow-ink:#3b2c24;
+  --glow-ink-soft:#665247;
+  --glow-pearl:rgba(255,249,240,.72);
+  --glow-pearl-strong:rgba(255,250,242,.88);
+  --glow-line:rgba(107,78,52,.18);
+  perspective:1800px;
+  perspective-origin:50% 45%;
+  background-color:#e8d7c6;
+}
+
+/* Atmospheric hierarchy: preserve the room, quiet the parts behind text. */
+.today-scene::before{
+  z-index:2!important;
+  background:
+    linear-gradient(180deg,rgba(65,34,18,.06) 0%,transparent 18%,transparent 70%,rgba(42,24,16,.12) 100%),
+    radial-gradient(ellipse at 50% 49%,rgba(255,248,229,.05) 0 22%,rgba(80,48,28,.05) 58%,rgba(38,22,15,.13) 100%)!important;
+  mix-blend-mode:multiply;
+}
+.today-scene::after{
+  content:'NOW     ·     NEXT     ·     LATER     ·     TONIGHT     ·     TOMORROW';
+  position:absolute;
+  z-index:4;
+  left:50%;
+  top:10.6%;
+  width:min(72%,680px);
+  transform:translateX(-50%);
+  color:rgba(75,52,38,.56);
+  font:650 clamp(8px,1.15vw,11px)/1 Inter,sans-serif;
+  letter-spacing:.12em;
+  text-align:center;
+  white-space:pre;
+  text-shadow:0 1px rgba(255,255,255,.75);
+  pointer-events:none;
+}
+
+/* All functional surfaces use the same Glow Matter grammar. */
+.today-live-panel{
+  color:var(--glow-ink)!important;
+  isolation:isolate;
+  transform-style:preserve-3d;
+  text-shadow:0 1px 0 rgba(255,255,255,.42),0 2px 10px rgba(76,46,27,.08);
+}
+.today-live-panel::before{
+  content:'';
+  position:absolute;
+  z-index:-1;
+  inset:-9px -11px;
+  border:1px solid rgba(255,255,255,.38);
+  border-radius:28px;
+  background:linear-gradient(145deg,rgba(255,251,244,.31),rgba(244,215,182,.11));
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.62),
+    inset 0 -12px 28px rgba(121,72,36,.04),
+    0 16px 45px rgba(78,49,31,.055);
+  backdrop-filter:blur(2px) saturate(105%);
+  pointer-events:none;
+}
+.today-live-panel::after{
+  content:'';
+  position:absolute;
+  z-index:-1;
+  left:8%;right:8%;bottom:-5px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,232,188,.6),transparent);
+  filter:blur(.4px);
+  pointer-events:none;
+}
+
+/* Etched labels: readable, restrained, tied to the surface. */
+.today-eyebrow{
+  color:#554034!important;
+  font-weight:800!important;
+  letter-spacing:.16em!important;
+  text-shadow:0 1px rgba(255,255,255,.8),0 -1px rgba(86,56,35,.08)!important;
+}
+.today-priority p,.today-event-row small,.today-home__event small,.today-capacity-button>span{
+  color:var(--glow-ink-soft)!important;
+}
+
+/* Priority monument: one coherent engraved object, not a stack of app rows. */
+.today-home__priorities{
+  transform:perspective(1200px) rotateY(1.4deg) rotateX(.35deg) translateZ(4px);
+  transform-origin:50% 50%;
+}
+.today-home__priorities::before{border-radius:34px 34px 29px 29px}
+.today-priority{
+  grid-template-columns:30px minmax(0,1fr) 34px!important;
+  min-height:54px!important;
+  gap:9px!important;
+  border-bottom:1px solid rgba(92,63,43,.16)!important;
+}
+.today-priority>span{
+  width:27px!important;height:27px!important;
+  background:rgba(255,249,240,.58)!important;
+  border:1px solid rgba(116,82,55,.13);
+  box-shadow:inset 0 1px rgba(255,255,255,.76),0 3px 9px rgba(92,59,38,.05);
+  color:#6a513d;
+}
+.today-priority p{
+  font-size:clamp(.78rem,2.5cqw,.95rem)!important;
+  line-height:1.25!important;
+  font-weight:600!important;
+  text-wrap:balance;
+}
+.today-priority button{
+  width:34px!important;height:34px!important;
+  border:1px solid rgba(102,73,50,.18)!important;
+  background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.8),rgba(242,218,190,.44))!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.8),0 4px 13px rgba(88,54,34,.07);
+}
+.today-priority button:hover,.today-priority button:focus-visible{
+  box-shadow:0 0 0 3px rgba(255,238,202,.32),0 0 24px rgba(255,205,118,.55),inset 0 1px #fff;
+  outline:0;
+}
+.today-priority button:active{transform:translateZ(-2px) scale(.94)!important}
+.today-view-all{
+  min-height:48px!important;
+  margin-top:2px;
+  border-radius:999px!important;
+  color:#624a38!important;
+  font-size:.72rem!important;
+  letter-spacing:.01em;
+}
+.today-view-all:hover,.today-view-all:focus-visible{background:rgba(255,249,240,.28);outline:1px solid rgba(105,74,50,.15)}
+
+/* Next event becomes a true temporal aperture. */
+.today-home__event{
+  transform:perspective(1200px) rotateY(-1.2deg) rotateX(.3deg) translateZ(3px);
+  transform-origin:50% 50%;
+}
+.today-home__event::before{
+  border-radius:46% 46% 28px 28px / 34% 34% 28px 28px;
+  background:
+    linear-gradient(180deg,rgba(255,250,242,.54),rgba(255,242,221,.28)),
+    radial-gradient(circle at 50% 24%,rgba(255,255,255,.46),transparent 60%);
+  backdrop-filter:blur(5px) saturate(90%);
+}
+.today-monument-button{
+  position:relative;
+  min-height:92px!important;
+  padding:8px 6px!important;
+  gap:10px!important;
+  border-radius:30px!important;
+}
+.today-monument-button>svg:first-child{
+  width:40px!important;height:40px!important;flex-basis:40px!important;padding:10px!important;
+  background:radial-gradient(circle at 35% 30%,#fffaf1,rgba(242,216,181,.68))!important;
+  border:1px solid rgba(102,74,51,.13);
+  box-shadow:inset 0 1px #fff,0 5px 16px rgba(75,46,28,.07);
+}
+.today-home__event strong{
+  color:#4a3529!important;
+  font-size:clamp(1rem,3.35cqw,1.3rem)!important;
+  line-height:1.08!important;
+  text-wrap:balance;
+}
+.today-home__event small{font-size:clamp(.64rem,2cqw,.78rem)!important;line-height:1.35!important}
+.today-monument-button>svg:last-child{opacity:.68;transition:transform .2s ease}
+.today-monument-button:hover>svg:last-child,.today-monument-button:focus-visible>svg:last-child{transform:translateX(3px)}
+
+/* Capacity is the central Now instrument. Lift it above navigation and make it meaningful. */
+.today-home__capacity{
+  z-index:6!important;
+  transform:perspective(1400px) rotateX(1deg) translateZ(8px);
+}
+.today-home__capacity::before{
+  inset:-14px -18px -18px!important;
+  border-radius:50% 50% 34px 34px / 42% 42% 30px 30px!important;
+  background:radial-gradient(ellipse at 50% 20%,rgba(255,255,255,.55),rgba(249,226,195,.26) 46%,rgba(239,197,146,.12) 72%,transparent 100%)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.85),0 0 36px rgba(255,206,121,.16),0 20px 50px rgba(78,47,28,.06)!important;
+}
+.today-home__capacity .today-eyebrow{text-align:center;margin-bottom:2%!important}
+.today-capacity-button{min-height:92px!important;padding:4px 10px 8px!important}
+.today-capacity-button>strong{color:#493326!important;font-size:clamp(1.7rem,7.5cqw,2.8rem)!important}
+.today-capacity-button>span{max-width:18rem!important;font-size:clamp(.68rem,2.1cqw,.8rem)!important;line-height:1.35!important}
+.today-capacity-button>small{color:#6e523d!important}
+.today-capacity-check::after{content:' · shape today around how you actually feel';font:600 .65rem/1.3 Inter,sans-serif;color:#775f4f}
+
+/* Make the action answer Today's primary human question. */
+.today-actions .today-ask{
+  min-height:50px!important;
+  border-color:rgba(255,242,214,.72)!important;
+  background:linear-gradient(135deg,rgba(255,249,238,.88),rgba(243,215,179,.7))!important;
+  color:#513727!important;
+  box-shadow:inset 0 1px #fff,0 8px 28px rgba(85,52,31,.1),0 0 22px rgba(255,213,135,.14)!important;
+  font:600 .78rem/1 Inter,sans-serif!important;
+}
+.today-actions .today-ask span{font-size:0}
+.today-actions .today-ask span::after{content:'What should I do now?';font-size:.78rem}
+
+/* Completion is not a dead checkbox: leave warm residual light. */
+.today-priority:has(button:active){
+  background:linear-gradient(90deg,transparent,rgba(255,229,174,.2),transparent);
+  box-shadow:0 0 24px rgba(255,215,139,.15);
+}
+
+/* Top journey controls become a quiet temporal rail instead of giant pills. */
+.today-journey-nav{
+  top:max(10px,env(safe-area-inset-top))!important;
+  width:min(480px,calc(100% - 210px))!important;
+  gap:4px!important;
+}
+.today-journey-nav__line{top:19px!important;opacity:.45}
+.today-journey-nav button{
+  min-width:52px!important;min-height:39px!important;
+  grid-template-columns:14px 14px!important;
+  gap:1px 4px!important;
+  padding:4px 7px!important;
+  border:1px solid rgba(255,255,255,.45)!important;
+  border-radius:16px!important;
+  background:rgba(249,241,231,.42)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.65)!important;
+  backdrop-filter:blur(10px) saturate(108%)!important;
+  color:#725e50!important;
+}
+.today-journey-nav button span{font-size:8px!important;letter-spacing:.03em}
+.today-journey-nav button[aria-current='step']{
+  background:rgba(255,247,232,.78)!important;
+  box-shadow:0 0 18px rgba(255,213,139,.28),inset 0 1px #fff!important;
+  color:#59402d!important;
+}
+
+.today-utility-controls{top:max(10px,env(safe-area-inset-top))!important;gap:5px!important}
+.today-utility-controls label,.today-utility-controls button{
+  min-height:39px!important;height:39px!important;
+  border:1px solid rgba(255,255,255,.48)!important;
+  border-radius:15px!important;
+  background:rgba(249,241,231,.44)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.68)!important;
+  backdrop-filter:blur(10px) saturate(108%)!important;
+}
+.today-utility-controls button{width:39px!important}
+.today-utility-controls select{max-width:68px!important;font-size:9px!important}
+
+/* Five worlds are thresholds in Glow, not a generic mobile tab bar. */
+.glow-world-dock{
+  left:50%!important;right:auto!important;
+  bottom:max(12px,env(safe-area-inset-bottom))!important;
+  width:min(660px,calc(100% - 34px))!important;
+  min-height:68px!important;
+  padding:7px 12px!important;
+  transform:translateX(-50%)!important;
+  border:1px solid rgba(255,255,255,.52)!important;
+  border-radius:32px!important;
+  background:linear-gradient(180deg,rgba(255,250,243,.69),rgba(244,229,211,.54))!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.85),0 14px 36px rgba(69,42,26,.13),0 0 30px rgba(255,220,160,.08)!important;
+  backdrop-filter:blur(18px) saturate(112%)!important;
+}
+.glow-world-dock__item{
+  min-height:52px!important;
+  border-radius:22px!important;
+  color:#6b5b51!important;
+  transition:transform .18s ease,background .18s ease,box-shadow .18s ease!important;
+}
+.glow-world-dock__item:hover,.glow-world-dock__item:focus-visible{transform:translateY(-2px);outline:0;background:rgba(255,255,255,.25)}
+.glow-world-dock__item.is-active{
+  color:#513c2d!important;
+  background:radial-gradient(circle at 50% 25%,rgba(255,249,230,.9),rgba(255,230,184,.24) 58%,transparent 80%)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.7),0 0 20px rgba(255,206,119,.2)!important;
+}
+.glow-world-dock__halo{filter:drop-shadow(0 0 6px rgba(255,213,137,.28))}
+
+/* Wide/iPad composition: keep functional UI off the hottest light path. */
+@media (min-width:700px){
+  .today-scene::after{top:9.5%}
+  .today-home__priorities{transform:perspective(1400px) rotateY(1.75deg) rotateX(.55deg) translateZ(5px)}
+  .today-home__event{transform:perspective(1400px) rotateY(-1.55deg) rotateX(.5deg) translateZ(5px)}
+  .today-home__capacity{transform:perspective(1400px) rotateX(1.2deg) translateY(-24px) translateZ(12px)}
+  .glow-world-dock{width:min(720px,calc(100% - 90px))!important}
+}
+
+/* Portrait/iPhone: preserve hierarchy without shrinking desktop furniture. */
+@media (max-width:699px){
+  .today-scene::after{top:9.2%;width:88%;font-size:7px;letter-spacing:.08em}
+  .today-live-panel::before{inset:-7px -8px;border-radius:22px}
+  .today-home__priorities,.today-home__event,.today-home__capacity{transform:none}
+  .today-priority{grid-template-columns:28px minmax(0,1fr) 34px!important;min-height:50px!important}
+  .today-priority p{font-size:.78rem!important}
+  .today-monument-button{min-height:82px!important}
+  .today-home__capacity{margin-bottom:96px!important}
+  .today-journey-nav{left:12px!important;right:104px!important;transform:none!important;width:auto!important;justify-content:flex-start!important;overflow-x:auto;scrollbar-width:none}
+  .today-journey-nav button{flex:0 0 47px!important;min-width:47px!important}
+  .today-journey-nav button span{display:none!important}
+  .today-utility-controls label{display:none!important}
+  .glow-world-dock{min-height:62px!important;padding:6px 8px!important;border-radius:28px!important}
+  .glow-world-dock__item{min-height:48px!important}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .today-home__priorities,.today-home__event,.today-home__capacity,.today-journey-nav button,.glow-world-dock__item{transform:none!important;transition:none!important}
+  .today-primary-action{animation:none!important}
+}
