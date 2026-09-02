@@ -20,6 +20,11 @@ describe('Glow Today scene foundation', () => {
     'public/glow/today/morning-brief-v3.webp',
     'public/glow/today/day-flow-v3.webp',
     'public/glow/today/evening-debrief-v3.webp',
+    'public/glow/today/opening-wide.png',
+    'public/glow/today/home-wide.png',
+    'public/glow/today/morning-brief-wide.png',
+    'public/glow/today/day-flow-wide.png',
+    'public/glow/today/evening-debrief-wide.png',
   ])('ships a real environmental asset at %s', (path) => {
     expect(statSync(resolve(root, path)).size).toBeGreaterThan(50_000);
   });
@@ -33,21 +38,27 @@ describe('Glow Today scene foundation', () => {
     expect(source).toContain('glow-timezone');
     expect(source).toContain("brief: 'Midday Brief'");
     expect(source).toContain("brief: 'Night Brief'");
-    expect(source).toContain('window.scrollTo');
+    expect(source).toContain("document.querySelector('.today-journey')?.scrollTo");
+    expect(source).toContain('window.history');
+    expect(source).toContain('popstate');
     for (const scene of ["'home'", "'brief'", "'flow'", "'debrief'"]) expect(source).toContain(scene);
   });
 
   it('ships deliberate tablet and reduced-motion layouts', () => {
     const css = read('src/app/today-scenes.css');
-    expect(css).toContain('@media (min-width:700px)');
+    expect(css).toContain('@media (min-width:700px) and (orientation:portrait)');
+    expect(css).toContain('@media (min-width:700px) and (orientation:landscape)');
     expect(css).toContain('@media (prefers-reduced-motion:reduce)');
     expect(css).toContain('.today-utility-controls select');
     expect(css).toContain('vercel-live-feedback');
-    expect(css).toContain("opening-reference.jpeg");
-    expect(css).toContain('background-size:auto 100%');
+    const source = read('src/components/today/today-experience.tsx');
+    expect(source).toContain('/glow/today/opening-reference.jpeg');
+    expect(source).toContain('/glow/today/opening-wide.png');
+    expect(css).toContain('background-image:var(--wide)');
+    expect(css).not.toContain('calc(100svh * .4626)');
     expect(css).toContain('overflow-y:auto');
-    expect(css).toContain('-webkit-overflow-scrolling:touch');
-    expect(css).toContain('.today-reflection-form{pointer-events:none}');
+    expect(css).toContain('.today-detail-backdrop');
+    expect(css).toContain('.today-reflection-form{inset:0;pointer-events:none}');
   });
 
   it('keeps dates, priorities, appointments, energy, and Ask Glow live', () => {

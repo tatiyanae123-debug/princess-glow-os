@@ -2,8 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition, type CSSProperties } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { ArrowRight, CalendarDays, Check, ChevronRight, Clock3, Home, Leaf, MoonStar, RotateCcw, Sparkles, SunMedium, Workflow } from 'lucide-react';
+import { ArrowRight, CalendarDays, Check, ChevronRight, Clock3, Home, Leaf, List, MoonStar, RotateCcw, Sparkles, SunMedium, Workflow, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { TodaySceneData } from '@/lib/today/scenes';
 import { completeTodayTaskAction, moveTodayTaskToTomorrowAction } from '@/app/actions/today-scenes';
@@ -119,29 +118,38 @@ function nextEvent(data: TodaySceneData, moment: Date | null) {
 
 function Opening({ enter }: { enter: () => void }) {
   return <button type="button" className="glow-opening" aria-label="Enter Glow" onClick={enter}>
-    <Image className="glow-opening__image" src="/glow/today/opening-reference.jpeg" alt="" fill priority sizes="100vw" />
-    <span className="sr-only">Tap anywhere to enter Glow</span>
+    <picture><source media="(min-width: 700px) and (orientation: landscape)" srcSet="/glow/today/opening-wide.png"/><img className="glow-opening__image" src="/glow/today/opening-reference.jpeg" alt=""/></picture>
+    <span className="glow-opening__live" aria-hidden="true"><strong>Glow</strong><small>Your life, held in light.</small></span>
+    <span className="glow-opening__pulse" aria-hidden="true"/>
+    <span className="glow-opening__hint">Tap the light to enter</span>
   </button>;
 }
 
-function JourneyControls({ scene, phase, setPhase, go, replay }: { scene: JourneyScene; phase: TimePhase; setPhase: (phase: TimePhase) => void; go: (scene: JourneyScene) => void; replay: () => void }) {
+function JourneyControls({ scene, phase, livePhase, isPreview, setPhase, resetPhase, go, replay }: { scene: JourneyScene; phase: TimePhase; livePhase: TimePhase; isPreview: boolean; setPhase: (phase: TimePhase) => void; resetPhase: () => void; go: (scene: JourneyScene) => void; replay: () => void }) {
   return <>
     <nav className="today-journey-nav" aria-label="Today journey">
-      {journeySteps.map(({ id, label, icon: Icon }) => <button type="button" key={id} onClick={() => go(id)} aria-current={scene === id ? 'step' : undefined}><Icon/><span>{label}</span></button>)}
+      <span className="today-journey-nav__line" aria-hidden="true"/>
+      {journeySteps.map(({ id, label, icon: Icon }, index) => <button type="button" key={id} onClick={() => go(id)} aria-current={scene === id ? 'step' : undefined}><i>{index + 1}</i><Icon/><span>{label}</span></button>)}
     </nav>
     <div className="today-utility-controls">
-      <label><span>View</span><select value={phase} onChange={(event) => setPhase(event.target.value as TimePhase)} aria-label="Preview part of day"><option value="morning">Morning</option><option value="afternoon">Afternoon</option><option value="evening">Evening</option><option value="night">Night</option></select></label>
+      <label><span>{isPreview ? 'Preview' : 'Live'}</span><select value={phase} onChange={(event) => setPhase(event.target.value as TimePhase)} aria-label={`Preview part of day. Live phase is ${livePhase}`}><option value="morning">Morning</option><option value="afternoon">Afternoon</option><option value="evening">Evening</option><option value="night">Night</option></select></label>
+      {isPreview ? <button type="button" onClick={resetPhase} aria-label="Return to current live phase"><Clock3/></button> : null}
       <button type="button" onClick={replay} aria-label="Replay Glow opening"><RotateCcw/></button>
     </div>
   </>;
 }
 
-function PriorityList({ data, completedIds, completeTask, pending }: { data: TodaySceneData; completedIds: Set<string>; completeTask: (id: string, title: string) => void; pending: boolean }) {
+function PriorityList({ data, completedIds, completeTask, pending, expand, full = false }: { data: TodaySceneData; completedIds: Set<string>; completeTask: (id: string, title: string) => void; pending: boolean; expand?: () => void; full?: boolean }) {
   const tasks = openTasks(data, completedIds);
-  return <div className="today-priorities">{tasks.length ? tasks.map((task, index) => <div className="today-priority" key={task.id}>
+  return <div className="today-priorities">{tasks.length ? (full ? tasks : tasks.slice(0, 3)).map((task, index) => <div className="today-priority" key={task.id}>
     <span>{index + 1}</span><p>{task.title.replace(/[\p{Extended_Pictographic}\uFE0F]/gu, '').trim()}</p>
     <button type="button" disabled={pending} onClick={() => completeTask(task.id, task.title)} aria-label={`Complete ${task.title}`}><Check /></button>
-  </div>) : <Link className="today-empty-link" href="/tasks">Your priority space is clear <ArrowRight /></Link>}</div>;
+  </div>) : <Link className="today-empty-link" href="/tasks">Your priority space is clear <ArrowRight /></Link>}{!full && (tasks.length > 3 || expand) ? <button type="button" className="today-view-all" onClick={expand}><List/>View all {tasks.length} priorities</button> : null}</div>;
+}
+
+function DetailSurface({ title, close, children }: { title: string; close: () => void; children: React.ReactNode }) {
+  useEffect(() => { const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') close(); }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, [close]);
+  return <div className="today-detail-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}><section className="today-detail" role="dialog" aria-modal="true" aria-labelledby="today-detail-title"><span className="today-detail__handle"/><header><h2 id="today-detail-title">{title}</h2><button type="button" onClick={close} aria-label="Close details"><X/></button></header><div className="today-detail__body">{children}</div></section></div>;
 }
 
 function AskGlowButton({ openGlow, large = false }: { openGlow: () => void; large?: boolean }) {
@@ -157,9 +165,10 @@ type SceneProps = {
   pending: boolean;
   go: (scene: JourneyScene) => void;
   openGlow: () => void;
+  expandPriorities: () => void;
 };
 
-function TodayHome({ data, moment, phase, completedIds, completeTask, pending, go, openGlow, firstName }: SceneProps & { firstName: string }) {
+function TodayHome({ data, moment, phase, completedIds, completeTask, pending, go, openGlow, expandPriorities, firstName }: SceneProps & { firstName: string }) {
   const event = nextEvent(data, moment);
   const energy = data.dashboard.wellnessToday.entry?.energy ?? null;
   const capacity = energyPercent(energy);
@@ -170,7 +179,7 @@ function TodayHome({ data, moment, phase, completedIds, completeTask, pending, g
       <h1><span>{phaseLanguage[phase].greeting},</span><em>{firstName}.</em></h1>
       <div className="today-rule"><span/><Sparkles/><span/></div><p>{phaseLanguage[phase].message}</p>
     </header>
-    <article className="today-live-panel today-home__priorities"><p className="today-eyebrow">Today&apos;s priorities</p><PriorityList data={data} completedIds={completedIds} completeTask={completeTask} pending={pending}/></article>
+    <article className="today-live-panel today-home__priorities"><p className="today-eyebrow">Today&apos;s priorities</p><PriorityList data={data} completedIds={completedIds} completeTask={completeTask} pending={pending} expand={expandPriorities}/></article>
     <article className="today-live-panel today-home__event"><p className="today-eyebrow">Next event</p><Link href={calendarDisconnected ? '/connections' : '/calendar'}><CalendarDays/><span><strong>{calendarDisconnected ? 'Connect calendar' : event?.title ?? 'Open time'}</strong><small>{calendarDisconnected ? 'Show Glow your live schedule' : event ? `${formatTime(event.startAt)}${event.endAt ? ` · ${formatTime(event.endAt)}` : ''}` : 'Your calendar has room'}</small></span></Link></article>
     <article className="today-live-panel today-home__capacity"><p className="today-eyebrow">Current capacity</p>{capacity === null ? <><strong className="today-capacity-check">Check in</strong><p>Tell Glow how you feel so today can adapt.</p><Link className="today-capacity-link" href="/wellness">Check in now <ArrowRight/></Link></> : <><strong>{capacity}%</strong><p>{capacity < 50 ? 'Glow will keep today intentionally gentle.' : 'You have enough for what matters most.'}</p><Link className="today-capacity-link" href="/wellness">View capacity factors <ArrowRight/></Link></>}</article>
     <div className="today-actions"><button type="button" className="today-primary-action" onClick={() => go('brief')}><Sparkles/><span>{phaseLanguage[phase].action}</span><ChevronRight/></button><AskGlowButton openGlow={openGlow}/></div>
@@ -246,8 +255,10 @@ export function TodayExperience({ view, data, userName }: { view: TodaySceneView
   const initialScene: JourneyScene = view === 'morning' ? 'brief' : view === 'flow' ? 'flow' : view === 'evening' ? 'debrief' : 'opening';
   const moment = useLiveMoment();
   const livePhase = phaseFor(moment);
-  const [phase, setPhase] = useState<TimePhase>(livePhase);
+  const [previewPhase, setPreviewPhase] = useState<TimePhase | null>(null);
+  const phase = previewPhase ?? livePhase;
   const [scene, setScene] = useState<JourneyScene>(initialScene);
+  const [detail, setDetail] = useState<'priorities' | null>(null);
   const [feedback, setFeedback] = useState('');
   const [completedIds, setCompletedIds] = useState<Set<string>>(() => new Set());
   const [pending, startTransition] = useTransition();
@@ -255,16 +266,25 @@ export function TodayExperience({ view, data, userName }: { view: TodaySceneView
   useTimeZoneSync();
   useHidePreviewToolbar();
 
-  useEffect(() => setPhase(livePhase), [livePhase]);
+  useEffect(() => {
+    const onPopState = (event: PopStateEvent) => {
+      const previous = event.state?.glowScene as JourneyScene | undefined;
+      if (previous && journeySteps.some((step) => step.id === previous)) setScene(previous);
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
   useEffect(() => {
     if (scene === 'opening') document.documentElement.dataset.glowOpening = 'true';
     else delete document.documentElement.dataset.glowOpening;
     return () => { delete document.documentElement.dataset.glowOpening; };
   }, [scene]);
-  function go(next: JourneyScene) {
+  function go(next: JourneyScene, replace = false) {
     if (next === scene) return;
     setScene(next);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setDetail(null);
+    if (next !== 'opening') window.history[replace ? 'replaceState' : 'pushState']({ glowScene: next }, '', window.location.href);
+    document.querySelector('.today-journey')?.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function completeTask(id: string, title: string) {
@@ -301,13 +321,14 @@ export function TodayExperience({ view, data, userName }: { view: TodaySceneView
 
   if (scene === 'opening') return <Opening enter={() => go('home')}/>;
 
-  const shared = { data, moment, phase, completedIds, completeTask, pending, go, openGlow };
+  const shared = { data, moment, phase, completedIds, completeTask, pending, go, openGlow, expandPriorities: () => setDetail('priorities') };
   return <main className="today-journey" data-scene={scene} data-phase={phase}>
-    <JourneyControls scene={scene} phase={phase} setPhase={setPhase} go={go} replay={() => go('opening')}/>
+    <JourneyControls scene={scene} phase={phase} livePhase={livePhase} isPreview={previewPhase !== null} setPhase={setPreviewPhase} resetPhase={() => setPreviewPhase(null)} go={go} replay={() => go('opening')}/>
     {scene === 'home' ? <TodayHome {...shared} firstName={firstName}/> : null}
     {scene === 'brief' ? <TodayBrief {...shared}/> : null}
     {scene === 'flow' ? <TodayFlow {...shared}/> : null}
     {scene === 'debrief' ? <TodayDebrief {...shared} moveTask={moveTask} saveDay={saveDay}/> : null}
+    {detail === 'priorities' ? <DetailSurface title="Today’s priorities" close={() => setDetail(null)}><PriorityList data={data} completedIds={completedIds} completeTask={completeTask} pending={pending} full/><Link className="today-detail__link" href="/tasks">Open task room <ArrowRight/></Link></DetailSurface> : null}
     <p className="today-feedback" role="status" aria-live="polite">{feedback}</p>
   </main>;
 }

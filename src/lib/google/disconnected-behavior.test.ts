@@ -1,12 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
 
-vi.mock('@/lib/google/tokens', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/google/tokens')>('@/lib/google/tokens');
-  return {
-    ...actual,
-    getValidGoogleAccessToken: vi.fn(),
-  };
-});
+vi.mock('@/lib/google/tokens', () => ({
+  REQUIRED_SCOPES: {
+    calendar: 'https://www.googleapis.com/auth/calendar.readonly',
+    gmail: 'https://www.googleapis.com/auth/gmail.readonly',
+  },
+  getValidGoogleAccessToken: vi.fn(),
+}));
 
 describe('disconnected / degraded account behavior', () => {
   it('Calendar client returns not_connected when there is no stored Google account', async () => {

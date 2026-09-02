@@ -10,6 +10,9 @@ import './dashboard-sidebar-exact.css';
 export const metadata: Metadata = {
   title: 'Glow OS',
   description: 'A calm intelligent personal life operating system',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Glow' },
+  formatDetection: { telephone: false },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
