@@ -13,46 +13,12 @@ import { DataConnectionVault } from '@/components/data-connection-vault';
 import { GlobalHeader } from '@/components/global-header';
 import { GlowActionButton } from '@/components/glow-action-button';
 import { GlowWorldNav } from '@/components/today/glow-world-nav';
-
-function roomFor(pathname: string) {
-  if (pathname.startsWith('/beauty/lab')) return 'beauty-lab';
-  if (pathname.startsWith('/finance/brain')) return 'financial-brain';
-  if (pathname.startsWith('/calendar')) return 'calendar';
-  if (pathname.startsWith('/reminders')) return 'reminders';
-  if (pathname.startsWith('/tasks')) return 'tasks';
-  if (pathname.startsWith('/planning') || pathname.startsWith('/tomorrow')) return 'planning';
-  if (pathname.startsWith('/routines')) return 'routines';
-  if (pathname.startsWith('/today') || pathname.startsWith('/dashboard')) return 'dashboard';
-  if (pathname.startsWith('/habits')) return 'habits';
-  if (pathname.startsWith('/fitness')) return 'fitness';
-  if (pathname.startsWith('/food')) return 'food';
-  if (pathname.startsWith('/beauty')) return 'beauty';
-  if (pathname.startsWith('/hair')) return 'hair';
-  if (pathname.startsWith('/wellness') || pathname.startsWith('/maintenance')) return 'wellness';
-  if (pathname.startsWith('/finance')) return 'finance';
-  if (pathname.startsWith('/goals')) return 'goals';
-  if (pathname.startsWith('/projects')) return 'projects';
-  if (pathname.startsWith('/brain') || pathname.startsWith('/inbox') || pathname.startsWith('/intake') || pathname.startsWith('/rules')) return 'brain';
-  if (pathname.startsWith('/concierge')) return 'concierge';
-  if (pathname.startsWith('/observations')) return 'observations';
-  if (pathname.startsWith('/memory')) return 'memory';
-  if (pathname.startsWith('/timeline')) return 'timeline';
-  if (pathname.startsWith('/briefings')) return 'briefings';
-  if (pathname.startsWith('/closet')) return 'closet';
-  if (pathname.startsWith('/world') || pathname.startsWith('/life-world')) return 'world';
-  if (pathname.startsWith('/home')) return 'home';
-  if (pathname.startsWith('/notes') || pathname.startsWith('/resources')) return 'notes';
-  if (pathname.startsWith('/connections')) return 'connections';
-  if (pathname.startsWith('/gmail')) return 'gmail';
-  if (pathname.startsWith('/import')) return 'import';
-  if (pathname.startsWith('/settings')) return 'settings';
-  return 'dashboard';
-}
+import { roomExperienceFor } from '@/lib/glow-world/room-experience';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const room = roomFor(pathname);
+  const experience = roomExperienceFor(pathname);
   const isImmersiveToday = pathname === '/dashboard' || pathname === '/today/morning' || pathname === '/today/flow' || pathname === '/today/evening' || (process.env.NODE_ENV === 'development' && pathname === '/dev/today-preview');
   const [focus, setFocus] = useState(false);
 
@@ -74,9 +40,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setFocus(false);
   }
 
+  const worldData = {
+    'data-room': experience.room,
+    'data-world': experience.world,
+    'data-climate': experience.climate,
+    'data-physics': experience.physics,
+    'data-intelligence': experience.intelligence,
+    'data-completion-behavior': experience.completion,
+  } as const;
+
   if (isImmersiveToday && !focus) {
     return <GlowProvider>
-      <div className="min-h-screen bg-[#f4efe9] text-[#2f2824]" data-room="dashboard">{children}</div>
+      <div {...worldData} className="min-h-screen bg-[#f4efe9] text-[#2f2824]" data-primary-question={experience.primaryQuestion}>{children}</div>
       <GlowWorldNav immersive />
       <GlowVoiceCommand />
       <QuickAdd />
@@ -85,12 +60,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <GlowProvider>
-      <div className="room-canvas min-h-screen bg-white text-[#1C1C1E]" data-room={room} data-focus-mode={focus ? 'true' : 'false'}>
+      <div className="glow-world-shell room-canvas min-h-screen text-[#1C1C1E]" {...worldData} data-focus-mode={focus ? 'true' : 'false'}>
+        <div className="glow-world-atmosphere" aria-hidden="true" />
         <div className="mx-auto flex min-h-screen w-full max-w-[1920px] flex-col lg:flex-row">
-          {!focus ? <div className="w-full lg:sticky lg:top-0 lg:h-screen lg:w-[176px] lg:shrink-0"><Sidebar /></div> : null}
-          <div className="min-w-0 flex-1 bg-white">
+          {!focus ? <div className="glow-world-nav-wrap w-full lg:sticky lg:top-0 lg:h-screen lg:w-[176px] lg:shrink-0"><Sidebar /></div> : null}
+          <div className="glow-room-body min-w-0 flex-1">
             {!focus ? <GlobalHeader /> : null}
-            <main className={focus ? 'min-h-screen px-4 py-8 sm:px-7 lg:px-10' : 'min-h-screen px-4 pb-20 pt-3 sm:px-5 lg:px-6 lg:pt-4'}>
+            <main className={focus ? 'glow-room-stage min-h-screen px-4 py-8 sm:px-7 lg:px-10' : 'glow-room-stage min-h-screen px-4 pb-20 pt-3 sm:px-5 lg:px-6 lg:pt-4'} data-primary-question={experience.primaryQuestion}>
               <div className="mx-auto w-full max-w-[1500px]">
                 <ReferenceRoomWorkspace />
                 {!focus ? <DataConnectionVault>{children}</DataConnectionVault> : null}
