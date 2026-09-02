@@ -53,7 +53,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const room = roomFor(pathname);
-  const isImmersiveToday = pathname === '/dashboard' || pathname === '/today/morning' || pathname === '/today/flow' || pathname === '/today/evening';
+  const isImmersiveToday = pathname === '/dashboard' || pathname === '/today/morning' || pathname === '/today/flow' || pathname === '/today/evening' || (process.env.NODE_ENV === 'development' && pathname === '/dev/today-preview');
   const [focus, setFocus] = useState(false);
 
   useEffect(() => {

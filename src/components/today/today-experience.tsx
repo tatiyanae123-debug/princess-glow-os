@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, useTransition, type CSSProperties } from 'react';
+import { useEffect, useMemo, useState, useTransition, type CSSProperties } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowRight, CalendarDays, Check, ChevronRight, Clock3, Home, Leaf, MoonStar, RotateCcw, Sparkles, SunMedium, Workflow } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { TodaySceneData } from '@/lib/today/scenes';
@@ -106,7 +107,7 @@ function energyReviewScore(value: string | number | null | undefined) {
 
 function openTasks(data: TodaySceneData, completedIds: Set<string>) {
   const source = data.dashboard.topPriorityTasks.length ? data.dashboard.topPriorityTasks : data.tasks;
-  return source.filter((task) => task.status !== 'done' && task.status !== 'cancelled' && !completedIds.has(task.id)).slice(0, 3);
+  return source.filter((task) => task.status !== 'done' && task.status !== 'cancelled' && !completedIds.has(task.id));
 }
 
 function nextEvent(data: TodaySceneData, moment: Date | null) {
@@ -118,9 +119,8 @@ function nextEvent(data: TodaySceneData, moment: Date | null) {
 
 function Opening({ enter }: { enter: () => void }) {
   return <button type="button" className="glow-opening" aria-label="Enter Glow" onClick={enter}>
-    <span className="glow-opening__live"><strong>Glow</strong><small>Your life, held in light.</small></span>
-    <span className="glow-opening__orb" aria-hidden="true" />
-    <span className="glow-opening__hint">Tap anywhere to enter</span>
+    <Image className="glow-opening__image" src="/glow/today/opening-reference.jpeg" alt="" fill priority sizes="100vw" />
+    <span className="sr-only">Tap anywhere to enter Glow</span>
   </button>;
 }
 
@@ -223,7 +223,7 @@ function TodayFlow({ data, moment, phase, completedIds, completeTask, pending, g
 }
 
 function TodayDebrief({ data, moment, phase, completedIds, pending, go, openGlow, moveTask, saveDay }: SceneProps & { moveTask: (id: string, title: string) => void; saveDay: (formData: FormData) => void }) {
-  const completed = data.tasks.filter((task) => task.status === 'done' || completedIds.has(task.id)).slice(0, 2);
+  const completed = data.tasks.filter((task) => task.status === 'done' || completedIds.has(task.id));
   const open = openTasks(data, completedIds);
   return <section className="today-scene today-scene--debrief" aria-label="Evening Debrief">
     <header className="today-hero today-debrief__hero"><p className="today-live-time"><time>{formatDate(moment)}</time><span>{formatClock(moment)}</span><b>{phase}</b></p><h1><span>{phase === 'night' ? 'Night' : 'Evening'}</span><span>Debrief</span></h1><div className="today-rule"><span/><Sparkles/><span/></div><p>What do I carry forward?</p></header>
@@ -248,8 +248,6 @@ export function TodayExperience({ view, data, userName }: { view: TodaySceneView
   const livePhase = phaseFor(moment);
   const [phase, setPhase] = useState<TimePhase>(livePhase);
   const [scene, setScene] = useState<JourneyScene>(initialScene);
-  const [transitioning, setTransitioning] = useState(false);
-  const transitionTimer = useRef<number | null>(null);
   const [feedback, setFeedback] = useState('');
   const [completedIds, setCompletedIds] = useState<Set<string>>(() => new Set());
   const [pending, startTransition] = useTransition();
@@ -263,14 +261,10 @@ export function TodayExperience({ view, data, userName }: { view: TodaySceneView
     else delete document.documentElement.dataset.glowOpening;
     return () => { delete document.documentElement.dataset.glowOpening; };
   }, [scene]);
-  useEffect(() => () => {
-    if (transitionTimer.current !== null) window.clearTimeout(transitionTimer.current);
-  }, []);
-
   function go(next: JourneyScene) {
-    if (next === scene || transitioning) return;
-    setTransitioning(true);
-    transitionTimer.current = window.setTimeout(() => { setScene(next); setTransitioning(false); }, 260);
+    if (next === scene) return;
+    setScene(next);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function completeTask(id: string, title: string) {
@@ -308,7 +302,7 @@ export function TodayExperience({ view, data, userName }: { view: TodaySceneView
   if (scene === 'opening') return <Opening enter={() => go('home')}/>;
 
   const shared = { data, moment, phase, completedIds, completeTask, pending, go, openGlow };
-  return <main className={`today-journey${transitioning ? ' is-transitioning' : ''}`} data-scene={scene} data-phase={phase}>
+  return <main className="today-journey" data-scene={scene} data-phase={phase}>
     <JourneyControls scene={scene} phase={phase} setPhase={setPhase} go={go} replay={() => go('opening')}/>
     {scene === 'home' ? <TodayHome {...shared} firstName={firstName}/> : null}
     {scene === 'brief' ? <TodayBrief {...shared}/> : null}

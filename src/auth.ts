@@ -58,12 +58,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
       const isLoggedIn = !!session?.user;
       const isOnSignIn = nextUrl.pathname === '/sign-in';
       const isApiAuth = nextUrl.pathname.startsWith('/api/auth');
+      const isLocalTodayPreview = process.env.NODE_ENV === 'development' && nextUrl.pathname === '/dev/today-preview';
+      const isPublicAsset = nextUrl.pathname.startsWith('/glow/') || /\.(?:avif|gif|ico|jpe?g|png|svg|webp|woff2?)$/i.test(nextUrl.pathname);
 
       if (isLoggedIn && isOnSignIn) {
         return Response.redirect(new URL('/dashboard', nextUrl));
       }
 
-      if (!isLoggedIn && !isOnSignIn && !isApiAuth) {
+      if (!isLoggedIn && !isOnSignIn && !isApiAuth && !isLocalTodayPreview && !isPublicAsset) {
         return Response.redirect(new URL('/sign-in', nextUrl));
       }
 

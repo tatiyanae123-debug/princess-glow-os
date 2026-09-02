@@ -25,7 +25,7 @@ describe('Glow Today scene foundation', () => {
   });
 
   it('ships the opening experience and device-time synchronization', () => {
-    expect(statSync(resolve(root, 'public/glow/today/opening-v1.webp')).size).toBeGreaterThan(15_000);
+    expect(statSync(resolve(root, 'public/glow/today/opening-reference.jpeg')).size).toBeGreaterThan(15_000);
     const source = read('src/components/today/today-experience.tsx');
     expect(source).toContain("useState<JourneyScene>(initialScene)");
     expect(source).toContain("const initialScene: JourneyScene");
@@ -33,6 +33,7 @@ describe('Glow Today scene foundation', () => {
     expect(source).toContain('glow-timezone');
     expect(source).toContain("brief: 'Midday Brief'");
     expect(source).toContain("brief: 'Night Brief'");
+    expect(source).toContain('window.scrollTo');
     for (const scene of ["'home'", "'brief'", "'flow'", "'debrief'"]) expect(source).toContain(scene);
   });
 
@@ -42,6 +43,11 @@ describe('Glow Today scene foundation', () => {
     expect(css).toContain('@media (prefers-reduced-motion:reduce)');
     expect(css).toContain('.today-utility-controls select');
     expect(css).toContain('vercel-live-feedback');
+    expect(css).toContain("opening-reference.jpeg");
+    expect(css).toContain('background-size:auto 100%');
+    expect(css).toContain('overflow-y:auto');
+    expect(css).toContain('-webkit-overflow-scrolling:touch');
+    expect(css).toContain('.today-reflection-form{pointer-events:none}');
   });
 
   it('keeps dates, priorities, appointments, energy, and Ask Glow live', () => {
