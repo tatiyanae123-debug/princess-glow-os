@@ -12,9 +12,23 @@ describe('Living Glow Aura', () => {
   });
 
   it('models the visible interaction states and approval boundary', () => {
-    for (const state of ['waking', 'listening', 'understanding', 'acting', 'complete', 'protecting', 'error']) expect(source).toContain(`'${state}'`);
+    for (const state of ['waking', 'listening', 'understanding', 'speaking', 'creating', 'acting', 'complete', 'protecting', 'error']) expect(source).toContain(`'${state}'`);
     expect(source).toContain('Nothing meaningful changes until you approve.');
     expect(source).toContain('Approve changes');
+  });
+
+  it('speaks naturally and carries visible light to the affected world', () => {
+    expect(source).toContain('SpeechSynthesisUtterance');
+    expect(source).toContain("window.speechSynthesis.speak");
+    expect(source).toContain('travelTo(target)');
+    expect(source).toContain('data-action-target');
+    expect(styles).toContain('glow-travel-pearl');
+    expect(styles).toContain("data-action-target='plan'");
+  });
+
+  it('calibrates portrait and landscape tablet compositions separately', () => {
+    expect(styles).toContain('(min-width:700px) and (orientation:portrait)');
+    expect(styles).toContain('(min-width:1024px) and (orientation:landscape)');
   });
 
   it('supports accessible closing, keyboard recovery, scrolling and reduced motion', () => {

@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { ArrowRight, Check, Clock3, Mic, Shield, Sparkles, Square, X } from 'lucide-react';
+import { ArrowRight, Check, Clock3, Mic, Shield, Sparkles, Square, Volume2, VolumeX, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 type RecognitionEvent = { results: ArrayLike<{ 0: { transcript: string } }> };
@@ -9,7 +9,8 @@ type RecognitionError = { error: string };
 type Recognition = { continuous: boolean; interimResults: boolean; lang: string; start(): void; stop(): void; onresult: ((event: RecognitionEvent) => void) | null; onend: (() => void) | null; onerror: ((event: RecognitionError) => void) | null };
 type RecognitionCtor = new () => Recognition;
 type Risk = 'low' | 'medium' | 'high';
-type AuraState = 'waking' | 'listening' | 'understanding' | 'acting' | 'complete' | 'protecting' | 'error';
+type AuraState = 'waking' | 'listening' | 'understanding' | 'speaking' | 'creating' | 'acting' | 'complete' | 'protecting' | 'error';
+type ActionTarget = 'today' | 'plan' | 'life' | 'brain' | 'create';
 
 const NAV: Record<string, string> = { today: '/dashboard', dashboard: '/dashboard', tasks: '/tasks', planner: '/planning', calendar: '/calendar', planning: '/planning', routines: '/routines', habits: '/habits', fitness: '/fitness', wellness: '/wellness', food: '/food', nutrition: '/food', beauty: '/beauty', 'beauty lab': '/beauty/lab', hair: '/hair', finance: '/finance', 'financial brain': '/finance/brain', goals: '/goals', projects: '/projects', notes: '/notes', settings: '/settings', world: '/world', glow: '/brain' };
 const SUGGESTIONS = [
@@ -20,19 +21,38 @@ const SUGGESTIONS = [
 
 function commandRisk(text: string): Risk { const value = text.toLowerCase(); if (/delete|remove all|erase|cancel appointment|cancel event|clear all|archive all|send email|purchase|pay bill|transfer|external account/.test(value)) return 'high'; if (/move|reschedule|change|edit|update|replace|bulk|everything|all unfinished|budget|financial|simplify the rest/.test(value)) return 'medium'; return 'low'; }
 function navigationTarget(text: string) { const value = text.toLowerCase().replace(/[^a-z ]/g, ' ').trim(); const entries = Object.entries(NAV).sort((a, b) => b[0].length - a[0].length); const exact = entries.find(([label]) => value === label); if (exact) return exact[1]; if (!/^(open|go to|show me|take me to|navigate to)\b/.test(value)) return null; return entries.find(([label]) => value.includes(label))?.[1] ?? null; }
+function actionTarget(text: string): ActionTarget { const value = text.toLowerCase(); if (/note|remember|search|find|brain/.test(value)) return 'brain'; if (/create|image|page|make/.test(value)) return 'create'; if (/wellness|energy|routine|habit|hair|beauty|fitness|workout|food|finance|goal|project/.test(value)) return 'life'; if (/task|calendar|event|schedule|plan|tomorrow|move|reschedule/.test(value)) return 'plan'; return 'today'; }
+function playSpokenMessage(message: string, onEnd: () => void) { if (!('speechSynthesis' in window)) return false; window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(message); const voices = window.speechSynthesis.getVoices(); utterance.voice = voices.find((voice) => /samantha|ava|serena|zoe|google us english/i.test(voice.name)) ?? voices.find((voice) => /^en-(US|GB)/.test(voice.lang) && voice.localService) ?? voices.find((voice) => /^en/.test(voice.lang)) ?? null; utterance.rate = 0.92; utterance.pitch = 1.03; utterance.volume = 0.78; utterance.onend = onEnd; utterance.onerror = onEnd; window.speechSynthesis.speak(utterance); return true; }
 
 export function GlowVoiceCommand() {
   const pathname = usePathname(); const router = useRouter();
-  const recognitionRef = useRef<Recognition | null>(null); const wakeTimer = useRef<ReturnType<typeof setTimeout> | null>(null); const textRef = useRef<HTMLTextAreaElement>(null);
+  const recognitionRef = useRef<Recognition | null>(null); const wakeTimer = useRef<ReturnType<typeof setTimeout> | null>(null); const textRef = useRef<HTMLTextAreaElement>(null); const rootRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false); const [text, setText] = useState(''); const [status, setStatus] = useState('I’m here. Tell me what you need.');
-  const [auraState, setAuraState] = useState<AuraState>('waking'); const [reviewing, setReviewing] = useState(false); const [pending, setPending] = useState(false);
+  const [auraState, setAuraState] = useState<AuraState>('waking'); const [reviewing, setReviewing] = useState(false); const [pending, setPending] = useState(false); const [spokenVoice, setSpokenVoice] = useState(true); const [travelTarget, setTravelTarget] = useState<ActionTarget | null>(null);
   const risk = commandRisk(text);
 
-  const close = useCallback(() => { recognitionRef.current?.stop(); recognitionRef.current = null; if (wakeTimer.current) clearTimeout(wakeTimer.current); setOpen(false); setPending(false); setReviewing(false); }, []);
-  const awaken = useCallback(() => { if (wakeTimer.current) clearTimeout(wakeTimer.current); setOpen(true); setText(''); setStatus('Glow is arriving…'); setAuraState('waking'); setReviewing(false); wakeTimer.current = setTimeout(() => { setAuraState('listening'); setStatus('I’m here. Tell me what you need.'); textRef.current?.focus(); }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 40 : 900); }, []);
+  const close = useCallback(() => { recognitionRef.current?.stop(); recognitionRef.current = null; window.speechSynthesis?.cancel(); if (wakeTimer.current) clearTimeout(wakeTimer.current); setOpen(false); setPending(false); setReviewing(false); setTravelTarget(null); }, []);
+  const awaken = useCallback(() => { if (wakeTimer.current) clearTimeout(wakeTimer.current); setOpen(true); setText(''); setStatus('Glow is arriving…'); setAuraState('waking'); setReviewing(false); wakeTimer.current = setTimeout(() => { const greeting = 'I’m here. Tell me what you need.'; setStatus(greeting); const finish = () => { setAuraState('listening'); textRef.current?.focus(); }; if (window.localStorage.getItem('glow:spoken-voice') !== 'off') { setAuraState('speaking'); if (!playSpokenMessage(greeting, finish)) finish(); } else finish(); }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 40 : 900); }, []);
 
   useEffect(() => { const key = (event: KeyboardEvent) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); awaken(); } if (event.key === 'Escape' && open) close(); }; document.addEventListener('glow:voice-open', awaken); document.addEventListener('keydown', key); return () => { document.removeEventListener('glow:voice-open', awaken); document.removeEventListener('keydown', key); }; }, [awaken, close, open]);
   useEffect(() => { if (!open) return; const previous = document.body.style.overflow; document.body.style.overflow = 'hidden'; return () => { document.body.style.overflow = previous; }; }, [open]);
+  useEffect(() => { setSpokenVoice(window.localStorage.getItem('glow:spoken-voice') !== 'off'); }, []);
+
+  function speak(message: string, nextState: AuraState = 'listening') {
+    if (!spokenVoice) { setAuraState(nextState); return; } setAuraState('speaking'); if (!playSpokenMessage(message, () => setAuraState(nextState))) setAuraState(nextState);
+  }
+
+  function toggleSpokenVoice() { const next = !spokenVoice; setSpokenVoice(next); window.localStorage.setItem('glow:spoken-voice', next ? 'on' : 'off'); if (!next) { window.speechSynthesis?.cancel(); setAuraState('listening'); } else { setAuraState('speaking'); if (!playSpokenMessage('Glow voice is on.', () => setAuraState('listening'))) setAuraState('listening'); } }
+
+  async function travelTo(target: ActionTarget) {
+    const root = rootRef.current; const destination = document.querySelector<HTMLElement>(`[data-glow-world="${target}"]`); setTravelTarget(target);
+    if (root && destination) {
+      const rootBox = root.getBoundingClientRect(); const destinationBox = destination.getBoundingClientRect(); const wide = window.matchMedia('(min-width: 760px) and (orientation: landscape)').matches;
+      const startX = rootBox.width * (wide ? 0.70 : 0.50); const startY = rootBox.height * (wide ? 0.43 : 0.31); const endX = destinationBox.left + destinationBox.width / 2 - rootBox.left; const endY = destinationBox.top + destinationBox.height / 2 - rootBox.top; const deltaX = endX - startX; const deltaY = endY - startY;
+      root.style.setProperty('--travel-start-x', `${startX}px`); root.style.setProperty('--travel-start-y', `${startY}px`); root.style.setProperty('--travel-distance', `${Math.hypot(deltaX, deltaY)}px`); root.style.setProperty('--travel-angle', `${Math.atan2(deltaY, deltaX)}rad`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 40 : 920)); setTravelTarget(null);
+  }
 
   function startListening() {
     setReviewing(false); const browser = window as Window & { SpeechRecognition?: RecognitionCtor; webkitSpeechRecognition?: RecognitionCtor }; const Ctor = browser.SpeechRecognition ?? browser.webkitSpeechRecognition;
@@ -46,17 +66,19 @@ export function GlowVoiceCommand() {
   function stopListening() { recognitionRef.current?.stop(); recognitionRef.current = null; setAuraState(text.trim() ? 'understanding' : 'listening'); setStatus(text.trim() ? 'I’m understanding your request.' : 'Listening paused. Type or tap the microphone when you are ready.'); }
 
   async function executeCommand(command: string) {
-    const lower = command.toLowerCase(); const destination = navigationTarget(command); setPending(true); setAuraState('acting'); setStatus('Glow is carrying this through…');
+    const lower = command.toLowerCase(); const destination = navigationTarget(command); const target = actionTarget(command); setPending(true); setAuraState(/create|make|image|page/.test(lower) ? 'creating' : 'acting'); setStatus(`Glow is carrying this to ${target === 'plan' ? 'your plan' : target === 'brain' ? 'your brain' : target === 'life' ? 'your life' : target === 'create' ? 'Create' : 'Today'}…`);
     try {
-      if (destination) { await new Promise((resolve) => setTimeout(resolve, 420)); router.push(destination); close(); return; }
+      await travelTo(target);
+      if (destination) { router.push(destination); close(); return; }
       if (/^(new task|add a task|add task)$/.test(lower)) { document.dispatchEvent(new CustomEvent('glow:quick-add', { detail: { module: 'task' } })); close(); return; }
       if (/^(new event|add event|add an event)$/.test(lower)) { document.dispatchEvent(new CustomEvent('glow:quick-add', { detail: { module: 'event' } })); close(); return; }
-      if (/plan tomorrow/.test(lower)) { await new Promise((resolve) => setTimeout(resolve, 420)); router.push('/planning?view=tomorrow'); close(); return; }
-      if (/search/.test(lower) && /doctor|note|notes/.test(lower)) { await new Promise((resolve) => setTimeout(resolve, 420)); router.push(`/brain?mode=search&q=${encodeURIComponent(command)}`); close(); return; }
+      if (/^(new note|add note|add a note)$/.test(lower)) { document.dispatchEvent(new CustomEvent('glow:quick-add', { detail: { module: 'note' } })); close(); return; }
+      if (/plan tomorrow/.test(lower)) { router.push('/planning?view=tomorrow'); close(); return; }
+      if (/search/.test(lower) && /doctor|note|notes/.test(lower)) { router.push(`/brain?mode=search&q=${encodeURIComponent(command)}`); close(); return; }
       const response = await fetch('/api/voice/command', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ text: command, sourceRoute: pathname, risk }) }); const payload = await response.json() as { ok?: boolean; message?: string };
       if (!response.ok || !payload.ok) throw new Error(payload.message || 'I could not complete that yet.');
-      setAuraState('complete'); setStatus(payload.message || 'Done. I kept everything else in place.'); setText(''); setReviewing(false); router.refresh();
-    } catch (error) { setAuraState('error'); setStatus(error instanceof Error ? error.message : 'I could not complete that. Nothing was changed. Please try again.'); }
+      const message = payload.message || 'Done. I kept everything else in place.'; setAuraState('complete'); setStatus(message); setText(''); setReviewing(false); router.refresh(); speak(message, 'complete');
+    } catch (error) { const message = error instanceof Error ? error.message : 'I could not complete that. Nothing was changed. Please try again.'; setAuraState('error'); setStatus(message); speak(message, 'error'); }
     finally { setPending(false); }
   }
 
@@ -64,13 +86,13 @@ export function GlowVoiceCommand() {
   function chooseSuggestion(command: string) { setText(command); setReviewing(false); setAuraState('understanding'); setStatus('I’m shaping a safe next step. Review it when you are ready.'); textRef.current?.focus(); }
 
   if (!open) return null;
-  return <div className="living-glow" data-aura-state={auraState} role="dialog" aria-modal="true" aria-labelledby="living-glow-title">
+  return <div ref={rootRef} className="living-glow" data-aura-state={auraState} data-action-target={travelTarget ?? undefined} role="dialog" aria-modal="true" aria-labelledby="living-glow-title">
     <button type="button" className="living-glow__backdrop" onClick={close} aria-label="Close Ask Glow" />
     <picture className="living-glow__art"><source media="(min-width: 760px) and (orientation: landscape)" srcSet="/glow/aura/living-aura-wide-v1.webp" /><img src="/glow/aura/living-aura-portrait-v1.webp" alt="" /></picture>
-    <div className="living-glow__beam" aria-hidden="true" /><div className="living-glow__ripple" aria-hidden="true" />
+    <div className="living-glow__refraction" aria-hidden="true"><i /><i /><i /><i /></div><div className="living-glow__beam" aria-hidden="true" /><div className="living-glow__ripple" aria-hidden="true" /><div className="living-glow__travel" aria-hidden="true"><i /></div>
     <button type="button" className="living-glow__close" onClick={close} aria-label="Close Ask Glow"><X /></button>
     <section className="living-glow__conversation">
-      <header><p><span id="living-glow-title">Glow</span> · {auraState === 'acting' ? 'taking action' : auraState}</p><span className="living-glow__status" role="status" aria-live="polite">{status}</span></header>
+      <header><div><p><span id="living-glow-title">Glow</span> · {auraState === 'acting' ? 'taking action' : auraState}</p><button type="button" className="living-glow__voice-toggle" aria-pressed={spokenVoice} onClick={toggleSpokenVoice} aria-label={spokenVoice ? 'Turn Glow voice off' : 'Turn Glow voice on'}>{spokenVoice ? <Volume2 /> : <VolumeX />}<span>{spokenVoice ? 'Voice on' : 'Voice off'}</span></button></div><span className="living-glow__status" role="status" aria-live="polite">{status}</span></header>
       <label className="living-glow__input"><span className="sr-only">Ask Glow anything</span><textarea ref={textRef} value={text} onChange={(event) => { setText(event.target.value); setReviewing(false); setAuraState('listening'); }} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); submit(); } }} rows={2} placeholder="Tell me what you need…" /><button type="button" onClick={recognitionRef.current ? stopListening : startListening} aria-label={recognitionRef.current ? 'Pause listening' : 'Speak to Glow'}>{recognitionRef.current ? <Square /> : <Mic />}</button></label>
       <div className="living-glow__suggestions" aria-label="Suggested actions">{SUGGESTIONS.map(({ label, icon: Icon, command }) => <button type="button" key={label} onClick={() => chooseSuggestion(command)}><Icon /><span>{label}</span></button>)}</div>
       {reviewing ? <div className="living-glow__review"><Shield /><span><strong>Ready for your approval.</strong> Glow will only apply the request shown above. Everything else stays where it is.</span></div> : null}

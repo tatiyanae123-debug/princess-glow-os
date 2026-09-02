@@ -42,7 +42,7 @@ export function GlowWorldNav({ immersive = false }: { immersive?: boolean }) {
     {worlds.map(({ label, href, icon: Icon, matches }) => {
       const active = matches.some((path) => pathname === path || pathname.startsWith(`${path}/`));
       const isCreate = label === 'Create';
-      return <button key={label} type="button" aria-current={active ? 'page' : undefined} className={cn('glow-world-dock__item', active && 'is-active')} onClick={() => {
+      return <button key={label} type="button" data-glow-world={label.toLowerCase()} aria-current={active ? 'page' : undefined} className={cn('glow-world-dock__item', active && 'is-active')} onClick={() => {
         if (isCreate) {
           document.dispatchEvent(new CustomEvent('glow:quick-add'));
           return;
