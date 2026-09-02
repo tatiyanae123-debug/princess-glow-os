@@ -22,6 +22,12 @@ describe('Glow Today scene foundation', () => {
     'public/glow/today/evening-debrief-v3.webp',
     'public/glow/today/opening-wide.png',
     'public/glow/today/home-wide.png',
+    'public/glow/today/home-afternoon.webp',
+    'public/glow/today/home-afternoon-wide.webp',
+    'public/glow/today/home-evening.webp',
+    'public/glow/today/home-evening-wide.webp',
+    'public/glow/today/home-night.webp',
+    'public/glow/today/home-night-wide.webp',
     'public/glow/today/morning-brief-wide.png',
     'public/glow/today/day-flow-wide.png',
     'public/glow/today/evening-debrief-wide.png',
@@ -58,6 +64,9 @@ describe('Glow Today scene foundation', () => {
     expect(css).not.toContain('calc(100svh * .4626)');
     expect(css).toContain('overflow-y:auto');
     expect(css).toContain('.today-detail-backdrop');
+    expect(css).toContain("data-phase='afternoon'");
+    expect(css).toContain('/glow/today/home-night-wide.webp');
+    expect(css).not.toContain('mix-blend-mode:multiply');
     expect(css).toContain('.today-reflection-form{inset:0;pointer-events:none}');
   });
 
@@ -71,6 +80,10 @@ describe('Glow Today scene foundation', () => {
     expect(source).toContain('completeTodayTaskAction');
     expect(source).toContain('moveTodayTaskToTomorrowAction');
     expect(source).toContain('finishDayFormAction');
+    expect(source).toContain("type DetailView = 'priorities' | 'event' | 'capacity'");
+    expect(source).toContain("window.localStorage.setItem('glow:sensory'");
+    expect(source).toContain('navigator.vibrate');
+    expect(source).toContain('AudioContext');
   });
 
   it('provides one remembered five-world navigation system', () => {

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition, type CSSProperties } from 'react';
 import Link from 'next/link';
-import { ArrowRight, CalendarDays, Check, ChevronRight, Clock3, Home, Leaf, List, MoonStar, RotateCcw, Sparkles, SunMedium, Workflow, X } from 'lucide-react';
+import { ArrowRight, CalendarDays, Check, ChevronRight, Clock3, Droplets, Gauge, Home, Leaf, List, MapPin, MoonStar, RotateCcw, Sparkles, SunMedium, Volume2, VolumeX, Workflow, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { TodaySceneData } from '@/lib/today/scenes';
 import { completeTodayTaskAction, moveTodayTaskToTomorrowAction } from '@/app/actions/today-scenes';
@@ -11,6 +11,7 @@ import { finishDayFormAction } from '@/app/actions/adaptive-os';
 export type TodaySceneView = 'home' | 'morning' | 'flow' | 'evening';
 type JourneyScene = 'opening' | 'home' | 'brief' | 'flow' | 'debrief';
 type TimePhase = 'morning' | 'afternoon' | 'evening' | 'night';
+type DetailView = 'priorities' | 'event' | 'capacity';
 
 const phaseLanguage: Record<TimePhase, { greeting: string; brief: string; message: string; action: string }> = {
   morning: { greeting: 'Good morning', brief: 'Morning Brief', message: 'Your day is lighter than it looks.', action: 'Begin Morning' },
@@ -73,6 +74,39 @@ function useHidePreviewToolbar() {
   }, []);
 }
 
+function useGlowSensory() {
+  const [enabled, setEnabled] = useState(false);
+  useEffect(() => setEnabled(window.localStorage.getItem('glow:sensory') === 'on'), []);
+  function toggle() {
+    setEnabled((current) => {
+      const next = !current;
+      window.localStorage.setItem('glow:sensory', next ? 'on' : 'off');
+      if (next && 'vibrate' in navigator) navigator.vibrate(12);
+      return next;
+    });
+  }
+  function pulse(kind: 'tap' | 'success' | 'open' = 'tap') {
+    if (!enabled) return;
+    if ('vibrate' in navigator) navigator.vibrate(kind === 'success' ? [10, 35, 18] : kind === 'open' ? 16 : 8);
+    const AudioContextClass = window.AudioContext ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const context = new AudioContextClass();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(kind === 'success' ? 660 : kind === 'open' ? 520 : 440, context.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(kind === 'success' ? 880 : 620, context.currentTime + .16);
+    gain.gain.setValueAtTime(.0001, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(.035, context.currentTime + .018);
+    gain.gain.exponentialRampToValueAtTime(.0001, context.currentTime + .22);
+    oscillator.connect(gain).connect(context.destination);
+    oscillator.start();
+    oscillator.stop(context.currentTime + .23);
+    oscillator.addEventListener('ended', () => void context.close(), { once: true });
+  }
+  return { enabled, toggle, pulse };
+}
+
 function formatDate(moment: Date | null) {
   return moment ? new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(moment) : 'Today';
 }
@@ -125,7 +159,7 @@ function Opening({ enter }: { enter: () => void }) {
   </button>;
 }
 
-function JourneyControls({ scene, phase, livePhase, isPreview, setPhase, resetPhase, go, replay }: { scene: JourneyScene; phase: TimePhase; livePhase: TimePhase; isPreview: boolean; setPhase: (phase: TimePhase) => void; resetPhase: () => void; go: (scene: JourneyScene) => void; replay: () => void }) {
+function JourneyControls({ scene, phase, livePhase, isPreview, sensoryEnabled, toggleSensory, setPhase, resetPhase, go, replay }: { scene: JourneyScene; phase: TimePhase; livePhase: TimePhase; isPreview: boolean; sensoryEnabled: boolean; toggleSensory: () => void; setPhase: (phase: TimePhase) => void; resetPhase: () => void; go: (scene: JourneyScene) => void; replay: () => void }) {
   return <>
     <nav className="today-journey-nav" aria-label="Today journey">
       <span className="today-journey-nav__line" aria-hidden="true"/>
@@ -134,6 +168,7 @@ function JourneyControls({ scene, phase, livePhase, isPreview, setPhase, resetPh
     <div className="today-utility-controls">
       <label><span>{isPreview ? 'Preview' : 'Live'}</span><select value={phase} onChange={(event) => setPhase(event.target.value as TimePhase)} aria-label={`Preview part of day. Live phase is ${livePhase}`}><option value="morning">Morning</option><option value="afternoon">Afternoon</option><option value="evening">Evening</option><option value="night">Night</option></select></label>
       {isPreview ? <button type="button" onClick={resetPhase} aria-label="Return to current live phase"><Clock3/></button> : null}
+      <button type="button" onClick={toggleSensory} aria-pressed={sensoryEnabled} aria-label={`${sensoryEnabled ? 'Disable' : 'Enable'} Glow sound and haptic feedback`}>{sensoryEnabled ? <Volume2/> : <VolumeX/>}</button>
       <button type="button" onClick={replay} aria-label="Replay Glow opening"><RotateCcw/></button>
     </div>
   </>;
@@ -148,7 +183,7 @@ function PriorityList({ data, completedIds, completeTask, pending, expand, full 
 }
 
 function DetailSurface({ title, close, children }: { title: string; close: () => void; children: React.ReactNode }) {
-  useEffect(() => { const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') close(); }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, [close]);
+  useEffect(() => { const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') close(); }; const previous = document.documentElement.style.overflow; document.documentElement.style.overflow = 'hidden'; window.addEventListener('keydown', onKey); return () => { document.documentElement.style.overflow = previous; window.removeEventListener('keydown', onKey); }; }, [close]);
   return <div className="today-detail-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}><section className="today-detail" role="dialog" aria-modal="true" aria-labelledby="today-detail-title"><span className="today-detail__handle"/><header><h2 id="today-detail-title">{title}</h2><button type="button" onClick={close} aria-label="Close details"><X/></button></header><div className="today-detail__body">{children}</div></section></div>;
 }
 
@@ -166,9 +201,11 @@ type SceneProps = {
   go: (scene: JourneyScene) => void;
   openGlow: () => void;
   expandPriorities: () => void;
+  expandEvent: () => void;
+  expandCapacity: () => void;
 };
 
-function TodayHome({ data, moment, phase, completedIds, completeTask, pending, go, openGlow, expandPriorities, firstName }: SceneProps & { firstName: string }) {
+function TodayHome({ data, moment, phase, completedIds, completeTask, pending, go, openGlow, expandPriorities, expandEvent, expandCapacity, firstName }: SceneProps & { firstName: string }) {
   const event = nextEvent(data, moment);
   const energy = data.dashboard.wellnessToday.entry?.energy ?? null;
   const capacity = energyPercent(energy);
@@ -180,8 +217,8 @@ function TodayHome({ data, moment, phase, completedIds, completeTask, pending, g
       <div className="today-rule"><span/><Sparkles/><span/></div><p>{phaseLanguage[phase].message}</p>
     </header>
     <article className="today-live-panel today-home__priorities"><p className="today-eyebrow">Today&apos;s priorities</p><PriorityList data={data} completedIds={completedIds} completeTask={completeTask} pending={pending} expand={expandPriorities}/></article>
-    <article className="today-live-panel today-home__event"><p className="today-eyebrow">Next event</p><Link href={calendarDisconnected ? '/connections' : '/calendar'}><CalendarDays/><span><strong>{calendarDisconnected ? 'Connect calendar' : event?.title ?? 'Open time'}</strong><small>{calendarDisconnected ? 'Show Glow your live schedule' : event ? `${formatTime(event.startAt)}${event.endAt ? ` · ${formatTime(event.endAt)}` : ''}` : 'Your calendar has room'}</small></span></Link></article>
-    <article className="today-live-panel today-home__capacity"><p className="today-eyebrow">Current capacity</p>{capacity === null ? <><strong className="today-capacity-check">Check in</strong><p>Tell Glow how you feel so today can adapt.</p><Link className="today-capacity-link" href="/wellness">Check in now <ArrowRight/></Link></> : <><strong>{capacity}%</strong><p>{capacity < 50 ? 'Glow will keep today intentionally gentle.' : 'You have enough for what matters most.'}</p><Link className="today-capacity-link" href="/wellness">View capacity factors <ArrowRight/></Link></>}</article>
+    <article className="today-live-panel today-home__event"><p className="today-eyebrow">Next event</p><button type="button" className="today-monument-button" onClick={expandEvent}><CalendarDays/><span><strong>{calendarDisconnected ? 'Connect calendar' : event?.title ?? 'Open time'}</strong><small>{calendarDisconnected ? 'Show Glow your live schedule' : event ? `${formatTime(event.startAt)}${event.endAt ? ` · ${formatTime(event.endAt)}` : ''}` : 'Your calendar has room'}</small></span><ChevronRight/></button></article>
+    <article className="today-live-panel today-home__capacity"><p className="today-eyebrow">Current capacity</p><button type="button" className="today-capacity-button" onClick={expandCapacity}>{capacity === null ? <><strong className="today-capacity-check">Check in</strong><span>Tell Glow how you feel so today can adapt.</span></> : <><strong>{capacity}%</strong><span>{capacity < 50 ? 'Glow will keep today intentionally gentle.' : 'You have enough for what matters most.'}</span></>}<small>{capacity === null ? 'Begin check-in' : 'View capacity factors'} <ArrowRight/></small></button></article>
     <div className="today-actions"><button type="button" className="today-primary-action" onClick={() => go('brief')}><Sparkles/><span>{phaseLanguage[phase].action}</span><ChevronRight/></button><AskGlowButton openGlow={openGlow}/></div>
   </section>;
 }
@@ -258,11 +295,12 @@ export function TodayExperience({ view, data, userName }: { view: TodaySceneView
   const [previewPhase, setPreviewPhase] = useState<TimePhase | null>(null);
   const phase = previewPhase ?? livePhase;
   const [scene, setScene] = useState<JourneyScene>(initialScene);
-  const [detail, setDetail] = useState<'priorities' | null>(null);
+  const [detail, setDetail] = useState<DetailView | null>(null);
   const [feedback, setFeedback] = useState('');
   const [completedIds, setCompletedIds] = useState<Set<string>>(() => new Set());
   const [pending, startTransition] = useTransition();
   const firstName = useMemo(() => userName?.trim().split(/\s+/)[0] || 'Tatiyana', [userName]);
+  const sensory = useGlowSensory();
   useTimeZoneSync();
   useHidePreviewToolbar();
 
@@ -283,6 +321,7 @@ export function TodayExperience({ view, data, userName }: { view: TodaySceneView
     if (next === scene) return;
     setScene(next);
     setDetail(null);
+    sensory.pulse(next === 'opening' ? 'tap' : 'open');
     if (next !== 'opening') window.history[replace ? 'replaceState' : 'pushState']({ glowScene: next }, '', window.location.href);
     document.querySelector('.today-journey')?.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -290,6 +329,7 @@ export function TodayExperience({ view, data, userName }: { view: TodaySceneView
   function completeTask(id: string, title: string) {
     setCompletedIds((current) => new Set(current).add(id));
     setFeedback(`${title} completed.`);
+    sensory.pulse('success');
     startTransition(async () => {
       try { await completeTodayTaskAction(id); }
       catch { setCompletedIds((current) => { const next = new Set(current); next.delete(id); return next; }); setFeedback('Glow could not complete that priority. Try again.'); }
@@ -299,6 +339,7 @@ export function TodayExperience({ view, data, userName }: { view: TodaySceneView
   function moveTask(id: string, title: string) {
     setCompletedIds((current) => new Set(current).add(id));
     setFeedback(`${title} moved to tomorrow.`);
+    sensory.pulse('success');
     startTransition(async () => {
       try { await moveTodayTaskToTomorrowAction(id); }
       catch { setCompletedIds((current) => { const next = new Set(current); next.delete(id); return next; }); setFeedback('Glow could not move that priority. Try again.'); }
@@ -316,19 +357,26 @@ export function TodayExperience({ view, data, userName }: { view: TodaySceneView
 
   function openGlow() {
     setFeedback('Opening Ask Glow…');
+    sensory.pulse('open');
     document.dispatchEvent(new Event('glow:voice-open'));
   }
 
   if (scene === 'opening') return <Opening enter={() => go('home')}/>;
 
-  const shared = { data, moment, phase, completedIds, completeTask, pending, go, openGlow, expandPriorities: () => setDetail('priorities') };
+  const event = nextEvent(data, moment);
+  const wellness = data.dashboard.wellnessToday.entry;
+  const capacity = energyPercent(wellness?.energy);
+  const calendarDisconnected = data.dashboard.googleCalendar.status !== 'connected' && data.dashboard.todaySchedule.events.length === 0;
+  const shared = { data, moment, phase, completedIds, completeTask, pending, go, openGlow, expandPriorities: () => setDetail('priorities'), expandEvent: () => setDetail('event'), expandCapacity: () => setDetail('capacity') };
   return <main className="today-journey" data-scene={scene} data-phase={phase}>
-    <JourneyControls scene={scene} phase={phase} livePhase={livePhase} isPreview={previewPhase !== null} setPhase={setPreviewPhase} resetPhase={() => setPreviewPhase(null)} go={go} replay={() => go('opening')}/>
+    <JourneyControls scene={scene} phase={phase} livePhase={livePhase} isPreview={previewPhase !== null} sensoryEnabled={sensory.enabled} toggleSensory={() => { sensory.toggle(); setFeedback(`Glow sound and haptics ${sensory.enabled ? 'off' : 'on'}.`); }} setPhase={setPreviewPhase} resetPhase={() => setPreviewPhase(null)} go={go} replay={() => go('opening')}/>
     {scene === 'home' ? <TodayHome {...shared} firstName={firstName}/> : null}
     {scene === 'brief' ? <TodayBrief {...shared}/> : null}
     {scene === 'flow' ? <TodayFlow {...shared}/> : null}
     {scene === 'debrief' ? <TodayDebrief {...shared} moveTask={moveTask} saveDay={saveDay}/> : null}
     {detail === 'priorities' ? <DetailSurface title="Today’s priorities" close={() => setDetail(null)}><PriorityList data={data} completedIds={completedIds} completeTask={completeTask} pending={pending} full/><Link className="today-detail__link" href="/tasks">Open task room <ArrowRight/></Link></DetailSurface> : null}
+    {detail === 'event' ? <DetailSurface title="Next event" close={() => setDetail(null)}><div className="today-detail-card"><CalendarDays/><div><p className="today-eyebrow">{calendarDisconnected ? 'Calendar disconnected' : event ? 'Coming up' : 'Open time'}</p><h3>{calendarDisconnected ? 'Connect your calendar' : event?.title ?? 'Your calendar has room'}</h3>{event ? <><p>{formatTime(event.startAt)}{event.endAt ? ` – ${formatTime(event.endAt)}` : ''}{event.allDay ? ' · All day' : ''}</p>{event.location ? <p><MapPin/> {event.location}</p> : null}</> : <p>{calendarDisconnected ? 'Connect Google Calendar so Glow can protect time around your real schedule.' : 'Nothing is scheduled next. Glow can help you use this space intentionally.'}</p>}</div></div><Link className="today-detail__link" href={calendarDisconnected ? '/connections' : '/calendar'}>{calendarDisconnected ? 'Connect calendar' : 'Open daily calendar'} <ArrowRight/></Link></DetailSurface> : null}
+    {detail === 'capacity' ? <DetailSurface title="Current capacity" close={() => setDetail(null)}><div className="today-capacity-detail"><Gauge/><strong>{capacity === null ? 'Check in' : `${capacity}%`}</strong><p>{capacity === null ? 'Add a quick energy check-in so Glow can shape today around your actual capacity.' : `${energyLabel(wellness?.energy)} capacity. ${capacity < 50 ? 'Glow will protect recovery and reduce pressure.' : 'You have room for focused progress and care.'}`}</p></div><div className="today-factor-grid"><article><Leaf/><span>Energy</span><strong>{wellness?.energy ?? 'Not logged'}</strong></article><article><MoonStar/><span>Sleep</span><strong>{wellness?.sleepHours == null ? 'Not logged' : `${wellness.sleepHours} hr`}</strong></article><article><Droplets/><span>Water</span><strong>{wellness?.waterGlasses == null ? 'Not logged' : `${wellness.waterGlasses} glasses`}</strong></article><article><Sparkles/><span>Mood</span><strong>{wellness?.mood ?? 'Not logged'}</strong></article></div><Link className="today-detail__link" href="/wellness">{capacity === null ? 'Begin capacity check-in' : 'Update capacity factors'} <ArrowRight/></Link></DetailSurface> : null}
     <p className="today-feedback" role="status" aria-live="polite">{feedback}</p>
   </main>;
 }
