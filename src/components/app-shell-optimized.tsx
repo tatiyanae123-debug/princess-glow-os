@@ -6,7 +6,6 @@ import { X } from 'lucide-react';
 import { Sidebar } from '@/components/ui/sidebar';
 import { GlowProvider } from '@/lib/context/glow-provider';
 import { GlobalHeader } from '@/components/global-header';
-import { RoomUpgradeDeck } from '@/components/room-upgrade-deck';
 import { ArchitecturalWorldFrame } from '@/components/architectural-world-frame';
 import { DeferredGlobalControls } from '@/components/deferred-global-controls';
 
@@ -97,7 +96,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const content = (
     <div key={pathname} className={isReferenceDashboard ? 'w-full' : 'glow-route-stage mx-auto w-full max-w-[1500px]'}>
       {children}
-      {!focus && !isReferenceDashboard ? <RoomUpgradeDeck /> : null}
     </div>
   );
 
