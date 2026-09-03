@@ -22,6 +22,23 @@ function levelToNumber(value: unknown): number | null {
   return scale[normalized] ?? null;
 }
 
+function dayStart(date: Date) {
+  const value=new Date(date);
+  value.setHours(0,0,0,0);
+  return value;
+}
+
+function taskDueLabel(dueDate: Date | null, now: Date) {
+  if (!dueDate) return null;
+  const due=dayStart(dueDate).getTime();
+  const today=dayStart(now).getTime();
+  const diff=Math.round((due-today)/86400000);
+  if(diff<0)return 'Overdue';
+  if(diff===0)return 'Today';
+  if(diff===1)return 'Tomorrow';
+  return dueDate.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+
 export default async function TodayPage(){
   const session=await auth();
   if(!session?.user?.id) redirect('/sign-in');
@@ -44,7 +61,11 @@ export default async function TodayPage(){
 
   const todaysEvents=events
     .filter(e=>e.startAt.toDateString()===now.toDateString())
-    .sort((a,b)=>a.startAt.getTime()-b.startAt.getTime());
+    .sort((a,b)=>{
+      if(a.allDay&&!b.allDay)return -1;
+      if(!a.allDay&&b.allDay)return 1;
+      return a.startAt.getTime()-b.startAt.getTime();
+    });
 
   const latestWellness=wellnessEntries[0]??null;
   const routines=beautyRoutines
@@ -56,9 +77,9 @@ export default async function TodayPage(){
       id:t.id,
       title:t.title,
       priority:t.priority,
-      dueLabel:t.dueDate?t.dueDate.toLocaleDateString('en-US',{month:'short',day:'numeric'}):null,
+      dueLabel:taskDueLabel(t.dueDate,now),
     }))}
-    events={todaysEvents.slice(0,6).map(e=>({
+    events={todaysEvents.slice(0,8).map(e=>({
       id:e.id,
       title:e.title,
       timeLabel:e.allDay?'All day':e.startAt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}),
