@@ -1,157 +1,219 @@
-/* Glow OS Today — 3D depth integration law enforcement */
+/* Glow OS Today — volumetric information-chamber integration
+   Correct placement is not enough. Live information must read as being inside
+   the host object's physical volume, behind its rim and within its light. */
 
-/* General: live information sits behind the host object's rim, not above it. */
 .today-home__priorities,
 .today-home__event,
 .today-home__capacity{
   transform-style:preserve-3d;
   isolation:isolate;
+  perspective:1400px;
+  overflow:visible;
 }
 
+/* Shared recessed plane: content contracts slightly away from the front rim. */
 .today-home__priorities .today-eyebrow,
 .today-home__priorities .today-priorities,
 .today-home__event .today-eyebrow,
 .today-home__event .today-monument-button,
 .today-home__capacity .today-eyebrow,
 .today-home__capacity .today-capacity-button{
-  transform:translateZ(-8px);
+  transform-style:preserve-3d;
+  backface-visibility:hidden;
 }
 
-/* PRIORITY MONUMENT: recessed inscription plane. */
+/* PRIORITY MONUMENT ------------------------------------------------------- */
 .today-home__priorities{
-  --host-inner-light:rgba(255,229,183,.16);
+  --host-inner-light:rgba(255,222,159,.22);
+  --host-cavity-shadow:rgba(63,35,20,.22);
+}
+.today-home__priorities .today-eyebrow{
+  transform:perspective(1200px) rotateY(.7deg) translateZ(-24px) scale(.982);
+  transform-origin:50% 50%;
+  padding-inline:3%;
+  text-shadow:
+    0 -1px 0 rgba(255,255,255,.38),
+    0 1px 1px rgba(63,38,24,.36),
+    0 0 10px rgba(255,218,151,.2)!important;
 }
 .today-home__priorities .today-priorities{
   position:relative;
+  transform:perspective(1200px) rotateY(.7deg) translateZ(-30px) scale(.972);
+  transform-origin:50% 42%;
+  padding:2% 3% 3%;
+  border-radius:18px;
+  background:
+    linear-gradient(180deg,rgba(96,54,29,.055),transparent 18%,transparent 78%,rgba(255,241,211,.06)),
+    radial-gradient(ellipse at 50% 40%,rgba(255,224,170,.085),transparent 72%);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.24),
-    inset 0 10px 24px rgba(80,48,28,.045),
-    inset 0 -1px 0 rgba(255,236,204,.14);
-}
-.today-home__priorities .today-eyebrow,
-.today-home__priorities .today-priority p,
-.today-home__priorities .today-view-all{
-  text-shadow:
-    0 -1px 0 rgba(255,255,255,.46),
-    0 1px 1px rgba(73,45,28,.28),
-    0 0 8px var(--host-inner-light);
+    inset 0 14px 28px rgba(58,32,19,.12),
+    inset 10px 0 22px rgba(54,31,19,.07),
+    inset -8px 0 18px rgba(255,248,232,.045),
+    inset 0 -2px 1px rgba(255,247,229,.12);
 }
 .today-home__priorities .today-priority{
-  border-bottom-color:rgba(85,55,34,.14)!important;
-  box-shadow:inset 0 -1px rgba(255,246,229,.12);
+  min-height:52px!important;
+  border-bottom-color:rgba(76,47,29,.17)!important;
+  box-shadow:
+    inset 0 -1px rgba(255,247,230,.15),
+    0 1px rgba(55,33,21,.035);
+}
+.today-home__priorities .today-priority p,
+.today-home__priorities .today-view-all{
+  color:rgba(63,44,33,.9)!important;
+  text-shadow:
+    0 -1px 0 rgba(255,255,255,.34),
+    0 1px 1px rgba(55,32,20,.32),
+    0 0 9px var(--host-inner-light)!important;
 }
 .today-home__priorities .today-priority>span,
 .today-home__priorities .today-priority button{
-  transform:translateZ(-4px);
+  transform:translateZ(-12px) scale(.96);
+  border-color:rgba(87,54,33,.18)!important;
+  background:radial-gradient(circle at 46% 42%,rgba(255,242,217,.35),rgba(119,72,40,.085))!important;
   box-shadow:
-    inset 0 3px 8px rgba(78,45,25,.14),
-    inset 0 -1px 1px rgba(255,255,255,.52),
-    0 1px 0 rgba(255,255,255,.18)!important;
+    inset 0 5px 10px rgba(55,32,19,.19),
+    inset 0 -1px 1px rgba(255,255,255,.38),
+    0 1px 0 rgba(255,255,255,.10)!important;
 }
 .today-home__priorities .today-priority button:active{
-  transform:translateZ(-10px) scale(.95)!important;
+  transform:translateZ(-22px) scale(.91)!important;
   box-shadow:
-    inset 0 5px 10px rgba(72,41,23,.2),
-    inset 0 0 14px rgba(255,218,147,.22)!important;
+    inset 0 8px 14px rgba(51,29,17,.25),
+    inset 0 0 16px rgba(255,212,133,.24)!important;
 }
 
-/* NEXT EVENT: copy lives inside the lower plaque. */
+/* NEXT EVENT APERTURE ---------------------------------------------------- */
+.today-home__event .today-eyebrow{
+  transform:perspective(1200px) rotateY(-1deg) translateZ(-24px) scale(.98);
+  transform-origin:50% 50%;
+  text-shadow:
+    0 -1px rgba(255,255,255,.36),
+    0 1px 1px rgba(60,35,21,.33),
+    0 0 9px rgba(255,216,146,.17)!important;
+}
 .today-home__event .today-monument-button{
   overflow:hidden;
+  transform:perspective(1200px) rotateY(-1.2deg) translateZ(-34px) scale(.958);
+  transform-origin:50% 58%;
+  min-height:88px!important;
+  padding:9px 10px!important;
+  border-radius:16px!important;
+  background:
+    linear-gradient(180deg,rgba(80,45,25,.07),transparent 36%,rgba(255,236,198,.055)),
+    radial-gradient(ellipse at 50% 45%,rgba(255,220,155,.07),transparent 70%)!important;
   box-shadow:
-    inset 0 7px 18px rgba(78,46,25,.07),
-    inset 0 -1px 0 rgba(255,255,255,.22);
+    inset 0 16px 26px rgba(57,32,18,.15),
+    inset 8px 0 18px rgba(54,31,19,.07),
+    inset -8px 0 16px rgba(255,248,231,.035),
+    inset 0 -1px 0 rgba(255,255,255,.14)!important;
 }
-.today-home__event .today-eyebrow,
 .today-home__event strong,
 .today-home__event small{
+  color:rgba(61,42,31,.91)!important;
   text-shadow:
-    0 -1px rgba(255,255,255,.5),
-    0 1px 1px rgba(78,47,27,.24),
-    0 0 7px rgba(255,223,166,.12)!important;
+    0 -1px rgba(255,255,255,.34),
+    0 1px 1px rgba(58,34,20,.3),
+    0 0 9px rgba(255,220,158,.16)!important;
 }
 .today-home__event .today-monument-button>svg:first-child{
-  transform:translateZ(-5px);
+  transform:translateZ(-14px) scale(.94);
+  background:radial-gradient(circle at 45% 42%,rgba(255,243,221,.33),rgba(110,66,38,.07))!important;
   box-shadow:
-    inset 0 4px 9px rgba(73,42,23,.14),
-    inset 0 -1px rgba(255,255,255,.55)!important;
+    inset 0 6px 11px rgba(57,32,19,.2),
+    inset 0 -1px rgba(255,255,255,.33)!important;
 }
+.today-home__event .today-monument-button>svg:last-child{transform:translateZ(-12px)}
 .today-home__event .today-monument-button:active{
-  transform:translateZ(-12px) scale(.99);
+  transform:perspective(1200px) rotateY(-1.2deg) translateZ(-44px) scale(.945);
 }
 
-/* CAPACITY BASIN: information follows the vessel instead of a flat panel. */
-.today-home__capacity .today-eyebrow,
-.today-home__capacity .today-capacity-button{
+/* CAPACITY BASIN --------------------------------------------------------- */
+.today-home__capacity{
+  perspective-origin:50% 25%;
+}
+.today-home__capacity .today-eyebrow{
   transform-origin:50% 50%;
-  transform:perspective(900px) rotateX(3.5deg) translateZ(-10px);
+  transform:perspective(1050px) rotateX(7deg) translateY(2px) translateZ(-30px) scale(.965);
+  text-shadow:
+    0 -1px rgba(255,255,255,.34),
+    0 1px 1px rgba(57,33,20,.34),
+    0 0 10px rgba(255,214,139,.2)!important;
 }
 .today-home__capacity .today-capacity-button{
+  transform-origin:50% 12%;
+  transform:perspective(1050px) rotateX(7.5deg) translateY(5px) translateZ(-40px) scale(.952);
+  border-radius:24px 24px 34px 34px / 18px 18px 42px 42px!important;
+  padding:4px 12px 10px!important;
+  background:
+    linear-gradient(180deg,rgba(61,34,20,.08),transparent 30%,rgba(255,232,188,.05)),
+    radial-gradient(ellipse at 50% 15%,rgba(255,222,157,.09),transparent 64%)!important;
   box-shadow:
-    inset 0 10px 28px rgba(75,43,24,.055),
-    inset 0 -1px 0 rgba(255,249,239,.18);
+    inset 0 20px 34px rgba(55,31,18,.14),
+    inset 10px 0 22px rgba(54,31,19,.06),
+    inset -10px 0 22px rgba(255,248,231,.035),
+    inset 0 -1px 0 rgba(255,248,232,.13)!important;
 }
-.today-home__capacity .today-eyebrow,
+.today-home__capacity .today-capacity-button strong{
+  color:rgba(61,40,28,.92)!important;
+  transform:translateZ(-5px);
+}
+.today-home__capacity .today-capacity-button span,
+.today-home__capacity .today-capacity-button small{
+  color:rgba(69,49,37,.84)!important;
+  transform:translateZ(-7px);
+}
 .today-home__capacity .today-capacity-button strong,
 .today-home__capacity .today-capacity-button span,
 .today-home__capacity .today-capacity-button small{
   text-shadow:
-    0 -1px rgba(255,255,255,.44),
-    0 1px 1px rgba(75,43,24,.24),
-    0 0 10px rgba(255,215,139,.14)!important;
+    0 -1px rgba(255,255,255,.32),
+    0 1px 1px rgba(55,32,19,.29),
+    0 0 10px rgba(255,213,137,.16)!important;
 }
 .today-home__capacity .today-capacity-button:active{
-  transform:perspective(900px) rotateX(3.5deg) translateZ(-16px) scale(.992);
+  transform:perspective(1050px) rotateX(7.5deg) translateY(6px) translateZ(-54px) scale(.938);
 }
 
-/* REVIEW TODAY: threshold, not floating mobile button. */
-.today-primary-action,
-.today-actions>a,
-.today-actions>button{
-  transform-style:preserve-3d;
-}
+/* REVIEW TODAY becomes a physical foreground threshold / step. */
 .today-primary-action{
+  transform-style:preserve-3d;
+  transform:perspective(1000px) rotateX(8deg) translateZ(-8px)!important;
+  transform-origin:50% 100%;
+  border-radius:28px 28px 18px 18px!important;
+  background:linear-gradient(180deg,rgba(255,246,228,.44),rgba(184,133,84,.08))!important;
   box-shadow:
-    inset 0 6px 14px rgba(78,45,25,.075),
-    inset 0 -1px 0 rgba(255,255,255,.42),
-    0 1px 0 rgba(255,255,255,.18)!important;
-  text-shadow:0 -1px rgba(255,255,255,.5),0 1px 1px rgba(74,44,26,.18);
+    inset 0 10px 18px rgba(74,42,24,.10),
+    inset 0 -1px 0 rgba(255,255,255,.36),
+    0 -1px 0 rgba(255,255,255,.18)!important;
+  text-shadow:0 -1px rgba(255,255,255,.34),0 1px 1px rgba(64,37,22,.24);
 }
 .today-primary-action:active{
-  transform:translateZ(-8px) scale(.992)!important;
+  transform:perspective(1000px) rotateX(8deg) translateZ(-18px) scale(.99)!important;
 }
 
-/* Avoid hover elevation: embedded controls move inward, not toward camera. */
+/* No hover-lift. Glow Matter presses inward. */
 @media (hover:hover) and (pointer:fine){
   .today-home__priorities .today-priority button:hover,
   .today-home__event .today-monument-button:hover,
   .today-home__capacity .today-capacity-button:hover,
-  .today-primary-action:hover{
-    filter:brightness(1.025);
-  }
+  .today-primary-action:hover{filter:brightness(1.02) saturate(1.02)}
 }
 
-/* iPad/desktop: slightly stronger local perspective because host geometry is larger. */
+/* Wider devices get more visible parallax between rim and information plane. */
 @media (min-width:700px){
-  .today-home__priorities .today-eyebrow,
-  .today-home__priorities .today-priorities{
-    transform:perspective(1200px) rotateY(1deg) translateZ(-9px);
-  }
-  .today-home__event .today-eyebrow,
-  .today-home__event .today-monument-button{
-    transform:perspective(1200px) rotateY(-1deg) translateZ(-9px);
-  }
-  .today-home__capacity .today-eyebrow,
-  .today-home__capacity .today-capacity-button{
-    transform:perspective(1000px) rotateX(4.25deg) translateZ(-12px);
-  }
+  .today-home__priorities .today-eyebrow{transform:perspective(1400px) rotateY(1deg) translateZ(-28px) scale(.982)}
+  .today-home__priorities .today-priorities{transform:perspective(1400px) rotateY(1deg) translateZ(-36px) scale(.968)}
+  .today-home__event .today-eyebrow{transform:perspective(1400px) rotateY(-1.25deg) translateZ(-28px) scale(.98)}
+  .today-home__event .today-monument-button{transform:perspective(1400px) rotateY(-1.5deg) translateZ(-40px) scale(.955)}
+  .today-home__capacity .today-eyebrow{transform:perspective(1200px) rotateX(8deg) translateZ(-34px) scale(.96)}
+  .today-home__capacity .today-capacity-button{transform:perspective(1200px) rotateX(8.5deg) translateY(6px) translateZ(-48px) scale(.948)}
 }
 
+/* Reduced motion preserves the static depth composition. */
 @media (prefers-reduced-motion:reduce){
   .today-home__priorities .today-priority button,
   .today-home__event .today-monument-button,
   .today-home__capacity .today-capacity-button,
-  .today-primary-action{
-    transition:none!important;
-  }
+  .today-primary-action{transition:none!important}
 }
