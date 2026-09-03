@@ -1,4 +1,4 @@
-/* Living Glow Aura fidelity overrides — authoritative Sept 3 2026 */
+/* Living Glow Aura + responsive fidelity overrides — authoritative Sept 3 2026 */
 
 @keyframes glowLivingHeartbeat {
   0%,31%,100% { transform:translate(-50%,-50%) scale(.985); filter:brightness(1); }
@@ -18,46 +18,213 @@
   animation:glowLivingHeartbeat 1.18s cubic-bezier(.2,.68,.2,1) infinite !important;
   transform-origin:center center;
 }
-
-.glow-presence-haze {
-  filter:blur(6px) !important;
-  opacity:.88 !important;
-}
-
-.glow-presence-beam {
-  filter:blur(1.25px) !important;
-  opacity:.86 !important;
-}
-
-.glow-presence-wing {
-  filter:blur(.45px) drop-shadow(0 0 7px rgba(255,255,255,.70)) !important;
-  opacity:.68 !important;
-}
-
-.glow-presence-rays {
-  animation:glowLivingRayHeartbeat 1.18s cubic-bezier(.2,.68,.2,1) infinite !important;
-}
-
+.glow-presence-haze { filter:blur(6px) !important; opacity:.88 !important; }
+.glow-presence-beam { filter:blur(1.25px) !important; opacity:.86 !important; }
+.glow-presence-wing { filter:blur(.45px) drop-shadow(0 0 7px rgba(255,255,255,.70)) !important; opacity:.68 !important; }
+.glow-presence-rays { animation:glowLivingRayHeartbeat 1.18s cubic-bezier(.2,.68,.2,1) infinite !important; }
 .glow-presence-core {
   width:15% !important;
   box-shadow:0 0 8px 3px #fff,0 0 28px 9px rgba(255,238,235,.80),0 0 62px 18px rgba(214,229,255,.30) !important;
 }
 
-/* Phones use the native responsive composition rather than shrinking the 4:3 reference plane. */
-@media (max-width: 900px) {
+/* The document itself never becomes wider than the visible device. Browser zoom,
+   iPad Split View and narrow Safari windows must reflow instead of creating a
+   hidden desktop canvas that later overlaps. */
+html,body { max-width:100%; overflow-x:hidden; -webkit-text-size-adjust:100%; }
+
+/* Wide architectural Today is allowed only when there is enough horizontal
+   camera space. Narrow/square windows use the native room composition below. */
+@media (max-width: 900px), (max-aspect-ratio: 5/4) {
   .today-landscape { display:none !important; }
   .today-portrait { display:block !important; }
 }
 
-/* Narrow iPad windows / split view also recompose instead of letterboxing or forcing odd zoom. */
-@media (max-aspect-ratio: 5/4) {
-  .today-landscape { display:none !important; }
-  .today-portrait { display:block !important; }
+/* ---------- Native Today room for phone / portrait iPad / split view ---------- */
+.today-portrait { overflow:hidden; }
+.today-portrait-scroll {
+  position:relative;
+  isolation:isolate;
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden !important;
+  overscroll-behavior-x:none;
+  padding-bottom:calc(150px + env(safe-area-inset-bottom)) !important;
+  background:
+    radial-gradient(circle at 52% 14%,rgba(255,255,255,.98) 0 8%,rgba(255,246,241,.72) 24%,transparent 46%),
+    radial-gradient(circle at 74% 28%,rgba(212,229,250,.42),transparent 36%),
+    radial-gradient(circle at 18% 20%,rgba(255,234,230,.48),transparent 38%),
+    linear-gradient(180deg,#f9f4f0 0%,#f5ebe6 46%,#eaded7 100%) !important;
+  scrollbar-width:none;
 }
+.today-portrait-scroll::-webkit-scrollbar { display:none; }
+
+/* Do not ghost the baked desktop reference behind native mobile information.
+   That duplicate raster text was the source of the 'highlighted/overlapping'
+   appearance in IMG_2140. The native room keeps the climate using CSS light. */
+.today-portrait-scroll > img { display:none !important; }
+
+.today-portrait-scroll::before {
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:
+    linear-gradient(102deg,transparent 0 7%,rgba(255,255,255,.56) 7.4% 8%,transparent 8.5% 18%,rgba(255,255,255,.38) 18.4% 19.2%,transparent 20% 42%,rgba(255,255,255,.32) 42.6% 43.1%,transparent 44% 100%),
+    radial-gradient(ellipse at 50% 42%,rgba(255,255,255,.82),transparent 30%),
+    radial-gradient(ellipse at 50% 88%,rgba(255,255,255,.36),transparent 42%);
+  opacity:.72;
+}
+.today-portrait-scroll::after {
+  content:"";
+  position:absolute;
+  left:0;right:0;bottom:0;
+  height:42%;
+  z-index:0;
+  pointer-events:none;
+  background:
+    repeating-linear-gradient(94deg,rgba(255,255,255,.11) 0 1px,transparent 1px 34px),
+    linear-gradient(180deg,transparent,rgba(255,255,255,.22));
+  opacity:.7;
+}
+
+/* A centered editorial column prevents iPad split view from stretching controls
+   to strange widths while still filling a full-width phone. */
+.today-portrait-scroll > header,
+.today-portrait-scroll > section {
+  width:min(100% - 2rem, 760px) !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
+.today-portrait-scroll > header { padding-left:0 !important; padding-right:0 !important; }
+.today-portrait-scroll > section { left:auto !important; right:auto !important; }
+
+/* Never let dynamic titles create a single oversized line. */
+.today-portrait-scroll h1,
+.today-portrait-scroll h2,
+.today-portrait-scroll button,
+.today-portrait-scroll span,
+.today-portrait-scroll p { overflow-wrap:anywhere; }
+.today-portrait-scroll h2.truncate { white-space:normal !important; overflow:visible !important; text-overflow:clip !important; }
+
+/* Keep the portrait Aura as a real spatial pause, but bound it to the viewport so
+   browser zoom cannot make it consume most of the screen. */
+.today-portrait-scroll > section:first-of-type {
+  min-height:clamp(230px,34dvh,360px) !important;
+}
+.today-portrait-scroll > section:first-of-type > div {
+  width:clamp(210px,46vw,310px) !important;
+  height:clamp(210px,46vw,310px) !important;
+}
+
+/* The What Now + Capacity pair becomes one column when there is not enough room.
+   This removes the side-by-side squeeze/overlap seen when Safari is made smaller. */
+@media (max-width: 560px) {
+  .today-portrait-scroll > section:nth-of-type(2) > div.mt-7.grid {
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:1.25rem !important;
+  }
+  .today-portrait-scroll > section:nth-of-type(2) > div.mt-7.grid > section {
+    border-left:0 !important;
+    padding-left:0 !important;
+  }
+  .today-portrait-scroll > section:nth-of-type(2) > div.mt-7.grid > section + section {
+    border-top:1px solid rgba(188,164,157,.45) !important;
+    padding-top:1.25rem !important;
+  }
+}
+
+/* TOP 3 is never a giant horizontal strip on a narrow screen. The old min-width
+   flex children caused the third priority to run offscreen and collide visually
+   with the rest of the room. */
+.today-portrait-scroll > section:nth-of-type(2) > section:nth-of-type(2) > div {
+  overflow:visible !important;
+  padding-bottom:0 !important;
+}
+.today-portrait-scroll > section:nth-of-type(2) > section:nth-of-type(2) > div > div {
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  width:100% !important;
+  min-width:0 !important;
+  gap:0 !important;
+}
+.today-portrait-scroll > section:nth-of-type(2) > section:nth-of-type(2) > div > div > button {
+  width:auto !important;
+  max-width:none !important;
+  min-width:0 !important;
+  white-space:normal !important;
+}
+.today-portrait-scroll > section:nth-of-type(2) > section:nth-of-type(2) > div > div > button span {
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+}
+
+@media (max-width: 620px) {
+  .today-portrait-scroll > section:nth-of-type(2) > section:nth-of-type(2) > div > div {
+    grid-template-columns:minmax(0,1fr) !important;
+  }
+  .today-portrait-scroll > section:nth-of-type(2) > section:nth-of-type(2) > div > div > button {
+    border-left:0 !important;
+    border-top:1px solid rgba(174,146,137,.38) !important;
+    padding:1rem 0 !important;
+  }
+  .today-portrait-scroll > section:nth-of-type(2) > section:nth-of-type(2) > div > div > button:first-child {
+    border-top:0 !important;
+  }
+}
+
+/* Routine rows keep the duration and completion target visible while allowing
+   the routine name to wrap instead of colliding with them. */
+.today-portrait-scroll > section:nth-of-type(2) > section:nth-of-type(3) button > span:first-child {
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  padding-right:.5rem;
+}
+
+/* Ask Glow stays fully above the fixed world control. Its content adapts instead
+   of being hidden under the dock on short Safari viewports. */
+.today-portrait-scroll > section:nth-of-type(2) > button:last-of-type {
+  margin-bottom:1rem !important;
+}
+.today-portrait-scroll > section:nth-of-type(2) > button:last-of-type > div {
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) clamp(58px,14vw,80px) !important;
+  align-items:center !important;
+}
+
+/* Fixed world orientation control: contained, safe-area aware and never wider
+   than the device. It remains a world compass rather than covering content. */
+.today-portrait > nav {
+  left:max(10px,env(safe-area-inset-left)) !important;
+  right:max(10px,env(safe-area-inset-right)) !important;
+  width:auto !important;
+  max-width:760px;
+  margin-inline:auto;
+  bottom:max(8px,env(safe-area-inset-bottom)) !important;
+  padding-bottom:max(.5rem,env(safe-area-inset-bottom)) !important;
+}
+@media (max-width: 430px) {
+  .today-portrait > nav { border-radius:22px !important; }
+  .today-portrait > nav button { min-width:0 !important; padding-inline:.15rem !important; font-size:11px !important; }
+}
+
+/* Short windows (Safari chrome, Stage Manager, keyboard-adjacent layouts) need
+   more compact vertical rhythm, not scaling/zooming the whole room. */
+@media (max-height: 720px) {
+  .today-portrait-scroll > header { padding-top:max(12px,env(safe-area-inset-top)) !important; }
+  .today-portrait-scroll > section:first-of-type { min-height:210px !important; }
+  .today-portrait-scroll > section:nth-of-type(2) { margin-top:0 !important; }
+  .today-portrait-scroll { padding-bottom:calc(132px + env(safe-area-inset-bottom)) !important; }
+}
+
+/* The wide artwork remains crisp and centered. If a window is too small for it,
+   the media rules above switch to the native room instead of shrinking forever. */
+.today-landscape { overflow:hidden; }
+.today-landscape img { max-width:none; }
 
 @media (prefers-reduced-motion: reduce) {
   .glow-presence,
-  .glow-presence-rays {
-    animation:none !important;
-  }
+  .glow-presence-rays { animation:none !important; }
 }
