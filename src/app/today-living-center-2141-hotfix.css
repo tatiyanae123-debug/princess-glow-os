@@ -1,0 +1,139 @@
+/* IMG_2141 Today fidelity pass — live data must replace baked reference text cleanly. */
+
+@keyframes glowHeartBody2141 {
+  0%, 34%, 100% { transform:scale(.992); filter:brightness(1) saturate(1); }
+  7% { transform:scale(1.032); filter:brightness(1.105) saturate(1.03); }
+  14% { transform:scale(.997); filter:brightness(1.02); }
+  21% { transform:scale(1.016); filter:brightness(1.072); }
+  28% { transform:scale(.992); filter:brightness(1); }
+}
+@keyframes glowHeartCore2141 {
+  0%, 34%, 100% { transform:translate(-50%,-50%) scale(.965); filter:brightness(1); }
+  7% { transform:translate(-50%,-50%) scale(1.14); filter:brightness(1.24); }
+  14% { transform:translate(-50%,-50%) scale(.992); filter:brightness(1.04); }
+  21% { transform:translate(-50%,-50%) scale(1.072); filter:brightness(1.15); }
+  28% { transform:translate(-50%,-50%) scale(.965); filter:brightness(1); }
+}
+@keyframes glowHeartRays2141 {
+  0%, 34%, 100% { opacity:.42; transform:translate(-50%,-50%) scale(.968); }
+  7% { opacity:.91; transform:translate(-50%,-50%) scale(1.055); }
+  14% { opacity:.54; transform:translate(-50%,-50%) scale(.99); }
+  21% { opacity:.74; transform:translate(-50%,-50%) scale(1.027); }
+  28% { opacity:.42; transform:translate(-50%,-50%) scale(.968); }
+}
+@keyframes glowHeartRing2141 {
+  0%, 34%, 100% { transform:translate(-50%,-50%) scale(.97); opacity:.38; }
+  7% { transform:translate(-50%,-50%) scale(1.07); opacity:.85; }
+  14% { transform:translate(-50%,-50%) scale(.992); opacity:.46; }
+  21% { transform:translate(-50%,-50%) scale(1.035); opacity:.68; }
+  28% { transform:translate(-50%,-50%) scale(.97); opacity:.38; }
+}
+@keyframes glowHeartBeam2141 {
+  0%, 34%, 100% { opacity:.64; filter:blur(.8px) brightness(1); }
+  7% { opacity:.98; filter:blur(.55px) brightness(1.16); }
+  14% { opacity:.72; filter:blur(.7px) brightness(1.04); }
+  21% { opacity:.88; filter:blur(.6px) brightness(1.10); }
+  28% { opacity:.64; filter:blur(.8px) brightness(1); }
+}
+
+/* A real heartbeat: primary beat, softer echo, then a calm rest. */
+.today-aura-visual { animation:glowHeartBody2141 1.28s cubic-bezier(.22,.72,.18,1) infinite !important; }
+.today-aura-core { animation:glowHeartCore2141 1.28s cubic-bezier(.18,.78,.16,1) infinite !important; }
+.today-aura-rays { animation:glowHeartRays2141 1.28s cubic-bezier(.18,.72,.16,1) infinite !important; }
+.today-aura-ring-one,.today-aura-ring-two { animation:glowHeartRing2141 1.28s cubic-bezier(.18,.72,.16,1) infinite !important; }
+.today-aura-ring-two { animation-delay:.025s !important; }
+.today-aura-beam { animation:glowHeartBeam2141 1.28s cubic-bezier(.18,.72,.16,1) infinite !important; }
+.today-aura-haze { filter:blur(3.2px) !important; opacity:.76 !important; }
+.today-aura-fan { filter:drop-shadow(0 0 3px rgba(255,255,255,.72)) !important; opacity:.72 !important; }
+.today-aura-core { box-shadow:0 0 7px 3px #fff,0 0 19px 7px rgba(255,239,235,.88),0 0 40px 12px rgba(211,229,255,.30) !important; }
+
+/* Keep the same heart language wherever Glow follows the user. */
+.glow-presence { animation:glowHeartBody2141 1.28s cubic-bezier(.22,.72,.18,1) infinite !important; }
+.glow-presence-core { animation:glowHeartCore2141 1.28s cubic-bezier(.18,.78,.16,1) infinite !important; }
+.glow-presence-rays { animation:glowHeartRays2141 1.28s cubic-bezier(.18,.72,.16,1) infinite !important; }
+.glow-presence-beam { animation:glowHeartBeam2141 1.28s cubic-bezier(.18,.72,.16,1) infinite !important; filter:blur(.75px) !important; }
+.glow-presence-haze { filter:blur(4px) !important; opacity:.80 !important; }
+.glow-presence-wing { filter:blur(.25px) drop-shadow(0 0 5px rgba(255,255,255,.72)) !important; opacity:.72 !important; }
+
+/* The source room is photographic atmosphere, not the dynamic type layer. Keep it crisp. */
+.today-landscape .today-reference {
+  transform:none !important;
+  backface-visibility:visible !important;
+  filter:contrast(1.065) saturate(.97) brightness(1.008) !important;
+  image-rendering:auto;
+  -webkit-font-smoothing:antialiased;
+}
+.today-landscape .today-ambient-reference { opacity:.34 !important; filter:blur(20px) saturate(.84) brightness(1.02) !important; }
+
+/* Dynamic ink-lift: remove old baked words beneath live values without the hard white
+   highlight rectangles that made prior builds look selected/pasted-on. */
+.today-landscape .absolute.z-20.flex.items-center.overflow-hidden.bg-transparent {
+  background:linear-gradient(90deg,rgba(249,243,240,.60),rgba(249,243,240,.43) 72%,rgba(249,243,240,.16) 92%,transparent) !important;
+  -webkit-backdrop-filter:blur(7px) saturate(.82) brightness(1.035) !important;
+  backdrop-filter:blur(7px) saturate(.82) brightness(1.035) !important;
+  border:0 !important;
+  border-radius:.34cqw !important;
+  box-shadow:0 0 .7cqw .28cqw rgba(248,241,237,.12) !important;
+  color:#322824 !important;
+  text-shadow:0 1px 0 rgba(255,255,255,.78) !important;
+}
+
+/* Greeting/date need a wider feathered erase because the original greeting/date are baked into the room. */
+.today-landscape .absolute.z-20.flex.flex-col.justify-center.bg-transparent {
+  top:5.7% !important;
+  height:8.1% !important;
+  background:linear-gradient(90deg,rgba(249,244,241,.72) 0%,rgba(249,244,241,.52) 69%,rgba(249,244,241,.18) 91%,transparent 100%) !important;
+  -webkit-backdrop-filter:blur(8px) saturate(.84) brightness(1.035) !important;
+  backdrop-filter:blur(8px) saturate(.84) brightness(1.035) !important;
+  border-radius:.65cqw !important;
+  box-shadow:0 0 1.1cqw .4cqw rgba(249,244,241,.14) !important;
+}
+.today-landscape .absolute.z-20.flex.flex-col.justify-center.bg-transparent > div:first-child {
+  font-size:2.15cqw !important;
+  letter-spacing:-.025em !important;
+  line-height:.98 !important;
+  font-weight:400 !important;
+}
+.today-landscape .absolute.z-20.flex.flex-col.justify-center.bg-transparent > div:last-child {
+  margin-top:.52cqw !important;
+  font-size:.60cqw !important;
+  letter-spacing:.16em !important;
+}
+
+/* Live values should match the reference hierarchy rather than shouting over it. */
+.today-landscape [style*="left: 5.8%"][style*="top: 22.75%"] { top:22.45% !important; height:4.35% !important; }
+.today-landscape [style*="left: 5.8%"][style*="top: 22.75%"] span { font-size:1.30cqw !important; line-height:1.05 !important; }
+.today-landscape [style*="left: 41.4%"][style*="top: 16.4%"] span { font-size:.62cqw !important; }
+.today-landscape [style*="top: 40.95%"] span,
+.today-landscape [style*="top: 44.95%"] span,
+.today-landscape [style*="top: 48.95%"] span { font-size:.63cqw !important; }
+.today-landscape [style*="top: 58.65%"] span { font-size:1.20cqw !important; }
+.today-landscape [style*="top: 80.55%"] span { font-size:.84cqw !important; }
+.today-landscape [style*="top: 85.9%"] span { font-size:.50cqw !important; }
+.today-landscape [style*="left: 82.15%"][style*="height: 3.2%"] span { font-size:.84cqw !important; line-height:1.08 !important; }
+.today-landscape [style*="left: 82.15%"][style*="height: 2.2%"] span { font-size:.52cqw !important; }
+.today-landscape [style*="left: 57.75%"] span { font-size:.61cqw !important; }
+
+/* Keep long live data within its physical host instead of colliding with adjacent zones. */
+.today-landscape .absolute.z-20.flex.items-center.overflow-hidden.bg-transparent span {
+  min-width:0 !important;
+  max-width:100% !important;
+}
+.today-landscape [style*="left: 82.15%"][style*="height: 3.2%"] span,
+.today-landscape [style*="top: 80.55%"] span {
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+}
+
+/* Prevent the wide 4:3 room from being browser-scaled into an overlap state. At awkward
+   iPad split widths the native responsive room wins; full landscape keeps the reference camera. */
+@media (min-width:901px) and (max-aspect-ratio:1.38) {
+  .today-landscape { display:none !important; }
+  .today-portrait { display:block !important; }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .today-aura-visual,.today-aura-core,.today-aura-rays,.today-aura-ring-one,.today-aura-ring-two,.today-aura-beam,
+  .glow-presence,.glow-presence-core,.glow-presence-rays,.glow-presence-beam { animation:none !important; }
+}
