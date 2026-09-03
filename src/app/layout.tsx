@@ -9,8 +9,10 @@ import './dashboard-sidebar-exact.css';
 import './glow-fidelity-overrides.css';
 import './today-living-center-2141-hotfix.css';
 import './today-zero-overlap-final.css';
+import './today-device-mode.css';
 import { GlowNavigationNormalizer } from '@/components/glow-navigation-normalizer';
 import { GlowWorldRuntime } from '@/components/glow-world-runtime-v3';
+import { TodayViewportMode } from '@/components/today-viewport-mode';
 
 export const metadata: Metadata = {
   title: 'Glow OS',
@@ -27,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
+        <TodayViewportMode />
         {children}
         <GlowNavigationNormalizer />
         <GlowWorldRuntime />
