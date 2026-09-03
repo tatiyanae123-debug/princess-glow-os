@@ -43,6 +43,12 @@
   box-shadow:0 0 8px 3px #fff,0 0 28px 9px rgba(255,238,235,.80),0 0 62px 18px rgba(214,229,255,.30) !important;
 }
 
+/* Phones, including landscape phones, use the native responsive composition rather than shrinking the 4:3 reference plane. */
+@media (max-width: 900px) {
+  .today-landscape { display:none !important; }
+  .today-portrait { display:block !important; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .glow-presence,
   .glow-presence-rays {
