@@ -88,11 +88,11 @@ html,body { max-width:100%; overflow-x:hidden; -webkit-text-size-adjust:100%; }
   opacity:.7;
 }
 
-/* A centered editorial column prevents iPad split view from stretching controls
-   to strange widths while still filling a full-width phone. */
+/* A centered editorial field prevents split view from stretching oddly while
+   still using nearly all of an iPad's available width. */
 .today-portrait-scroll > header,
 .today-portrait-scroll > section {
-  width:min(100% - 2rem, 760px) !important;
+  width:min(100% - 2rem, 1040px) !important;
   margin-left:auto !important;
   margin-right:auto !important;
 }
@@ -200,7 +200,7 @@ html,body { max-width:100%; overflow-x:hidden; -webkit-text-size-adjust:100%; }
   left:max(10px,env(safe-area-inset-left)) !important;
   right:max(10px,env(safe-area-inset-right)) !important;
   width:auto !important;
-  max-width:760px;
+  max-width:1040px;
   margin-inline:auto;
   bottom:max(8px,env(safe-area-inset-bottom)) !important;
   padding-bottom:max(.5rem,env(safe-area-inset-bottom)) !important;
