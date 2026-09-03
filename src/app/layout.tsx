@@ -10,6 +10,7 @@ import './glow-fidelity-overrides.css';
 import './today-living-center-2141-hotfix.css';
 import './today-zero-overlap-final.css';
 import './today-device-mode.css';
+import './shakti-living-presence.css';
 import { GlowNavigationNormalizer } from '@/components/glow-navigation-normalizer';
 import { GlowWorldRuntime } from '@/components/glow-world-runtime-v3';
 import { TodayViewportMode } from '@/components/today-viewport-mode';
