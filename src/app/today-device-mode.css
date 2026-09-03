@@ -1,0 +1,29 @@
+/* Final device-mode authority for Today. Loaded after all older responsive overrides. */
+html[data-today-mode='reference'] .today-landscape { display:block !important; }
+html[data-today-mode='reference'] .today-portrait { display:none !important; }
+html[data-today-mode='adaptive'] .today-landscape { display:none !important; }
+html[data-today-mode='adaptive'] .today-portrait { display:block !important; }
+
+/* The reference stage must scale to the available pane, not trigger an alternate layout. */
+html[data-today-mode='reference'] .today-landscape {
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+  overflow:hidden !important;
+  background:#eee5df !important;
+}
+html[data-today-mode='reference'] .today-landscape > .relative {
+  width:100% !important;
+  height:100% !important;
+}
+
+/* Safari / Split View may report a portrait-like viewport while the physical iPad is landscape.
+   These rules intentionally override older max-aspect-ratio fallbacks. */
+@media (max-aspect-ratio: 5/4) {
+  html[data-today-mode='reference'] .today-landscape { display:block !important; }
+  html[data-today-mode='reference'] .today-portrait { display:none !important; }
+}
+@media (max-width:900px) {
+  html[data-today-mode='reference'] .today-landscape { display:block !important; }
+  html[data-today-mode='reference'] .today-portrait { display:none !important; }
+}
