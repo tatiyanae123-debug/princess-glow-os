@@ -11,8 +11,10 @@ import './today-living-center-2141-hotfix.css';
 import './today-zero-overlap-final.css';
 import './today-device-mode.css';
 import './shakti-living-presence.css';
+import './shakti-volumetric-v3.css';
 import { GlowNavigationNormalizer } from '@/components/glow-navigation-normalizer';
 import { GlowWorldRuntime } from '@/components/glow-world-runtime-v3';
+import { ShaktiProductLanguage } from '@/components/shakti-product-language';
 import { TodayViewportMode } from '@/components/today-viewport-mode';
 
 export const metadata: Metadata = {
@@ -31,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <TodayViewportMode />
+        <ShaktiProductLanguage />
         {children}
         <GlowNavigationNormalizer />
         <GlowWorldRuntime />
