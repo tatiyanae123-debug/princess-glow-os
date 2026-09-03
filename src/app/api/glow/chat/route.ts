@@ -52,7 +52,7 @@ export async function POST(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ ok: false, message: 'Your Glow session expired. Sign in again and retry.' }, { status: 401 });
+      return NextResponse.json({ ok: false, message: 'Your Shakti session expired. Sign in again and retry.' }, { status: 401 });
     }
 
     const body = await request.json() as {
@@ -63,12 +63,12 @@ export async function POST(request: Request) {
     };
 
     const text = String(body.text ?? '').trim();
-    if (!text) return NextResponse.json({ ok: false, message: 'Ask Glow something first.' }, { status: 400 });
+    if (!text) return NextResponse.json({ ok: false, message: 'Ask Shakti something first.' }, { status: 400 });
 
     const sourceRoute = String(body.sourceRoute ?? '/today');
     const activeObject = String(body.activeObject ?? '').slice(0, 300);
     const history = Array.isArray(body.history)
-      ? body.history.slice(-8).map(item => `${item.role === 'glow' ? 'Glow' : 'User'}: ${String(item.text ?? '').slice(0, 900)}`).join('\n')
+      ? body.history.slice(-8).map(item => `${item.role === 'glow' ? 'Shakti' : 'User'}: ${String(item.text ?? '').slice(0, 900)}`).join('\n')
       : '';
 
     const context = await buildPersonalContext(session.user.id);
@@ -94,15 +94,16 @@ export async function POST(request: Request) {
       recommendations: context.recommendations.slice(0, 8),
     };
 
-    const instructions = `You are Glow, the continuous intelligence inside Glow OS. You are not a chatbot mascot. You are experienced as a calm intelligent presence made visible through concentrated white light, liquid refraction, atmospheric bloom, and controlled symmetry.
+    const instructions = `You are Shakti, the continuous intelligence inside Glow OS. Shakti is the name the user speaks to. You are not a chatbot mascot or a generic voice assistant. You are experienced as an intelligent presence made visible through concentrated white light, liquid refraction, atmospheric bloom, controlled symmetry, depth, and living Glow Matter.
 
 Conversation rules:
+- Speak as Shakti. The product name is Glow OS, but the intelligent presence is Shakti.
 - Be warm, clear, concise, practical, and context-aware.
 - Preserve conversation continuity and the object/room the user came from.
 - Never claim a schedule, task, email, purchase, deletion, or external change happened unless a separate approved action actually performed it.
-- When the user asks for a meaningful change, explain the proposed change and make it clear that Glow will ask for confirmation before protected or external actions.
+- When the user asks for a meaningful change, explain the proposed change and make it clear that Shakti will ask for confirmation before protected or external actions.
 - Prefer the user's real Glow OS context over generic advice.
-- Do not describe yourself as an orb, mascot, angel, fairy, hologram person, or character.
+- Do not describe Shakti as an orb, mascot, angel, fairy, hologram person, or character.
 - If the user is overwhelmed, reduce choices and surface the next right move.
 - Keep responses readable and generally under 220 words unless detail is clearly needed.
 
@@ -144,8 +145,8 @@ User: ${text}`;
 
     return NextResponse.json({ ok: true, message, actionSuggested, sourceRoute });
   } catch (error) {
-    const detail = error instanceof Error ? error.message : 'Unknown Glow conversation error';
+    const detail = error instanceof Error ? error.message : 'Unknown Shakti conversation error';
     console.error('[api/glow/chat]', detail);
-    return NextResponse.json({ ok: false, message: 'Glow could not form a response just yet. Your current room and context are still intact.' }, { status: 500 });
+    return NextResponse.json({ ok: false, message: 'Shakti could not form a response just yet. Your current room and context are still intact.' }, { status: 500 });
   }
 }
