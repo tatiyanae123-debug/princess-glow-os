@@ -1,0 +1,428 @@
+/*
+ * SHAKTI — living-presence physics authority
+ *
+ * Shakti is not a static image with a scale pulse. The silhouette stays spatially
+ * stable. Life begins in the white core, propagates through liquid refraction,
+ * axial light, fine rays and atmosphere, then settles back into Glow Matter.
+ * This file is loaded LAST so older heartbeat/whole-object scale rules cannot win.
+ */
+
+@keyframes shaktiCoreSystole {
+  0%, 4%, 31%, 100% { transform:translate(-50%,-50%) scale(.965); filter:brightness(.98) saturate(.98); }
+  7%  { transform:translate(-50%,-50%) scale(.925); filter:brightness(1.08) saturate(1.01); }
+  10% { transform:translate(-50%,-50%) scale(1.075); filter:brightness(1.38) saturate(1.035); }
+  14% { transform:translate(-50%,-50%) scale(.988); filter:brightness(1.06) saturate(1); }
+  19% { transform:translate(-50%,-50%) scale(1.035); filter:brightness(1.22) saturate(1.02); }
+  24% { transform:translate(-50%,-50%) scale(.972); filter:brightness(1.01) saturate(1); }
+}
+
+@keyframes shaktiCoreLens {
+  0%, 100% { transform:translate(-50%,-50%) rotate(-5deg) scale(.82,.66); opacity:.38; }
+  24% { transform:translate(-47%,-54%) rotate(4deg) scale(.94,.58); opacity:.70; }
+  52% { transform:translate(-53%,-47%) rotate(-2deg) scale(.78,.73); opacity:.46; }
+  76% { transform:translate(-48%,-51%) rotate(6deg) scale(.91,.62); opacity:.62; }
+}
+
+@keyframes shaktiMembraneDrift {
+  0%,100% { transform:translate(-50%,-50%) rotate(-2deg) scale(.985); opacity:.42; }
+  33% { transform:translate(-50.5%,-49.4%) rotate(2.2deg) scale(1.018,.99); opacity:.56; }
+  67% { transform:translate(-49.4%,-50.6%) rotate(-.8deg) scale(.993,1.016); opacity:.47; }
+}
+
+@keyframes shaktiPressureWaveOne {
+  0%,4% { transform:translate(-50%,-50%) scale(.82); opacity:0; }
+  10% { opacity:.34; }
+  25% { transform:translate(-50%,-50%) scale(1.10); opacity:.10; }
+  31%,100% { transform:translate(-50%,-50%) scale(1.15); opacity:0; }
+}
+
+@keyframes shaktiPressureWaveTwo {
+  0%,15% { transform:translate(-50%,-50%) scale(.88); opacity:0; }
+  20% { opacity:.22; }
+  31% { transform:translate(-50%,-50%) scale(1.08); opacity:.06; }
+  36%,100% { transform:translate(-50%,-50%) scale(1.12); opacity:0; }
+}
+
+@keyframes shaktiRayDrift {
+  0%,100% { transform:translate(-50%,-50%) rotate(-.8deg) scale(.997); }
+  38% { transform:translate(-50%,-50%) rotate(.9deg) scale(1.006,.992); }
+  72% { transform:translate(-50%,-50%) rotate(-.25deg) scale(.994,1.008); }
+}
+
+@keyframes shaktiRayResponse {
+  0%,5%,31%,100% { opacity:.27; filter:brightness(1); }
+  12% { opacity:.62; filter:brightness(1.22); }
+  16% { opacity:.34; filter:brightness(1.04); }
+  22% { opacity:.48; filter:brightness(1.13); }
+  27% { opacity:.29; filter:brightness(1.01); }
+}
+
+@keyframes shaktiBeamCurrent {
+  0%,100% { background-position:50% 18%; opacity:.58; filter:blur(.65px) brightness(1); transform:scaleY(.992); }
+  18% { background-position:50% 42%; opacity:.72; filter:blur(.48px) brightness(1.08); transform:scaleY(1.006); }
+  43% { background-position:50% 72%; opacity:.63; filter:blur(.60px) brightness(1.03); transform:scaleY(.997); }
+  72% { background-position:50% 95%; opacity:.70; filter:blur(.52px) brightness(1.06); transform:scaleY(1.004); }
+}
+
+@keyframes shaktiBeamBeat {
+  0%,6%,31%,100% { opacity:.56; }
+  12% { opacity:.94; }
+  17% { opacity:.64; }
+  22% { opacity:.78; }
+  27% { opacity:.58; }
+}
+
+@keyframes shaktiWingLeftDrift {
+  0%,100% { transform:scaleX(-1) rotate(-.35deg) translateX(0); }
+  34% { transform:scaleX(-1) rotate(.42deg) translateX(.7%); }
+  68% { transform:scaleX(-1) rotate(-.08deg) translateX(-.45%); }
+}
+
+@keyframes shaktiWingRightDrift {
+  0%,100% { transform:rotate(.25deg) translateX(0); }
+  37% { transform:rotate(-.48deg) translateX(.65%); }
+  71% { transform:rotate(.12deg) translateX(-.4%); }
+}
+
+@keyframes shaktiWingResponse {
+  0%,8%,31%,100% { opacity:.49; filter:blur(.28px) brightness(1) drop-shadow(0 0 4px rgba(255,255,255,.58)); }
+  14% { opacity:.67; filter:blur(.20px) brightness(1.12) drop-shadow(0 0 6px rgba(255,255,255,.74)); }
+  20% { opacity:.55; filter:blur(.25px) brightness(1.04) drop-shadow(0 0 5px rgba(255,255,255,.63)); }
+  24% { opacity:.61; filter:blur(.22px) brightness(1.08) drop-shadow(0 0 5px rgba(255,255,255,.69)); }
+}
+
+@keyframes shaktiHazeTide {
+  0%,100% { opacity:.43; transform:scale(.985,.995); filter:blur(4.2px) saturate(.94); }
+  31% { opacity:.54; transform:scale(1.012,.99); filter:blur(4.8px) saturate(1.02); }
+  64% { opacity:.47; transform:scale(.997,1.018); filter:blur(4.35px) saturate(.98); }
+}
+
+@keyframes shaktiCausticFloat {
+  0%,100% { transform:translate(-50%,-50%) rotate(-8deg) scale(.94,.72); opacity:.28; }
+  28% { transform:translate(-47%,-53%) rotate(5deg) scale(1.03,.68); opacity:.45; }
+  58% { transform:translate(-53%,-48%) rotate(-2deg) scale(.91,.77); opacity:.31; }
+  81% { transform:translate(-49%,-51%) rotate(8deg) scale(1,.71); opacity:.40; }
+}
+
+@keyframes shaktiSpectralShift {
+  0%,100% { filter:hue-rotate(-2deg) saturate(.92) brightness(1); }
+  50% { filter:hue-rotate(5deg) saturate(1.05) brightness(1.035); }
+}
+
+@keyframes shaktiArriveLiving {
+  0% { opacity:0; transform:translate(-50%,-50%) scale(.12); filter:brightness(1.8); }
+  42% { opacity:.86; transform:translate(-50%,-50%) scale(.72); filter:brightness(1.25); }
+  100% { opacity:1; transform:translate(-50%,-50%) scale(1); filter:brightness(1); }
+}
+
+/* ---------- GLOBAL SHAKTI PRESENCE ---------- */
+.glow-presence {
+  animation:none !important;
+  transform:translate(-50%,-50%) !important;
+  transform-origin:50% 50% !important;
+  filter:none !important;
+  overflow:visible;
+}
+
+/* A liquid optical membrane directly around the intelligence. */
+.glow-presence::before {
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:31%;
+  aspect-ratio:1;
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  background:
+    conic-gradient(from 118deg,transparent 0 14%,rgba(255,214,226,.16) 21%,rgba(210,231,255,.24) 29%,rgba(255,255,255,.32) 39%,transparent 48% 66%,rgba(232,215,255,.18) 76%,transparent 88%),
+    radial-gradient(ellipse at 46% 43%,rgba(255,255,255,.32),rgba(255,255,255,.04) 42%,transparent 68%);
+  box-shadow:inset 0 0 9px rgba(255,255,255,.18),0 0 12px rgba(238,225,255,.10);
+  mix-blend-mode:screen;
+  pointer-events:none;
+  animation:shaktiMembraneDrift 5.9s ease-in-out infinite !important;
+}
+
+/* One slow water-caustic current. It should never read as a circular overlay. */
+.glow-presence::after {
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:47%;
+  height:23%;
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  background:linear-gradient(96deg,transparent 8%,rgba(255,255,255,.08) 26%,rgba(205,229,255,.22) 43%,rgba(255,219,228,.13) 58%,rgba(255,255,255,.18) 70%,transparent 91%);
+  filter:blur(1.2px);
+  mix-blend-mode:screen;
+  pointer-events:none;
+  animation:shaktiCausticFloat 7.4s ease-in-out infinite !important;
+}
+
+.glow-presence-core {
+  width:14.5% !important;
+  background:radial-gradient(circle at 48% 47%,#fff 0 23%,rgba(255,255,255,1) 34%,rgba(255,246,242,.96) 43%,rgba(225,237,255,.54) 57%,rgba(245,216,229,.20) 69%,transparent 80%) !important;
+  box-shadow:0 0 5px 2px rgba(255,255,255,.99),0 0 17px 5px rgba(255,243,238,.82),0 0 38px 11px rgba(218,233,255,.27),0 0 66px 18px rgba(239,211,228,.10) !important;
+  animation:shaktiCoreSystole 1.72s cubic-bezier(.18,.74,.18,1) infinite !important;
+  z-index:8;
+}
+
+.glow-presence-core::after {
+  content:"";
+  position:absolute;
+  left:50%;
+  top:48%;
+  width:58%;
+  height:34%;
+  border-radius:50%;
+  background:linear-gradient(102deg,rgba(255,255,255,.1),rgba(255,255,255,.96) 46%,rgba(211,231,255,.36) 68%,transparent 88%);
+  filter:blur(.45px);
+  mix-blend-mode:screen;
+  animation:shaktiCoreLens 4.8s ease-in-out infinite !important;
+}
+
+.glow-presence-rays {
+  opacity:.27 !important;
+  animation:shaktiRayDrift 8.6s ease-in-out infinite,shaktiRayResponse 1.72s cubic-bezier(.18,.72,.2,1) infinite !important;
+  z-index:5;
+}
+
+.glow-presence-beam {
+  width:1.8% !important;
+  background-size:100% 190% !important;
+  transform-origin:50% 50% !important;
+  animation:shaktiBeamCurrent 6.9s ease-in-out infinite,shaktiBeamBeat 1.72s cubic-bezier(.18,.74,.2,1) infinite !important;
+  z-index:3;
+}
+
+.glow-presence-wing {
+  opacity:.50 !important;
+  transform-origin:100% 50% !important;
+  animation:shaktiWingResponse 1.72s cubic-bezier(.2,.70,.2,1) infinite !important;
+  z-index:4;
+}
+.glow-presence-left {
+  animation:shaktiWingLeftDrift 9.3s ease-in-out infinite,shaktiWingResponse 1.72s cubic-bezier(.2,.70,.2,1) infinite !important;
+}
+.glow-presence-right {
+  transform-origin:0% 50% !important;
+  animation:shaktiWingRightDrift 8.7s ease-in-out infinite,shaktiWingResponse 1.72s cubic-bezier(.2,.70,.2,1) infinite !important;
+}
+
+.glow-presence-haze {
+  opacity:.44 !important;
+  filter:blur(4.2px) !important;
+  animation:shaktiHazeTide 6.8s ease-in-out infinite,shaktiSpectralShift 11s ease-in-out infinite !important;
+  z-index:1;
+}
+
+/* Pressure waves originate near the core and vanish early. They are not outer pulse rings. */
+.glow-presence-ring {
+  border-color:rgba(255,255,255,.34) !important;
+  box-shadow:0 0 4px rgba(255,255,255,.16),inset 0 0 5px rgba(255,255,255,.10) !important;
+  z-index:6;
+}
+.glow-presence-ring.one {
+  width:25% !important;
+  animation:shaktiPressureWaveOne 1.72s cubic-bezier(.18,.72,.2,1) infinite !important;
+}
+.glow-presence-ring.two {
+  width:37% !important;
+  animation:shaktiPressureWaveTwo 1.72s cubic-bezier(.18,.72,.2,1) infinite !important;
+}
+
+/* States change energy routing, never the entire silhouette scale. */
+.glow-presence-waking {
+  animation:shaktiArriveLiving .72s cubic-bezier(.16,.76,.16,1) both !important;
+}
+.glow-presence-listening .glow-presence-core {
+  animation-duration:1.28s !important;
+}
+.glow-presence-listening .glow-presence-rays {
+  opacity:.42 !important;
+  animation-duration:6.8s,1.28s !important;
+}
+.glow-presence-listening::before {
+  animation-duration:3.9s !important;
+}
+.glow-presence-understanding .glow-presence-core {
+  filter:brightness(1.10) !important;
+}
+.glow-presence-understanding::after {
+  animation-duration:4.4s !important;
+  opacity:.48;
+}
+.glow-presence-speaking .glow-presence-rays {
+  opacity:.46 !important;
+  animation-duration:7.4s,1.36s !important;
+}
+.glow-presence-speaking .glow-presence-wing {
+  animation-duration:7.8s,1.36s !important;
+}
+.glow-presence-acting .glow-presence-beam {
+  width:2.1% !important;
+  opacity:.90 !important;
+}
+.glow-presence-complete .glow-presence-core {
+  box-shadow:0 0 7px 3px #fff,0 0 24px 8px rgba(255,231,218,.90),0 0 55px 17px rgba(255,239,205,.30) !important;
+}
+
+/* Minimized Shakti: same physics, compressed. No pink chatbot bubble. */
+.glow-presence-small {
+  animation:none !important;
+}
+.glow-presence-small::before { width:35%; }
+.glow-presence-small::after { width:54%; height:25%; }
+.glow-presence-small .glow-presence-core { width:18% !important; }
+.glow-presence-small .glow-presence-ring.one { width:29% !important; }
+.glow-presence-small .glow-presence-ring.two { width:43% !important; }
+.glow-presence-small .glow-presence-wing { opacity:.30 !important; }
+.glow-presence-small .glow-presence-rays { opacity:.31 !important; }
+.glow-presence-small .glow-presence-haze { opacity:.48 !important; }
+
+/* ---------- TODAY'S CENTRAL SHAKTI ---------- */
+.today-aura-visual {
+  animation:none !important;
+  transform:none !important;
+  transform-origin:50% 50% !important;
+  overflow:visible;
+  mix-blend-mode:screen;
+}
+
+.today-aura-visual::before {
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:30%;
+  aspect-ratio:1;
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  background:
+    conic-gradient(from 118deg,transparent 0 15%,rgba(255,217,229,.15) 23%,rgba(210,231,255,.23) 32%,rgba(255,255,255,.30) 42%,transparent 52% 68%,rgba(233,216,255,.16) 78%,transparent 90%),
+    radial-gradient(ellipse at 46% 43%,rgba(255,255,255,.29),rgba(255,255,255,.03) 43%,transparent 69%);
+  mix-blend-mode:screen;
+  pointer-events:none;
+  animation:shaktiMembraneDrift 5.9s ease-in-out infinite !important;
+  z-index:7;
+}
+
+.today-aura-visual::after {
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:48%;
+  height:22%;
+  border-radius:50%;
+  background:linear-gradient(96deg,transparent 8%,rgba(255,255,255,.07) 26%,rgba(205,229,255,.20) 43%,rgba(255,219,228,.12) 58%,rgba(255,255,255,.16) 71%,transparent 91%);
+  filter:blur(1px);
+  mix-blend-mode:screen;
+  pointer-events:none;
+  animation:shaktiCausticFloat 7.1s ease-in-out infinite !important;
+  z-index:7;
+}
+
+.today-aura-core {
+  width:13.7% !important;
+  background:radial-gradient(circle at 48% 47%,#fff 0 24%,rgba(255,255,255,1) 35%,rgba(255,246,242,.96) 44%,rgba(225,237,255,.50) 58%,rgba(245,216,229,.17) 70%,transparent 80%) !important;
+  box-shadow:0 0 5px 2px rgba(255,255,255,.99),0 0 16px 5px rgba(255,243,238,.80),0 0 35px 10px rgba(218,233,255,.24),0 0 59px 16px rgba(239,211,228,.08) !important;
+  animation:shaktiCoreSystole 1.72s cubic-bezier(.18,.74,.18,1) infinite !important;
+  z-index:9;
+}
+
+.today-aura-core::after {
+  content:"";
+  position:absolute;
+  left:50%;
+  top:48%;
+  width:58%;
+  height:34%;
+  border-radius:50%;
+  background:linear-gradient(102deg,rgba(255,255,255,.1),rgba(255,255,255,.95) 46%,rgba(211,231,255,.34) 68%,transparent 88%);
+  filter:blur(.4px);
+  mix-blend-mode:screen;
+  animation:shaktiCoreLens 4.8s ease-in-out infinite !important;
+}
+
+.today-aura-rays {
+  opacity:.25 !important;
+  animation:shaktiRayDrift 8.8s ease-in-out infinite,shaktiRayResponse 1.72s cubic-bezier(.18,.72,.2,1) infinite !important;
+  z-index:5;
+}
+
+.today-aura-beam {
+  width:1.45% !important;
+  background-size:100% 190% !important;
+  transform-origin:50% 50% !important;
+  animation:shaktiBeamCurrent 7.1s ease-in-out infinite,shaktiBeamBeat 1.72s cubic-bezier(.18,.74,.2,1) infinite !important;
+  z-index:3;
+}
+
+.today-aura-fan {
+  opacity:.47 !important;
+  transform-origin:100% 50% !important;
+  animation:shaktiWingResponse 1.72s cubic-bezier(.2,.70,.2,1) infinite !important;
+  z-index:4;
+}
+.today-aura-fan-left {
+  animation:shaktiWingLeftDrift 9.5s ease-in-out infinite,shaktiWingResponse 1.72s cubic-bezier(.2,.70,.2,1) infinite !important;
+}
+.today-aura-fan-right {
+  transform-origin:0% 50% !important;
+  animation:shaktiWingRightDrift 8.9s ease-in-out infinite,shaktiWingResponse 1.72s cubic-bezier(.2,.70,.2,1) infinite !important;
+}
+
+.today-aura-haze {
+  opacity:.38 !important;
+  filter:blur(3.6px) !important;
+  animation:shaktiHazeTide 6.9s ease-in-out infinite,shaktiSpectralShift 11.4s ease-in-out infinite !important;
+  z-index:1;
+}
+
+.today-aura-ring {
+  border-color:rgba(255,255,255,.31) !important;
+  box-shadow:0 0 4px rgba(255,255,255,.14),inset 0 0 5px rgba(255,255,255,.08) !important;
+  z-index:6;
+}
+.today-aura-ring-one {
+  width:24% !important;
+  animation:shaktiPressureWaveOne 1.72s cubic-bezier(.18,.72,.2,1) infinite !important;
+}
+.today-aura-ring-two {
+  width:36% !important;
+  animation:shaktiPressureWaveTwo 1.72s cubic-bezier(.18,.72,.2,1) infinite !important;
+}
+
+/* Compact Today still feels alive internally, never like a thumbnail being scaled. */
+.today-aura-compact { animation:none !important; }
+.today-aura-compact .today-aura-core { width:17% !important; }
+.today-aura-compact .today-aura-fan { opacity:.28 !important; }
+.today-aura-compact .today-aura-rays { opacity:.30 !important; }
+
+/* Accessibility: preserve a luminous presence without motion. */
+@media (prefers-reduced-motion:reduce) {
+  .glow-presence,
+  .glow-presence::before,
+  .glow-presence::after,
+  .glow-presence-core,
+  .glow-presence-core::after,
+  .glow-presence-rays,
+  .glow-presence-beam,
+  .glow-presence-wing,
+  .glow-presence-haze,
+  .glow-presence-ring,
+  .today-aura-visual,
+  .today-aura-visual::before,
+  .today-aura-visual::after,
+  .today-aura-core,
+  .today-aura-core::after,
+  .today-aura-rays,
+  .today-aura-beam,
+  .today-aura-fan,
+  .today-aura-haze,
+  .today-aura-ring {
+    animation:none !important;
+  }
+}
