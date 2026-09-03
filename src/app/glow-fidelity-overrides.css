@@ -1,0 +1,51 @@
+/* Living Glow Aura fidelity overrides — authoritative Sept 3 2026 */
+
+@keyframes glowLivingHeartbeat {
+  0%,31%,100% { transform:translate(-50%,-50%) scale(.985); filter:brightness(1); }
+  7% { transform:translate(-50%,-50%) scale(1.045); filter:brightness(1.11); }
+  14% { transform:translate(-50%,-50%) scale(.992); filter:brightness(1.025); }
+  20% { transform:translate(-50%,-50%) scale(1.022); filter:brightness(1.08); }
+  27% { transform:translate(-50%,-50%) scale(.985); filter:brightness(1); }
+}
+
+@keyframes glowLivingRayHeartbeat {
+  0%,31%,100% { opacity:.42; transform:translate(-50%,-50%) scale(.975); }
+  7% { opacity:.82; transform:translate(-50%,-50%) scale(1.04); }
+  20% { opacity:.68; transform:translate(-50%,-50%) scale(1.018); }
+}
+
+.glow-presence {
+  animation:glowLivingHeartbeat 1.18s cubic-bezier(.2,.68,.2,1) infinite !important;
+  transform-origin:center center;
+}
+
+.glow-presence-haze {
+  filter:blur(6px) !important;
+  opacity:.88 !important;
+}
+
+.glow-presence-beam {
+  filter:blur(1.25px) !important;
+  opacity:.86 !important;
+}
+
+.glow-presence-wing {
+  filter:blur(.45px) drop-shadow(0 0 7px rgba(255,255,255,.70)) !important;
+  opacity:.68 !important;
+}
+
+.glow-presence-rays {
+  animation:glowLivingRayHeartbeat 1.18s cubic-bezier(.2,.68,.2,1) infinite !important;
+}
+
+.glow-presence-core {
+  width:15% !important;
+  box-shadow:0 0 8px 3px #fff,0 0 28px 9px rgba(255,238,235,.80),0 0 62px 18px rgba(214,229,255,.30) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-presence,
+  .glow-presence-rays {
+    animation:none !important;
+  }
+}
