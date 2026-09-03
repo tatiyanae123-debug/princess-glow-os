@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   Bell, Bookmark, Brain, CalendarDays, ChevronDown, ChevronRight, Heart,
-  Home, Moon, PawPrint, Plus, Search, Sparkles, Sun, WandSparkles
+  Moon, PawPrint, Plus, Search, Sparkles, Sun, WandSparkles
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 type TaskLite = { id:string; title:string; priority:string; dueLabel?:string|null };
 type EventLite = { id:string; title:string; timeLabel:string; location?:string|null };
@@ -56,13 +57,20 @@ export function TodayLivingCenter({tasks,events,routines,energy,mood,sleepHours,
   const capacity=Math.max(35,Math.min(96,energy?Math.round(energy*10):82));
   const focusMinutes=primary?.dueLabel?.match(/\d+/)?.[0] ?? '47';
   const leaveReady=next?.timeLabel ?? '2:15 PM';
+  const sleepLabel=sleepHours!=null?`${sleepHours.toFixed(1)}h sleep`:'Sleep not logged';
 
-  const capacityRows=useMemo(()=>[
+  const capacityRows: Array<[string,number]> = useMemo(()=>[
     ['Mental',Math.max(45,Math.min(96,capacity+2))],
     ['Emotional',Math.max(40,Math.min(94,mood?Math.round(mood*10):70))],
     ['Physical',Math.max(42,Math.min(96,energy?Math.round(energy*10+8):90))],
     ['Energy',capacity],
   ],[capacity,mood,energy]);
+
+  const scheduleRows: Array<[string,string,string,LucideIcon]> = [
+    ['NEXT',next?.timeLabel ?? '12:00 PM',next?.title ?? 'Lunch + Call',Sun],
+    ['LATER',later?.timeLabel ?? '2:30 PM',later?.title ?? 'Content Planning',Sun],
+    ['TONIGHT',evening?.timeLabel ?? '7:00 PM',evening?.title ?? 'Wind Down',Moon],
+  ];
 
   return <div className="relative min-h-screen overflow-hidden bg-[#eee8e6] text-[#2e2927] selection:bg-[#ead4d4]">
     <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_47%_42%,rgba(255,255,255,.96)_0,rgba(255,244,240,.72)_20%,rgba(226,220,226,.72)_46%,rgba(244,236,231,.9)_72%,#eee8e6_100%)]"/>
@@ -94,11 +102,7 @@ export function TodayLivingCenter({tasks,events,routines,energy,mood,sleepHours,
         </Glass>
 
         <div className="space-y-2">
-          {[
-            ['NEXT',next?.timeLabel ?? '12:00 PM',next?.title ?? 'Lunch + Call',Sun],
-            ['LATER',later?.timeLabel ?? '2:30 PM',later?.title ?? 'Content Planning',Sun],
-            ['TONIGHT',evening?.timeLabel ?? '7:00 PM',evening?.title ?? 'Wind Down',Moon],
-          ].map(([label,time,title,Icon]:any)=><Link key={label} href="/calendar" className="flex items-center gap-4 rounded-[18px] border border-white/70 bg-white/50 px-5 py-4 shadow-[0_8px_26px_rgba(129,104,95,.08)] backdrop-blur-xl transition hover:bg-white/70"><Icon size={22} strokeWidth={1.3} className="text-[#947f77]"/><div className="min-w-0 flex-1"><div className="font-serif text-[15px] tracking-[.08em]">{label}</div><div className="mt-1 text-[11px] text-[#675d59]">{time}</div><div className="truncate font-serif text-[15px]">{title}</div></div><ChevronRight size={18} className="text-[#a88c82]"/></Link>)}
+          {scheduleRows.map(([label,time,title,Icon])=><Link key={label} href="/calendar" className="flex items-center gap-4 rounded-[18px] border border-white/70 bg-white/50 px-5 py-4 shadow-[0_8px_26px_rgba(129,104,95,.08)] backdrop-blur-xl transition hover:bg-white/70"><Icon size={22} strokeWidth={1.3} className="text-[#947f77]"/><div className="min-w-0 flex-1"><div className="font-serif text-[15px] tracking-[.08em]">{label}</div><div className="mt-1 text-[11px] text-[#675d59]">{time}</div><div className="truncate font-serif text-[15px]">{title}</div></div><ChevronRight size={18} className="text-[#a88c82]"/></Link>)}
           <Link href="/tomorrow" className="flex items-center gap-4 rounded-[18px] border border-white/70 bg-white/50 px-5 py-4 shadow-[0_8px_26px_rgba(129,104,95,.08)] backdrop-blur-xl transition hover:bg-white/70"><Sun size={22} strokeWidth={1.3} className="text-[#a28573]"/><div className="flex-1"><div className="font-serif text-[15px] tracking-[.08em]">TOMORROW</div><div className="mt-1 text-[11px] text-[#675d59]">Preview</div><div className="font-serif text-[15px]">A good beginning</div></div><ChevronRight size={18} className="text-[#b28f6f]"/></Link>
         </div>
       </div>
@@ -123,9 +127,9 @@ export function TodayLivingCenter({tasks,events,routines,energy,mood,sleepHours,
       <div className="space-y-3 lg:pt-3">
         <Glass className="p-5"><div className="text-[11px] tracking-[.16em]">WHAT NOW? ♡</div><p className="mt-2 font-serif text-[15px]">What needs your Soft Power?</p><div className="relative mt-4"><select value={whatNow} onChange={e=>setWhatNow(e.target.value)} className="w-full appearance-none rounded-[13px] border border-white bg-white/55 px-4 py-3 pr-10 font-serif text-[15px] outline-none"><option>Start Focused Session</option><option>Open Next Task</option><option>Take 10-Minute Reset</option><option>Replan My Day</option></select><ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" size={16}/></div></Glass>
 
-        <Glass className="p-5"><div className="text-[11px] tracking-[.16em]">ENERGY & CAPACITY</div><div className="mt-4 grid grid-cols-[112px_1fr] items-center gap-4"><div className="grid h-24 w-24 place-items-center rounded-full border-4 border-[#dbc8c0] bg-white/40"><div className="text-center"><div className="font-serif text-[34px] leading-none">{capacity}</div><div className="font-serif text-[12px]">Radiant</div></div></div><div className="space-y-3 border-l border-[#d9cfca] pl-5">{capacityRows.map(([label,value]:any)=><div key={label} className="grid grid-cols-[58px_1fr_34px] items-center gap-2 text-[10px]"><span className="font-serif">{label}</span><div className="h-[5px] overflow-hidden rounded-full bg-[#ddd6d3]"><div className="h-full rounded-full bg-[#d8aaa7]" style={{width:`${value}%`}}/></div><span>{value}%</span></div>)}</div></div></Glass>
+        <Glass className="p-5"><div className="flex items-center justify-between"><div className="text-[11px] tracking-[.16em]">ENERGY & CAPACITY</div><div className="text-[9px] text-[#7b6f69]">{sleepLabel}</div></div><div className="mt-4 grid grid-cols-[112px_1fr] items-center gap-4"><div className="grid h-24 w-24 place-items-center rounded-full border-4 border-[#dbc8c0] bg-white/40"><div className="text-center"><div className="font-serif text-[34px] leading-none">{capacity}</div><div className="font-serif text-[12px]">Radiant</div></div></div><div className="space-y-3 border-l border-[#d9cfca] pl-5">{capacityRows.map(([label,value])=><div key={label} className="grid grid-cols-[58px_1fr_34px] items-center gap-2 text-[10px]"><span className="font-serif">{label}</span><div className="h-[5px] overflow-hidden rounded-full bg-[#ddd6d3]"><div className="h-full rounded-full bg-[#d8aaa7]" style={{width:`${value}%`}}/></div><span>{value}%</span></div>)}</div></div></Glass>
 
-        <Glass className="p-5"><div className="flex items-center justify-between"><div className="text-[11px] tracking-[.16em]">TOP 3 PRIORITIES</div><button onClick={()=>setPrioritiesOpen(v=>!v)} className="text-[10px] underline underline-offset-2">{prioritiesOpen?'Close':'Why these?'}</button></div><div className="mt-4 space-y-1.5">{(tasks.length?tasks.slice(0,prioritiesOpen?6:3):[{id:'1',title:'Build your first priority',priority:'today'}]).map((task,i)=><Link key={task.id} href="/tasks" className="grid grid-cols-[24px_1fr_auto] items-center gap-2 rounded-[9px] border border-[#e3d9d5] bg-white/40 px-3 py-2.5"><span className="font-serif">{i+1}</span><span className="truncate font-serif text-[14px]">{task.title}</span><span className="rounded-md bg-[#eee6e3] px-2 py-1 text-[9px] text-[#756864]">{task.dueLabel || task.priority}</span></Link>)}</div>{prioritiesOpen?<p className="mt-3 text-[10px] leading-4 text-[#766a65]">Glow ranks urgency, due-date pressure and your available capacity while keeping the top three visually quiet.</p>:null}</Glass>
+        <Glass className="p-5"><div className="flex items-center justify-between"><div className="text-[11px] tracking-[.16em]">TOP 3 PRIORITIES</div><button onClick={()=>setPrioritiesOpen(v=>!v)} className="text-[10px] underline underline-offset-2">{prioritiesOpen?'Close':'Why these?'}</button></div><div className="mt-4 space-y-1.5">{(tasks.length?tasks.slice(0,prioritiesOpen?6:3):[{id:'1',title:'Build your first priority',priority:'today'}]).map((task,i)=><Link key={task.id} href="/tasks" className="grid grid-cols-[24px_1fr_auto] items-center gap-2 rounded-[9px] border border-[#e3d9d5] bg-white/40 px-3 py-2.5"><span className="font-serif">{i+1}</span><span className="truncate font-serif text-[14px]">{task.title}</span><span className="rounded-md bg-[#eee6e3] px-2 py-1 text-[9px] text-[#756864]">{'dueLabel' in task && task.dueLabel ? task.dueLabel : task.priority}</span></Link>)}</div>{prioritiesOpen?<p className="mt-3 text-[10px] leading-4 text-[#766a65]">Glow ranks urgency, due-date pressure and your available capacity while keeping the top three visually quiet.</p>:null}</Glass>
 
         <div className="grid grid-cols-2 gap-3">
           <Glass className="p-4"><div className="flex items-start justify-between"><div><div className="text-[10px] tracking-[.14em]">APPOINTMENTS</div><div className="text-[10px] text-[#7a6f69]">{events.length} Today</div></div><Link href="/calendar" aria-label="Add appointment" className="grid h-8 w-8 place-items-center rounded-full border border-white bg-white/45"><Plus size={17}/></Link></div><div className="mt-3 space-y-2">{events.slice(0,2).map(e=><Link href="/calendar" key={e.id} className="grid grid-cols-[58px_1fr] gap-2 rounded-[8px] bg-white/40 px-2 py-2 text-[10px]"><span>{e.timeLabel}</span><span className="truncate font-serif text-[12px]">{e.title}</span></Link>)}</div></Glass>
@@ -144,6 +148,6 @@ export function TodayLivingCenter({tasks,events,routines,energy,mood,sleepHours,
       {nav.map(({label,href,icon:Icon})=><Link key={label} href={href} className={`flex min-w-[62px] flex-col items-center gap-1 rounded-[17px] px-3 py-2 text-[10px] transition sm:min-w-[88px] ${label==='Today'?'bg-white/75 shadow-sm':'hover:bg-white/45'}`}><Icon size={19} strokeWidth={1.5}/><span className="font-serif text-[13px]">{label}</span></Link>)}
     </nav>
 
-    {askOpen?<div role="dialog" aria-modal="true" className="fixed inset-0 z-[80] grid place-items-center bg-black/15 p-4 backdrop-blur-sm" onMouseDown={()=>setAskOpen(false)}><Glass className="w-full max-w-lg p-6" ><div onMouseDown={e=>e.stopPropagation()}><div className="flex items-center justify-between"><div><div className="text-[10px] tracking-[.16em]">ASK GLOW</div><h2 className="mt-1 font-serif text-[28px]">I’m here.</h2></div><button onClick={()=>setAskOpen(false)} className="rounded-full bg-white/60 px-3 py-1.5 text-sm">Close</button></div><p className="mt-4 text-[13px] leading-6 text-[#655a55]">{glowMessage}</p><div className="mt-5 flex gap-2"><Link href="/brain" className="rounded-[12px] bg-[#463a35] px-4 py-3 text-[12px] text-white">Open Glow Brain</Link><Link href="/focus" className="rounded-[12px] border border-white bg-white/55 px-4 py-3 text-[12px]">Start Focus</Link></div></div></Glass></div>:null}
+    {askOpen?<div role="dialog" aria-modal="true" className="fixed inset-0 z-[80] grid place-items-center bg-black/15 p-4 backdrop-blur-sm" onMouseDown={()=>setAskOpen(false)}><Glass className="w-full max-w-lg p-6"><div onMouseDown={e=>e.stopPropagation()}><div className="flex items-center justify-between"><div><div className="text-[10px] tracking-[.16em]">ASK GLOW</div><h2 className="mt-1 font-serif text-[28px]">I’m here.</h2></div><button onClick={()=>setAskOpen(false)} className="rounded-full bg-white/60 px-3 py-1.5 text-sm">Close</button></div><p className="mt-4 text-[13px] leading-6 text-[#655a55]">{glowMessage}</p><div className="mt-5 flex gap-2"><Link href="/brain" className="rounded-[12px] bg-[#463a35] px-4 py-3 text-[12px] text-white">Open Glow Brain</Link><Link href="/focus" className="rounded-[12px] border border-white bg-white/55 px-4 py-3 text-[12px]">Start Focus</Link></div></div></Glass></div>:null}
   </div>;
 }
