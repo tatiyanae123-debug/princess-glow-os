@@ -1,0 +1,111 @@
+/* FINAL Today reference-mode correction.
+   The approved room artwork already contains its visible typography.
+   Never paint a second visible text layer over those baked words.
+   Live data remains interactive through PressAreas, modals, receipts and native portrait mode. */
+
+.today-landscape .absolute.z-20.flex.items-center.overflow-hidden,
+.today-landscape .absolute.z-20.flex.flex-col.justify-center {
+  display: none !important;
+}
+
+/* Preserve the approved reference exactly. Previous contrast/brightness passes made
+   the room softer and more washed than the locked artwork. */
+.today-landscape .today-reference {
+  filter: none !important;
+  transform: none !important;
+  opacity: 1 !important;
+  image-rendering: auto !important;
+}
+
+/* Shakti / Today pulse: concentrated double beat instead of full-object breathing.
+   Beat 1 is decisive, beat 2 is smaller, then a long still rest. */
+@keyframes shaktiBodyFinal {
+  0%, 4%, 28%, 100% { transform: scale(1); opacity: .72; filter: brightness(1); }
+  8%  { transform: scale(1.012); opacity: .82; filter: brightness(1.035); }
+  13% { transform: scale(1.002); opacity: .75; filter: brightness(1.01); }
+  18% { transform: scale(1.007); opacity: .79; filter: brightness(1.025); }
+  23% { transform: scale(1); opacity: .72; filter: brightness(1); }
+}
+
+@keyframes shaktiCoreFinal {
+  0%, 4%, 28%, 100% { transform: translate(-50%,-50%) scale(.985); filter: brightness(1); }
+  8%  { transform: translate(-50%,-50%) scale(1.16); filter: brightness(1.34); }
+  13% { transform: translate(-50%,-50%) scale(.995); filter: brightness(1.06); }
+  18% { transform: translate(-50%,-50%) scale(1.075); filter: brightness(1.20); }
+  23% { transform: translate(-50%,-50%) scale(.985); filter: brightness(1); }
+}
+
+@keyframes shaktiRingFinal {
+  0%, 4%, 28%, 100% { transform: translate(-50%,-50%) scale(.985); opacity: .24; }
+  9%  { transform: translate(-50%,-50%) scale(1.10); opacity: .68; }
+  14% { transform: translate(-50%,-50%) scale(1.01); opacity: .34; }
+  19% { transform: translate(-50%,-50%) scale(1.055); opacity: .52; }
+  24% { transform: translate(-50%,-50%) scale(.985); opacity: .24; }
+}
+
+@keyframes shaktiRaysFinal {
+  0%, 4%, 28%, 100% { transform: translate(-50%,-50%) scale(.985); opacity: .18; }
+  9%  { transform: translate(-50%,-50%) scale(1.065); opacity: .64; }
+  14% { transform: translate(-50%,-50%) scale(1.005); opacity: .27; }
+  19% { transform: translate(-50%,-50%) scale(1.035); opacity: .46; }
+  24% { transform: translate(-50%,-50%) scale(.985); opacity: .18; }
+}
+
+@keyframes shaktiBeamFinal {
+  0%, 4%, 28%, 100% { opacity: .42; filter: blur(.72px) brightness(1); }
+  9%  { opacity: .82; filter: blur(.46px) brightness(1.18); }
+  14% { opacity: .53; filter: blur(.62px) brightness(1.05); }
+  19% { opacity: .68; filter: blur(.52px) brightness(1.11); }
+  24% { opacity: .42; filter: blur(.72px) brightness(1); }
+}
+
+.today-landscape .today-aura-visual {
+  animation: shaktiBodyFinal 1.72s cubic-bezier(.18,.72,.2,1) infinite !important;
+  transform-origin: 50% 50% !important;
+  mix-blend-mode: screen;
+}
+.today-landscape .today-aura-core {
+  animation: shaktiCoreFinal 1.72s cubic-bezier(.16,.8,.18,1) infinite !important;
+  width: 13.5% !important;
+  background: radial-gradient(circle,#fff 0 29%,rgba(255,255,255,.99) 38%,rgba(255,244,239,.82) 52%,rgba(222,235,255,.30) 67%,transparent 79%) !important;
+  box-shadow: 0 0 5px 2px rgba(255,255,255,.98),0 0 17px 6px rgba(255,241,236,.75),0 0 34px 10px rgba(216,231,255,.20) !important;
+}
+.today-landscape .today-aura-ring-one,
+.today-landscape .today-aura-ring-two {
+  animation: shaktiRingFinal 1.72s cubic-bezier(.16,.78,.18,1) infinite !important;
+  border-color: rgba(255,255,255,.52) !important;
+  box-shadow: 0 0 5px rgba(255,255,255,.28), inset 0 0 5px rgba(255,255,255,.16) !important;
+}
+.today-landscape .today-aura-ring-two { animation-delay: .035s !important; }
+.today-landscape .today-aura-rays {
+  animation: shaktiRaysFinal 1.72s cubic-bezier(.16,.76,.18,1) infinite !important;
+}
+.today-landscape .today-aura-beam {
+  animation: shaktiBeamFinal 1.72s cubic-bezier(.16,.76,.18,1) infinite !important;
+  width: 1.55% !important;
+}
+.today-landscape .today-aura-haze {
+  opacity: .34 !important;
+  filter: blur(2.5px) !important;
+}
+.today-landscape .today-aura-fan {
+  opacity: .28 !important;
+  filter: drop-shadow(0 0 2px rgba(255,255,255,.45)) !important;
+}
+
+/* No accidental selected/highlighted material survives in the reference room. */
+.today-landscape [style*="backdrop-filter"],
+.today-landscape [style*="WebkitBackdropFilter"] {
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .today-landscape .today-aura-visual,
+  .today-landscape .today-aura-core,
+  .today-landscape .today-aura-ring-one,
+  .today-landscape .today-aura-ring-two,
+  .today-landscape .today-aura-rays,
+  .today-landscape .today-aura-beam {
+    animation: none !important;
+  }
+}
