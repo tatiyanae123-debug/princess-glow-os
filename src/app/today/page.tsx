@@ -11,6 +11,17 @@ export const dynamic = 'force-dynamic';
 
 const priorityWeight: Record<string,number>={urgent:100,high:80,medium:55,low:30};
 
+function levelToNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value !== 'string') return null;
+  const normalized=value.toLowerCase();
+  const scale: Record<string,number>={
+    exhausted:3, very_low:3, low:4, okay:5, neutral:5, medium:6,
+    good:7, high:8, great:9, excellent:9,
+  };
+  return scale[normalized] ?? null;
+}
+
 export default async function TodayPage(){
   const session=await auth();
   if(!session?.user?.id) redirect('/sign-in');
@@ -54,8 +65,8 @@ export default async function TodayPage(){
       location:e.location,
     }))}
     routines={routines.map(r=>({id:r.id,name:r.name,timeOfDay:r.timeOfDay}))}
-    energy={latestWellness?.energy??null}
-    mood={latestWellness?.mood??null}
+    energy={levelToNumber(latestWellness?.energy)}
+    mood={levelToNumber(latestWellness?.mood)}
     sleepHours={latestWellness?.sleepHours??null}
     glowMessage={snapshot.message}
   />;
