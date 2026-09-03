@@ -5,7 +5,6 @@ import { getTasksByUser } from '@/lib/data/tasks';
 import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
-import { buildCrossSystemSnapshot } from '@/lib/intelligence/cross-system';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,12 +43,11 @@ export default async function TodayPage(){
   if(!session?.user?.id) redirect('/sign-in');
   const userId=session.user.id;
   const now=new Date();
-  const [tasks,wellnessEntries,beautyRoutines,events,snapshot]=await Promise.all([
+  const [tasks,wellnessEntries,beautyRoutines,events]=await Promise.all([
     getTasksByUser(userId),
     getWellnessEntriesByUser(userId),
     getBeautyRoutinesByUser(userId),
     getCalendarEventsByUser(userId),
-    buildCrossSystemSnapshot(userId,'today',now),
   ]);
 
   const open=tasks.filter(t=>t.status!=='done'&&t.status!=='cancelled');
@@ -89,6 +87,5 @@ export default async function TodayPage(){
     energy={levelToNumber(latestWellness?.energy)}
     mood={levelToNumber(latestWellness?.mood)}
     sleepHours={latestWellness?.sleepHours??null}
-    glowMessage={snapshot.message}
   />;
 }
