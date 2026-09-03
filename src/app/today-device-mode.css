@@ -1,10 +1,13 @@
-/* Final device-mode authority for Today. Loaded after all older responsive overrides. */
-html[data-today-mode='reference'] .today-landscape { display:block !important; }
-html[data-today-mode='reference'] .today-portrait { display:none !important; }
-html[data-today-mode='adaptive'] .today-landscape { display:none !important; }
-html[data-today-mode='adaptive'] .today-portrait { display:block !important; }
+/* Final device-mode authority for Today. Loaded after every older Today override.
+   This file is deliberately simple: a usable landscape pane gets the architectural
+   Living Center. Portrait/narrow panes get the adaptive room. JavaScript then
+   reinforces the same choice with inline !important styles after hydration. */
 
-/* The reference stage must scale to the available pane, not trigger an alternate layout. */
+html[data-today-mode='reference'] .today-landscape { display:block !important; visibility:visible !important; pointer-events:auto !important; }
+html[data-today-mode='reference'] .today-portrait { display:none !important; visibility:hidden !important; pointer-events:none !important; }
+html[data-today-mode='adaptive'] .today-landscape { display:none !important; visibility:hidden !important; pointer-events:none !important; }
+html[data-today-mode='adaptive'] .today-portrait { display:block !important; visibility:visible !important; pointer-events:auto !important; }
+
 html[data-today-mode='reference'] .today-landscape {
   inset:0 !important;
   width:100% !important;
@@ -12,18 +15,26 @@ html[data-today-mode='reference'] .today-landscape {
   overflow:hidden !important;
   background:#eee5df !important;
 }
-html[data-today-mode='reference'] .today-landscape > .relative {
-  width:100% !important;
-  height:100% !important;
+
+/* FIRST-PAINT FALLBACK. Do not wait for JavaScript on an iPad-sized landscape pane.
+   The screenshot that kept failing was wider than it was tall, but older 5/4 and
+   1.38 aspect-ratio rules were still hiding the room. This comes last and wins. */
+@media (min-width:900px) {
+  .today-landscape { display:block !important; visibility:visible !important; }
+  .today-portrait { display:none !important; visibility:hidden !important; }
 }
 
-/* Safari / Split View may report a portrait-like viewport while the physical iPad is landscape.
-   These rules intentionally override older max-aspect-ratio fallbacks. */
-@media (max-aspect-ratio: 5/4) {
-  html[data-today-mode='reference'] .today-landscape { display:block !important; }
-  html[data-today-mode='reference'] .today-portrait { display:none !important; }
+/* iPad Split View can be below 900 CSS px while still being a real landscape
+   working surface. A minimum 600px height keeps landscape phones out of this rule. */
+@media (orientation:landscape) and (min-width:640px) and (min-height:600px) {
+  .today-landscape { display:block !important; visibility:visible !important; }
+  .today-portrait { display:none !important; visibility:hidden !important; }
 }
-@media (max-width:900px) {
-  html[data-today-mode='reference'] .today-landscape { display:block !important; }
-  html[data-today-mode='reference'] .today-portrait { display:none !important; }
-}
+
+/* Explicit adaptive authority always wins after JS classifies a true portrait or phone. */
+html[data-today-mode='adaptive'] .today-landscape { display:none !important; }
+html[data-today-mode='adaptive'] .today-portrait { display:block !important; }
+
+/* Explicit reference authority always wins after JS classifies a wide Today pane. */
+html[data-today-mode='reference'] .today-landscape { display:block !important; }
+html[data-today-mode='reference'] .today-portrait { display:none !important; }
