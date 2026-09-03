@@ -99,6 +99,20 @@
   box-shadow: none;
 }
 
+/* IMPORTANT: Safari's toolbar reduces the CSS viewport height on iPad. The previous
+   aspect-ratio fallback mistook a normal landscape iPad for portrait/adaptive mode,
+   causing the plain stacked layout seen in IMG_2144. Device orientation + usable width
+   are the correct camera decision here. Full-size iPad landscape stays in the reference room. */
+@media (orientation: landscape) and (min-width: 980px) {
+  .today-landscape { display: block !important; }
+  .today-portrait { display: none !important; }
+}
+
+/* Phones and genuinely narrow/split tablet windows keep the native adaptive composition. */
+@media (orientation: portrait), (max-width: 979px) {
+  .today-portrait { max-width: 100vw !important; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .today-landscape .today-aura-visual,
   .today-landscape .today-aura-core,
