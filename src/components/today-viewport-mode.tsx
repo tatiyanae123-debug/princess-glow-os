@@ -4,12 +4,6 @@ import { useEffect } from 'react';
 
 type TodayMode = 'reference' | 'adaptive';
 
-declare global {
-  interface Window {
-    orientation?: number;
-  }
-}
-
 function isIPadLike() {
   if (typeof navigator === 'undefined') return false;
   const ua = navigator.userAgent || '';
@@ -47,7 +41,8 @@ function physicalOrientation(): 'landscape' | 'portrait' | 'unknown' {
   if (angle === 90) return 'landscape';
   if (angle === 0) return 'portrait';
 
-  const legacy = typeof window.orientation === 'number' ? Math.abs(window.orientation % 180) : null;
+  const legacyOrientation = (window as Window & { orientation?: number }).orientation;
+  const legacy = typeof legacyOrientation === 'number' ? Math.abs(legacyOrientation % 180) : null;
   if (legacy === 90) return 'landscape';
   if (legacy === 0) return 'portrait';
 
@@ -66,16 +61,14 @@ function chooseTodayMode(): TodayMode {
     const physical = physicalOrientation();
 
     // iPad rule: physical orientation is authoritative. Split View, Safari chrome,
-    // zoom and Stage Manager are allowed to change the pane dimensions without
-    // replacing the room. A landscape iPad ALWAYS keeps the Living Center.
+    // zoom and Stage Manager may resize the pane, but they must not replace the room.
     if (physical === 'landscape') return 'reference';
     if (physical === 'portrait') return 'adaptive';
 
-    // Only if Safari exposes no orientation API do we fall back to the pane shape.
+    // Only if Safari exposes no usable orientation signal do we fall back to pane shape.
     return width > height ? 'reference' : 'adaptive';
   }
 
-  // Desktop/laptop keeps the wide room whenever there is enough horizontal canvas.
   return width >= 900 ? 'reference' : 'adaptive';
 }
 
