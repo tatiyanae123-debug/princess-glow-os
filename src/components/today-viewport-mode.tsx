@@ -4,6 +4,12 @@ import { useEffect } from 'react';
 
 type TodayMode = 'reference' | 'adaptive';
 
+declare global {
+  interface Window {
+    orientation?: number;
+  }
+}
+
 function isIPadLike() {
   if (typeof navigator === 'undefined') return false;
   const ua = navigator.userAgent || '';
@@ -29,23 +35,47 @@ function viewportBox() {
   };
 }
 
+function physicalOrientation(): 'landscape' | 'portrait' | 'unknown' {
+  if (typeof window === 'undefined') return 'unknown';
+
+  const screenOrientation = window.screen.orientation;
+  const type = screenOrientation?.type || '';
+  if (type.includes('landscape')) return 'landscape';
+  if (type.includes('portrait')) return 'portrait';
+
+  const angle = typeof screenOrientation?.angle === 'number' ? Math.abs(screenOrientation.angle % 180) : null;
+  if (angle === 90) return 'landscape';
+  if (angle === 0) return 'portrait';
+
+  const legacy = typeof window.orientation === 'number' ? Math.abs(window.orientation % 180) : null;
+  if (legacy === 90) return 'landscape';
+  if (legacy === 0) return 'portrait';
+
+  const availW = window.screen.availWidth || window.screen.width || 0;
+  const availH = window.screen.availHeight || window.screen.height || 0;
+  if (availW && availH) return availW > availH ? 'landscape' : 'portrait';
+
+  return 'unknown';
+}
+
 function chooseTodayMode(): TodayMode {
   const { width, height } = viewportBox();
   if (isPhoneLike()) return 'adaptive';
 
-  const ipad = isIPadLike();
-  const paneIsLandscape = width > height;
+  if (isIPadLike()) {
+    const physical = physicalOrientation();
 
-  // iPad rule: use the architectural Living Center whenever the ACTUAL Glow pane
-  // is landscape, even when Safari/Stage Manager/Split View reports misleading
-  // physical screen dimensions. A very wide pane also wins as a safety net.
-  if (ipad) {
-    if ((paneIsLandscape && width >= 640) || width >= 900) return 'reference';
-    return 'adaptive';
+    // iPad rule: physical orientation is authoritative. Split View, Safari chrome,
+    // zoom and Stage Manager are allowed to change the pane dimensions without
+    // replacing the room. A landscape iPad ALWAYS keeps the Living Center.
+    if (physical === 'landscape') return 'reference';
+    if (physical === 'portrait') return 'adaptive';
+
+    // Only if Safari exposes no orientation API do we fall back to the pane shape.
+    return width > height ? 'reference' : 'adaptive';
   }
 
-  // Desktop/laptop rule. Never use aspect-ratio thresholds here; browser chrome
-  // and split windows must not flip the room just because the viewport is short.
+  // Desktop/laptop keeps the wide room whenever there is enough horizontal canvas.
   return width >= 900 ? 'reference' : 'adaptive';
 }
 
@@ -53,9 +83,10 @@ function forceTodaySurfaces(mode: TodayMode) {
   const root = document.documentElement;
   const { width, height } = viewportBox();
   const ipad = isIPadLike();
+  const physical = ipad ? physicalOrientation() : 'unknown';
 
   root.dataset.todayMode = mode;
-  root.dataset.todayPhysical = ipad ? 'ipad-like' : (isPhoneLike() ? 'phone-like' : 'other');
+  root.dataset.todayPhysical = ipad ? `ipad-${physical}` : (isPhoneLike() ? 'phone-like' : 'other');
   root.dataset.todayViewport = `${width}x${height}`;
 
   const landscape = document.querySelectorAll<HTMLElement>('.today-landscape');
@@ -65,12 +96,14 @@ function forceTodaySurfaces(mode: TodayMode) {
     node.style.setProperty('display', mode === 'reference' ? 'block' : 'none', 'important');
     node.style.setProperty('visibility', mode === 'reference' ? 'visible' : 'hidden', 'important');
     node.style.setProperty('pointer-events', mode === 'reference' ? 'auto' : 'none', 'important');
+    node.setAttribute('aria-hidden', mode === 'reference' ? 'false' : 'true');
   });
 
   adaptive.forEach((node) => {
     node.style.setProperty('display', mode === 'adaptive' ? 'block' : 'none', 'important');
     node.style.setProperty('visibility', mode === 'adaptive' ? 'visible' : 'hidden', 'important');
     node.style.setProperty('pointer-events', mode === 'adaptive' ? 'auto' : 'none', 'important');
+    node.setAttribute('aria-hidden', mode === 'adaptive' ? 'false' : 'true');
   });
 }
 
@@ -89,7 +122,6 @@ export function TodayViewportMode() {
       frame = requestAnimationFrame(() => {
         applyTodayMode();
         window.clearTimeout(settleTimer);
-        // Safari often changes visualViewport again after its bars settle.
         settleTimer = window.setTimeout(applyTodayMode, 180);
       });
     };
@@ -102,9 +134,6 @@ export function TodayViewportMode() {
     window.visualViewport?.addEventListener('scroll', schedule, { passive: true });
     window.screen.orientation?.addEventListener?.('change', schedule);
 
-    // This is the important part the old implementation was missing: Today can be
-    // inserted after this controller's effect during navigation/hydration. Reapply
-    // the authoritative inline !important display as soon as either room appears.
     const observer = new MutationObserver((records) => {
       if (records.some((record) => record.addedNodes.length || record.removedNodes.length)) schedule();
     });
