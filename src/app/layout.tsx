@@ -6,6 +6,7 @@ import './glow-os-3.css';
 import './reference-board-exact-v2.css';
 import './dashboard-reference-exact.css';
 import './dashboard-sidebar-exact.css';
+import { GlowNavigationNormalizer } from '@/components/glow-navigation-normalizer';
 import { GlowWorldRuntime } from '@/components/glow-world-runtime-v3';
 
 export const metadata: Metadata = {
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         {children}
+        <GlowNavigationNormalizer />
         <GlowWorldRuntime />
       </body>
     </html>
