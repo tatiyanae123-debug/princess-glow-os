@@ -1,301 +1,345 @@
-# Glow OS 3.0 — White Editorial Luxury Operating System
+# Glow OS 3.0 — Continuous Living World Design Constitution
 
-## Product goal
+## Authoritative edition · September 3, 2026
 
-Glow OS should feel effortless, premium, calm, structured, intelligent and instantly understandable while keeping deep power underneath.
+This file is the mandatory design rulebook for every future Glow OS page, image implementation, responsive adaptation, interaction, animation, and QA pass. It supersedes any earlier rule that treats Glow OS as a conventional dashboard, a collection of separate pages, a permanent sidebar application, or a white-card template system.
 
-Visual reference: Apple clarity + Vogue spacing + Aesop restraint + Pinterest personality + Notion flexibility + luxury editorial photography.
+## 1. North star
 
-Target visual balance:
-- 80% white and neutral space
-- 15% photography/material personality
-- 5% meaningful accent color
+> Glow OS is one continuous intelligent living world made from Glow Matter. Information becomes places, navigation becomes movement, and intelligence appears as a natural phenomenon.
 
-Color communicates meaning. It does not cover the interface.
+Today, Plan, Life, Brain, and Create are five major climates inside one world. They are not five ordinary page containers.
 
-## 1. White foundation
+Navigation means focus, reveal, drift, transform, camera movement, or material reorganization. It does not mean replacing one disconnected screen with another.
 
-Permanent canvas: #FFFFFF
-Secondary surface: #FAFAFA
-Card/sheet: #FFFFFF
-Divider: #ECECEC
-Primary text: #1C1C1E
-Secondary text: #6E6E73
-Dusty rose accent: #B86F7D
-Pale rose highlight: #F8EFF1
+Never use page curls, book flips, card-deck transitions, hard cuts, blank full-screen fades, repeated generic horizontal slides, repeated push-navigation, or new screens flying over old screens.
 
-Room colors such as caramel, sage, champagne, lavender and dusty blue are accents only. Never use full-page peach, beige, blush, sage or lavender washes in operational rooms.
+## 2. The five permanent worlds
 
-## 2. Simplified life architecture
+The primary worlds are exactly:
 
-Permanent sidebar:
-- Today
-- Plan
-- Health & Care
-- Money & Growth
-- Projects
-- Glow
-- Life World
-- All Rooms
+- Today · The Living Center
+- Plan · The Time Observatory
+- Life · The Personal House
+- Brain · The Inner Universe
+- Create · The Transformation Studio
 
-Plan includes Tasks, Calendar, Planning, Routines, Habits and Reminders.
-Health & Care includes Fitness, Wellness, Food, Beauty, Beauty Lab and Hair.
-Money & Growth includes Finance, Financial Brain and Goals.
-Glow includes Brain, Concierge, Briefings, Observations, Inbox, Memory, Timeline and Search.
-Library/System includes Notes, Closet, Gmail, Resources, Connections, Import and Settings.
+Every sub-room belongs spatially and behaviorally to one of these climates. The five-world control remains stable for orientation, but activating it moves toward another region of the same world rather than pretending a separate app page replaced the current one.
 
-No route is deleted. Navigation simply stops exposing the whole system simultaneously.
+## 3. Glow Matter laws
 
-## 3. Universal Glow action layer
+Glow Matter is a responsive living liquid-crystal medium capable of holding information.
 
-One visible global Glow action handles:
-- type
-- speak
-- attach
-- search
-- create
-- move
-- delete with confirmation
-- log
-- plan
-- schedule
-- ask Glow
+### Light has weight
+
+Important information draws illumination toward itself. The current moment, active decision, unfinished action, Glow intelligence, and the object being touched or discussed receive more light. Unimportant information softly recedes.
+
+### Interaction has momentum
+
+Touch, drag, speech, completion, movement, and reorganization affect surrounding material. Time can create a controlled wake. Tasks can move and settle. Completion can release stored light. Notes can create tension between connected points.
+
+### Information has physical behavior
+
+- Time flows, stretches, gathers, and recedes.
+- Tasks wait, prepare, unlock, move, and settle.
+- Memories surface through depth, atmosphere, and film-like fragments.
+- Notes expand, connect, fold, and form constellations.
+- Ideas condense from mist into structure.
+- Habits repeat through rhythm, rings, and accumulated atmosphere.
+- Goals exist as distant landmarks that become clearer through evidence.
+- Money settles into precise stable layers.
+- Routines unfold as guided pathways.
+- Relationships gather around shared moments and human context.
+- Intelligence appears as aurora, refraction, and reorganization.
+
+## 4. Shared constants on every surface
+
+Every room shares:
+
+- The same Living Glow Aura.
+- The same five main worlds.
+- One permanent Ask Glow control.
+- Consistent gestures.
+- Consistent save, undo, search, confirmation, and action receipts.
+- The same refined Glow Matter / liquid-crystal family.
+- Ivory pearl, polished stone, champagne metal, restrained water reflections, refined typography, and living light.
+- Apple-level restraint.
+- Strong iPhone and iPad usability.
+- Reduced-motion support.
+- Dyslexia-friendly reading controls.
+- Clear keyboard/focus behavior where relevant.
+- No decorative fake controls. Every visible control must have a real action, real destination, real state change, contextual Glow action, or safe preserved fallback.
+
+## 5. Every room must be meaningfully different
+
+Every room must deliberately change its:
+
+- Primary human question.
+- Dominant spatial metaphor.
+- Light temperature.
+- Accent color.
+- Depth.
+- Spatial arrangement.
+- Information density.
+- Motion behavior.
+- Transition behavior.
+- Object and card shapes.
+- Completion effect.
+- Living Glow Aura behavior.
+- Page-specific controls.
+- Background atmosphere.
+- Recommendation style.
+- Representation of time.
+- Representation of progress.
+- Exploration model.
+
+Hard test:
+
+> If two Glow rooms could swap their content and still look and behave almost the same, at least one room is designed incorrectly.
+
+No generic dashboard regression. No repeated hero + card-grid + sections template. No endless identical rounded cards. Cards are used only when they are genuinely the best physical form for the information.
+
+## 6. Locked world identities
+
+### Today · The Living Center
+
+Pearlescent dawn, ivory, blush, champagne, pale sky blue, warm natural light, window-like reflections, and slow temporal movement. Today is a flowing day: Now → Next → Later → Tonight → Tomorrow. The present is brightest and largest. Completed time recedes into warm light.
+
+Primary intelligence includes What Now, capacity, energy, Top Three, appointments, routines due now, time remaining, leave-ready countdown, and one-tap reversible replanning.
+
+Glow is attentive and present here.
+
+### Plan · The Time Observatory
+
+Cool lilac-blue daylight, frosted pearl, cool silver, controlled water reflections, clearer edges, and architectural structure. Time exists spatially. Today is central, near future is close, later dates recede, and deadlines become illuminated landmarks.
+
+Calendar, Tasks, Reminders, Planning, Goals, Projects, Routines, and Habits must not collapse into one repeated list UI. Each information type keeps its own physical behavior.
+
+Glow becomes precise and points toward conflicts, preparation, and available time.
+
+### Life · The Personal House
+
+Life is a connected suite of specialized private rooms: Body, Fitness, Wellness, Beauty, Makeup, Skincare, Hair, Gua Sha, Closet, Food, Recipes, Grocery, Home, Money, Work, Relationships, and Travel.
+
+Crossing between Life rooms is a threshold transition. Climate, controls, and sound/motion may change gradually while the material language remains shared.
+
+Glow adapts its role to each room.
+
+### Brain · The Inner Universe
+
+Midnight indigo, smoky violet, pearl-white light, cinematic twilight, silver connections, deeper shadow, and non-linear exploration. Notes, memories, thoughts, ideas, insights, timelines, decisions, and graph entities must use forms such as constellations, threads, clusters, film strips, thought clouds, rivers, or branching paths rather than filing-cabinet scrolling.
+
+Glow behaves like a lantern.
+
+### Create · The Transformation Studio
+
+Bright neutral pearl, studio daylight, pale champagne tools, slight prismatic formation, and open working surfaces. The current creation is dominant. Tools stay quiet until needed.
+
+Creation follows Mist → Structure. Speech, text, media, or imported material can become a note, image, plan, project, page, or other structured object.
+
+Glow opens wider and becomes more visibly prismatic while creating.
+
+## 7. Living Glow Aura · definitive visual and behavior law
+
+Glow is an intelligent presence made visible through concentrated light, liquid refraction, atmospheric bloom, and controlled symmetry.
+
+The full aura must include:
+
+- An intensely luminous white center.
+- Long vertical beams.
+- Symmetrical refracted formations that may suggest wings without depicting literal wings.
+- Fine rays.
+- Water-caustic and prismatic distortion.
+- Subtle pearl, blush, champagne, pale blue, lavender, warm-gold, and microscopic spectral edges.
+- Atmospheric haze, but a crisp enough center and rays that the presence never becomes a fuzzy blob.
+
+Glow must never become a standard Siri orb, generic gradient circle, mascot, face, literal angel, feathered wings, fairy, hologram person, neon gaming effect, glitter explosion, loud rainbow animation, rotating crystal, or decorative background.
+
+### Heartbeat law
+
+When Glow is present, its center is alive. It uses a calm double-beat pulse similar to a living heartbeat: primary contraction/bloom, slight settle, softer secondary beat, then rest. The pulse affects brightness, ray density, and scale subtly. It never bounces like a voice-assistant icon.
+
+Reduced-motion mode replaces the heartbeat with a stable luminous state.
+
+### State behavior
+
+- Resting: compact pearl-white presence with faint internal movement.
+- Waking: light pulls inward, a ripple appears, the center blooms, vertical light and symmetry unfold.
+- Listening: light draws inward and responds to voice rhythm without an ordinary waveform.
+- Understanding: refractions become denser and reorganize inward.
+- Speaking: fine rays respond to cadence and important words.
+- Creating: the aura opens wider and prismatic detail becomes more visible.
+- Taking action: one controlled line of light travels to the affected object and returns a receipt.
+- Completing: warm bloom, soft ripple, information settles, aura returns to rest.
+- Warning/protecting: center stays white, motion slows, outer warmth increases; never aggressive red flashing.
+
+## 8. Approved image reference law
+
+When the user supplies or approves a reference image for a Glow room, that image is the authoritative visual blueprint for that room unless the user explicitly replaces it.
+
+The reference governs:
+
+- Camera and crop.
+- Composition.
+- Object positions.
+- Object proportions.
+- Typography placement and hierarchy.
+- Material appearance.
+- Transparency.
+- Light direction and temperature.
+- Depth and layering.
+- Information placement.
+- Spatial rhythm.
+- Aura placement and visual relationship to the room.
+
+The implementation must not casually reinterpret the image into a generic component library.
+
+### No patch-highlight rule
+
+Never place opaque or nearly opaque rectangular text patches over the approved image merely to cover baked text. Live data must not look highlighted, selected, pasted on, or covered by white strips. Production text surfaces should be transparent, physically integrated, or rebuilt as native material surfaces. Background blur must never be used as a cheap eraser for text.
+
+### Sharpness rule
+
+The approved room must not become globally fuzzy because a low-resolution reference raster was stretched. Keep the reference environment as sharp as its source allows, avoid unnecessary filters, render live typography and controls natively, and preserve crisp edges on Glow's core/rays. If a source raster cannot carry production text cleanly at a device size, the UI layer must carry the live text rather than enlarging blurry baked typography.
+
+### No accidental regeneration
+
+Do not generate a replacement image when the user has asked for implementation fixes only. Work with the approved reference and native UI code unless the user explicitly requests a new visual.
+
+## 9. Responsive constitution
+
+Glow must adapt automatically. Device-size handling is part of the design, not a later patch.
+
+Required responsive states:
+
+- iPhone portrait.
+- iPhone landscape where supported.
+- iPad portrait.
+- iPad landscape.
+- Desktop / large browser.
+
+Rules:
+
+- Never force a fixed 4:3 room to become a horizontally pannable canvas on portrait devices.
+- Never create beige/blank letterbox bars as the primary adaptation.
+- Never make users manually zoom in or out just to operate the room.
+- Never let fixed reference coordinates shrink touch targets below usable size.
+- Portrait views must recompose the same room and information physics into a device-appropriate camera/layout while preserving identity and context.
+- Landscape/tablet/desktop may show more surrounding world.
+- Use CSS aspect-ratio/media queries and safe-area insets rather than user-agent sniffing.
+- Respect `100dvh` and `env(safe-area-inset-*)` on iOS/iPadOS.
+- Touch targets should generally remain at least 44×44 CSS pixels.
+- Text must remain readable without browser zoom.
+- Modal/detail surfaces must scroll when content exceeds the viewport.
+- Orientation changes must not lose the active object, Glow conversation, selected moment, or task context.
+
+## 10. Spatial continuity
+
+Glow preserves:
+
+### Positional continuity
+
+The user can perceive where they came from through a light trail, spatial edge, persistent anchor, miniature context, nearby horizon, or reversible gesture.
+
+### Context continuity
+
+The object that caused movement remains connected. A task opened from Today stays tied to its time. A recipe opened from Grocery retains its ingredients. A hair routine opened from Calendar retains its appointment and leave-ready context. A note converted to a project preserves the original thread.
+
+### Conversation continuity
+
+Glow follows everywhere and remembers what was asked, which object was active, what it proposed, what still needs approval, where the user came from, and the goal currently being pursued.
+
+## 11. Room-specific completion law
+
+Completion must express the meaning of the room.
 
 Examples:
-- Add a task
-- Plan tomorrow
-- Log my water
-- Open Hair
-- Move my workout
-- Search my notes for doctor questions
-- Give me my morning brief
-- What should I focus on?
 
-Underlying systems remain separate technically. The interface becomes one coherent assistant.
-
-## 4. Minimal global header
-
-Left: page name / breadcrumb.
-Right: Search, Voice, Create, Profile.
-
-Date, time, weather and briefing content belong mainly on Today/Dashboard.
-
-## 5. Typography
-
-Playfair Display: major editorial moments only.
-Inter: all functional UI.
-Script fonts: rare decorative moments only.
-
-Page title: 34–42px Playfair.
-Hero title: 28–36px Playfair.
-Section title: 16–18px Inter semibold.
-Body: 14–15px Inter.
-Metadata: 12–13px Inter.
-Eyebrow: minimum 11px.
-Buttons: 13–14px.
-
-No critical information at 9px.
-
-## 6. Lower visible density
-
-Power underneath. Simplicity on top.
-
-When a room opens it should answer:
-1. Where am I?
-2. What matters here right now?
-3. What can I do next?
-
-First viewport should usually contain three to five meaningful elements, not twelve modules.
-
-## 7. Focus Mode
-
-Every major room supports Focus Mode.
-
-Tasks: current task + next two.
-Routines: current ritual step.
-Fitness: current exercise, sets, reps and rest.
-Beauty: current beauty step.
-Hair: current treatment/maintenance step.
-Planning: Top Three.
-Food: current cooking or prep workflow.
-Projects: current project action.
-
-Focus Mode removes most navigation and secondary information.
-
-## 8. Progressive disclosure
-
-Never place all functionality in the initial screen.
-
-Hair opens with current phase, next action and lifecycle. Products, Growth, Notes and Schedule are deeper.
-Beauty opens with AM, Tonight and Next Treatment. Progress, Calendar and History are deeper.
-Finance opens with Income, Spent, Saved and Available. Transactions and advanced views are deeper.
-Projects opens with current project, progress and next action. Milestones, Files, Notes and Activity are deeper.
-
-Primary now. Secondary later. Advanced on demand.
-
-## 9. Universal 8px grid
-
-Use an 8px base spacing unit.
-Maintain consistent page margins, maximum canvas width, section gaps, content alignment, rail widths, hero proportions, touch targets, button heights and field heights.
-
-Rooms can compose differently while major edges still align.
-
-## 10. Calm state vs attention state
-
-Default state: white, neutral, low contrast, minimal motion, muted icons.
-
-Attention state is reserved for meaningful urgency such as overdue priority, schedule conflict, bill due, appointment soon, treatment due, low-energy adjustment, important unfinished task or upcoming maintenance.
-
-Accent color should mean something.
-
-## 11. Context memory
-
-Remember useful room context across navigation and sessions where appropriate:
-- Calendar view/date
-- Routine active step
-- Fitness active exercise
-- Beauty Lab selected product
-- Projects selected project
-- Notes active note
-- Planning period
-- Hair lifecycle view
-
-Returning should feel like walking back into the same room.
-
-## 12. Command palette / keyboard and gestures
-
-Desktop: Cmd-K / Ctrl-K opens Glow.
-Mobile: keep Glow instantly reachable and support search-first behavior.
-
-The command layer should search actions and data.
-
-Examples:
-Hair -> Hair
-New task -> task creation
-Morning -> Morning Brief
-Terrain -> project search
-Pay -> Finance/bills
-Doctor -> appointments, notes and related tasks
-
-Sidebar is orientation. Glow command is speed.
-
-## 13. Now / Next / Later hierarchy
-
-Use temporal relevance as the shared mental model:
-- Now: what deserves action immediately
-- Next: what is coming soon
-- Later: what can wait
-
-This hierarchy can look different in each room but should stay conceptually stable.
-
-## 14. Intelligent empty states
-
-Never show grids of empty boxes.
-
-An empty state should explain:
-- what the space is
-- why it is useful
-- one clear next action
-
-Examples:
-Food: Your kitchen is ready. Plan your first meal.
-Beauty Lab: Add your products to start building your personal library.
-Goals: Choose what you want this season to move toward.
-Projects: Start with one project you care about.
-Finance: Add your first transaction to begin seeing your month.
-
-## 15. Personalization changes emphasis, not structure
-
-The structure stays stable. Importance changes.
-
-If today is wash day, Hair receives a subtle indicator.
-If a deadline approaches, Projects becomes more prominent.
-If there is an interview, career context is elevated.
-If Finance has nothing urgent, it stays quiet.
-If wellness energy is low, the brief suggests a lighter day.
-
-Glow learns what deserves attention, not where to add another widget.
-
-# Room-level direction
-
-## Dashboard / Today
-Calm command center. Today at a Glance, Morning Brief, Schedule, Tasks and only relevant life context. Mood Board moves lower or into Life World.
-
-## Tasks
-Japanese stationery + Apple restraint. Keep Do First, Do Today, Can Wait, Inbox, Waiting On and Someday. Reduce craft decoration.
-
-## Calendar
-Architectural time wall. White grid, hairline dividers, pale event colors, optional contextual rail.
-
-## Planning
-Top Three, This Week, Appointments/Deadlines and Sunday Reset. Everything else behind relevant views.
-
-## Routines
-Editorial ritual hero. Start ritual, then Focus Mode. One step at a time.
-
-## Habits
-Garden first. Today's Habits second. Insights/history one layer deeper.
-
-## Fitness
-Workout first. Exercises second. Progress and recovery below. Muscle map behind a tab.
-
-## Wellness
-Quietest room. Check-in first. Recommendations reveal after the check-in.
-
-## Food
-Today's meals, weekly plan and groceries first. Pantry, recipes and nutrition deeper.
-
-## Beauty
-What am I doing today? AM, PM, treatment and schedule.
-
-## Beauty Lab
-What am I using? Product library, product detail, ingredients, compatibility, experiments.
-
-## Hair
-What is happening with my hair right now? Current phase, next action and lifecycle first.
-
-## Finance
-What is true now? Income, Spent, Saved, Available, then Transactions, Spending and Goals.
-
-## Financial Brain
-What happens next? Forecast, scenarios, major purchase decisions, savings projections and tradeoffs.
-
-## Goals
-What future am I moving toward? Maximum three priority goals, next actions and timeline.
-
-## Projects
-What am I actively building? Choose a project and enter its workspace. Do not show ten project dashboards simultaneously.
-
-## Glow / Brain
-One central intelligence destination with Ask, Briefings, Insights, Inbox and Memory. Concierge becomes a mode of Glow rather than a competing top-level destination.
-
-## Notes
-Notebook, note list and editor first. Everything else secondary.
-
-## Settings
-White and functional. Profile, Appearance, Connections, Privacy, Data and About.
-
-## Life World
-The deliberately immersive area. Large imagery, spatial rooms, digital home, world map, timeline and personal atmosphere.
-
-# Final design philosophy
-
-One primary purpose.
-One obvious next action.
-Maximum three levels of visual importance.
-White before color.
-Space before decoration.
-Information before widgets.
-Intelligence before dashboards.
-Progressive reveal before overload.
-Consistency in structure, personality in rooms.
-AI removes complexity rather than displaying more complexity.
-
-# Acceptance test
-
-Every screen must pass this three-second test:
-- Where am I?
-- What matters?
-- What should I do next?
-
-If any answer is unclear, the page is still too complicated.
+- Tasks compress into a pearl of light and join the accomplishment trail.
+- Habits enrich atmosphere without punishment or damaged visuals for missing a day.
+- Goals become clearer/closer through real evidence.
+- Recipes become plated memories preserving changes.
+- Today moments dissolve into warm light behind the current time.
+- Routines return completion light to the pathway and remaining steps adapt.
+
+No universal green-check animation is allowed to replace room meaning.
+
+## 12. Intelligence and safety rules
+
+Beauty and health-related rooms require real intelligence rules, not aesthetic decoration alone. Skincare prioritizes compatibility and safety. Makeup can adapt placement and steps to available time. Hair tracks state, sectioning, maintenance, tension, and timing. Gua Sha supports mirrored directional guidance.
+
+Meaningful schedule, financial, external-account, destructive, or sensitive changes require explicit confirmation and a visible action receipt.
+
+Relationships must never be reduced to engagement scores.
+
+## 13. Personalization
+
+Every room may independently control:
+
+- Compact, comfortable, or spacious layout.
+- Quiet or atmospheric background.
+- Motion intensity.
+- Aura visibility/intensity.
+- Spoken guidance.
+- Text size.
+- Dyslexia-friendly typography.
+- Contrast.
+- Color intensity.
+- Spatial versus more compact information view where appropriate.
+- Suggested versus manual organization.
+- Information depth.
+- Visible sections.
+- Default view.
+- Privacy.
+- Glow initiative.
+- Page-specific shortcuts.
+
+Personalization must not erase the room's identity or the global world laws.
+
+## 14. Content-source rule
+
+Large source documents such as `Pasted markdown.md`, workout/routine/beauty/hair/financial/home files, transcripts, and inventories are authoritative content and feature inputs where applicable. They do not override approved room visuals or force every page into the same database/list layout.
+
+Every useful source detail should be routed into the appropriate world, room, object, routine, history, recommendation, inventory, or intelligence rule while preserving the page-specific spatial metaphor.
+
+## 15. Anti-repetition acceptance rules
+
+1. No two rooms may share the exact same hero, card grid, and section order.
+2. Every room has one dominant spatial metaphor.
+3. Every room has one signature interaction.
+4. Every room has a distinct light climate.
+5. Every room expresses completion differently.
+6. Motion represents real page meaning.
+7. Cards appear only when they are the best form.
+8. Every room answers one primary human question.
+9. Glow has a different behavioral role in each room.
+10. Navigation remains continuous and learnable even when inner experiences differ.
+
+## 16. Mandatory image-to-live QA
+
+For every approved reference and every live screenshot compare:
+
+- Camera/crop.
+- Viewport/device size.
+- Composition.
+- Object position/proportion.
+- Typography placement, weight, size, and clipping.
+- Transparency and material behavior.
+- Blur/sharpness.
+- Light and color temperature.
+- Depth.
+- Aura location, sharpness, and state.
+- Interactive hit area alignment.
+- Scroll behavior.
+- Modal overflow.
+- Responsive behavior.
+- Safe-area behavior.
+- Navigation continuity.
+- Every visible control.
+- Reduced-motion behavior.
+
+Do not declare a page complete because the broad aesthetic looks similar. Fix misplacements, highlighted-looking overlays, clipped labels, fuzzy rendering, wrong camera behavior, dead controls, wrong destinations, and device-specific failures.
+
+## Final principle
+
+> Every page belongs to Glow, but every page has its own reason to exist, its own atmosphere, its own physical logic, and its own way of helping the user. Same physics, different climates. One continuous living world.
