@@ -1,6 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { TodayLivingCenter } from '@/components/today-living-center';
+import { TodayLivingCenterV2 } from '@/components/today-living-center-v2';
 import { getTasksByUser } from '@/lib/data/tasks';
 import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
@@ -70,7 +70,7 @@ export default async function TodayPage(){
     .filter(r=>r.timeOfDay==='morning'||r.timeOfDay==='evening'||r.timeOfDay==='night')
     .slice(0,5);
 
-  return <TodayLivingCenter
+  return <TodayLivingCenterV2
     tasks={ranked.slice(0,8).map(t=>({
       id:t.id,
       title:t.title,
