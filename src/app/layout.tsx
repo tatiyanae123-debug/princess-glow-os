@@ -6,6 +6,7 @@ import './glow-os-3.css';
 import './reference-board-exact-v2.css';
 import './dashboard-reference-exact.css';
 import './dashboard-sidebar-exact.css';
+import { GlowWorldRuntime } from '@/components/glow-world-runtime';
 
 export const metadata: Metadata = {
   title: 'Glow OS',
@@ -15,7 +16,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {children}
+        <GlowWorldRuntime />
+      </body>
     </html>
   );
 }
