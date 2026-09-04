@@ -1,6 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { TodaySpatialWorld } from '@/components/today-spatial-world';
+import { TodaySpatialWorldV2 } from '@/components/today-spatial-world-v2';
 import { getTasksByUser } from '@/lib/data/tasks';
 import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
@@ -62,7 +62,7 @@ export default async function TodayPage() {
     .slice(0, 12);
 
   return (
-    <TodaySpatialWorld
+    <TodaySpatialWorldV2
       tasks={openTasks.slice(0, 20).map((task) => ({
         id: task.id,
         title: task.title,
