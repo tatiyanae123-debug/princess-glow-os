@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -68,6 +69,7 @@ function Matter({ small = false }: { small?: boolean }) {
 }
 
 export function GlowHomeWorld() {
+  const router = useRouter();
   const [dateText, setDateText] = useState('');
   const [timeText, setTimeText] = useState('');
   const [glowOpen, setGlowOpen] = useState(false);
@@ -88,7 +90,7 @@ export function GlowHomeWorld() {
 
   function openRegion(region: RegionKey) {
     if (region === 'today') {
-      window.location.assign('/today');
+      router.push('/today');
       return;
     }
     setActiveRegion(region);
@@ -163,7 +165,7 @@ export function GlowHomeWorld() {
               <span className={previewStyles.eyebrow}>{selected.name}</span>
               <h2>{selected.question}</h2>
               <p>{selected.description}</p>
-              <div className={previewStyles.status}><Sparkles size={14} /> This region stays in the new Glow Matter world. Its full room is being built without falling back to an old layout.</div>
+              <div className={previewStyles.status}><Sparkles size={14} /> Your place and active context stay attached as this region comes forward.</div>
             </div>
             <Matter />
           </section>
