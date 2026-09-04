@@ -1,435 +1,175 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import type { CSSProperties, FormEvent, ReactNode } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { Bell, Brain, CalendarDays, ChevronRight, Heart, PawPrint, Search, Sparkles, SunMedium, WandSparkles } from 'lucide-react';
 import { TODAY_LIVING_CENTER_REFERENCE } from '@/lib/design/today-living-center-reference';
+import styles from './today-living-center.module.css';
 
-type TaskLite = { id:string; title:string; priority:string; dueLabel?:string|null };
-type EventLite = { id:string; title:string; timeLabel:string; location?:string|null };
-type RoutineLite = { id:string; name:string; timeOfDay:string };
+type TaskLite={id:string;title:string;priority:string;dueDateISO?:string|null};
+type EventLite={id:string;title:string;timeLabel:string;location?:string|null;startAtISO?:string|null;allDay?:boolean};
+type RoutineLite={id:string;name:string;timeOfDay:string};
+type Props={tasks:TaskLite[];events:EventLite[];routines:RoutineLite[];energy:number|null;mood:number|null;sleepHours:number|null;glowMessage:string};
+type Panel='search'|'what-now'|'energy'|'priorities'|'routines'|'ask'|'saint'|'moment'|'focus'|null;
+type Daypart='morning'|'afternoon'|'evening'|'night';
+type EventEntry={event:EventLite;date:Date};
+type ScheduleItem={label:'NEXT'|'LATER'|'TONIGHT'|'TOMORROW';time:string;title:string;note:string;href:string;quiet?:boolean};
 
-type Props = {
-  tasks: TaskLite[];
-  events: EventLite[];
-  routines: RoutineLite[];
-  energy: number | null;
-  mood: number | null;
-  sleepHours: number | null;
-  glowMessage: string;
+const priorityRank:Record<string,number>={urgent:5,high:4,medium:3,low:2};
+const fallbackTasks:Record<Daypart,TaskLite>={
+  morning:{id:'phase-morning',title:'Begin with the clearest next move',priority:'medium'},
+  afternoon:{id:'phase-afternoon',title:'Reset the middle of the day',priority:'medium'},
+  evening:{id:'phase-evening',title:'Transition into the evening',priority:'medium'},
+  night:{id:'phase-night',title:'Close the day gently',priority:'medium'},
+};
+const fallbackRoutines:Record<Daypart,RoutineLite[]>={
+  morning:[{id:'m1',name:'Morning hydration',timeOfDay:'morning'},{id:'m2',name:'Creativity warm-up',timeOfDay:'morning'},{id:'m3',name:'Posture + stretch',timeOfDay:'morning'}],
+  afternoon:[{id:'a1',name:'Hydrate + reset',timeOfDay:'afternoon'},{id:'a2',name:'Posture + stretch',timeOfDay:'afternoon'},{id:'a3',name:'Midday reset',timeOfDay:'afternoon'}],
+  evening:[{id:'e1',name:'Evening transition',timeOfDay:'evening'},{id:'e2',name:'Hydrate + move',timeOfDay:'evening'},{id:'e3',name:'Prepare tomorrow',timeOfDay:'evening'}],
+  night:[{id:'n1',name:'Night hydration',timeOfDay:'night'},{id:'n2',name:'Skincare close',timeOfDay:'night'},{id:'n3',name:'Tomorrow prep',timeOfDay:'night'}],
+};
+const phaseWords:Record<Daypart,{yes:string[];no:string[]}>= {
+  morning:{yes:['morning','wake','breakfast','sunrise'],no:['night','bedtime','evening','midday']},
+  afternoon:{yes:['midday','afternoon','lunch','noon'],no:['night','bedtime','morning']},
+  evening:{yes:['evening','sunset','dinner','transition'],no:['morning','midday','lunch']},
+  night:{yes:['night','shutdown','sleep','bedtime','wind down','wind-down','evening'],no:['morning','midday','afternoon','lunch']},
 };
 
-type Panel = 'search'|'what-now'|'energy'|'priorities'|'routines'|'ask'|'saint'|'moment'|null;
-type ScheduleItem = { label:string; time:string; title:string; note:string; href:string };
+function daypartFor(hour:number):Daypart{if(hour>=5&&hour<12)return'morning';if(hour>=12&&hour<17)return'afternoon';if(hour>=17&&hour<21)return'evening';return'night';}
+function greetingFor(d:Daypart){return d==='morning'?'Good morning, Tatiyana ♡':d==='afternoon'?'Good afternoon, Tatiyana ♡':d==='evening'?'Good evening, Tatiyana ♡':'Good night, Tatiyana ♡';}
+function sameDay(a:Date,b:Date){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+function dayStart(date:Date){const d=new Date(date);d.setHours(0,0,0,0);return d;}
+function formatDuration(ms:number){const minutes=Math.max(0,Math.floor(ms/60000));return`${Math.floor(minutes/60)}H ${String(minutes%60).padStart(2,'0')}M`;}
+function priorityLabel(value:string){const p=value.toLowerCase();return p==='urgent'||p==='high'?'High':p==='low'?'Low':'Medium';}
+function categoryFor(title:string,index:number){const t=title.toLowerCase();if(/hair|body|skin|wellness|hydrate|care|beauty/.test(t))return'CARE';if(/content|write|studio|create|design|creative/.test(t))return'CREATE';if(/plan|schedule|calendar|prepare|tomorrow|organize/.test(t))return'PLAN';return['FOCUS','CARE','PLAN'][index]??'FOCUS';}
+function contextFor(priority:string){return /urgent|high/i.test(priority)?'High focus · protect what matters':/low/i.test(priority)?'Light focus · keep momentum':'Steady focus · move with intention';}
+function momentLine(d:Daypart){return d==='morning'?'Begin here.':d==='afternoon'?'This is your moment.':d==='evening'?'Finish what matters.':'Only what still matters.';}
+function replanLabel(d:Daypart){return d==='night'?'Close the rest of tonight':d==='evening'?'Replan My Evening':'Replan My Day';}
+function shaktiPrompt(d:Daypart){return d==='morning'?'What deserves your first clear yes?':d==='afternoon'?'What would make the rest of today lighter?':d==='evening'?'What still deserves your energy tonight?':'What can we close, carry, or release?';}
+function taskDueState(task:TaskLite,now:Date){if(!task.dueDateISO)return'Can wait';const due=new Date(task.dueDateISO);if(Number.isNaN(due.getTime()))return'Can wait';const diff=Math.round((dayStart(due).getTime()-dayStart(now).getTime())/86400000);if(diff<0)return'Overdue';if(diff===0)return'Today';if(diff===1)return'Tomorrow';return'Can wait';}
+function taskScore(task:TaskLite,d:Daypart,now:Date){const value=task.title.toLowerCase();let score=(priorityRank[task.priority]??2)*18;for(const word of phaseWords[d].yes)if(value.includes(word))score+=34;for(const word of phaseWords[d].no)if(value.includes(word))score-=52;const due=taskDueState(task,now);if(due==='Overdue')score+=22;if(due==='Today')score+=14;if(due==='Tomorrow')score-=5;return score;}
+function eventTime(entry:EventEntry|undefined,fallback:string){return entry?entry.date.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}):fallback;}
+function eventTitle(entry:EventEntry|undefined,fallback:string){return entry?.event.title??fallback;}
 
-const fallbackTasks: TaskLite[] = [
-  {id:'fallback-1',title:'Soft Power Studio Edit',priority:'high',dueLabel:'Today'},
-  {id:'fallback-2',title:'Hair + Body',priority:'high',dueLabel:'60 MIN'},
-  {id:'fallback-3',title:'Content Flow',priority:'medium',dueLabel:'Today'},
-];
-
-const fallbackRoutines: RoutineLite[] = [
-  {id:'r-1',name:'Morning Hydration',timeOfDay:'morning'},
-  {id:'r-2',name:'Creativity Warm-Up',timeOfDay:'morning'},
-  {id:'r-3',name:'Posture + Stretch',timeOfDay:'morning'},
-];
-
-function parseTimeLabel(label:string,now:Date):Date|null{
-  const match=label.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i);
-  if(!match) return null;
-  let hour=Number(match[1]);
-  const minute=Number(match[2]??0);
-  const suffix=match[3].toUpperCase();
-  if(hour===12) hour=0;
-  if(suffix==='PM') hour+=12;
-  const date=new Date(now);
-  date.setHours(hour,minute,0,0);
-  return date;
-}
-
-function formatDuration(ms:number){
-  const total=Math.max(0,Math.floor(ms/60000));
-  return `${Math.floor(total/60)}H ${String(total%60).padStart(2,'0')}M`;
-}
-
-function priorityLabel(value:string){
-  const normalized=value.toLowerCase();
-  if(normalized==='urgent'||normalized==='high') return 'High';
-  if(normalized==='low') return 'Low';
-  return 'Medium';
-}
-
-function titleSize(title:string){
-  if(title.length>30) return '1.32cqw';
-  if(title.length>22) return '1.48cqw';
-  return '1.68cqw';
-}
-
-function hotspot(left:number,top:number,width:number,height:number):CSSProperties{
-  return {left:`${left}%`,top:`${top}%`,width:`${width}%`,height:`${height}%`};
-}
-
-function Hotspot({label,style,onClick}:{label:string;style:CSSProperties;onClick:()=>void}){
-  return <button
-    type="button"
-    aria-label={label}
-    title={label}
-    onClick={onClick}
-    style={style}
-    className="absolute z-30 rounded-[1cqw] bg-transparent outline-none transition hover:bg-white/[.06] focus-visible:ring-2 focus-visible:ring-[#bd948d] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
-  />;
-}
-
-function DataLine({left,top,width,height=3.1,children,className=''}:{
-  left:number;top:number;width:number;height?:number;children:ReactNode;className?:string
-}){
-  return <div
-    className={`absolute z-20 flex items-center overflow-hidden ${className}`}
-    style={{
-      left:`${left}%`,top:`${top}%`,width:`${width}%`,height:`${height}%`,
-      background:'linear-gradient(90deg,rgba(255,248,244,.90),rgba(255,248,244,.77) 86%,rgba(255,248,244,0))',
-      WebkitMaskImage:'linear-gradient(90deg,#000 0%,#000 86%,transparent 100%)',
-      maskImage:'linear-gradient(90deg,#000 0%,#000 86%,transparent 100%)',
-      backdropFilter:'blur(2px)',WebkitBackdropFilter:'blur(2px)',
-    }}
-  >{children}</div>;
-}
-
-function Modal({children,onClose}:{children:ReactNode;onClose:()=>void}){
-  return <div className="absolute inset-0 z-50 grid place-items-center bg-[#6f5149]/10 p-6 backdrop-blur-[3px]" onMouseDown={onClose}>
-    <section
-      role="dialog"
-      aria-modal="true"
-      onMouseDown={event=>event.stopPropagation()}
-      className="relative w-[min(92vw,560px)] overflow-hidden rounded-[28px] border border-white/80 bg-[linear-gradient(145deg,rgba(255,252,249,.96),rgba(244,226,220,.91))] p-7 text-[#312522] shadow-[0_24px_90px_rgba(92,61,52,.22),inset_0_1px_0_rgba(255,255,255,.96)]"
-    >
-      <button type="button" onClick={onClose} aria-label="Close" className="absolute right-5 top-4 grid h-10 w-10 place-items-center rounded-full bg-white/50 text-xl">×</button>
-      {children}
-    </section>
-  </div>;
-}
+function Modal({children,onClose}:{children:ReactNode;onClose:()=>void}){return <div className={styles.modalBackdrop} onMouseDown={onClose}><section role="dialog" aria-modal="true" className={styles.modal} onMouseDown={e=>e.stopPropagation()}><button type="button" className={styles.close} onClick={onClose} aria-label="Close">×</button>{children}</section></div>}
 
 export function TodayLivingCenter({tasks,events,routines,energy,mood,sleepHours,glowMessage}:Props){
   const router=useRouter();
-  const [now,setNow]=useState(new Date());
+  const [now,setNow]=useState(()=>new Date());
   const [panel,setPanel]=useState<Panel>(null);
   const [momentIndex,setMomentIndex]=useState(0);
-  const [travel,setTravel]=useState<string|null>(null);
+  const [selectedTaskId,setSelectedTaskId]=useState<string|null>(null);
+  const [focusRunning,setFocusRunning]=useState(false);
+  const [focusSeconds,setFocusSeconds]=useState(0);
   const [searchText,setSearchText]=useState('');
   const [askText,setAskText]=useState('');
   const [askReceipt,setAskReceipt]=useState('');
-  const [replanned,setReplanned]=useState(false);
-  const [focusSeconds,setFocusSeconds]=useState(47*60);
-  const [focusRunning,setFocusRunning]=useState(false);
+  const [receipt,setReceipt]=useState('');
+  const [completedRoutineIds,setCompletedRoutineIds]=useState<string[]>([]);
+  const [localOrder,setLocalOrder]=useState<string[]>([]);
 
-  useEffect(()=>{
-    const timer=window.setInterval(()=>setNow(new Date()),1000);
-    return ()=>window.clearInterval(timer);
-  },[]);
+  useEffect(()=>{const timer=window.setInterval(()=>setNow(new Date()),15000);return()=>window.clearInterval(timer)},[]);
+  useEffect(()=>{if(!focusRunning)return;const timer=window.setInterval(()=>setFocusSeconds(v=>Math.max(0,v-1)),1000);return()=>window.clearInterval(timer)},[focusRunning]);
+  useEffect(()=>{if(focusRunning&&focusSeconds===0){setFocusRunning(false);setReceipt('Focus complete. This moment settled back into Today.')}},[focusRunning,focusSeconds]);
+  useEffect(()=>{if(!receipt)return;const timer=window.setTimeout(()=>setReceipt(''),4200);return()=>window.clearInterval(timer)},[receipt]);
+  useEffect(()=>{if(!panel)return;const close=(event:KeyboardEvent)=>{if(event.key==='Escape')setPanel(null)};window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close)},[panel]);
 
-  useEffect(()=>{
-    if(!focusRunning) return;
-    const timer=window.setInterval(()=>setFocusSeconds(value=>Math.max(0,value-1)),1000);
-    return ()=>window.clearInterval(timer);
-  },[focusRunning]);
-
-  useEffect(()=>{
-    if(focusSeconds===0) setFocusRunning(false);
-  },[focusSeconds]);
-
-  useEffect(()=>{
-    if(!panel) return;
-    const close=(event:KeyboardEvent)=>{ if(event.key==='Escape') setPanel(null); };
-    window.addEventListener('keydown',close);
-    return ()=>window.removeEventListener('keydown',close);
-  },[panel]);
-
-  const liveTasks=tasks.length?tasks:fallbackTasks;
-  const liveRoutines=routines.length?routines:fallbackRoutines;
-  const hour=now.getHours();
-  const greeting=hour>=5&&hour<12?'Good morning, Princess ♡':
-    hour>=12&&hour<17?'Good afternoon, Princess ♡':
-    hour>=17&&hour<21?'Good evening, Princess ♡':'Good night, Princess ♡';
+  const daypart=daypartFor(now.getHours());
+  const greeting=greetingFor(daypart);
   const dateLabel=now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}).toUpperCase();
   const timeLabel=now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-  const capacity=Math.max(35,Math.min(96,energy?Math.round(energy*10):82));
-  const emotional=Math.max(35,Math.min(96,mood?Math.round(mood*10):85));
-  const physical=Math.max(40,Math.min(96,energy?Math.round(energy*10-8):70));
-  const creative=Math.max(55,Math.min(98,capacity+13));
-  const endOfDay=new Date(now); endOfDay.setHours(23,59,59,999);
-  const timeRemaining=formatDuration(endOfDay.getTime()-now.getTime());
+  const dateKey=now.toLocaleDateString('en-CA');
+  useEffect(()=>{try{const raw=localStorage.getItem(`glow:today:routines:${dateKey}`);if(raw){const parsed=JSON.parse(raw) as string[];if(Array.isArray(parsed))setCompletedRoutineIds(parsed)}}catch{}},[dateKey]);
+  useEffect(()=>{try{localStorage.setItem(`glow:today:routines:${dateKey}`,JSON.stringify(completedRoutineIds))}catch{}},[completedRoutineIds,dateKey]);
 
-  let nextEventDate:Date|null=null;
-  for(const event of events){
-    const parsed=parseTimeLabel(event.timeLabel,now);
-    if(parsed&&parsed>now){ nextEventDate=parsed; break; }
-  }
-  const wrapAt=nextEventDate?new Date(nextEventDate.getTime()-30*60000):new Date(now.getTime()+4*60*60000+7*60000);
-  const leaveReady=formatDuration(wrapAt.getTime()-now.getTime());
+  const orderedTasks=useMemo(()=>{const source=tasks.length?tasks:[fallbackTasks[daypart]];const ranked=[...source].sort((a,b)=>taskScore(b,daypart,now)-taskScore(a,daypart,now));if(!localOrder.length)return ranked;const positions=new Map(localOrder.map((id,index)=>[id,index]));return [...ranked].sort((a,b)=>(positions.get(a.id)??999)-(positions.get(b.id)??999))},[tasks,daypart,now,localOrder]);
+  const activeTask=(selectedTaskId?orderedTasks.find(t=>t.id===selectedTaskId):undefined)??orderedTasks[0]??fallbackTasks[daypart];
+  const suggestedMinutes=/urgent|high/i.test(activeTask.priority)?47:/low/i.test(activeTask.priority)?20:30;
+  useEffect(()=>{setFocusSeconds(suggestedMinutes*60);setFocusRunning(false)},[activeTask.id,suggestedMinutes]);
+  const focusMinutes=Math.max(1,Math.ceil(focusSeconds/60));
 
-  const schedule:ScheduleItem[]=useMemo(()=>[
-    {label:'NEXT',time:events[0]?.timeLabel??'12:00 PM',title:events[0]?.title??'Lunch + Call',note:events[0]?.location??'Nourish & connect',href:'/calendar'},
-    {label:'LATER',time:events[1]?.timeLabel??'2:30 PM',title:events[1]?.title??'Creative Planning',note:events[1]?.location??'Deep work',href:'/calendar'},
-    {label:'TONIGHT',time:events[2]?.timeLabel??'7:00 PM',title:events[2]?.title??'Wind Down',note:events[2]?.location??'Reset & reflect',href:'/calendar'},
-    {label:'TOMORROW',time:'Preview',title:'A quiet glimpse',note:'',href:'/tomorrow'},
-  ],[events]);
+  const defaults:Record<Daypart,[number,number,number,number]>={morning:[78,76,72,84],afternoon:[70,72,66,78],evening:[64,68,60,73],night:[56,62,52,66]};
+  const inferred=defaults[daypart];
+  const capacity=energy!==null?Math.max(30,Math.min(96,Math.round(energy*10))):inferred[0];
+  const emotional=mood!==null?Math.max(30,Math.min(96,Math.round(mood*10))):inferred[1];
+  const physical=energy!==null?Math.max(30,Math.min(96,Math.round(energy*10-8))):inferred[2];
+  const creative=Math.max(35,Math.min(98,energy!==null?capacity+10:inferred[3]));
+  const capacityStatus=energy!==null||mood!==null?'Live':'Inferred';
+  const metrics=[['Mental',capacity],['Emotional',emotional],['Physical',physical],['Creative',creative]] as const;
 
-  const searchResults=useMemo(()=>{
-    const q=searchText.trim().toLowerCase();
-    if(!q) return [];
-    return [
-      ...liveTasks.map(item=>({kind:'Task',title:item.title})),
-      ...events.map(item=>({kind:'Event',title:item.title})),
-      ...liveRoutines.map(item=>({kind:'Routine',title:item.name})),
-    ].filter(item=>item.title.toLowerCase().includes(q)).slice(0,8);
-  },[searchText,liveTasks,events,liveRoutines]);
+  const eventEntries=useMemo<EventEntry[]>(()=>events.flatMap(event=>{if(!event.startAtISO)return[];const date=new Date(event.startAtISO);return Number.isNaN(date.getTime())?[]:[{event,date}]}),[events]);
+  const todayFuture=eventEntries.filter(x=>!x.event.allDay&&sameDay(x.date,now)&&x.date.getTime()>now.getTime()+60000).sort((a,b)=>a.date.getTime()-b.date.getTime());
+  const tomorrow=new Date(now);tomorrow.setDate(tomorrow.getDate()+1);
+  const tomorrowEntries=eventEntries.filter(x=>sameDay(x.date,tomorrow)).sort((a,b)=>a.date.getTime()-b.date.getTime());
+  const nextEvent=todayFuture[0];
+  const laterEvent=todayFuture[1];
+  const tonightEvent=todayFuture.find(x=>x.date.getHours()>=17&&x.event.id!==nextEvent?.event.id&&x.event.id!==laterEvent?.event.id);
+  const tomorrowFirst=tomorrowEntries[0];
+  const schedule:ScheduleItem[]=[
+    {label:'NEXT',time:eventTime(nextEvent,'Now'),title:eventTitle(nextEvent,'Open breathing space'),note:nextEvent?.event.location??'Nothing fixed is pulling you forward.',href:'/calendar',quiet:!nextEvent},
+    {label:'LATER',time:eventTime(laterEvent,'Later'),title:eventTitle(laterEvent,'Nothing fixed'),note:laterEvent?.event.location??'Let the rest stay quiet.',href:'/calendar',quiet:!laterEvent},
+    {label:'TONIGHT',time:eventTime(tonightEvent,'Tonight'),title:eventTitle(tonightEvent,daypart==='night'?'Close gently':'Wind down'),note:tonightEvent?.event.location??(daypart==='night'?'Close, carry, or release.':'Keep the evening soft.'),href:'/calendar',quiet:!tonightEvent},
+    {label:'TOMORROW',time:eventTime(tomorrowFirst,'Preview'),title:eventTitle(tomorrowFirst,'A quiet glimpse'),note:tomorrowFirst?.event.location??'',href:'/tomorrow',quiet:!tomorrowFirst},
+  ];
+  const endOfDay=new Date(now);endOfDay.setHours(23,59,59,999);const timeRemaining=formatDuration(endOfDay.getTime()-now.getTime());
+  const wrapAt=nextEvent?new Date(nextEvent.date.getTime()-30*60000):null;
+  const leaveReady=wrapAt&&wrapAt>now?formatDuration(wrapAt.getTime()-now.getTime()):'CLEAR';
 
-  function moveTo(href:string,label:string){
-    const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if(reduced){router.push(href);return;}
-    setTravel(label);
-    window.setTimeout(()=>router.push(href),430);
-  }
+  const routineOrder=useMemo(()=>{const exact=routines.filter(r=>r.timeOfDay===daypart);const adjacent=daypart==='night'?routines.filter(r=>r.timeOfDay==='evening'):daypart==='evening'?routines.filter(r=>r.timeOfDay==='night'):[];const source=[...exact,...adjacent];return source.length?source:fallbackRoutines[daypart]},[routines,daypart]);
+  const topThree=[...orderedTasks.slice(0,3)];while(topThree.length<3)topThree.push(fallbackTasks[daypart]);
+  const prompt=shaktiPrompt(daypart);
 
-  function openMoment(index:number){
-    setMomentIndex(index);
-    setPanel('moment');
-  }
+  const searchResults=useMemo(()=>{const q=searchText.trim().toLowerCase();if(!q)return[];return[...orderedTasks.map(t=>({kind:'Task',title:t.title,href:'/focus'})),...events.map(e=>({kind:'Event',title:e.title,href:'/calendar'})),...routineOrder.map(r=>({kind:'Routine',title:r.name,href:'/routines'}))].filter(x=>x.title.toLowerCase().includes(q)).slice(0,9)},[searchText,orderedTasks,events,routineOrder]);
 
-  function submitAsk(event:FormEvent){
-    event.preventDefault();
-    if(!askText.trim()) return;
-    setAskReceipt(glowMessage||'Glow understood. The current Today context stays connected while the world reorganizes around your request.');
-  }
+  function go(href:string){router.push(href)}
+  function chooseTask(task:TaskLite){setSelectedTaskId(task.id);setPanel('focus');setReceipt(`${task.title} moved into focus without leaving Today.`)}
+  function toggleFocus(){if(focusSeconds===0)setFocusSeconds(suggestedMinutes*60);setFocusRunning(v=>!v)}
+  function toggleRoutine(routine:RoutineLite){setCompletedRoutineIds(current=>current.includes(routine.id)?current.filter(id=>id!==routine.id):[...current,routine.id]);setReceipt(`${routine.name} updated.`)}
+  function replan(){const order=[...orderedTasks].sort((a,b)=>taskScore(b,daypart,now)-taskScore(a,daypart,now));setLocalOrder(order.map(t=>t.id));setReceipt(daypart==='night'?'Tonight reorganized. Nothing external moved.':'Today reorganized. Nothing external moved.')}
+  function submitAsk(event:FormEvent){event.preventDefault();if(!askText.trim())return;setAskReceipt(glowMessage||`Shakti understood. ${askText.trim()}`)}
 
-  function replan(){
-    setReplanned(true);
-    window.setTimeout(()=>setReplanned(false),4200);
-  }
+  return <main className={styles.root} data-daypart={daypart}>
+    <img src={TODAY_LIVING_CENTER_REFERENCE} alt="" aria-hidden="true" className={styles.room}/>
+    <div className={styles.dayClimate}/><div className={styles.uiSoftener}/>
+    <div className={styles.stage}>
+      <header className={styles.header}><div className={styles.brand}>GLOW OS</div><div className={styles.greeting}>{greeting}</div><div className={styles.date}>{dateLabel}</div></header>
+      <div className={styles.tools}><button type="button" className={styles.tool} onClick={()=>setPanel('search')} aria-label="Search Glow OS"><Search size={17}/></button><button type="button" className={styles.tool} onClick={()=>go('/calendar')} aria-label="Calendar"><CalendarDays size={17}/></button><button type="button" className={styles.tool} onClick={()=>go('/notices')} aria-label="Attention Center"><Bell size={17}/></button></div>
 
-  const activeTask=liveTasks[0]??fallbackTasks[0];
-  const focusMinutes=Math.ceil(focusSeconds/60);
-
-  return <main className="h-[100dvh] w-full overflow-hidden bg-[#eadfd8] text-[#312522]">
-    <style>{`
-      @keyframes auraRipple{0%{opacity:0;transform:translate(-50%,-50%) scale(.25)}30%{opacity:.72}100%{opacity:0;transform:translate(-50%,-50%) scale(2.35)}}
-      @keyframes worldDrift{0%{transform:scale(1);filter:saturate(1)}100%{transform:scale(1.012);filter:saturate(.97) brightness(1.02)}}
-      .aura-ripple{animation:auraRipple .78s cubic-bezier(.2,.8,.2,1) both}
-      .world-drift{animation:worldDrift .44s ease-out both}
-      .portrait-pan{overflow:hidden}
-      @media (orientation:portrait){
-        .portrait-pan{overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
-        .portrait-pan::-webkit-scrollbar{display:none}
-        .glow-stage{width:133.333dvh!important;height:100dvh!important;min-width:133.333dvh}
-      }
-      @media (prefers-reduced-motion:reduce){
-        .aura-ripple,.world-drift{animation:none!important}
-      }
-    `}</style>
-
-    <div className="portrait-pan flex h-full w-full items-center justify-center bg-[#eadfd8]">
-      <div
-        className={`glow-stage relative shrink-0 overflow-hidden ${travel?'world-drift':''}`}
-        style={{
-          width:'min(100vw, calc(100dvh * 4 / 3))',
-          height:'min(100dvh, calc(100vw * 3 / 4))',
-          containerType:'inline-size',
-        }}
-      >
-        <img
-          src={TODAY_LIVING_CENTER_REFERENCE}
-          alt=""
-          aria-hidden="true"
-          draggable={false}
-          className="absolute inset-0 h-full w-full select-none object-cover"
-        />
-
-        <div
-          aria-live="polite"
-          className="absolute z-20 flex flex-col justify-center"
-          style={{
-            left:'3.9%',top:'5.4%',width:'30%',height:'8.1%',
-            background:'linear-gradient(90deg,rgba(255,249,246,.94) 0%,rgba(255,249,246,.83) 72%,rgba(255,249,246,0) 100%)',
-            WebkitMaskImage:'linear-gradient(90deg,#000 0%,#000 78%,transparent 100%)',
-            maskImage:'linear-gradient(90deg,#000 0%,#000 78%,transparent 100%)',
-            backdropFilter:'blur(2px)',WebkitBackdropFilter:'blur(2px)',
-          }}
-        >
-          <div className="whitespace-nowrap font-serif leading-none tracking-[-.035em]" style={{fontSize:'2.47cqw'}}>{greeting}</div>
-          <div className="mt-[.75cqw] font-medium tracking-[.18em]" style={{fontSize:'.72cqw'}}>{dateLabel}</div>
+      <section className={styles.left}>
+        <div className={styles.master}>
+          <section className={`${styles.surface} ${styles.now}`}><div className={`${styles.eyebrow} ${styles.liveMoment}`}>LIVE MOMENT · NOW</div><div className={styles.clock}>{timeLabel}</div><div className={styles.nowWord}>NOW</div><div className={styles.taskTitle}>{activeTask.title}</div><div className={styles.context}>{contextFor(activeTask.priority)}</div><div className={styles.momentLine}>{momentLine(daypart)}</div><button type="button" className={styles.focus} onClick={toggleFocus}><span><strong>{focusMinutes}</strong><small>{focusRunning?'FOCUS TIME':'START FOCUS'}</small></span></button></section>
+          <section className={`${styles.surface} ${styles.what}`}><button type="button" onClick={()=>setPanel('what-now')} style={{background:'transparent',width:'100%',textAlign:'left'}}><div className={styles.eyebrow}>WHAT NOW? <Sparkles size={10}/></div><div className={styles.sectionIntro}>Your next right 3.</div></button><div className={styles.rows}>{orderedTasks.slice(0,3).map((task,index)=><button key={task.id} type="button" className={styles.whatRow} onClick={()=>chooseTask(task)}><span className={styles.num}>{index+1}</span><span className={styles.rowTitle}>{task.title}</span><span className={styles.meta}>{index===0?'Now':taskDueState(task,now)==='Today'?(daypart==='night'?'Carry':'Today'):taskDueState(task,now)}</span></button>)}</div></section>
+          <section className={`${styles.surface} ${styles.capacity}`}><button type="button" onClick={()=>setPanel('energy')} style={{background:'transparent',width:'100%',textAlign:'left'}}><div className={styles.eyebrow}>ENERGY & CAPACITY</div></button><div className={styles.capacityBody}><div className={styles.capacityOrb}><span><strong>{capacity}</strong><small>{capacityStatus}</small></span></div><div>{metrics.map(([label,value])=><div className={styles.metric} key={label}><span>{label}</span><span className={styles.track}><span className={styles.fill} style={{width:`${value}%`,display:'block'}}/></span><span>{value}%</span></div>)}</div></div></section>
+          <section className={`${styles.surface} ${styles.counts}`}><div><div className={styles.countLabel}>TIME REMAINING TODAY</div><div className={styles.countValue}>{timeRemaining}</div><div className={styles.countNote}>until day’s end</div></div><div><div className={styles.countLabel}>LEAVE-READY</div><div className={styles.countValue}>{leaveReady}</div><div className={styles.countNote}>{leaveReady==='CLEAR'?'no fixed commitment ahead':'30-minute preparation buffer'}</div></div></section>
         </div>
+        <button type="button" className={`${styles.surface} ${styles.replan}`} onClick={replan}><span className={styles.replanMark}>✧</span><span className={styles.replanText}><strong>{replanLabel(daypart)}</strong><small>Preview locally. Nothing external moves without approval.</small></span><span className={styles.arrow}><ChevronRight size={17}/></span></button>
+        <section className={`${styles.surface} ${styles.priorities}`}><div className={styles.eyebrow}>TOP 3 PRIORITIES ♕</div><div className={styles.priorityGrid}>{topThree.map((task,index)=><button key={`${task.id}-${index}`} type="button" className={styles.priority} onClick={()=>chooseTask(task)}><span className={styles.category}>{categoryFor(task.title,index)}</span><span className={styles.priorityTitle}>{task.title}</span><span className={styles.priorityNote}>{daypart==='night'?'Close, carry, or move it':index===0?'Move the highest-value work':index===1?'Nourish the day':'Map the next move'}</span><span className={styles.impact}>Impact: {priorityLabel(task.priority)}</span></button>)}</div></section>
+      </section>
 
-        <DataLine left={41.4} top={16.4} width={5.2} height={2.8} className="justify-center">
-          <span className="font-medium" style={{fontSize:'.72cqw'}}>{timeLabel}</span>
-        </DataLine>
+      <section className={styles.center}><div className={styles.centerVeil}/><div className={styles.shaktiLive}/><button type="button" className={styles.shaktiName} onClick={()=>setPanel('ask')}>Shakti</button><button type="button" className={styles.askShakti} onClick={()=>setPanel('ask')}>Ask Shakti</button></section>
 
-        <DataLine left={5.8} top={22.75} width={25.1} height={4.0}>
-          <span className="font-serif leading-none" style={{fontSize:titleSize(activeTask.title)}}>{activeTask.title}</span>
-        </DataLine>
-
-        {liveTasks.slice(0,3).map((task,index)=>{
-          const tops=[40.95,44.95,48.95];
-          return <DataLine key={task.id} left={8.1} top={tops[index]} width={16.2} height={2.75}>
-            <span className="min-w-0 flex-1 truncate font-serif" style={{fontSize:'.72cqw'}}>{task.title}</span>
-            <span className="ml-[.45cqw] shrink-0" style={{fontSize:'.57cqw'}}>{task.dueLabel??(index===1?'60 MIN':'Today')}</span>
-          </DataLine>;
-        })}
-
-        <DataLine left={5.75} top={58.65} width={9.3} height={3.7}>
-          <span className="font-serif" style={{fontSize:'1.48cqw'}}>{timeRemaining}</span>
-        </DataLine>
-        <DataLine left={20.4} top={58.65} width={10.2} height={3.7}>
-          <span className="font-serif" style={{fontSize:'1.48cqw'}}>{leaveReady}</span>
-        </DataLine>
-
-        {liveTasks.slice(0,3).map((task,index)=>{
-          const lefts=[6.5,23.2,39.1];
-          const widths=[12.6,12.5,13.1];
-          return <DataLine key={`priority-${task.id}`} left={lefts[index]} top={80.55} width={widths[index]} height={3.0}>
-            <span className="truncate font-serif" style={{fontSize:'1.05cqw'}}>{task.title}</span>
-          </DataLine>;
-        })}
-        {liveTasks.slice(0,3).map((task,index)=>{
-          const lefts=[6.5,23.2,39.1];
-          return <DataLine key={`impact-${task.id}`} left={lefts[index]} top={85.9} width={9.2} height={2.2}>
-            <span style={{fontSize:'.54cqw'}}>Impact: {priorityLabel(task.priority)}</span>
-          </DataLine>;
-        })}
-
-        {schedule.map((item,index)=>{
-          const topSets=[
-            {time:14.1,title:16.45,note:21.0},
-            {time:30.5,title:32.95,note:37.65},
-            {time:47.0,title:49.25,note:54.0},
-            {time:62.0,title:64.2,note:0},
-          ];
-          const p=topSets[index];
-          return <div key={item.label}>
-            <DataLine left={82.15} top={p.time} width={11.1} height={2.2}>
-              <span style={{fontSize:'.59cqw'}}>{item.time}</span>
-            </DataLine>
-            <DataLine left={82.15} top={p.title} width={12.1} height={3.2}>
-              <span className="truncate font-serif" style={{fontSize:'1.03cqw'}}>{item.title}</span>
-            </DataLine>
-            {p.note>0&&<DataLine left={82.15} top={p.note} width={12.2} height={2.2}>
-              <span className="truncate" style={{fontSize:'.56cqw'}}>{item.note}</span>
-            </DataLine>}
-          </div>;
-        })}
-
-        {liveRoutines.slice(0,3).map((routine,index)=>{
-          const tops=[78.55,82.7,86.85];
-          return <DataLine key={routine.id} left={57.75} top={tops[index]} width={13.4} height={2.55}>
-            <span className="truncate font-serif" style={{fontSize:'.66cqw'}}>{routine.name}</span>
-          </DataLine>;
-        })}
-
-        <Hotspot label="Open current focus" style={hotspot(4.0,14.7,44.8,19.0)} onClick={()=>moveTo('/focus','Focus')} />
-        <Hotspot label="What Now" style={hotspot(4.9,34.2,21.0,19.0)} onClick={()=>setPanel('what-now')} />
-        <Hotspot label="Energy and Capacity" style={hotspot(26.4,34.2,21.7,19.0)} onClick={()=>setPanel('energy')} />
-        <Hotspot label={focusRunning?'Pause focus timer':'Start focus timer'} style={hotspot(40.0,20.1,7.0,11.0)} onClick={()=>setFocusRunning(value=>!value)} />
-        <Hotspot label="Replan My Day" style={hotspot(4.2,67.2,44.1,7.0)} onClick={replan} />
-        <Hotspot label="Top 3 Priorities" style={hotspot(4.1,74.7,49.1,16.2)} onClick={()=>setPanel('priorities')} />
-        <Hotspot label="Routines Due Now" style={hotspot(54.3,74.4,21.1,16.7)} onClick={()=>setPanel('routines')} />
-        <Hotspot label="Ask Glow" style={hotspot(76.0,74.1,21.4,16.9)} onClick={()=>{setAskReceipt('');setPanel('ask');}} />
-        <Hotspot label="Saint" style={hotspot(87.3,92.3,10.5,6.8)} onClick={()=>setPanel('saint')} />
-
-        {schedule.map((item,index)=>{
-          const tops=[10.4,27.1,43.4,58.7];
-          return <Hotspot key={`moment-${item.label}`} label={item.label} style={hotspot(78.0,tops[index],18.8,14.2)} onClick={()=>openMoment(index)} />;
-        })}
-
-        <Hotspot label="Search Glow OS" style={hotspot(85.7,1.0,4.0,5.7)} onClick={()=>setPanel('search')} />
-        <Hotspot label="Calendar" style={hotspot(90.5,1.0,4.0,5.7)} onClick={()=>moveTo('/calendar','Plan')} />
-        <Hotspot label="Notifications" style={hotspot(95.0,1.0,4.0,5.7)} onClick={()=>moveTo('/notices','Attention')} />
-
-        <Hotspot label="Today" style={hotspot(22.5,92.5,8.0,7.2)} onClick={()=>{}} />
-        <Hotspot label="Plan" style={hotspot(33.0,92.5,8.0,7.2)} onClick={()=>moveTo('/planning','Plan')} />
-        <Hotspot label="Life" style={hotspot(44.2,92.5,8.0,7.2)} onClick={()=>moveTo('/wellness','Life')} />
-        <Hotspot label="Brain" style={hotspot(54.5,92.5,8.2,7.2)} onClick={()=>moveTo('/brain','Brain')} />
-        <Hotspot label="Create" style={hotspot(65.0,92.5,8.4,7.2)} onClick={()=>moveTo('/world','Create')} />
-
-        {focusRunning&&<div
-          className="absolute z-40 grid place-items-center rounded-full bg-white/75 font-serif shadow-[0_0_28px_rgba(255,226,219,.78)] backdrop-blur-sm"
-          style={{left:'41.5%',top:'21.55%',width:'4.4%',aspectRatio:'1'}}
-        >
-          <div className="text-center">
-            <div style={{fontSize:'1.35cqw'}}>{focusMinutes}</div>
-            <div className="tracking-[.12em]" style={{fontSize:'.42cqw'}}>MIN</div>
-          </div>
-        </div>}
-
-        {replanned&&<>
-          <div className="aura-ripple pointer-events-none absolute z-40 rounded-full border border-white/80 shadow-[0_0_60px_rgba(255,226,230,.8)]" style={{left:'60.4%',top:'23.4%',width:'9%',aspectRatio:'1'}}/>
-          <div className="absolute z-40 rounded-full border border-white/80 bg-white/70 px-[1.1cqw] py-[.55cqw] shadow-lg backdrop-blur-md" style={{left:'18%',top:'68.7%',fontSize:'.63cqw'}}>
-            Glow reorganized the day. Review before committing.
-          </div>
-        </>}
-
-        {travel&&<div className="aura-ripple pointer-events-none absolute z-40 rounded-full border border-white/80 shadow-[0_0_70px_rgba(255,225,230,.8)]" style={{left:'60.4%',top:'23.4%',width:'10%',aspectRatio:'1'}}/>}
-
-        {panel==='search'&&<Modal onClose={()=>setPanel(null)}>
-          <p className="text-xs font-semibold tracking-[.2em]">SEARCH GLOW OS</p>
-          <h2 className="mt-2 font-serif text-3xl">Cast light across your world.</h2>
-          <input autoFocus value={searchText} onChange={e=>setSearchText(e.target.value)} placeholder="Tasks, moments, routines…" className="mt-6 w-full rounded-2xl border border-[#d8c2bb] bg-white/60 px-4 py-3 outline-none focus:ring-2 focus:ring-[#cba6a0]" />
-          <div className="mt-4 space-y-2">
-            {searchText&&!searchResults.length&&<p className="text-sm opacity-70">No matching live items yet.</p>}
-            {searchResults.map((result,index)=><div key={`${result.kind}-${index}`} className="rounded-xl bg-white/40 px-4 py-3"><span className="mr-2 text-[10px] font-semibold tracking-[.15em] opacity-60">{result.kind.toUpperCase()}</span>{result.title}</div>)}
-          </div>
-        </Modal>}
-
-        {panel==='what-now'&&<Modal onClose={()=>setPanel(null)}>
-          <p className="text-xs font-semibold tracking-[.2em]">WHAT NOW?</p>
-          <h2 className="mt-2 font-serif text-3xl">Your next right three.</h2>
-          <div className="mt-5 space-y-3">{liveTasks.slice(0,3).map((task,index)=><button key={task.id} onClick={()=>moveTo('/focus','Focus')} className="flex w-full items-center gap-3 rounded-2xl bg-white/45 px-4 py-3 text-left"><span className="grid h-8 w-8 place-items-center rounded-lg bg-[#ecd9d2]">{index+1}</span><span className="min-w-0 flex-1"><span className="block truncate font-serif text-lg">{task.title}</span><span className="text-xs opacity-60">{task.dueLabel??'Today'} · {priorityLabel(task.priority)} impact</span></span></button>)}</div>
-        </Modal>}
-
-        {panel==='energy'&&<Modal onClose={()=>setPanel(null)}>
-          <p className="text-xs font-semibold tracking-[.2em]">ENERGY & CAPACITY</p>
-          <div className="mt-4 flex items-center gap-8">
-            <div className="grid h-32 w-32 place-items-center rounded-full border-2 border-[#d9bdb5] bg-white/40 text-center"><div><div className="font-serif text-5xl">{capacity}</div><div className="font-serif">Radiant</div></div></div>
-            <div className="flex-1 space-y-3">{[['Mental',capacity],['Emotional',emotional],['Physical',physical],['Creative',creative]].map(([label,value])=><div key={String(label)}><div className="mb-1 flex justify-between text-xs"><span>{label}</span><span>{value}%</span></div><div className="h-1 rounded-full bg-[#ddcec9]"><div className="h-full rounded-full bg-[#cda39c]" style={{width:`${value}%`}}/></div></div>)}</div>
-          </div>
-          {sleepHours!=null&&<p className="mt-5 text-sm opacity-70">Last recorded sleep: {sleepHours} hours.</p>}
-        </Modal>}
-
-        {panel==='priorities'&&<Modal onClose={()=>setPanel(null)}>
-          <p className="text-xs font-semibold tracking-[.2em]">TOP 3 PRIORITIES</p>
-          <h2 className="mt-2 font-serif text-3xl">What deserves your light.</h2>
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">{liveTasks.slice(0,3).map((task,index)=><div key={task.id} className="rounded-2xl bg-white/42 p-4"><p className="text-[10px] tracking-[.15em] opacity-60">{['CREATE','CARE','PLAN'][index]}</p><p className="mt-2 font-serif text-xl">{task.title}</p><p className="mt-2 text-xs opacity-60">Impact: {priorityLabel(task.priority)}</p></div>)}</div>
-        </Modal>}
-
-        {panel==='routines'&&<Modal onClose={()=>setPanel(null)}>
-          <p className="text-xs font-semibold tracking-[.2em]">ROUTINES DUE NOW</p>
-          <h2 className="mt-2 font-serif text-3xl">Move through the pathway.</h2>
-          <div className="mt-5 divide-y divide-[#d9c8c2]">{liveRoutines.slice(0,5).map((routine,index)=><button key={routine.id} onClick={()=>moveTo('/routines','Routine')} className="flex w-full items-center gap-3 py-3 text-left"><span className="min-w-0 flex-1 truncate font-serif text-lg">{routine.name}</span><span className="text-xs opacity-60">{[5,10,7,12,8][index]??8} MIN</span><span className="h-5 w-5 rounded-full border border-[#a9857d]"/></button>)}</div>
-        </Modal>}
-
-        {panel==='ask'&&<Modal onClose={()=>setPanel(null)}>
-          <p className="text-xs font-semibold tracking-[.2em]">ASK GLOW ✧</p>
-          <h2 className="mt-2 font-serif text-3xl">Your oracle. Your clarity.</h2>
-          <form onSubmit={submitAsk} className="mt-5">
-            <textarea autoFocus value={askText} onChange={e=>setAskText(e.target.value)} placeholder="What would make today iconic?" className="min-h-32 w-full resize-none rounded-2xl border border-[#d7c0b9] bg-white/55 p-4 outline-none focus:ring-2 focus:ring-[#cba6a0]"/>
-            <button type="submit" className="mt-3 rounded-full bg-[#3b2d29] px-5 py-2.5 text-sm text-white">Ask Glow</button>
-          </form>
-          {askReceipt&&<div className="mt-4 rounded-2xl bg-white/45 p-4 text-sm leading-relaxed">{askReceipt}</div>}
-        </Modal>}
-
-        {panel==='saint'&&<Modal onClose={()=>setPanel(null)}>
-          <p className="text-xs font-semibold tracking-[.2em]">SAINT</p>
-          <h2 className="mt-2 font-serif text-3xl">Saint is with you. ♡</h2>
-          <p className="mt-4 text-sm leading-relaxed opacity-75">His Today context remains connected to walks, routines, leave-ready timing, and the Life world without turning this room into another dashboard.</p>
-        </Modal>}
-
-        {panel==='moment'&&<Modal onClose={()=>setPanel(null)}>
-          <p className="text-xs font-semibold tracking-[.2em]">{schedule[momentIndex].label}</p>
-          <h2 className="mt-2 font-serif text-3xl">{schedule[momentIndex].title}</h2>
-          <p className="mt-2 text-sm">{schedule[momentIndex].time}</p>
-          {schedule[momentIndex].note&&<p className="mt-3 text-sm opacity-70">{schedule[momentIndex].note}</p>}
-          <p className="mt-5 text-sm leading-relaxed opacity-70">This moment expanded from Today without losing your current position.</p>
-          <button type="button" onClick={()=>moveTo(schedule[momentIndex].href,schedule[momentIndex].label)} className="mt-5 rounded-full bg-[#3b2d29] px-5 py-2.5 text-sm text-white">Move into time</button>
-        </Modal>}
-      </div>
+      <section className={styles.right}>
+        <section className={`${styles.surface} ${styles.timeline}`}><div className={styles.eyebrow}>THE REST OF TODAY</div>{schedule.map((item,index)=><button key={item.label} type="button" className={styles.moment} onClick={()=>{setMomentIndex(index);setPanel('moment')}}><span className={styles.node}/><span className={styles.momentLabel}>{item.label}</span><span className={styles.momentTime}>{item.time}</span><span className={styles.momentTitle}>{item.title}</span>{item.note&&<span className={styles.momentNote}>{item.note}</span>}</button>)}</section>
+        <section className={`${styles.surface} ${styles.routines}`}><div className={styles.eyebrow}>ROUTINES DUE NOW</div>{routineOrder.slice(0,3).map((routine,index)=>{const done=completedRoutineIds.includes(routine.id);return <button key={routine.id} type="button" className={`${styles.routine} ${done?styles.done:''}`} onClick={()=>toggleRoutine(routine)}><span className={styles.routineName}>{routine.name}</span><span className={styles.routineDuration}>{[5,10,7][index]} MIN</span><span className={styles.check}>{done?'✓':''}</span></button>})}</section>
+        <button type="button" className={`${styles.surface} ${styles.askPanel}`} onClick={()=>setPanel('ask')}><span><span className={styles.eyebrow}>ASK SHAKTI ✧</span><h3>Your oracle. Your clarity.</h3><p>{prompt}</p></span><span className={styles.miniShakti}/></button>
+      </section>
     </div>
-  </main>;
+
+    <img src={TODAY_LIVING_CENTER_REFERENCE} alt="" aria-hidden="true" className={styles.avatarReveal}/>
+    <div className={styles.navMask}/>
+    <nav className={styles.nav}><button type="button" className={styles.active}><SunMedium size={15}/><span>Today</span></button><button type="button" onClick={()=>go('/planning')}><CalendarDays size={15}/><span>Plan</span></button><button type="button" onClick={()=>go('/world')}><Heart size={15}/><span>Life</span></button><button type="button" onClick={()=>go('/brain')}><Brain size={15}/><span>Brain</span></button><button type="button" onClick={()=>go('/world')}><WandSparkles size={15}/><span>Create</span></button></nav>
+    <button type="button" className={styles.saint} onClick={()=>setPanel('saint')}><PawPrint size={15}/><span>Saint</span></button>
+
+    {receipt&&<div className={styles.receipt} aria-live="polite">{receipt}</div>}
+    {panel==='search'&&<Modal onClose={()=>setPanel(null)}><p className={styles.eyebrow}>SEARCH GLOW OS</p><h2>Cast light across your world.</h2><input autoFocus className={styles.input} value={searchText} onChange={e=>setSearchText(e.target.value)} placeholder="Tasks, moments, routines…"/><div>{searchText&&!searchResults.length&&<p>No matching live items yet.</p>}{searchResults.map((result,index)=><button key={`${result.kind}-${index}`} type="button" className={styles.modalRow} onClick={()=>go(result.href)}><span className={styles.eyebrow}>{result.kind}</span><span>{result.title}</span></button>)}</div></Modal>}
+    {panel==='focus'&&<Modal onClose={()=>setPanel(null)}><p className={styles.eyebrow}>LIVE MOMENT · NOW</p><h2>{activeTask.title}</h2><p>{contextFor(activeTask.priority)}</p><button type="button" className={styles.focus} onClick={toggleFocus}><span><strong>{focusMinutes}</strong><small>{focusRunning?'PAUSE':'START'}</small></span></button></Modal>}
+    {panel==='what-now'&&<Modal onClose={()=>setPanel(null)}><p className={styles.eyebrow}>WHAT NOW?</p><h2>Your next right three.</h2>{orderedTasks.slice(0,3).map((task,index)=><button key={task.id} type="button" className={styles.modalRow} onClick={()=>chooseTask(task)}><span>{index+1}</span><span>{task.title}</span><small>{taskDueState(task,now)}</small></button>)}</Modal>}
+    {panel==='energy'&&<Modal onClose={()=>setPanel(null)}><p className={styles.eyebrow}>ENERGY & CAPACITY</p><h2>{capacity} · {capacityStatus}</h2>{metrics.map(([label,value])=><div key={label} className={styles.modalRow}><span>{label}</span><span>{value}%</span></div>)}{sleepHours!==null&&<p>Sleep logged: {sleepHours} hours.</p>}</Modal>}
+    {panel==='priorities'&&<Modal onClose={()=>setPanel(null)}><p className={styles.eyebrow}>TOP 3 PRIORITIES</p><h2>What still matters most.</h2>{topThree.map((task,index)=><button key={`${task.id}-modal-${index}`} type="button" className={styles.modalRow} onClick={()=>chooseTask(task)}><span>{index+1}</span><span>{task.title}</span></button>)}</Modal>}
+    {panel==='routines'&&<Modal onClose={()=>setPanel(null)}><p className={styles.eyebrow}>ROUTINES DUE NOW</p><h2>One active pathway, not a scoreboard.</h2>{routineOrder.map(routine=><button key={routine.id} type="button" className={styles.modalRow} onClick={()=>toggleRoutine(routine)}><span>{completedRoutineIds.includes(routine.id)?'✓':'○'}</span><span>{routine.name}</span></button>)}</Modal>}
+    {panel==='moment'&&<Modal onClose={()=>setPanel(null)}><p className={styles.eyebrow}>{schedule[momentIndex].label}</p><h2>{schedule[momentIndex].title}</h2><p>{schedule[momentIndex].time}</p><p>{schedule[momentIndex].note}</p><button type="button" className={styles.modalRow} onClick={()=>go(schedule[momentIndex].href)}><span>Focus / reveal</span><ChevronRight size={17}/></button></Modal>}
+    {panel==='ask'&&<Modal onClose={()=>setPanel(null)}><p className={styles.eyebrow}>ASK SHAKTI</p><h2>Your oracle. Your clarity.</h2><p>{prompt}</p><form onSubmit={submitAsk}><input className={styles.input} value={askText} onChange={e=>{setAskText(e.target.value);setAskReceipt('')}} placeholder="Speak naturally to Shakti…"/><button type="submit" className={styles.modalRow}><span>Send to Shakti</span><ChevronRight size={17}/></button></form>{askReceipt&&<p>{askReceipt}</p>}</Modal>}
+    {panel==='saint'&&<Modal onClose={()=>setPanel(null)}><PawPrint size={23}/><h2>Saint is with you.</h2><p>Walks, care moments, reminders, and shared plans remain connected to Today.</p></Modal>}
+  </main>
 }
