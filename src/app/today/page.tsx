@@ -1,6 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { TodayLivingCenter } from '@/components/today-living-center';
+import { TodayLivingCenterStable } from '@/components/today-living-center-stable';
 import { getTasksByUser } from '@/lib/data/tasks';
 import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
@@ -37,21 +37,9 @@ export default async function TodayPage(){
   const latestWellness=wellnessEntries[0]??null;
   const routines=beautyRoutines.filter(routine=>['morning','afternoon','evening','night'].includes(routine.timeOfDay)).slice(0,12);
 
-  return <TodayLivingCenter
-    tasks={open.slice(0,16).map(task=>({
-      id:task.id,
-      title:task.title,
-      priority:task.priority,
-      dueDateISO:task.dueDate?.toISOString()??null,
-    }))}
-    events={nearbyEvents.slice(0,20).map(event=>({
-      id:event.id,
-      title:event.title,
-      timeLabel:event.allDay?'All day':event.startAt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}),
-      location:event.location,
-      startAtISO:event.startAt.toISOString(),
-      allDay:event.allDay,
-    }))}
+  return <TodayLivingCenterStable
+    tasks={open.slice(0,16).map(task=>({id:task.id,title:task.title,priority:task.priority,dueDateISO:task.dueDate?.toISOString()??null}))}
+    events={nearbyEvents.slice(0,20).map(event=>({id:event.id,title:event.title,timeLabel:event.allDay?'All day':event.startAt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}),location:event.location,startAtISO:event.startAt.toISOString(),allDay:event.allDay}))}
     routines={routines.map(routine=>({id:routine.id,name:routine.name,timeOfDay:routine.timeOfDay}))}
     energy={levelToNumber(latestWellness?.energy)}
     mood={levelToNumber(latestWellness?.mood)}
