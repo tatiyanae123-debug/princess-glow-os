@@ -1,0 +1,225 @@
+/* Glow OS spatial rail precision system — 2026-09-04
+   Full rail -> compact rail -> ultra-compact rail.
+   Labels must never escape the optical rail or collide with the scene. */
+
+/* ---------- Today spatial rail: shared baseline ---------- */
+.tsw-shell {
+  grid-template-columns: clamp(88px, 8.2vw, 108px) minmax(0, 1fr) !important;
+}
+
+.tsw-rail {
+  padding: 10px 6px 10px !important;
+}
+
+.tsw-rail-button {
+  --tsw-rail-label-size: clamp(8px, .72vw, 11px);
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  overflow: visible;
+  gap: 4px !important;
+}
+
+.tsw-rail-button > span:last-child {
+  display: block;
+  width: 100%;
+  max-width: 58px;
+  min-width: 0;
+  margin: 0 auto;
+  text-align: center;
+  font-size: var(--tsw-rail-label-size) !important;
+  line-height: 1.05;
+  letter-spacing: -.01em;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+  text-wrap: balance;
+  text-overflow: clip;
+}
+
+/* Visual product-language rename: Resources -> Library.
+   The route remains /resources; this only changes the product-facing rail label. */
+.tsw-rail-button:nth-of-type(5) > span:last-child {
+  position: relative;
+  text-indent: -9999px;
+}
+
+.tsw-rail-button:nth-of-type(5) > span:last-child::after {
+  content: 'Library';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-indent: 0;
+  color: #8a837d;
+  font-size: var(--tsw-rail-label-size);
+  line-height: 1.05;
+  letter-spacing: -.01em;
+}
+
+.tsw-rail-button:nth-of-type(5):hover > span:last-child::after,
+.tsw-rail-button:nth-of-type(5):focus-visible > span:last-child::after {
+  color: #56504b;
+}
+
+/* Keep the optical mounts visually primary. */
+.tsw-rail-mount {
+  flex: 0 0 auto;
+}
+
+/* ---------- Full rail: desktop + wide iPad ---------- */
+@media (min-width: 1101px) {
+  .tsw-rail-button {
+    --tsw-rail-label-size: clamp(8px, .68vw, 10px);
+    min-height: clamp(52px, 7.1dvh, 64px) !important;
+  }
+
+  .tsw-rail-button > span:last-child {
+    max-width: 62px;
+  }
+}
+
+/* ---------- Compact rail: iPad Split View / tighter desktop ---------- */
+@media (min-width: 761px) and (max-width: 1100px) {
+  .tsw-shell {
+    grid-template-columns: 82px minmax(0, 1fr) !important;
+  }
+
+  .tsw-rail {
+    padding: 8px 5px 9px !important;
+    gap: clamp(4px, .65dvh, 7px) !important;
+  }
+
+  .tsw-rail-button {
+    --tsw-rail-label-size: 9px;
+    min-height: clamp(48px, 6.35dvh, 58px) !important;
+  }
+
+  .tsw-rail-button > span:last-child {
+    max-width: 52px;
+    line-height: 1.02;
+  }
+
+  .tsw-rail-mount {
+    width: clamp(27px, 3vw, 34px) !important;
+    height: clamp(27px, 3vw, 34px) !important;
+  }
+
+  .tsw-rail-button.active .tsw-rail-mount {
+    width: clamp(36px, 4vw, 43px) !important;
+    height: clamp(36px, 4vw, 43px) !important;
+  }
+
+  .tsw-add-pearl {
+    width: 42px !important;
+    height: 42px !important;
+  }
+}
+
+/* ---------- Ultra-compact rail: icon-first ---------- */
+@media (max-width: 760px) {
+  .tsw-shell {
+    grid-template-columns: 64px minmax(0, 1fr) !important;
+  }
+
+  .tsw-rail {
+    padding: 7px 4px 8px !important;
+    gap: 4px !important;
+  }
+
+  .tsw-rail-button {
+    min-height: 48px !important;
+    gap: 0 !important;
+  }
+
+  .tsw-rail-button > span:last-child {
+    display: none;
+  }
+
+  /* Selected / keyboard-focused object reveals its name as a floating optical label. */
+  .tsw-rail-button.active > span:last-child,
+  .tsw-rail-button:focus-visible > span:last-child {
+    display: grid;
+    place-items: center;
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 80;
+    width: auto;
+    min-width: 68px;
+    max-width: 124px;
+    min-height: 34px;
+    padding: 7px 11px;
+    border-radius: 999px;
+    background: linear-gradient(145deg, rgba(255,255,255,.78), rgba(255,255,255,.34));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.92), inset 0 -1px 0 rgba(126,116,108,.07), 0 10px 24px rgba(70,59,51,.10);
+    backdrop-filter: blur(12px) saturate(112%);
+    -webkit-backdrop-filter: blur(12px) saturate(112%);
+    white-space: nowrap;
+    font-size: 10px !important;
+    line-height: 1;
+    letter-spacing: -.01em;
+    color: #5b5550;
+    pointer-events: none;
+  }
+
+  .tsw-rail-button:nth-of-type(5).active > span:last-child::after,
+  .tsw-rail-button:nth-of-type(5):focus-visible > span:last-child::after {
+    font-size: 10px;
+    color: #5b5550;
+  }
+
+  .tsw-rail-mount,
+  .tsw-rail-button.active .tsw-rail-mount {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  .tsw-add-pearl {
+    width: 40px !important;
+    height: 40px !important;
+  }
+}
+
+/* Very short landscape / browser-chrome-heavy states prioritize icons before
+   squeezing the labels into unreadable sizes. */
+@media (max-height: 620px) and (min-width: 761px) {
+  .tsw-rail {
+    gap: 3px !important;
+  }
+
+  .tsw-rail-button {
+    min-height: 44px !important;
+    --tsw-rail-label-size: 8px;
+  }
+
+  .tsw-rail-button > span:last-child {
+    max-width: 50px;
+  }
+
+  .tsw-rail-mount {
+    width: 29px !important;
+    height: 29px !important;
+  }
+
+  .tsw-rail-button.active .tsw-rail-mount {
+    width: 36px !important;
+    height: 36px !important;
+  }
+}
+
+/* Guardrail: no navigation label may create horizontal page overflow. */
+.tsw-root,
+.tsw-shell,
+.tsw-rail,
+.tsw-rail-button {
+  max-width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tsw-rail-button > span:last-child,
+  .tsw-rail-mount {
+    transition: none !important;
+  }
+}
