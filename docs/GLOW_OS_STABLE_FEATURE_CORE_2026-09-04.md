@@ -19,7 +19,7 @@ One user action should have one owner. Do not mount multiple assistants, quick-a
 - Notes and inbox/import.
 - Core Life rooms already backed by real data.
 - Authentication and privacy boundaries.
-- One persistent Shakti presence.
+- One persistent Glow intelligence.
 - Explicit approval before meaningful mutations.
 - Action receipts after approved actions.
 - Undo only when a real reversible implementation exists; never fake undo.
@@ -31,8 +31,8 @@ These can exist as isolated page features later, but must not all mount globally
 
 - ReferenceRoomWorkspace.
 - ReferenceRoomInteractions.
-- GlowVoiceCommand (replaced by Shakti).
-- QuickAdd global overlay (creation routes through Shakti or the destination page).
+- Legacy GlowVoiceCommand overlay.
+- QuickAdd global overlay (creation routes through Glow or the destination page).
 - GlowActionButton global overlay.
 - DataConnectionVault wrapper around every page.
 - Separate dashboard AppShell branch.
@@ -54,11 +54,11 @@ These can exist as isolated page features later, but must not all mount globally
 
 Deferred does not mean deleted. It means the feature cannot be allowed to destabilize the core runtime.
 
-# Shakti
+# Glow
 
-Shakti permanently replaces product-facing assistant names such as "Ask Glow" or "Living Glow Aura" when referring to the intelligent presence.
+Glow is the product-facing intelligent presence inside Glow OS. Do not introduce a second assistant name.
 
-Shakti is not a separate AI destination. The minimized presence is the same entity as the expanded presence.
+Glow is not a separate AI destination. The minimized presence and expanded conversation are the same system.
 
 ## Presence states
 
@@ -75,9 +75,9 @@ Shakti is not a separate AI destination. The minimized presence is the same enti
 
 ## Context continuity
 
-The root Shakti component persists across route changes. It keeps recent conversation in the current browser session and always sends the current pathname as room context. Pages may additionally dispatch `shakti:context` with a selected object.
+The root Glow component persists across route changes. It keeps recent conversation in the current browser session and always sends the current pathname as room context. Pages may additionally dispatch `glow:context` with a selected object.
 
-Legacy `glow:voice-open` and `glow:quick-add` events are compatibility aliases only; both now open the single Shakti system.
+The canonical open event is `glow:open`. Existing `glow:voice-open` and `glow:quick-add` events are compatibility aliases that route into the same Glow system.
 
 ## Approval law
 
@@ -91,15 +91,15 @@ The first stable action set is intentionally narrow:
 - Create a note after approval.
 - Other approved commands are routed into the intake/inbox review path until a dedicated safe executor exists.
 
-This is intentional. Shakti must never claim to have moved, deleted, sent, purchased, paid, or changed something when no verified executor exists.
+This is intentional. Glow must never claim to have moved, deleted, sent, purchased, paid, or changed something when no verified executor exists.
 
 ## Action receipts
 
-After an approved action, Shakti reports exactly what completed and what was only queued for review. The receipt includes the destination(s). No fake success states.
+After an approved action, Glow reports exactly what completed and what was only queued for review. The receipt includes the destination(s). No fake success states.
 
 ## Page behavior
 
-Shakti remains subordinate to the current room. Today remains about Today; Calendar remains about time; Notes remains about writing; Money remains about financial clarity. Shakti expands only when needed and returns to minimized presence when the interaction is over.
+Glow remains subordinate to the current room. Today remains about Today; Calendar remains about time; Notes remains about writing; Money remains about financial clarity. Glow expands only when needed and returns to minimized presence when the interaction is over.
 
 # Regression test
 
