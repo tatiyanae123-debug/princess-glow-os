@@ -1,0 +1,1 @@
+The approved Today image remains authoritative as a visual QA reference, but it must never be mounted, cropped, tiled, revealed, or layered underneath the live Today renderer in production.
