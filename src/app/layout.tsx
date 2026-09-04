@@ -13,6 +13,7 @@ import './today-device-mode.css';
 import './shakti-living-presence.css';
 import './shakti-volumetric-v3.css';
 import './today-shakti-fidelity-v4.css';
+import './today-live-v6.css';
 import { GlowNavigationNormalizer } from '@/components/glow-navigation-normalizer';
 import { GlowWorldRuntime } from '@/components/glow-world-runtime-v3';
 import { ShaktiProductLanguage } from '@/components/shakti-product-language';
