@@ -21,7 +21,7 @@ export function AiAssistantPanel() {
       <p className="text-sm leading-6 text-slate-600">Shakti keeps the current room as context, can answer or create, and asks for approval before meaningful changes.</p>
       <div className="flex flex-wrap gap-2">
         {['What should I do next?', 'Plan this with me', 'Turn this into tasks', 'Find the note where I mentioned this'].map((prompt) => (
-          <Button key={prompt} type="button" variant="outline" onClick={() => openShakti(prompt)}>{prompt}</Button>
+          <Button key={prompt} type="button" variant="secondary" onClick={() => openShakti(prompt)}>{prompt}</Button>
         ))}
       </div>
       <Button type="button" onClick={() => openShakti()}>Ask Shakti</Button>
