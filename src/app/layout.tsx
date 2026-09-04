@@ -11,6 +11,7 @@ import './dashboard-sidebar-exact.css';
 import './image-polish.css';
 import './image-page-overrides.css';
 import './spatial-navigation.css';
+import './today-spatial-world.css';
 
 export const metadata: Metadata = {
   title: 'Glow OS',
