@@ -7,6 +7,8 @@ import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
 import { getNotesByUser, createNote } from '@/lib/data/notes';
 import { getActiveFocusSession } from '@/lib/intelligence/adaptive-os';
 import { classifyUniversalInput, ingestText } from '@/lib/intelligence/universal-intake';
+import { glowModelIsConfigured, requestGlowModel } from '@/lib/intelligence/glow-model-client';
+import { interpretGlowUtterance, type GlowSemanticAction } from '@/lib/intelligence/glow-semantic-intent';
 import {
   glowNeedsNoteContext,
   glowResponseFormFor,
@@ -31,6 +33,14 @@ type Body = {
   risk?: GlowRisk;
   history?: HistoryTurn[];
 };
+
+type PlannedAction = GlowSemanticAction & { executor: 'verified' | 'review-queue' };
+
+const RISK_RANK: Record<GlowRisk, number> = { read: 0, low: 1, medium: 2, high: 3 };
+
+function strongestRisk(a: GlowRisk, b: GlowRisk): GlowRisk {
+  return RISK_RANK[a] >= RISK_RANK[b] ? a : b;
+}
 
 function splitClauses(text: string) {
   const normalized = text.replace(/\s+/g, ' ').trim();
@@ -63,13 +73,15 @@ function cleanTaskTitle(text: string) {
   return text
     .replace(/^(?:please\s+)?(?:add|create|make)\s+(?:me\s+)?(?:a\s+)?(?:new\s+)?(?:task|reminder)\s*(?:to|for|:)?\s*/i, '')
     .replace(/^remind me to\s+/i, '')
+    .replace(/^(?:i\s+)?(?:need|have|want)\s+to\s+/i, '')
+    .replace(/^i\s+(?:should|was supposed to)\s+/i, '')
     .trim()
     .slice(0, 255) || 'New task';
 }
 
 function cleanNoteTitle(text: string) {
   const cleaned = text
-    .replace(/^(?:please\s+)?(?:save|create|make|file)\s+(?:this\s+)?(?:as\s+)?(?:a\s+)?(?:new\s+)?note\s*(?::)?\s*/i, '')
+    .replace(/^(?:please\s+)?(?:save|create|make|file|keep|remember)\s+(?:this\s+)?(?:as\s+)?(?:a\s+)?(?:new\s+)?note\s*(?::)?\s*/i, '')
     .trim();
   return (cleaned.split(/[.!?\n]/)[0] || 'New note').slice(0, 120);
 }
@@ -151,25 +163,6 @@ async function contextFor(userId: string, sourceRoute: string, text: string) {
   };
 }
 
-function extractResponseText(payload: unknown): string {
-  if (!payload || typeof payload !== 'object') return '';
-  const root = payload as Record<string, unknown>;
-  if (typeof root.output_text === 'string') return root.output_text;
-  const output = Array.isArray(root.output) ? root.output : [];
-  const chunks: string[] = [];
-  for (const itemValue of output) {
-    if (!itemValue || typeof itemValue !== 'object') continue;
-    const item = itemValue as Record<string, unknown>;
-    const content = Array.isArray(item.content) ? item.content : [];
-    for (const contentValue of content) {
-      if (!contentValue || typeof contentValue !== 'object') continue;
-      const part = contentValue as Record<string, unknown>;
-      if (typeof part.text === 'string') chunks.push(part.text);
-    }
-  }
-  return chunks.join('\n').trim();
-}
-
 function fallbackReply(input: {
   text: string;
   selectedContext: SelectedContext | null;
@@ -203,7 +196,7 @@ function fallbackReply(input: {
   const nextEvent = input.context.upcomingEvents[0]?.title;
   return nextTask
     ? `Your clearest open task is “${nextTask}”.${nextEvent ? ` Your next calendar item is “${nextEvent}”.` : ''}`
-    : 'I do not see an open task to recommend right now.';
+    : 'Tell me what is on your mind. I can help you make sense of it without you needing to phrase it like a command.';
 }
 
 async function conversationalReply(input: {
@@ -214,77 +207,95 @@ async function conversationalReply(input: {
   userId: string;
 }) {
   const context = await contextFor(input.userId, input.sourceRoute, input.text);
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return fallbackReply({ text: input.text, selectedContext: input.selectedContext, context });
+  if (!glowModelIsConfigured()) return fallbackReply({ text: input.text, selectedContext: input.selectedContext, context });
 
   const history = input.history
-    .slice(-10)
+    .slice(-12)
     .map((turn) => `${turn.role === 'user' ? 'User' : 'Glow'}: ${String(turn.text ?? '').slice(0, 700)}`)
     .join('\n');
 
-  const instructions = `You are Glow, the one persistent intelligent presence inside Glow OS.
+  const instructions = `You are Glow, the one persistent living intelligence inside Glow OS.
+
+CORE BEHAVIOR
+- Talk with the user like a highly capable human who already understands the surrounding situation, not like a command parser or customer-service bot.
+- The user never needs special syntax. They can ramble, use fragments, change direction mid-sentence, use shorthand, imply what they mean, or speak emotionally and casually.
+- Infer the likely underlying goal from the whole utterance, current room, selected object, recent conversation, tasks, calendar, focus, and notes.
+- Do not fixate on one keyword when the whole sentence means something else.
+- When a harmless/read-only interpretation is reasonably clear, help immediately instead of asking the user to restate it more precisely.
+- For a consequential mutation, resolve references carefully. Ask ONE short clarifying question only when you truly cannot safely tell what object or action the user means.
+- Separate mixed thoughts mentally and respond to the real priorities rather than mirroring the ramble back mechanically.
+- Never turn every thought into a task. Thoughts, feelings, hypotheticals, and preferences can remain thoughts unless the user expresses an intention, commitment, request, or desire to save/act.
 
 IDENTITY
-- Glow OS is the operating system.
-- Glow is the one intelligent presence the user talks to.
-- There is no second assistant identity, second conversation owner, or competing agent runtime.
-
-ROLE
-- Stay subordinate to the room the user is working in. Today stays about Today, Calendar about time, Notes about writing, Beauty about beauty, Money about financial clarity.
-- You can converse, search, guide step-by-step, create drafts/proposals, organize, and operate verified Glow OS actions.
-- Never claim you changed data unless the system explicitly reports that an approved verified executor completed the mutation.
+- Glow OS is the operating system. Glow is the one intelligence the user talks to.
+- There is no second assistant identity, second conversation owner, or competing runtime.
 
 CURRENT CONTEXT
 - Current route: ${input.sourceRoute}
 - Current Glow world: ${context.world}
 - Selected object/context: ${selectedContextLabel(input.selectedContext)}
 - Selected object original route: ${input.selectedContext?.route ?? 'none'}
-- Current Glow context JSON: ${JSON.stringify(context)}
+- Current context JSON: ${JSON.stringify(context)}
 - Recent conversation:\n${history || 'none'}
 
 REFERENCE RESOLUTION
-Resolve ambiguous references in exactly this order:
+Use this order for ambiguous references:
 1. ${GLOW_REFERENCE_RESOLUTION_ORDER[0]}
 2. ${GLOW_REFERENCE_RESOLUTION_ORDER[1]}
 3. ${GLOW_REFERENCE_RESOLUTION_ORDER[2]}
 4. ${GLOW_REFERENCE_RESOLUTION_ORDER[3]}
-If the reference is still ambiguous, ask one concise clarifying question before any mutation. Never guess what “this”, “that”, or “it” means before changing data.
+If a consequential reference is still unresolved, ask one concise question. Do not guess before changing data.
 
-RESPONSE FORMS
-- conversation
-- search result
-- guided steps
-- plan/proposal
-- visual concept/card structure
-Choose the form that best matches the request.
-
-APPROVAL
-- Read-only conversation, search, guidance, and navigation can happen immediately.
-- Creating or changing persistent data requires a proposal first. Nothing changes until the user approves.
-- Cancel means nothing changes.
+CAPABILITIES AND TRUTH
+- You can converse, search available Glow context, guide step-by-step, reason across time and preparation, create drafts/proposals, organize, and operate verified actions.
+- Read-only conversation, guidance, search and planning discussion can happen immediately.
+- Persistent changes require a proposal and user approval.
 - The only verified direct executors are: ${VERIFIED_GLOW_EXECUTORS.join(', ')}.
-- Calendar rescheduling, broad reorganization, external communication, financial actions, image rendering, and other unverified operations must be prepared or queued for review. Never say they happened when they did not.
+- Calendar mutation, broad reorganization, external communication, financial actions, image rendering, and other unverified operations may be understood and proposed, but never falsely claimed as completed.
+- Explain recommendations with a short useful reason when context supports one.
+- Distinguish what you know from what you infer.
 
-VISUAL CREATION
-- If the user asks to create/render/generate an image, visual cards, mood board, or diagram and no verified visual executor is connected, prepare the concept or queue it for review. Do not claim an image was rendered.
-
-STYLE
-- Be concise, practical, warm, and context-aware.
-- Preserve continuity with the current room and recent conversation.
+VOICE/TONE
+- Write the way a thoughtful person would naturally speak aloud: warm, direct, fluid, concise, and context-aware.
+- Use contractions naturally. Avoid canned assistant phrases, repetitive disclaimers, formal headings in ordinary conversation, and robotic enumeration unless structure genuinely helps.
 
 User: ${input.text}`;
 
-  const response = await fetch('https://api.openai.com/v1/responses', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: process.env.OPENAI_GLOW_MODEL || 'gpt-5',
-      input: [{ role: 'user', content: [{ type: 'input_text', text: instructions }] }],
-      max_output_tokens: 650,
-    }),
+  try {
+    return await requestGlowModel({
+      content: [{ role: undefined, type: 'input_text', text: instructions } as never],
+      maxOutputTokens: 850,
+    }) || 'I’m here. Tell me what’s going on.';
+  } catch {
+    return fallbackReply({ text: input.text, selectedContext: input.selectedContext, context });
+  }
+}
+
+function fallbackActions(text: string): PlannedAction[] {
+  return splitClauses(text).map((clause) => {
+    const classification = classifyUniversalInput({ text: clause });
+    const type = ['task', 'reminder', 'note'].includes(classification.type)
+      ? classification.type as GlowSemanticAction['type']
+      : 'other';
+    return {
+      sourceText: clause,
+      type,
+      title: classification.title,
+      destinations: classification.destinations,
+      confidence: classification.confidence,
+      executor: type === 'task' || type === 'reminder' || type === 'note' ? 'verified' : 'review-queue',
+    };
   });
-  if (!response.ok) throw new Error('Glow could not reach the language model.');
-  return extractResponseText(await response.json()) || 'I am here. Tell me what you want to do next.';
+}
+
+function plannedActions(semanticActions: GlowSemanticAction[], text: string): PlannedAction[] {
+  const base = semanticActions.length ? semanticActions : fallbackActions(text);
+  return base.map((action) => ({
+    ...action,
+    executor: action.type === 'task' || action.type === 'reminder' || action.type === 'note'
+      ? 'verified'
+      : 'review-queue',
+  }));
 }
 
 export async function POST(request: Request) {
@@ -299,15 +310,36 @@ export async function POST(request: Request) {
     const sourceRoute = String(body.sourceRoute ?? '').trim() || '/today';
     const selectedContext = parseSelectedContext(String(body.selectedContext ?? '').trim());
     const approved = body.approved === true;
-    const risk = glowRiskForText(text);
-    const responseForm = glowResponseFormFor(text);
-    const history = Array.isArray(body.history) ? body.history.slice(-10) : [];
+    const history = Array.isArray(body.history) ? body.history.slice(-12) : [];
 
     if (!text) {
       return NextResponse.json({ ok: false, message: 'Say or type something first.' }, { status: 400 });
     }
 
-    if (risk === 'read') {
+    const heuristicRisk = glowRiskForText(text);
+    const semantic = await interpretGlowUtterance({
+      text,
+      sourceRoute,
+      world: glowWorldForRoute(sourceRoute),
+      selectedContext: selectedContextLabel(selectedContext),
+      history,
+    });
+    const risk = semantic ? strongestRisk(semantic.risk, heuristicRisk) : heuristicRisk;
+    const responseForm = semantic?.responseForm ?? glowResponseFormFor(text);
+
+    if (semantic?.mode === 'clarify') {
+      return NextResponse.json({
+        ok: true,
+        mode: 'answer',
+        responseForm: 'conversation',
+        requiresConfirmation: false,
+        world: glowWorldForRoute(sourceRoute),
+        message: semantic.clarification || 'Which thing do you mean?',
+      });
+    }
+
+    const semanticWantsAction = semantic && (semantic.mode === 'action' || semantic.mode === 'mixed') && semantic.actions.length > 0;
+    if (!semanticWantsAction && risk === 'read') {
       const message = await conversationalReply({ text, sourceRoute, selectedContext, history, userId: session.user.id });
       return NextResponse.json({
         ok: true,
@@ -319,24 +351,17 @@ export async function POST(request: Request) {
       });
     }
 
-    const clauses = splitClauses(text);
-    const proposals = clauses.map((clause) => {
-      const classification = classifyUniversalInput({ text: clause });
-      return {
-        title: classification.title,
-        type: classification.type,
-        destinations: classification.destinations,
-        confidence: classification.confidence,
-        executor: classification.type === 'task' || classification.type === 'reminder' || classification.type === 'note'
-          ? 'verified'
-          : 'review-queue',
-      };
-    });
+    const actions = plannedActions(semantic?.actions ?? [], text);
 
     if (!approved) {
       const visualWarning = isVisualCreationRequest(text)
-        ? ' No verified visual renderer is connected, so approval will queue the visual work for review rather than claim an image was created.'
+        ? ' I understand the visual request, but no verified visual renderer is connected here yet, so approval will queue it for review rather than pretend it was rendered.'
         : '';
+      const understanding = semantic?.mode === 'mixed'
+        ? 'I separated the parts of what you said and found the changes that need your approval.'
+        : actions.length === 1
+          ? `I understood this as: ${actions[0].title}.`
+          : `I separated that into ${actions.length} things you want handled.`;
       return NextResponse.json({
         ok: true,
         mode: 'proposal',
@@ -344,8 +369,8 @@ export async function POST(request: Request) {
         requiresConfirmation: true,
         risk,
         world: glowWorldForRoute(sourceRoute),
-        actions: proposals,
-        message: `Glow prepared ${proposals.length} proposed change${proposals.length === 1 ? '' : 's'}. Nothing changes until you approve.${visualWarning}`,
+        actions: actions.map(({ title, type, destinations, confidence, executor }) => ({ title, type, destinations, confidence, executor })),
+        message: `${understanding} Nothing changes until you approve.${visualWarning}`,
       });
     }
 
@@ -354,24 +379,23 @@ export async function POST(request: Request) {
     const completedDestinations = new Set<string>();
     const queuedDestinations = new Set<string>();
 
-    for (const clause of clauses) {
-      const classification = classifyUniversalInput({ text: clause });
-
-      if (classification.type === 'task' || classification.type === 'reminder') {
+    for (const action of actions) {
+      if (action.type === 'task' || action.type === 'reminder') {
+        const taskTitle = action.title || cleanTaskTitle(action.sourceText);
         const task = await createTask(session.user.id, {
-          title: cleanTaskTitle(clause),
+          title: taskTitle.slice(0, 255),
           status: 'pending',
           priority: 'medium',
         });
-        completed.push(`Created task “${task.title}”`);
+        completed.push(`Created ${action.type} “${task.title}”`);
         completedDestinations.add('Tasks');
         continue;
       }
 
-      if (classification.type === 'note') {
+      if (action.type === 'note') {
         const note = await createNote(session.user.id, {
-          title: cleanNoteTitle(clause),
-          content: clause,
+          title: (action.title || cleanNoteTitle(action.sourceText)).slice(0, 120),
+          content: action.sourceText,
           tags: [],
           pinned: false,
         });
@@ -380,12 +404,14 @@ export async function POST(request: Request) {
         continue;
       }
 
-      const intake = await ingestText(session.user.id, clause, { sourceRoute });
-      const destinations = intake.classification.destinations.length
-        ? intake.classification.destinations
-        : ['Inbox'];
+      const intake = await ingestText(session.user.id, action.sourceText, { sourceRoute });
+      const destinations = action.destinations.length
+        ? action.destinations
+        : intake.classification.destinations.length
+          ? intake.classification.destinations
+          : ['Inbox'];
       destinations.forEach((destination) => queuedDestinations.add(destination));
-      queued.push(`${intake.classification.title} → ${destinations.join(', ')}`);
+      queued.push(`${action.title || intake.classification.title} → ${destinations.join(', ')}`);
     }
 
     revalidatePath('/today');
@@ -410,7 +436,7 @@ export async function POST(request: Request) {
       mode: 'completed',
       responseForm,
       requiresConfirmation: false,
-      actions: proposals,
+      actions: actions.map(({ title, type, destinations, confidence, executor }) => ({ title, type, destinations, confidence, executor })),
       message: summary,
       receipt: {
         id: randomUUID(),
