@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Bell, Brain, CalendarDays, Heart, PawPrint, Search, Sparkles, SunMedium, WandSparkles } from 'lucide-react';
 import styles from './today-living-center-stable.module.css';
+import layoutFix from './today-stable-layout-fix.module.css';
 
 type TaskLite={id:string;title:string;priority:string;dueDateISO?:string|null};
 type EventLite={id:string;title:string;timeLabel:string;location?:string|null;startAtISO?:string|null;allDay?:boolean};
@@ -68,7 +69,7 @@ export function TodayLivingCenterStable({tasks,events,routines,energy,mood}:Prop
   const visibleRoutines=routineNames.length?routineNames:fallbackRoutines[daypart];
   const prompt=daypart==='morning'?'What deserves your first clear yes?':daypart==='afternoon'?'What would make the rest of today lighter?':daypart==='evening'?'What still deserves your energy tonight?':'What can we close, carry, or release?';
 
-  return <main className={styles.root} data-daypart={daypart}>
+  return <main className={`${styles.root} ${layoutFix.guard}`} data-daypart={daypart}>
     <div className={styles.environment} aria-hidden="true"><div className={styles.curtains}/><div className={styles.floor}/><div className={styles.vanity}/><div className={styles.flowers}/></div>
     <div className={styles.shell}>
       <header className={styles.header}>
