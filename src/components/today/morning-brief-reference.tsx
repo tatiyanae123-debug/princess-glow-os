@@ -39,7 +39,7 @@ function goToRoom(room: RoomKey) {
 export function MorningBriefReference() {
   const [visible, setVisible] = useState(true);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
-  const [shaktiOpen, setShaktiOpen] = useState(false);
+  const [glowOpen, setGlowOpen] = useState(false);
   const [receipt, setReceipt] = useState('All changes saved');
 
   useEffect(() => {
@@ -82,14 +82,12 @@ export function MorningBriefReference() {
 
         <header className={styles.topbar}>
           <div className={styles.brandBlock}>
-            <Link href="/dashboard" className={styles.brandHome} aria-label="Go to Glow OS Home">Glow OS</Link>
-            <span className={styles.brandDivider} />
-            <span>Batch 1</span>
+            <Link href="/home" className={styles.brandHome} aria-label="Go to Glow OS Home">Glow OS</Link>
           </div>
           <div className={styles.worldLabel}>world 1: TODAY&nbsp;&nbsp;·&nbsp;&nbsp;THE LIVING CENTER</div>
-          <button type="button" className={styles.askShakti} onClick={() => setShaktiOpen((value) => !value)} aria-expanded={shaktiOpen}>
+          <button type="button" className={styles.askShakti} onClick={() => setGlowOpen((value) => !value)} aria-expanded={glowOpen} aria-label="Ask Glow">
             <Pearl size="xs" />
-            <span>Ask Shakti<small>⌘ K</small></span>
+            <span>Ask Glow<small>⌘ K</small></span>
           </button>
         </header>
 
@@ -231,18 +229,18 @@ export function MorningBriefReference() {
 
         <div className={styles.bottomControls}>
           <button type="button" className={`${styles.bottomButton} ${styles.dayView}`}>◫ <span>Day view</span><ChevronDown /></button>
-          <button type="button" className={`${styles.bottomButton} ${styles.glowMini}`} onClick={() => setShaktiOpen(true)} aria-label="Ask Shakti"><Sparkles /></button>
-          <button type="button" className={`${styles.bottomButton} ${styles.writeDay}`} onClick={() => setShaktiOpen(true)}><Sparkles /> Write to my day</button>
+          <button type="button" className={`${styles.bottomButton} ${styles.glowMini}`} onClick={() => setGlowOpen(true)} aria-label="Ask Glow"><Sparkles /></button>
+          <button type="button" className={`${styles.bottomButton} ${styles.writeDay}`} onClick={() => setGlowOpen(true)}><Sparkles /> Write to my day</button>
           <span className={styles.saveReceipt}>{receipt}</span>
           <button type="button" className={`${styles.bottomButton} ${styles.undoButton}`} onClick={() => { setChecked({}); setReceipt('Changes undone'); }}>Undo <RotateCcw /></button>
           <Pearl size="sm" className={styles.bottomPearl} />
         </div>
 
-        <button type="button" className={styles.addButton} onClick={() => setShaktiOpen(true)} aria-label="Add to Today">+</button>
+        <button type="button" className={styles.addButton} onClick={() => setGlowOpen(true)} aria-label="Add to Today">+</button>
 
-        {shaktiOpen ? (
-          <aside className={styles.shaktiPanel} role="dialog" aria-label="Ask Shakti">
-            <div className={styles.shaktiHeader}><Pearl size="sm" /><div><strong>Shakti</strong><span>Morning context is active</span></div><button onClick={() => setShaktiOpen(false)}>×</button></div>
+        {glowOpen ? (
+          <aside className={styles.shaktiPanel} role="dialog" aria-label="Ask Glow">
+            <div className={styles.shaktiHeader}><Pearl size="sm" /><div><strong>Glow</strong><span>Morning context is active</span></div><button onClick={() => setGlowOpen(false)}>×</button></div>
             <p>I’m with your Morning Brief and I’ll keep this context attached as you move through Today.</p>
             <button onClick={() => goToRoom('what-now')}>What should I do now?</button>
             <button onClick={() => goToRoom('replan')}>Replan my day</button>
