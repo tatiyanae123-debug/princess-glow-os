@@ -7,24 +7,19 @@ import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
 import { buildCrossSystemSnapshot } from '@/lib/intelligence/cross-system';
 
-export const dynamic = 'force-dynamic';
+export const dynamic='force-dynamic';
 
-const priorityWeight: Record<string,number>={urgent:100,high:80,medium:55,low:30};
-
-function levelToNumber(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value !== 'string') return null;
+function levelToNumber(value:unknown):number|null{
+  if(typeof value==='number'&&Number.isFinite(value))return value;
+  if(typeof value!=='string')return null;
   const normalized=value.toLowerCase();
-  const scale: Record<string,number>={
-    exhausted:3, very_low:3, low:4, okay:5, neutral:5, medium:6,
-    good:7, high:8, great:9, excellent:9,
-  };
-  return scale[normalized] ?? null;
+  const scale:Record<string,number>={exhausted:3,very_low:3,low:4,okay:5,neutral:5,medium:6,good:7,high:8,great:9,excellent:9};
+  return scale[normalized]??null;
 }
 
 export default async function TodayPage(){
   const session=await auth();
-  if(!session?.user?.id) redirect('/sign-in');
+  if(!session?.user?.id)redirect('/sign-in');
   const userId=session.user.id;
   const now=new Date();
   const [tasks,wellnessEntries,beautyRoutines,events,snapshot]=await Promise.all([
@@ -35,36 +30,29 @@ export default async function TodayPage(){
     buildCrossSystemSnapshot(userId,'today',now),
   ]);
 
-  const open=tasks.filter(t=>t.status!=='done'&&t.status!=='cancelled');
-  const ranked=[...open].sort((a,b)=>{
-    const aDue=a.dueDate?Math.max(-40,30-Math.floor((a.dueDate.getTime()-now.getTime())/86400000)*5):0;
-    const bDue=b.dueDate?Math.max(-40,30-Math.floor((b.dueDate.getTime()-now.getTime())/86400000)*5):0;
-    return (priorityWeight[b.priority]??0)+bDue-((priorityWeight[a.priority]??0)+aDue);
-  });
-
-  const todaysEvents=events
-    .filter(e=>e.startAt.toDateString()===now.toDateString())
-    .sort((a,b)=>a.startAt.getTime()-b.startAt.getTime());
-
+  const open=tasks.filter(task=>task.status!=='done'&&task.status!=='cancelled');
+  const start=new Date(now);start.setHours(0,0,0,0);
+  const end=new Date(start);end.setDate(end.getDate()+2);
+  const nearbyEvents=events.filter(event=>event.startAt>=start&&event.startAt<end).sort((a,b)=>a.startAt.getTime()-b.startAt.getTime());
   const latestWellness=wellnessEntries[0]??null;
-  const routines=beautyRoutines
-    .filter(r=>r.timeOfDay==='morning'||r.timeOfDay==='evening'||r.timeOfDay==='night')
-    .slice(0,5);
+  const routines=beautyRoutines.filter(routine=>['morning','afternoon','evening','night'].includes(routine.timeOfDay)).slice(0,12);
 
   return <TodayLivingCenter
-    tasks={ranked.slice(0,8).map(t=>({
-      id:t.id,
-      title:t.title,
-      priority:t.priority,
-      dueLabel:t.dueDate?t.dueDate.toLocaleDateString('en-US',{month:'short',day:'numeric'}):null,
+    tasks={open.slice(0,16).map(task=>({
+      id:task.id,
+      title:task.title,
+      priority:task.priority,
+      dueDateISO:task.dueDate?.toISOString()??null,
     }))}
-    events={todaysEvents.slice(0,6).map(e=>({
-      id:e.id,
-      title:e.title,
-      timeLabel:e.allDay?'All day':e.startAt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}),
-      location:e.location,
+    events={nearbyEvents.slice(0,20).map(event=>({
+      id:event.id,
+      title:event.title,
+      timeLabel:event.allDay?'All day':event.startAt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}),
+      location:event.location,
+      startAtISO:event.startAt.toISOString(),
+      allDay:event.allDay,
     }))}
-    routines={routines.map(r=>({id:r.id,name:r.name,timeOfDay:r.timeOfDay}))}
+    routines={routines.map(routine=>({id:routine.id,name:routine.name,timeOfDay:routine.timeOfDay}))}
     energy={levelToNumber(latestWellness?.energy)}
     mood={levelToNumber(latestWellness?.mood)}
     sleepHours={latestWellness?.sleepHours??null}
