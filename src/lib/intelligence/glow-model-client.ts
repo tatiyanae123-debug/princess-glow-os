@@ -1,5 +1,6 @@
 import 'server-only';
-import { getGlowGatewayToken } from '@/lib/intelligence/vercel-ai-auth';
+import { generateText } from 'ai';
+import { gateway } from '@ai-sdk/gateway';
 
 type GlowModelContent =
   | { type: 'input_text'; text: string }
@@ -12,64 +13,76 @@ type GlowModelOptions = {
   model?: string;
 };
 
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-    ? value as Record<string, unknown>
-    : null;
+function mediaTypeForFilename(filename: string) {
+  const name = filename.toLowerCase();
+  if (name.endsWith('.pdf')) return 'application/pdf';
+  if (name.endsWith('.txt') || name.endsWith('.md')) return 'text/plain';
+  if (name.endsWith('.csv')) return 'text/csv';
+  if (name.endsWith('.json')) return 'application/json';
+  if (name.endsWith('.png')) return 'image/png';
+  if (name.endsWith('.jpg') || name.endsWith('.jpeg')) return 'image/jpeg';
+  if (name.endsWith('.webp')) return 'image/webp';
+  return 'application/octet-stream';
 }
 
-export function extractGlowModelText(payload: unknown): string {
-  const root = asRecord(payload);
-  if (!root) return '';
-  if (typeof root.output_text === 'string') return root.output_text.trim();
-  const output = Array.isArray(root.output) ? root.output : [];
-  const chunks: string[] = [];
-  for (const itemValue of output) {
-    const item = asRecord(itemValue);
-    const content = item && Array.isArray(item.content) ? item.content : [];
-    for (const contentValue of content) {
-      const part = asRecord(contentValue);
-      if (part && typeof part.text === 'string') chunks.push(part.text);
+function toAiSdkContent(content: GlowModelContent[]) {
+  return content.map((part) => {
+    if (part.type === 'input_text') {
+      return { type: 'text', text: part.text };
     }
-  }
-  return chunks.join('\n').trim();
+    if (part.type === 'input_image') {
+      return { type: 'image', image: part.image_url };
+    }
+    return {
+      type: 'file',
+      data: Buffer.from(part.file_data, 'base64'),
+      mediaType: mediaTypeForFilename(part.filename),
+      filename: part.filename,
+    };
+  });
+}
+
+function modelCandidates(requested?: string) {
+  const configured = process.env.GLOW_REASONING_MODEL?.trim()
+    || process.env.OPENAI_GLOW_GATEWAY_MODEL?.trim();
+  return [
+    requested,
+    configured,
+    'openai/gpt-5.6-sol',
+    'openai/gpt-5.5',
+    'google/gemini-3.8-flash',
+  ].filter((value, index, all): value is string => Boolean(value) && all.indexOf(value) === index);
 }
 
 export function glowModelIsConfigured() {
-  return Boolean(process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN || process.env.OPENAI_API_KEY || process.env.VERCEL);
+  // In Vercel production, AI Gateway authentication is supplied by the platform
+  // at runtime and should not be inferred only from process.env.VERCEL_OIDC_TOKEN.
+  return Boolean(
+    process.env.VERCEL
+    || process.env.AI_GATEWAY_API_KEY
+    || process.env.VERCEL_OIDC_TOKEN
+    || process.env.OPENAI_API_KEY
+  );
 }
 
 export async function requestGlowModel(options: GlowModelOptions): Promise<string> {
-  const gatewayToken = await getGlowGatewayToken();
-  const directOpenAIKey = process.env.OPENAI_API_KEY || '';
-  if (!gatewayToken && !directOpenAIKey) return '';
+  const failures: string[] = [];
+  const content = toAiSdkContent(options.content);
 
-  const usingGateway = Boolean(gatewayToken);
-  const url = usingGateway
-    ? 'https://ai-gateway.vercel.sh/v1/responses'
-    : 'https://api.openai.com/v1/responses';
-  const token = usingGateway ? gatewayToken : directOpenAIKey;
-  const model = options.model || (usingGateway
-    ? process.env.OPENAI_GLOW_GATEWAY_MODEL || 'openai/gpt-5.6-sol'
-    : process.env.OPENAI_GLOW_MODEL || 'gpt-5');
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model,
-      input: [{ role: 'user', content: options.content }],
-      max_output_tokens: options.maxOutputTokens ?? 900,
-    }),
-    cache: 'no-store',
-  });
-
-  if (!response.ok) {
-    const detail = await response.text().catch(() => '');
-    throw new Error(detail || `Glow model request failed (${response.status}).`);
+  for (const model of modelCandidates(options.model)) {
+    try {
+      const result = await generateText({
+        model: gateway.languageModel(model),
+        messages: [{ role: 'user', content }] as never,
+        maxOutputTokens: options.maxOutputTokens ?? 900,
+      });
+      const text = String(result.text ?? '').trim();
+      if (text) return text;
+      failures.push(`${model}: empty response`);
+    } catch (error) {
+      failures.push(`${model}: ${error instanceof Error ? error.message : 'unknown error'}`);
+    }
   }
-  return extractGlowModelText(await response.json());
+
+  throw new Error(`Glow reasoning providers were unavailable. ${failures.slice(0, 3).join(' | ')}`);
 }
