@@ -1,11 +1,11 @@
-:global(main[data-daypart]){contain:layout paint;}
+.guard{contain:layout paint;}
 
 /* Hard layout guard for landscape and iPad Split View. The previous renderer used
    a disconnected CSS grid area ("header center header"), which Safari rejects.
    These rules use valid rectangular areas plus explicit row/column placement so
    the room cannot auto-place its major regions on top of one another. */
 @media (min-width:801px) and (min-aspect-ratio:1/1){
-  :global(main[data-daypart] > div:nth-of-type(2)){
+  .guard > :global(div:nth-of-type(2)){
     display:grid!important;
     grid-template-columns:minmax(0,1.56fr) minmax(140px,.60fr) minmax(225px,.90fr)!important;
     grid-template-rows:minmax(78px,auto) minmax(0,1fr)!important;
@@ -13,7 +13,7 @@
     align-items:stretch!important;
     justify-items:stretch!important;
   }
-  :global(main[data-daypart] > div:nth-of-type(2) > header){
+  .guard > :global(div:nth-of-type(2)) > :global(header){
     grid-area:header!important;
     grid-column:1 / -1!important;
     grid-row:1!important;
@@ -21,7 +21,7 @@
     z-index:5!important;
     min-height:0!important;
   }
-  :global(main[data-daypart] > div:nth-of-type(2) > section:nth-of-type(1)){
+  .guard > :global(div:nth-of-type(2)) > :global(section:nth-of-type(1)){
     grid-area:left!important;
     grid-column:1!important;
     grid-row:2!important;
@@ -31,7 +31,7 @@
     min-height:0!important;
     transform:none!important;
   }
-  :global(main[data-daypart] > div:nth-of-type(2) > section:nth-of-type(2)){
+  .guard > :global(div:nth-of-type(2)) > :global(section:nth-of-type(2)){
     grid-area:center!important;
     grid-column:2!important;
     grid-row:2!important;
@@ -41,7 +41,7 @@
     min-height:0!important;
     transform:none!important;
   }
-  :global(main[data-daypart] > div:nth-of-type(2) > aside){
+  .guard > :global(div:nth-of-type(2)) > :global(aside){
     grid-area:right!important;
     grid-column:3!important;
     grid-row:2!important;
@@ -56,7 +56,7 @@
 /* Split-view safety: preserve the horizontal Living Center instead of collapsing
    into the phone stack just because Safari narrows the pane. */
 @media (min-width:801px) and (max-width:1180px) and (min-aspect-ratio:1/1){
-  :global(main[data-daypart] > div:nth-of-type(2)){
+  .guard > :global(div:nth-of-type(2)){
     grid-template-columns:minmax(0,1.48fr) minmax(126px,.54fr) minmax(218px,.86fr)!important;
     gap:6px!important;
     padding-left:12px!important;
@@ -67,21 +67,21 @@
 /* True portrait/mobile remains a single vertical flow, with every region owning
    its own row. */
 @media (max-width:800px), (max-aspect-ratio:.90/1){
-  :global(main[data-daypart] > div:nth-of-type(2)){
+  .guard > :global(div:nth-of-type(2)){
     grid-template-columns:1fr!important;
     grid-template-rows:auto!important;
     grid-template-areas:"header" "center" "left" "right"!important;
   }
-  :global(main[data-daypart] > div:nth-of-type(2) > header),
-  :global(main[data-daypart] > div:nth-of-type(2) > section:nth-of-type(1)),
-  :global(main[data-daypart] > div:nth-of-type(2) > section:nth-of-type(2)),
-  :global(main[data-daypart] > div:nth-of-type(2) > aside){
+  .guard > :global(div:nth-of-type(2)) > :global(header),
+  .guard > :global(div:nth-of-type(2)) > :global(section:nth-of-type(1)),
+  .guard > :global(div:nth-of-type(2)) > :global(section:nth-of-type(2)),
+  .guard > :global(div:nth-of-type(2)) > :global(aside){
     grid-column:1!important;
     position:relative!important;
     transform:none!important;
   }
-  :global(main[data-daypart] > div:nth-of-type(2) > header){grid-row:1!important;}
-  :global(main[data-daypart] > div:nth-of-type(2) > section:nth-of-type(2)){grid-row:2!important;}
-  :global(main[data-daypart] > div:nth-of-type(2) > section:nth-of-type(1)){grid-row:3!important;}
-  :global(main[data-daypart] > div:nth-of-type(2) > aside){grid-row:4!important;}
+  .guard > :global(div:nth-of-type(2)) > :global(header){grid-row:1!important;}
+  .guard > :global(div:nth-of-type(2)) > :global(section:nth-of-type(2)){grid-row:2!important;}
+  .guard > :global(div:nth-of-type(2)) > :global(section:nth-of-type(1)){grid-row:3!important;}
+  .guard > :global(div:nth-of-type(2)) > :global(aside){grid-row:4!important;}
 }
