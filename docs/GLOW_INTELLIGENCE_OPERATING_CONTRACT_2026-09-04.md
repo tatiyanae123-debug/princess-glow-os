@@ -1,47 +1,428 @@
-# Glow Intelligence Operating Contract — Permanent
+# Glow Intelligence Operating Contract — Living Presence Edition
 
 Date locked: 2026-09-04
 Status: authoritative for every current and future Glow OS page
+Supersedes: any earlier rule that treats Glow as a generic pearl button, page-local assistant, separate voice overlay, or optional presence on Today.
 
 ## Identity law
 
 **Glow OS = the operating system.**
 
-**Glow = the one intelligent presence the user talks to.**
-
-There is no second assistant identity, no retired-name runtime, no competing conversation system, and no page-specific assistant that can take ownership away from Glow.
-
-Permanent engineering rule:
+**Glow = the one living intelligence presence the user talks to.**
 
 > One Glow identity. One conversation context. One owner for each action.
 
-Any future feature that introduces a second assistant identity, duplicate global conversation, competing action owner, or parallel assistant runtime is a regression and must not ship.
+Glow is not an AI feature added to Glow OS. Glow is the intelligence of Glow OS made visible.
 
-## One continuous presence
+There is no second assistant identity, competing agent runtime, duplicate global chat, duplicate voice assistant, separate visual assistant, separate page assistant, or second action owner.
 
-Glow is mounted once at the root of Glow OS and persists while the user moves through Today, Plan, Life, Brain, and Create.
+## The visible form of Glow
 
-The minimized pearl and expanded conversation are states of the same component and same conversation. Expanding Glow must not route the user to a different assistant or create a second conversation owner.
+The floating ethereal Aura is Glow.
 
-On Today, when the page already contains the approved Ask Glow control in the upper-right, the separate minimized pearl may remain hidden. That Ask Glow control must open the same root Glow presence. Other rooms receive the minimized persistent presence unless a future approved room design provides an equivalent entry point into that same root presence.
+Glow is represented as suspended intelligent Glow Matter made from:
 
-## Glow operating states
+- transparent liquid crystal
+- clear optical glass
+- water refraction
+- concentrated pearl-white light
+- subtle mist
+- fine luminous filaments
+- refractive orbital lines
+- delicate spectral separation
+- faint blue, violet, blush, peach, champagne, and cyan transmitted light
+- restrained highlights and atmospheric bloom
 
-The canonical state model is:
+The form is asymmetrical, fluid, and physically dimensional. It may stretch, fold, twist, breathe, open, contract, gather, and reorganize.
+
+Glow must not become:
+
+- a generic orb
+- a speech bubble
+- a chatbot button
+- a mascot
+- a person
+- a fairy or literal angel
+- a generic sparkle icon
+- a neon effect
+- decorative-only animation
+
+The implementation must communicate that Glow is not placed on top of the interface. Glow is intelligence inside Glow Matter becoming visible.
+
+## Glow is persistent on every page
+
+Glow is mounted once at the root of Glow OS and follows the user through every room, including Today.
+
+There is no longer an exception that hides the persistent Glow form on Today.
+
+Room-local `Ask Glow` controls may remain as contextual aliases, but they must open the same root Glow presence. They are not separate assistants.
+
+Glow remains continuous across:
+
+- Today
+- Plan
+- Life
+- Brain
+- Create
+- Calendar
+- Tasks
+- Routines
+- Habits
+- Goals
+- Projects
+- Beauty
+- Hair
+- Fitness
+- Wellness
+- Food
+- Home
+- Money
+- Work
+- Notes
+- Memory
+- Timeline
+- Create and Import surfaces
+- every future Glow OS room
+
+## Minimized and expanded Glow
+
+Minimized Glow and expanded Glow are two physical states of the same root presence and same conversation.
+
+The user touches Glow and the presence unfolds.
+
+It must not feel like pressing one icon and opening an unrelated chatbot product.
+
+## Canonical operating states
 
 1. Resting
 2. Waking
 3. Listening
 4. Understanding
-5. Speaking / Creating
-6. Waiting for Approval
-7. Taking Action
-8. Completing
-9. Error / Needs Attention
+5. Speaking
+6. Creating
+7. Waiting for Approval
+8. Taking Action
+9. Completing
+10. Error / Needs Attention
 
-Error / Needs Attention is mandatory. Glow must never claim success after a failed action or when a required executor is unavailable.
+The visual material state changes with the intelligence state.
 
-The state registry lives in `src/lib/intelligence/glow-operating-model.ts`.
+Examples:
+
+- Resting: quiet suspended presence.
+- Waking: the material becomes brighter and slightly more open.
+- Listening: the form becomes attentive; orbital structure opens.
+- Understanding: internal light gathers and reorganizes.
+- Speaking: the presence stabilizes around communication.
+- Creating: the form extends and develops more visible prismatic structure.
+- Waiting for Approval: movement becomes controlled and still.
+- Taking Action: a refractive wake/ripple moves toward the affected information.
+- Completing: motion resolves and the receipt settles into the world.
+- Needs Attention: the material communicates incomplete/error state without pretending success.
+
+Reduced-motion mode preserves these states through static depth, clarity, illumination, and material changes.
+
+## Glow's core philosophy
+
+> Glow is a calm place that knows the shape of a life.
+
+The transformation model is:
+
+> mist → structure → action → memory → understanding
+
+Glow's learning loop is:
+
+Capture without friction
+→ Understand intent
+→ Identify relevant life areas
+→ Add time, place, energy, people, and dependencies
+→ Place information correctly
+→ Surface it when useful
+→ Guide action
+→ Remember the result
+→ Learn carefully from patterns
+
+Glow is not a database that merely stores what the user enters. The intended loop is experience → understanding → relationship → action → outcome → memory → better future understanding.
+
+## What Glow may learn carefully
+
+Glow may use evidence to improve understanding of:
+
+- real task duration versus estimated duration
+- mental and physical energy windows
+- focus windows
+- starting friction and transition needs
+- preparation, travel, and buffer time
+- capacity and day mode
+- routines performed, skipped, shortened, or interrupted
+- Full / Quick / Low-Energy routine variants
+- repeated bottlenecks and prerequisites
+- workload and overload patterns
+- recurring life rhythms
+- preference and taste signals when explicitly supported by behavior or user input
+- decisions, alternatives, outcomes, and superseded decisions
+- memories, notes, ideas, observations, and connections
+- planned versus actual outcomes
+- recurring hidden preparation around events
+
+Learning must support the user rather than score or judge them.
+
+## Capacity law
+
+Glow recognizes capacity states such as:
+
+- Very Productive
+- Normal Productive
+- Low Productive
+- Cancel Everything Day
+
+Capacity may affect information density, recommended task size, number of priorities, routine version, pacing, and how proactive Glow is.
+
+Capacity must never be treated as worth, discipline, morality, or diagnosis.
+
+## Friction Detective law
+
+Glow may notice repeated friction such as:
+
+- the same task repeatedly moving
+- recurring preparation failures
+- tasks taking longer than expected
+- repeated blockers
+- missing prerequisites
+- excessive context switching
+- overloaded days
+- routines collapsing at the same step
+- work scheduled at incompatible energy levels
+- repeated unfinished loops
+
+The tone is investigative and supportive, not punitive.
+
+Glow asks what about the setup makes something hard rather than framing difficulty as personal failure.
+
+## Personal Pattern Cinema law
+
+Patterns may include energy, interruptions, productivity, rest, joy, completed work, neglected goals, routines, preparation, workload, estimated versus actual duration, capacity, and recurring rhythms.
+
+Patterns are evidence-based observations, not identity labels.
+
+## Personal Taste Profile law
+
+Taste and preference models must remain visible, inspectable, and editable when implemented.
+
+Glow must not build an invisible psychological dossier and present it as fact.
+
+## Decision Archive law
+
+Glow should preserve meaningful decisions with:
+
+- choice made
+- alternatives considered
+- reason
+- expected outcome
+- actual outcome where known
+- whether the decision still applies
+- whether a newer decision superseded it
+
+Glow should not repeatedly ask the user to answer decisions already resolved unless the underlying context changed.
+
+## Memory law
+
+Memory is not equivalent to chat history.
+
+Structured records are stronger than raw conversation history.
+
+Memory should be scoped, inspectable, editable, and deletable where the relevant product surface supports it.
+
+Inferences are not unquestionable truths.
+
+Source, timestamp, evidence status, confidence, edits, contradictions, and historical versions should remain distinguishable where supported.
+
+The system must not silently promote old or contradicted information into current truth.
+
+The user remains in control of what Glow remembers and what it treats as active.
+
+## Temporal truth law
+
+Information may be:
+
+- current
+- historical
+- planned
+- proposed
+- confirmed
+- completed
+- canceled
+- replaced
+- outdated
+
+Glow must not treat historical or superseded information as current merely because it still exists.
+
+## One connected life graph
+
+Calendar, tasks, routines, habits, beauty, health, food, money, people, goals, memories, notes, and creative work are different views of one life.
+
+Related appearances should reference canonical underlying records rather than create conflicting duplicate truths.
+
+## Universal entrance law
+
+Glow is the universal intelligence entrance for:
+
+- typing
+- voice
+- selected page context
+- direct Ask Glow actions
+- Cmd/Ctrl + K
+- camera/photo/file/scan/visualization workflows when corresponding executors exist
+- creation
+- planning
+- search
+- guidance
+- action preparation
+
+Duplicate floating assistant controls are prohibited.
+
+## Speak It Once, Place It Correctly
+
+The user should be able to speak naturally without organizing the input first.
+
+Glow may separate a ramble into proposed:
+
+- tasks
+- deadlines
+- reminders
+- calendar blocks
+- grocery items
+- routines
+- notes
+- preparation
+- relationships
+- dependencies
+
+Meaningful writes remain reviewable and approval-controlled.
+
+## Clarifying-question law
+
+When important information is missing, Glow asks the smallest useful question.
+
+Useful questions include:
+
+- What is this?
+- When does it matter?
+- Where does it belong?
+- What does it depend on?
+- How much time does it need?
+- How much energy does it require?
+- What preparation is needed?
+- Who or what is connected?
+- What should happen next?
+- What should be remembered afterward?
+
+Avoid giant intake questionnaires when one question can resolve the ambiguity.
+
+## What Should I Do Now
+
+Recommendations should use real available context such as:
+
+- current time
+- calendar
+- commitments
+- routines
+- deadlines
+- urgency
+- dependencies
+- energy/capacity when available
+- preparation requirements
+- active focus
+- previous progress
+- available time
+- completed work
+
+The response should compress choices rather than create another overwhelming list.
+
+## Adaptive Day Builder and schedule replanning
+
+Glow may propose realistic day structures that account for:
+
+- fixed commitments
+- priorities
+- capacity
+- preparation
+- travel
+- transitions
+- meals
+- routines
+- recovery
+- buffer time
+- completed work
+- disruptions
+
+If reality changes, Glow may propose moving, shortening, reordering, switching to a shorter routine, carrying something forward, protecting a commitment, adding missing transition time, or removing nonessential work.
+
+Significant changes are never silently applied.
+
+## Planning-With-Me
+
+Planning is collaborative.
+
+Glow should inspect the current state, surface conflicts, ask useful questions, help prioritize, compare choices, propose a realistic structure, let the user modify it, and preserve the final decision.
+
+## Routine Conductor
+
+Actionable routines may support:
+
+- preparation
+- required items
+- ordered steps
+- images/diagrams when available
+- timers
+- pacing
+- voice
+- pause/resume
+- skip/repeat/modify/stop
+- relevant safety notices
+- completion
+- result
+- reflection
+- history
+- next recommended action
+
+## Life Continuity Engine
+
+Glow should preserve available continuity such as:
+
+- where the user stopped
+- active work
+- unfinished work
+- next logical step
+- items waiting on another event
+- active timers
+- drafts
+- filters
+- page state
+- conversation context
+- current focus
+
+Returning to Glow should not require reconstructing the entire state whenever persistence is available.
+
+## Graceful Restart
+
+Glow does not punish inconsistency. It restores continuity.
+
+When a routine, habit, goal, schedule, or project has been interrupted, Glow helps determine what still matters, what no longer matters, where the user stopped, the smallest useful restart, and whether the previous plan is still realistic.
+
+## Personal Energy Budget
+
+Time and energy are separate resources.
+
+Glow may distinguish cognitive, emotional, physical, social, easy, restorative, and low-focus costs when supported by data or explicit user input.
+
+Empty time must not automatically be filled with work.
+
+## Invisible Preparation Layer
+
+Events are not just event blocks.
+
+Glow may connect hidden preparation such as travel, shower, clothing, hair, makeup, packing, weather, spending, leave-ready timing, directions, people, supplies, and follow-up when relevant.
 
 ## Context continuity
 
@@ -49,145 +430,139 @@ Glow carries and resolves:
 
 - current route
 - current Glow world
+- room-specific role
 - selected object
 - selected object's original route/page
 - recent conversation in the current browser session
 - available open tasks
 - upcoming calendar information
-- active focus context when available
-- recent Notes context when the route or request makes Notes/Brain context relevant
+- active focus context
+- relevant Notes context
+- available system recommendations/patterns where connected
 
-Pronouns and ambiguous references such as “this”, “that”, “it”, or “move this” resolve in this order:
+Ambiguous references resolve in this order:
 
 1. selected object
 2. current page and Glow world
 3. recent conversation
 4. active focus, task, project, and available room context
 
-If the reference remains ambiguous, Glow asks one concise clarifying question before any mutation. Glow never guesses what “this” means before changing persistent data.
+If ambiguity remains, Glow asks before mutation.
 
-## Page-specific behavior
+## Room-adaptive Glow behavior
 
-Glow remains one intelligence while adapting its role to the current room.
+Glow remains one intelligence while changing its role by room.
 
-### Today
-Suggested actions may include:
-- What should I do next?
-- Fix the rest of today
-- Move what can wait
+- Today: warm, attentive, present-moment guidance.
+- Plan: precise time architecture, conflicts, open time, deadlines, scenarios, preparation.
+- Life: adapts to the room; reflective in Beauty, grounded in Fitness, precise in Money, practical in Work, warm in Food.
+- Brain: lantern for memories, notes, patterns, ideas, and connections.
+- Create: more open and prismatic; turns thoughts, voice, images, notes, files, and conversations into structure.
 
-### Plan / Calendar
-Suggested actions may include:
-- Find conflicts
-- Show my free time
-- Plan this with me
+The visual Aura may adapt color temperature, edge clarity, movement, and geometry to the room without becoming a different identity.
 
-### Brain / Notes / Memory
-Suggested actions may include:
-- Find a previous note
-- Show related ideas
-- Help me connect this
+## Environmental intelligence
 
-### Beauty / Hair / Fitness / Food / Wellness and similar Life rooms
-Suggested actions may include:
-- Guide me step by step
-- What comes next?
-- Make this easier today
+Glow does not always need to speak.
 
-### Create / Import / Inbox
-Suggested actions may include:
-- Organize this
-- Turn this into tasks
-- Where should this go?
+Understanding can appear as the world reorganizing:
 
-Future pages inherit Glow automatically through the root presence. Page authors may add room-specific suggestions or selected-object context, but they must not mount a new assistant.
+- relevant information becomes clearer
+- unrelated information recedes
+- a light route forms toward a destination
+- related notes gather
+- schedule conflicts illuminate
+- a routine step rises forward
+- important objects gain clarity
+- completed information settles into history
 
-## Input law
+Intelligence should appear as a natural phenomenon in Glow Matter.
 
-Glow can receive:
+## Glow ripple
 
-- text
-- browser voice recognition
-- selected page context
-- direct Ask Glow actions
-- Cmd/Ctrl + K
-- `glow:voice-open` compatibility calls
-- `glow:quick-add` compatibility calls
+When Glow genuinely understands something or completes an approved change, a controlled refractive ripple may travel from Glow through the affected material.
 
-Voice state must visibly enter Listening while audio is captured and Understanding after usable input is received.
+It must be functional and recognizable, not decorative glitter, a neon shockwave, or a generic loading animation.
 
-## Response forms
+## Recommendation explanation
 
-Glow supports these canonical response forms:
+Glow recommendations should provide a useful reason when context supports one.
 
-- conversation
-- search
-- guided steps
-- plan
-- visual concept
+Reasons may involve time, schedule, energy, routine, priorities, preparation, dependencies, history, prior decisions, and patterns.
 
-Response form does not imply that an executor exists.
+The interface should give enough explanation for the user to trust, reject, or adjust the recommendation without exposing internal chain-of-thought.
 
-If the user requests a visual output such as visual cards, an image, mood board, or diagram and no verified visual renderer is connected, Glow may prepare the concept or queue it for review. It must not claim the image was rendered.
+## Confidence-calibrated intelligence
 
-## Brain and Notes retrieval
+Glow distinguishes knowing, inferring, suggesting, needing clarification, and being uncertain.
 
-When the user is in Notes, Brain, Memory, Timeline, Graph, Observations, or asks about previous notes, ideas, memories, thoughts, or related information, Glow retrieves recent Notes context in addition to Tasks and Calendar context.
+When uncertain, Glow asks plainly rather than inventing confidence.
 
-If the language model connection is unavailable, Glow keeps a local note-match fallback so “find my old note” can still return a likely match rather than collapsing to Tasks/Calendar-only behavior.
+## Suggestions are not actions
+
+Glow must distinguish:
+
+1. Suggestion
+2. Proposed change
+3. Confirmed action
+4. Completed action
+5. Unavailable / cannot perform
+
+These states may never be blurred.
 
 ## Approval law
 
-The canonical mutation workflow is:
+You ask → Glow understands → Glow prepares proposal → user reviews → Approve / Cancel → Glow acts → receipt
 
-You ask → Glow understands → Glow prepares proposal → you review → Approve / Cancel → Glow acts → receipt
-
-The review surface must make clear:
-
-- what Glow thinks the action is
-- action type
-- expected destination
-- that nothing changes until approval
+The review surface shows what Glow thinks the action is, action type, expected destination, and whether a verified executor exists.
 
 Cancel means nothing changes.
 
 Read-only conversation, search, guidance, and navigation can occur immediately.
 
-Creating or changing persistent data requires approval first.
+Persistent mutation requires approval.
 
 ## Verified direct executors
 
-The intentionally narrow verified direct executor set is:
+The intentionally narrow verified direct executor set remains:
 
 - create task/reminder
 - create note
 
-Other approved operations route into the intake/review pipeline until a dedicated verified executor exists.
+Unsupported operations route to review/intake until a dedicated verified executor exists.
 
-Examples:
+Glow must never claim an unsupported calendar move, external communication, financial action, visual rendering, or other mutation succeeded.
 
-- “Reschedule my entire afternoon” may be understood and proposed, but Glow must not claim calendar events moved until a verified calendar mutation executor exists.
-- “Make this into visual cards” may be proposed and queued, but Glow must not claim rendered cards exist until a verified visual executor exists.
+## Action receipts and undo
 
-## Action receipts
-
-After approval, Glow must distinguish:
-
-- what actually completed
-- what was only queued for review
-- where completed work went
-- where queued work is waiting
-- whether anything needs attention
-
-Queued work is never labeled as completed work.
-
-The server receipt status may be:
+After an action, Glow distinguishes:
 
 - completed
-- partially-completed
-- queued
+- partially completed
+- queued for review
+- needs attention
 
-Only destinations written by verified executors are reported as completed destinations.
+Receipts identify what actually completed, where it went, what remains queued, and where queued work is waiting.
+
+The user should be able to inspect history and undo/restore where the underlying executor supports it.
+
+## User-control law
+
+Glow learns without controlling the user.
+
+Glow must not use:
+
+- invisible schedule changes
+- manipulative reminders
+- shame or guilt
+- productivity policing
+- constant interruption
+- forced habits or routines
+- unsupported psychological profiling
+- metrics as a proxy for human worth
+- every empty minute as available work time
+
+Glow should return agency rather than take control.
 
 ## Root events
 
@@ -197,55 +572,43 @@ Pages integrate with the one root Glow presence through:
 - `glow:context`
 - `glow:clear-context`
 - `glow:voice-open` compatibility alias
-- `glow:quick-add` compatibility alias
-
-`glow:context` should include a stable object label and, where available, type and ID. The root presence records the source route at selection time so Glow can distinguish an object selected on a previous page from the current room.
+- `glow:quick-add` compatibility alias, which now opens the root Glow creation flow rather than a separate Quick Add assistant
 
 ## Future-page integration law
 
-Every new Glow OS page must follow these rules by default:
+Every new page must:
 
-1. It lives inside the same Glow OS root layout.
-2. It does not mount another assistant, agent, chatbot, conversation provider, or global action owner.
-3. It inherits the root Glow presence and the canonical world mapping from `glow-operating-model.ts`.
-4. It may dispatch selected context into Glow instead of building a page-local assistant.
-5. It may provide room-specific suggestions while preserving one Glow identity.
-6. Persistent mutations require proposal and approval.
-7. Unverified executors queue work rather than report false success.
-8. Every receipt distinguishes completed vs queued work.
-9. The selected object's source page remains attached to context.
-10. If the page introduces a new route family, its Glow world and suggested actions should be added to the canonical operating model instead of duplicated inside the page.
+1. live inside the same root Glow OS world
+2. inherit the persistent Glow presence
+3. never mount a second assistant
+4. provide selected-object context through the root system
+5. use canonical world mapping and room role
+6. preserve source route/context continuity
+7. require approval for meaningful persistent mutation
+8. queue unsupported executors rather than fake success
+9. return truthful receipts
+10. adapt Glow's room role without changing Glow's identity
+11. preserve reduced-motion and accessible touch behavior
+12. use the living Aura rather than a generic chatbot icon when representing Glow intelligence
 
-## Retired-name rule
+## Permanent regression checklist
 
-The retired assistant name must not return in:
+Before shipping any Glow intelligence feature, verify:
 
-- runtime components
-- UI copy
-- event names
-- providers
-- APIs
-- route names
-- product-facing documentation
-- future page-local assistants
-
-The product-facing identity is Glow.
-
-## Regression checklist
-
-Before shipping any page or intelligence feature, verify:
-
-- Is there only one Glow identity?
-- Is there only one current conversation context?
-- Is each action owned by one system?
+- Is Glow visibly the one living intelligence presence?
+- Is the persistent Aura present on every room, including Today?
+- Is there only one conversation owner?
+- Is there only one action owner per mutation?
+- Are separate voice/chat/Quick Add assistant overlays absent?
 - Does selected context preserve its original route?
-- Does Glow know the current route and Glow world?
-- Are relevant Tasks, Calendar, Focus, and Notes contexts available?
-- Does ambiguous-reference resolution follow the canonical order?
+- Does Glow know the current room/world and role?
+- Does it use real available context before asking the user to repeat information?
+- Are inferences distinguishable from facts?
 - Does meaningful mutation wait for approval?
 - Does Cancel leave data unchanged?
-- Does an unavailable executor queue work instead of pretending to complete it?
-- Does the receipt explicitly distinguish completed work from queued work?
-- Does the page reuse the root Glow presence rather than mount another assistant?
+- Does unavailable functionality remain explicitly unavailable or queued?
+- Are receipts truthful?
+- Does Glow's visual state communicate listening, understanding, creating, acting, completion, and error without becoming decorative animation?
+- Does the experience feel like the operating system itself became intelligent rather than a chatbot being added to software?
 
-If any answer is no, the feature is not compliant with the Glow intelligence contract.
+If any answer is no, the feature is not compliant with the Glow living intelligence contract.
