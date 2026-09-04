@@ -2,9 +2,18 @@
 
 This contract is authoritative for current and future Glow OS rooms.
 
+It must be read with `GLOW_OS_ROOM_WORLD_CANON_2026-09-04.md`. The two contracts are cumulative, not competing:
+
+- **Spatial Navigation Contract** defines how movement, continuity, reachability, touch, and responsive navigation work.
+- **Room + World Canon** defines why every room is different, its climate, spatial metaphor, signature interaction, Glow behavior, completion behavior, and page-specific identity.
+
+A future room is incomplete if it satisfies only one of these contracts.
+
 ## Core law
 
 Glow OS is one continuous intelligent world. Major navigation is movement of Glow Matter, camera, focus, depth, reveal, drift, or transformation. It is not browser-page replacement disguised with styling.
+
+Every room must feel like a different place in the same world. Shared physics create continuity; room-specific climate and physical logic create identity.
 
 ## World navigation
 
@@ -14,6 +23,7 @@ Glow OS is one continuous intelligent world. Major navigation is movement of Glo
 - Page-level browser scrolling is not a navigation model.
 - Local scrolling is allowed only when the information itself is intrinsically long, such as a long note, source document, archive, or large record list.
 - Room transitions must preserve context and orientation.
+- The Glow Aura is the visible manifestation of the one Glow intelligence, not a second assistant identity.
 
 ## Today time navigation
 
@@ -46,6 +56,21 @@ For phone:
 - Navigation recomposes to a bottom optical rail.
 - NOW, command intelligence, focus, and time remain separate spatial layers.
 - The desktop room is never merely scaled down.
+
+## Responsive rail law
+
+Spatial rails have three default responsive states unless a room has an explicitly designed alternative:
+
+1. **Full rail:** icon + small centered label for wide desktop and wide iPad.
+2. **Compact rail:** smaller bounded labels for iPad Split View and tighter widths. Labels remain fully inside the optical rail and may use at most two lines where needed.
+3. **Ultra-compact rail:** icon-first. Selected/focused labels may reveal beside the rail. No label may spill into the scene.
+
+Additional permanent rules:
+
+- Touch targets remain comfortably usable even when the visible icon is delicate.
+- The rail may widen slightly to protect readability before main content is sacrificed.
+- In the Today rail, the product-facing label is **Library** instead of **Resources**.
+- No future spatial rail may reintroduce unbounded text overflow.
 
 ## Physical interaction law
 
@@ -106,6 +131,8 @@ Motion is slow enough to read, fast enough to feel responsive, damped, non-bounc
 - Decorative controls that do nothing
 - Tiny touch targets
 - Fake drag behavior that claims a mutation succeeded
+- Reusing the same hero + card grid + section order as the default structure for multiple rooms
+- Treating all rooms as the same white/glass dashboard with different labels
 
 ## Engineering acceptance criteria
 
@@ -120,4 +147,5 @@ A spatial Glow room is not complete unless:
 - temporal navigation works by swipe/drag/wheel/tap rather than document scroll;
 - unsupported mutations route through Glow approval instead of pretending to complete;
 - route changes use the shared Glow Matter continuity field;
-- reduced-motion behavior remains functional.
+- reduced-motion behavior remains functional;
+- the room has a unique dominant spatial metaphor, light climate, signature interaction, completion behavior, and primary human question as defined by the Room + World Canon.
