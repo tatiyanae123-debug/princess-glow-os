@@ -1,6 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { TodayLivingCenterV4 } from '@/components/today-living-center-v4';
+import { TodayLivingCenterV9 } from '@/components/today-living-center-v9';
 import { getTasksByUser } from '@/lib/data/tasks';
 import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
@@ -48,7 +48,7 @@ export default async function TodayPage(){
   const latestWellness=wellnessEntries[0]??null;
   const routines=beautyRoutines.filter(r=>r.timeOfDay==='morning'||r.timeOfDay==='afternoon'||r.timeOfDay==='evening'||r.timeOfDay==='night').slice(0,12);
 
-  return <TodayLivingCenterV4
+  return <TodayLivingCenterV9
     tasks={ranked.slice(0,10).map(t=>({id:t.id,title:t.title,priority:t.priority,dueLabel:taskDueLabel(t.dueDate,now)}))}
     events={nearbyEvents.slice(0,14).map(e=>({id:e.id,title:e.title,timeLabel:e.allDay?'All day':e.startAt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}),location:e.location,startAtISO:e.startAt.toISOString(),allDay:e.allDay}))}
     routines={routines.map(r=>({id:r.id,name:r.name,timeOfDay:r.timeOfDay}))}
