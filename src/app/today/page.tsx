@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { MorningBriefReference } from '@/components/today/morning-brief-reference';
 import { TodayLivingCenter } from '@/components/today/today-living-center';
 import { TodaySimpleChrome } from '@/components/today/today-simple-chrome';
+import { WhatNowReference } from '@/components/today/what-now-reference';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,14 +15,13 @@ export default async function TodayPage() {
     if (!session?.user?.id) redirect('/sign-in');
   }
 
-  // Glow Current now lives underneath the interaction model.
-  // Visible controls stay simple and direct: press a destination and the
-  // existing room transition carries context forward. Advanced gestures are
-  // optional enhancements and are not mounted as required navigation.
+  // Glow Current lives underneath the interaction model.
+  // Locked visual references remain the source of truth for each Today room.
   return (
     <>
       <TodayLivingCenter />
       <MorningBriefReference />
+      <WhatNowReference />
       <TodaySimpleChrome />
     </>
   );
