@@ -1,6 +1,6 @@
 # Glow OS 3.0 Agent Rules
 
-Before changing any UI, read `docs/glow-os-3-design-rulebook.md` and `docs/SHAKTI_IDENTITY_AND_3D_PRESENCE_LOCK_2026-09-03.md`. They are authoritative and supersede earlier dashboard/sidebar/template assumptions and all earlier product-facing names for the intelligent presence.
+Before changing any UI, read `docs/glow-os-3-design-rulebook.md`, `docs/SHAKTI_IDENTITY_AND_3D_PRESENCE_LOCK_2026-09-03.md`, and `docs/CELEBRATION_RITUAL_AND_BECOMING_PEARLS_LOCK_2026-09-03.md`. They are authoritative and supersede earlier dashboard/sidebar/template assumptions, earlier product-facing names for the intelligent presence, and ad-hoc milestone handling.
 
 These rules are mandatory for all future Glow OS work:
 
@@ -27,5 +27,8 @@ These rules are mandatory for all future Glow OS work:
 21. Large user source files such as `Pasted markdown.md`, routines/workout/beauty/hair/home/finance documents and inventories are authoritative content/feature inputs where applicable. They do not override approved room visuals or force generic database layouts.
 22. Beauty and health-related surfaces must apply their specific intelligence/safety rules, not aesthetic styling alone.
 23. Before finishing any UI task, compare the live result against its locked reference and audit blur/sharpness, transparency, clipping, hit areas, scrolling, responsive behavior, safe areas, Shakti state, all visible controls, keyboard/focus and reduced motion.
+24. Major accomplishments use the permanent **Becoming Pearls** celebration ritual. When a genuinely major milestone is completed, create a small thoughtful celebration or surprise for Tatiyana, record it as a persistent Becoming Pearl in the Becoming Cabinet, and keep prior pearls. Do not trivialize this with badges, XP, confetti, or constant rewards. Follow `docs/CELEBRATION_RITUAL_AND_BECOMING_PEARLS_LOCK_2026-09-03.md`.
+25. If an iPad is physically landscape but the actual Safari/Stage Manager/Split View pane is too narrow for the approved wide room, adapt to the usable pane. Never preserve a full-width composition merely because the hardware orientation is landscape.
+26. When a reference screenshot contains baked demo text, do not stack visible opaque cover rectangles above it. Prefer transparent native reconstruction or cleaning the stale ink inside the reference layer itself while preserving the room material, edges, translucency, architecture and approved visual hosts.
 
 The hard acceptance test is: same physics, different climates, one continuous world. If the implementation feels like a collection of separate web pages, interchangeable dashboards, or a static screenshot with effects layered over it, it is not Glow OS.
