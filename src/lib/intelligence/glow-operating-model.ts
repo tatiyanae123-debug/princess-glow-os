@@ -89,6 +89,10 @@ export const GLOW_MEMORY_GUARDRAILS = [
 
 export const GLOW_CAPABILITY_REGISTRY = [
   'Ask Glow',
+  'Natural Language Intent Understanding',
+  'Rambling and Brain-Dump Understanding',
+  'Contextual Pronoun Resolution',
+  'Voice Conversation',
   'Universal Capture',
   'Speak It Once, Place It Correctly',
   'What Should I Do Now',
@@ -178,9 +182,9 @@ export function glowPromptsForRoute(pathname: string): string[] {
 export function glowResponseFormFor(text: string): GlowResponseForm {
   const value = text.toLowerCase();
   if (/\b(image|visual card|visual cards|mood board|visual|diagram|face map|map)\b/.test(value)) return 'visual';
-  if (/\b(step by step|guide me|talk me through|routine|walk me through|conductor)\b/.test(value)) return 'guide';
-  if (/\b(plan|replan|fix the rest|schedule|scenario|reorganize|rearrange|compare choices|next hour)\b/.test(value)) return 'plan';
-  if (/\b(find|search|show me|pull up|where is|previous note|look for|remember)\b/.test(value)) return 'search';
+  if (/\b(step by step|guide me|talk me through|routine|walk me through|conductor|show me how)\b/.test(value)) return 'guide';
+  if (/\b(plan|replan|fix the rest|schedule|scenario|reorganize|rearrange|compare choices|next hour|fit this|make this work|too much today)\b/.test(value)) return 'plan';
+  if (/\b(find|search|show me|pull up|where is|previous note|look for|remember where)\b/.test(value)) return 'search';
   return 'conversation';
 }
 
@@ -192,13 +196,14 @@ export function isVisualCreationRequest(text: string) {
 export function glowRiskForText(text: string): GlowRisk {
   const value = text.toLowerCase();
   if (/\b(delete|erase|remove all|cancel|pay|purchase|transfer|send email|external account|clear all|archive all)\b/.test(value)) return 'high';
-  if (/\b(move|reschedule|change|edit|update|replace|reorganize|rearrange|replan|fix the rest|everything|all unfinished)\b/.test(value)) return 'medium';
+  if (/\b(move|reschedule|change|edit|update|replace|reorganize|rearrange|replan|fix the rest|all unfinished|push that|shift that|do that later|make room for|move that)\b/.test(value)) return 'medium';
   if (isVisualCreationRequest(text)) return 'low';
-  if (/\b(add|create|save|file|log|remind|schedule|make a task|make a note)\b/.test(value)) return 'low';
+  if (/\b(add|create|save|file|log|remind|schedule|make a task|make a note|don't let me forget|do not let me forget|write this down|keep this|put this somewhere|make sure i)\b/.test(value)) return 'low';
+  if (/\b(i need to|i have to|i was supposed to|i should probably|i should |need to |have to )\b/.test(value)) return 'low';
   return 'read';
 }
 
 export function glowNeedsNoteContext(pathname: string, text: string) {
   return /^\/(notes|brain|memory|timeline|graph|observations)(\/|$)/.test(pathname)
-    || /\b(note|notes|memory|memories|idea|ideas|thought|thoughts|insight|previous|decision|pattern|connection)\b/i.test(text);
+    || /\b(note|notes|memory|memories|idea|ideas|thought|thoughts|insight|previous|decision|pattern|connection|remember|that thing|this thing)\b/i.test(text);
 }
