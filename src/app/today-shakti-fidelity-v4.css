@@ -1,0 +1,319 @@
+/*
+ * TODAY + SHAKTI FIDELITY V4
+ * Final authority for the Sept 3 Today reference room.
+ *
+ * Goals:
+ * - remove the soft/fuzzy processing from the reference plane;
+ * - stop every legacy Today Aura whole-object pulse/ring animation;
+ * - visually absorb the baked static Aura into the room and replace it with a native volumetric Shakti;
+ * - keep Shakti alive through internal depth, not a circle pasted over a picture;
+ * - preserve the approved room composition.
+ */
+
+/* ---------- REFERENCE SHARPNESS ---------- */
+.today-landscape .today-reference {
+  filter:none !important;
+  transform:none !important;
+  backface-visibility:visible !important;
+  will-change:auto !important;
+  image-rendering:auto !important;
+  opacity:1 !important;
+}
+
+/* The old giant blurred duplicate made the whole page feel foggy. Keep only a
+   restrained environmental continuation outside the exact 4:3 stage. */
+.today-landscape .today-ambient-reference {
+  filter:saturate(.96) brightness(1.01) contrast(1.02) !important;
+  transform:scale(1.018) !important;
+  opacity:.20 !important;
+}
+
+.today-landscape,
+.today-landscape button,
+.today-landscape div,
+.today-landscape span {
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+/* ---------- REMOVE EVERY LEGACY TODAY PULSE ---------- */
+.today-aura-visual {
+  animation:none !important;
+  transform:none !important;
+  filter:none !important;
+  perspective:920px !important;
+  perspective-origin:50% 45% !important;
+  transform-style:preserve-3d !important;
+  overflow:visible !important;
+  isolation:isolate !important;
+}
+
+.today-aura-visual span {
+  transform-style:preserve-3d !important;
+  backface-visibility:hidden !important;
+}
+
+.today-aura-ring,
+.today-aura-ring-one,
+.today-aura-ring-two {
+  display:none !important;
+  opacity:0 !important;
+  animation:none !important;
+}
+
+/* Feathered pearl light absorbs the Aura that is baked into the reference.
+   It is deliberately not a circle and never pulses. */
+.today-landscape .today-aura-visual::before {
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:138%;
+  height:142%;
+  transform:translate3d(-50%,-50%,-150px);
+  border-radius:46% 54% 49% 51% / 58% 46% 54% 42%;
+  background:
+    linear-gradient(90deg,transparent 0 5%,rgba(251,247,243,.18) 16%,rgba(250,247,244,.78) 37%,rgba(249,247,246,.91) 50%,rgba(248,245,243,.73) 65%,rgba(249,244,240,.16) 84%,transparent 96%),
+    linear-gradient(180deg,rgba(255,255,255,.07),rgba(242,235,231,.24) 42%,rgba(244,238,234,.44) 61%,rgba(238,232,228,.10) 88%,transparent);
+  -webkit-mask-image:radial-gradient(ellipse at center,#000 0 42%,rgba(0,0,0,.82) 58%,rgba(0,0,0,.28) 73%,transparent 88%);
+  mask-image:radial-gradient(ellipse at center,#000 0 42%,rgba(0,0,0,.82) 58%,rgba(0,0,0,.28) 73%,transparent 88%);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* Ground light makes Shakti occupy the floor instead of floating like a decal. */
+@keyframes todayShaktiGroundCurrent {
+  0%,100% { transform:translate3d(-50%,0,-72px) rotateX(76deg) scaleX(.86); opacity:.12; }
+  50% { transform:translate3d(-50%,1.2%,-48px) rotateX(72deg) scaleX(1.06); opacity:.25; }
+}
+.today-landscape .today-aura-visual::after {
+  content:"";
+  position:absolute;
+  left:50%;
+  top:60%;
+  width:72%;
+  height:22%;
+  border-radius:50%;
+  background:radial-gradient(ellipse,rgba(255,255,255,.34) 0 8%,rgba(246,222,231,.16) 28%,rgba(211,231,255,.09) 48%,transparent 74%);
+  filter:blur(3.2px);
+  mix-blend-mode:screen;
+  pointer-events:none;
+  transform-origin:50% 0;
+  animation:todayShaktiGroundCurrent 8.8s ease-in-out infinite !important;
+  z-index:1;
+}
+
+/* ---------- NATIVE VOLUMETRIC SHAKTI ---------- */
+@keyframes todayShaktiCoreDepth {
+  0%,6%,36%,100% { transform:translate3d(-50%,-50%,78px) rotateX(-5deg) scaleX(.985) scaleY(1.01); filter:brightness(1.02) contrast(1.04); }
+  9% { transform:translate3d(-50%,-50%,60px) rotateX(-8deg) scaleX(.965) scaleY(.985); filter:brightness(1.12) contrast(1.07); }
+  12% { transform:translate3d(-50%,-50%,118px) rotateX(-3deg) scaleX(1.014) scaleY(1.043); filter:brightness(1.43) contrast(1.10); }
+  17% { transform:translate3d(-50%,-50%,82px) rotateX(-5deg) scaleX(.991) scaleY(1.013); filter:brightness(1.06) contrast(1.04); }
+  23% { transform:translate3d(-50%,-50%,101px) rotateX(-4deg) scaleX(1.004) scaleY(1.025); filter:brightness(1.23) contrast(1.07); }
+  29% { transform:translate3d(-50%,-50%,78px) rotateX(-5deg) scaleX(.985) scaleY(1.01); filter:brightness(1.02) contrast(1.04); }
+}
+
+@keyframes todayShaktiLensFloat {
+  0%,100% { transform:translate3d(-50%,-50%,42px) rotateZ(-7deg) scale(.80,.55); opacity:.52; }
+  27% { transform:translate3d(-46%,-55%,54px) rotateZ(5deg) scale(.98,.45); opacity:.88; }
+  55% { transform:translate3d(-55%,-46%,35px) rotateZ(-1deg) scale(.74,.68); opacity:.60; }
+  80% { transform:translate3d(-48%,-52%,47px) rotateZ(8deg) scale(.92,.50); opacity:.77; }
+}
+
+@keyframes todayShaktiBeamFlow {
+  0%,100% { background-position:50% 8%; transform:translateZ(20px) scaleY(.986); opacity:.56; }
+  29% { background-position:50% 43%; transform:translateZ(35px) scaleY(1.011); opacity:.82; }
+  58% { background-position:50% 79%; transform:translateZ(23px) scaleY(.996); opacity:.67; }
+  83% { background-position:50% 96%; transform:translateZ(31px) scaleY(1.006); opacity:.74; }
+}
+
+@keyframes todayShaktiRayOrbit {
+  0%,100% { transform:translate3d(-50%,-50%,46px) rotateZ(-1deg) rotateX(2deg); opacity:.24; }
+  39% { transform:translate3d(-50.4%,-49.6%,58px) rotateZ(.65deg) rotateX(-1deg); opacity:.34; }
+  73% { transform:translate3d(-49.6%,-50.4%,50px) rotateZ(-.15deg) rotateX(1deg); opacity:.29; }
+}
+
+@keyframes todayShaktiRayBeat {
+  0%,9%,36%,100% { filter:brightness(1); }
+  15% { filter:brightness(1.43); }
+  20% { filter:brightness(1.08); }
+  25% { filter:brightness(1.21); }
+  30% { filter:brightness(1); }
+}
+
+@keyframes todayShaktiLeftDepth {
+  0%,100% { transform:translateZ(10px) rotateY(14deg) rotateZ(-.9deg) skewY(-.35deg) scaleX(-1); }
+  44% { transform:translateZ(28px) rotateY(9deg) rotateZ(.42deg) skewY(.18deg) scaleX(-1); }
+  77% { transform:translateZ(17px) rotateY(12deg) rotateZ(-.22deg) skewY(-.08deg) scaleX(-1); }
+}
+
+@keyframes todayShaktiRightDepth {
+  0%,100% { transform:translateZ(13px) rotateY(-13deg) rotateZ(.75deg) skewY(.28deg); }
+  40% { transform:translateZ(30px) rotateY(-8deg) rotateZ(-.45deg) skewY(-.15deg); }
+  75% { transform:translateZ(19px) rotateY(-11deg) rotateZ(.16deg) skewY(.08deg); }
+}
+
+@keyframes todayShaktiAtmosphere {
+  0%,100% { transform:translateZ(-118px) scale(.99,1.014); opacity:.20; }
+  49% { transform:translateZ(-94px) scale(1.032,.988); opacity:.31; }
+}
+
+.today-aura-haze {
+  inset:2% !important;
+  border-radius:45% 55% 51% 49% / 58% 44% 56% 42% !important;
+  background:radial-gradient(ellipse at 50% 43%,rgba(255,255,255,.32) 0 8%,rgba(225,238,255,.16) 25%,rgba(246,218,231,.09) 43%,transparent 69%) !important;
+  filter:blur(4px) !important;
+  animation:todayShaktiAtmosphere 8.8s ease-in-out infinite !important;
+  z-index:2 !important;
+}
+
+.today-aura-beam {
+  left:49.3% !important;
+  top:-28% !important;
+  width:1.35% !important;
+  height:156% !important;
+  background:
+    linear-gradient(180deg,transparent,rgba(255,255,255,.38) 15%,rgba(255,255,255,.98) 43%,rgba(216,233,255,.67) 54%,rgba(255,233,236,.43) 68%,transparent 95%),
+    linear-gradient(90deg,transparent,rgba(255,255,255,.99),transparent) !important;
+  background-size:100% 205% !important;
+  filter:blur(.45px) !important;
+  animation:todayShaktiBeamFlow 7.5s ease-in-out infinite !important;
+  z-index:5 !important;
+}
+
+.today-aura-fan {
+  top:16% !important;
+  width:46% !important;
+  height:68% !important;
+  opacity:.48 !important;
+  background:
+    repeating-conic-gradient(from 86deg at 100% 50%,rgba(255,255,255,.84) 0deg .38deg,rgba(246,215,227,.18) .72deg 1.18deg,rgba(207,229,255,.17) 1.5deg 2.1deg,transparent 2.45deg 6.7deg) !important;
+  -webkit-mask-image:radial-gradient(ellipse at 100% 50%,#000 0 10%,rgba(0,0,0,.90) 22%,rgba(0,0,0,.50) 52%,transparent 76%) !important;
+  mask-image:radial-gradient(ellipse at 100% 50%,#000 0 10%,rgba(0,0,0,.90) 22%,rgba(0,0,0,.50) 52%,transparent 76%) !important;
+  filter:blur(.15px) drop-shadow(0 0 5px rgba(255,255,255,.56)) !important;
+  z-index:6 !important;
+}
+.today-aura-fan-left { left:1.5% !important; animation:todayShaktiLeftDepth 9.7s ease-in-out infinite !important; }
+.today-aura-fan-right { right:1.5% !important; animation:todayShaktiRightDepth 9.1s ease-in-out infinite !important; }
+
+.today-aura-rays {
+  left:50% !important;
+  top:50% !important;
+  width:84% !important;
+  height:90% !important;
+  border-radius:44% 56% 48% 52% / 58% 48% 52% 42% !important;
+  background:
+    repeating-conic-gradient(from 2deg,rgba(255,255,255,.76) 0deg .20deg,transparent .38deg 4.7deg,rgba(241,207,222,.16) 5deg 5.25deg,transparent 5.5deg 9.7deg),
+    radial-gradient(ellipse at center,transparent 0 22%,rgba(255,255,255,.07) 35%,transparent 68%) !important;
+  -webkit-mask-image:radial-gradient(ellipse at center,transparent 0 18%,#000 24%,rgba(0,0,0,.72) 49%,transparent 74%) !important;
+  mask-image:radial-gradient(ellipse at center,transparent 0 18%,#000 24%,rgba(0,0,0,.72) 49%,transparent 74%) !important;
+  animation:todayShaktiRayOrbit 9.8s ease-in-out infinite,todayShaktiRayBeat 2.18s cubic-bezier(.18,.72,.18,1) infinite !important;
+  z-index:8 !important;
+}
+
+.today-aura-core {
+  left:50% !important;
+  top:50% !important;
+  width:12.3% !important;
+  height:18.8% !important;
+  aspect-ratio:auto !important;
+  border-radius:46% 54% 48% 52% / 58% 62% 38% 42% !important;
+  background:
+    radial-gradient(ellipse at 47% 39%,#fff 0 18%,rgba(255,255,255,1) 29%,rgba(255,248,244,.98) 41%,rgba(223,237,255,.68) 57%,rgba(243,217,231,.24) 70%,transparent 82%) !important;
+  box-shadow:
+    0 -5px 11px rgba(255,255,255,.94),
+    0 8px 22px rgba(255,241,236,.64),
+    0 0 41px 12px rgba(216,232,255,.28),
+    0 20px 52px rgba(96,67,78,.10) !important;
+  transform-origin:50% 52% !important;
+  animation:todayShaktiCoreDepth 2.18s cubic-bezier(.18,.72,.18,1) infinite !important;
+  z-index:11 !important;
+}
+.today-aura-core::before {
+  content:"";
+  position:absolute;
+  inset:9% 18% 17%;
+  border-radius:48% 52% 45% 55% / 55% 62% 38% 45%;
+  background:linear-gradient(160deg,rgba(255,255,255,.99),rgba(255,255,255,.18) 38%,rgba(204,228,255,.20) 68%,rgba(245,214,228,.09));
+  filter:blur(.28px);
+  box-shadow:inset -3px -5px 9px rgba(187,210,244,.13),inset 3px 3px 8px rgba(255,255,255,.68);
+  transform:translateZ(25px);
+}
+.today-aura-core::after {
+  content:"";
+  position:absolute;
+  left:50%;
+  top:46%;
+  width:63%;
+  height:34%;
+  border-radius:50%;
+  background:linear-gradient(100deg,transparent 5%,rgba(255,255,255,.26) 24%,rgba(255,255,255,.98) 48%,rgba(207,230,255,.36) 68%,transparent 94%);
+  filter:blur(.25px);
+  mix-blend-mode:screen;
+  animation:todayShaktiLensFloat 5.4s ease-in-out infinite !important;
+}
+
+/* Shakti's name appears as a native layer where the old baked Aura label lived. */
+.today-landscape .today-aura-beam::after {
+  content:"Shakti";
+  position:absolute;
+  left:50%;
+  top:67%;
+  transform:translateX(-50%) translateZ(80px);
+  width:10rem;
+  margin-left:-5rem;
+  text-align:center;
+  color:rgba(62,49,46,.76);
+  font-family:Georgia,'Times New Roman',serif;
+  font-size:clamp(12px,1.15cqw,20px);
+  font-style:italic;
+  letter-spacing:-.01em;
+  text-shadow:0 1px 4px rgba(255,255,255,.92);
+  pointer-events:none;
+}
+
+/* Remove fake decorative pulse effects in compact Today Shakti too. */
+.today-aura-compact {
+  animation:none !important;
+  transform:none !important;
+}
+.today-aura-compact::before { opacity:.72; }
+.today-aura-compact::after { opacity:.28; }
+
+/* ---------- FEATHER OLD GREETING INK WITHOUT A WHITE HIGHLIGHT BOX ---------- */
+.today-landscape [aria-live="polite"].absolute.z-20 {
+  isolation:isolate;
+}
+.today-landscape [aria-live="polite"].absolute.z-20::before {
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:-18% -8% -22% -4%;
+  background:linear-gradient(90deg,rgba(251,248,245,.96) 0 72%,rgba(251,248,245,.64) 83%,transparent 100%);
+  -webkit-mask-image:linear-gradient(90deg,#000 0 78%,rgba(0,0,0,.58) 90%,transparent 100%);
+  mask-image:linear-gradient(90deg,#000 0 78%,rgba(0,0,0,.58) 90%,transparent 100%);
+  pointer-events:none;
+}
+
+/* Native text must stay crisp even when the room image is scaled. */
+.today-landscape [aria-live="polite"],
+.today-landscape .absolute.z-20 {
+  filter:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .today-aura-visual,
+  .today-aura-haze,
+  .today-aura-beam,
+  .today-aura-fan-left,
+  .today-aura-fan-right,
+  .today-aura-rays,
+  .today-aura-core,
+  .today-aura-core::after,
+  .today-aura-visual::after {
+    animation:none !important;
+  }
+  .today-aura-core { transform:translate3d(-50%,-50%,78px) !important; }
+}
