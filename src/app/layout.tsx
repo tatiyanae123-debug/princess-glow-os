@@ -3,8 +3,8 @@ import { GlobalHomeControl } from '@/components/global-home-control';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Princess Glow OS',
-  description: 'A polished personal life OS dashboard',
+  title: 'Glow OS',
+  description: 'One continuous intelligent personal world made from Glow Matter.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
