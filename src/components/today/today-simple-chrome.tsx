@@ -27,7 +27,8 @@ export function TodaySimpleChrome() {
     return () => window.removeEventListener('popstate', sync);
   }, []);
 
-  if (room === 'morning') return null;
+  // Morning Brief and What Now each carry their own locked reference navigation.
+  if (room === 'morning' || room === 'what-now') return null;
 
   return (
     <>
