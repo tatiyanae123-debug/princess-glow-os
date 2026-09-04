@@ -1,14 +1,11 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import { getGlowGatewayToken } from '@/lib/intelligence/vercel-ai-auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const MAX_AUDIO_BYTES = 25 * 1024 * 1024;
-
-function gatewayToken() {
-  return process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN || '';
-}
 
 async function transcribeThroughGateway(audio: File, token: string) {
   const audioBuffer = Buffer.from(await audio.arrayBuffer());
@@ -18,7 +15,6 @@ async function transcribeThroughGateway(audio: File, token: string) {
     process.env.OPENAI_GLOW_TRANSCRIBE_MODEL || 'openai/gpt-4o-transcribe',
     'openai/whisper-1',
   ];
-
   let lastDetail = '';
   for (const model of [...new Set(models)]) {
     const response = await fetch('https://ai-gateway.vercel.sh/v4/ai/transcription-model', {
@@ -44,11 +40,7 @@ async function transcribeDirectOpenAI(audio: File, apiKey: string) {
   upstream.append('file', audio, audio.name || 'glow-voice.m4a');
   upstream.append('model', process.env.OPENAI_GLOW_TRANSCRIBE_MODEL || 'gpt-4o-transcribe');
   upstream.append('language', 'en');
-  upstream.append(
-    'prompt',
-    'Glow OS vocabulary: Glow, Glow Matter, Today, Plan, Life, Brain, Create, Ask Glow, Routine Conductor, Attention Center, Planning With Me, What Now.'
-  );
-
+  upstream.append('prompt', 'Glow OS vocabulary: Glow, Glow Matter, Today, Plan, Life, Brain, Create, Ask Glow, Routine Conductor, Attention Center, Planning With Me, What Now.');
   const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}` },
@@ -65,29 +57,17 @@ async function transcribeDirectOpenAI(audio: File, apiKey: string) {
 export async function POST(request: Request) {
   try {
     const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ ok: false, message: 'Your Glow session expired. Sign in again and retry.' }, { status: 401 });
-    }
-
+    if (!session?.user?.id) return NextResponse.json({ ok: false, message: 'Your Glow session expired. Sign in again and retry.' }, { status: 401 });
     const incoming = await request.formData();
     const audio = incoming.get('audio');
-    if (!(audio instanceof File) || audio.size === 0) {
-      return NextResponse.json({ ok: false, message: 'Glow did not receive any audio.' }, { status: 400 });
-    }
-    if (audio.size > MAX_AUDIO_BYTES) {
-      return NextResponse.json({ ok: false, message: 'That voice message is too long. Try a shorter recording.' }, { status: 413 });
-    }
+    if (!(audio instanceof File) || audio.size === 0) return NextResponse.json({ ok: false, message: 'Glow did not receive any audio.' }, { status: 400 });
+    if (audio.size > MAX_AUDIO_BYTES) return NextResponse.json({ ok: false, message: 'That voice message is too long. Try a shorter recording.' }, { status: 413 });
 
-    const token = gatewayToken();
+    const token = await getGlowGatewayToken();
     const openaiKey = process.env.OPENAI_API_KEY || '';
-    if (!token && !openaiKey) {
-      return NextResponse.json({ ok: false, message: 'Glow voice could not authenticate right now.' }, { status: 503 });
-    }
+    if (!token && !openaiKey) return NextResponse.json({ ok: false, message: 'Glow voice authentication is temporarily unavailable.' }, { status: 503 });
 
-    const text = token
-      ? await transcribeThroughGateway(audio, token)
-      : await transcribeDirectOpenAI(audio, openaiKey);
-
+    const text = token ? await transcribeThroughGateway(audio, token) : await transcribeDirectOpenAI(audio, openaiKey);
     return NextResponse.json({ ok: true, text });
   } catch (error) {
     return NextResponse.json({ ok: false, message: error instanceof Error ? error.message : 'Glow voice transcription failed.' }, { status: 500 });
