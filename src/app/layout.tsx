@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { ShaktiPresence } from '@/components/shakti/shakti-presence';
+import { GlowPresence } from '@/components/glow/glow-presence';
 import './globals.css';
 import './continuous-world.css';
 import './reference-rooms.css';
@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         {children}
-        <ShaktiPresence />
+        <GlowPresence />
       </body>
     </html>
   );
