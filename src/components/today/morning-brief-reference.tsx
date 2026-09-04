@@ -8,15 +8,11 @@ import {
   ChevronDown,
   ChevronRight,
   Focus,
-  MapPin,
   Pill,
   RotateCcw,
   Sparkles,
   SunMedium,
-  Users,
   Utensils,
-  WandSparkles,
-  FileText,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import styles from './morning-brief-reference.module.css';
@@ -37,7 +33,7 @@ function goToRoom(room: RoomKey) {
 }
 
 export function MorningBriefReference() {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [glowOpen, setGlowOpen] = useState(false);
   const [receipt, setReceipt] = useState('All changes saved');
@@ -45,7 +41,8 @@ export function MorningBriefReference() {
   useEffect(() => {
     const sync = () => {
       const room = new URL(window.location.href).searchParams.get('room');
-      setVisible(!room || room === 'morning');
+      const isMorning = new Date().getHours() < 12;
+      setVisible(room === 'morning' || (!room && isMorning));
     };
     sync();
     window.addEventListener('popstate', sync);
@@ -84,20 +81,16 @@ export function MorningBriefReference() {
           <div className={styles.brandBlock}>
             <Link href="/home" className={styles.brandHome} aria-label="Go to Glow OS Home">Glow OS</Link>
           </div>
-          <div className={styles.worldLabel}>world 1: TODAY&nbsp;&nbsp;·&nbsp;&nbsp;THE LIVING CENTER</div>
+          <div className={styles.worldLabel}>TODAY&nbsp;&nbsp;·&nbsp;&nbsp;THE LIVING CENTER</div>
           <button type="button" className={styles.askShakti} onClick={() => setGlowOpen((value) => !value)} aria-expanded={glowOpen} aria-label="Ask Glow">
             <Pearl size="xs" />
             <span>Ask Glow<small>⌘ K</small></span>
           </button>
         </header>
 
-        <nav className={styles.leftRail} aria-label="Today world navigation">
-          <button type="button" className={`${styles.railItem} ${styles.railActive}`} onClick={() => goToRoom('morning')}><Pearl size="xs" /><span>Today</span></button>
+        <nav className={styles.leftRail} aria-label="Core Today navigation">
+          <button type="button" className={`${styles.railItem} ${styles.railActive}`} onClick={() => goToRoom('what-now')}><Pearl size="xs" /><span>Today</span></button>
           <button type="button" className={styles.railItem} onClick={() => goToRoom('focus')}><Focus /><span>Focus</span></button>
-          <button type="button" className={styles.railItem} onClick={() => goToRoom('meeting')}><Users /><span>People</span></button>
-          <button type="button" className={styles.railItem} onClick={() => goToRoom('meeting')}><MapPin /><span>Places</span></button>
-          <button type="button" className={styles.railItem} onClick={() => goToRoom('tomorrow')}><FileText /><span>Resources</span></button>
-          <button type="button" className={styles.railItem} onClick={() => goToRoom('replan')}><WandSparkles /><span>Journeys</span></button>
         </nav>
 
         <main className={styles.content}>
@@ -228,10 +221,10 @@ export function MorningBriefReference() {
         </main>
 
         <div className={styles.bottomControls}>
-          <button type="button" className={`${styles.bottomButton} ${styles.dayView}`}>◫ <span>Day view</span><ChevronDown /></button>
+          <button type="button" className={`${styles.bottomButton} ${styles.dayView}`} onClick={() => goToRoom('what-now')}>◫ <span>Day view</span><ChevronDown /></button>
           <button type="button" className={`${styles.bottomButton} ${styles.glowMini}`} onClick={() => setGlowOpen(true)} aria-label="Ask Glow"><Sparkles /></button>
           <button type="button" className={`${styles.bottomButton} ${styles.writeDay}`} onClick={() => setGlowOpen(true)}><Sparkles /> Write to my day</button>
-          <span className={styles.saveReceipt}>{receipt}</span>
+          <span className={styles.saveReceipt} role="status">{receipt}</span>
           <button type="button" className={`${styles.bottomButton} ${styles.undoButton}`} onClick={() => { setChecked({}); setReceipt('Changes undone'); }}>Undo <RotateCcw /></button>
           <Pearl size="sm" className={styles.bottomPearl} />
         </div>
@@ -241,8 +234,9 @@ export function MorningBriefReference() {
         {glowOpen ? (
           <aside className={styles.shaktiPanel} role="dialog" aria-label="Ask Glow">
             <div className={styles.shaktiHeader}><Pearl size="sm" /><div><strong>Glow</strong><span>Morning context is active</span></div><button onClick={() => setGlowOpen(false)}>×</button></div>
-            <p>I’m with your Morning Brief and I’ll keep this context attached as you move through Today.</p>
+            <p>I’m with your Morning Brief. Ask for anything directly and I’ll keep this context attached.</p>
             <button onClick={() => goToRoom('what-now')}>What should I do now?</button>
+            <button onClick={() => goToRoom('focus')}>Start my focus block</button>
             <button onClick={() => goToRoom('replan')}>Replan my day</button>
           </aside>
         ) : null}
