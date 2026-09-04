@@ -1,34 +1,89 @@
-/* Glow OS continuous-world layer — Sept 2, 2026.
-   Routes are addresses. The visual experience is one living world. */
+/* Glow OS continuous-world + Glow Matter physics — Sept 4, 2026.
+   Routes are addresses. The visual experience is one continuous optical world.
+   Material state, depth, light, transparency and motion carry information. */
 
 .glow-world-shell {
-  --world-pearl: #fbf8f2;
-  --world-stone: #eee8df;
+  --world-pearl: #f7f3ee;
+  --world-stone: #e8e1d9;
   --world-metal: #cbbba6;
-  --world-light: rgba(255,255,255,.84);
-  --world-haze: rgba(227,216,205,.22);
+  --world-light: rgba(255,255,255,.86);
+  --world-haze: rgba(224,214,204,.26);
   --world-depth: 18px;
+  --world-spectrum-cool: rgba(205,224,255,.18);
+  --world-spectrum-violet: rgba(214,193,244,.14);
+  --world-spectrum-warm: rgba(255,215,192,.13);
+  --world-spectrum-green: rgba(206,231,219,.10);
+  --matter-edge: rgba(255,255,255,.72);
+  --matter-edge-dark: rgba(128,118,110,.08);
+  --matter-shadow: rgba(78,67,59,.09);
+  --glow-bg: var(--world-pearl);
+  --glow-surface: rgba(255,255,255,.17);
+  --glow-surface-muted: rgba(255,255,255,.09);
+  --glow-border: rgba(255,255,255,.46);
+  --glow-shadow: inset 1px 1px 0 rgba(255,255,255,.66), inset -1px -1px 0 rgba(126,116,108,.06), 0 16px 34px rgba(76,65,58,.05);
+  --glow-radius: 24px;
   position: relative;
   isolation: isolate;
   overflow-x: clip;
   background:
-    radial-gradient(80% 56% at 76% 3%, var(--world-haze), transparent 68%),
-    linear-gradient(180deg, rgba(255,255,255,.9), var(--world-pearl));
+    radial-gradient(78% 58% at 52% -8%, rgba(255,255,255,.98), transparent 66%),
+    radial-gradient(40% 45% at 12% 73%, rgba(218,209,199,.48), transparent 72%),
+    radial-gradient(35% 42% at 88% 76%, rgba(255,255,255,.54), transparent 73%),
+    linear-gradient(128deg, #f8f5f0 0%, var(--world-pearl) 50%, #f7f3ee 100%);
   transition: background 520ms cubic-bezier(.2,.7,.2,1), color 360ms ease;
 }
 
-.glow-world-atmosphere {
+.glow-world-frame {
+  position: relative;
+  z-index: 3;
+  perspective: 1700px;
+}
+
+.glow-world-atmosphere,
+.glow-world-caustic,
+.glow-world-depth-plane {
   position: fixed;
   inset: 0;
-  z-index: -1;
   pointer-events: none;
-  opacity: .9;
+}
+
+.glow-world-atmosphere {
+  z-index: 0;
+  opacity: .92;
   background:
-    radial-gradient(34rem 30rem at 78% 11%, rgba(255,255,255,.7), transparent 68%),
-    radial-gradient(42rem 28rem at 54% 88%, var(--world-haze), transparent 72%);
+    radial-gradient(30rem 24rem at 54% 11%, var(--world-spectrum-cool), transparent 70%),
+    radial-gradient(25rem 22rem at 67% 23%, var(--world-spectrum-violet), transparent 72%),
+    radial-gradient(28rem 24rem at 79% 35%, var(--world-spectrum-warm), transparent 74%),
+    radial-gradient(34rem 28rem at 30% 84%, var(--world-haze), transparent 72%);
   filter: blur(var(--world-depth));
   transform: translateZ(0);
   transition: opacity 420ms ease, filter 520ms ease, background 520ms ease;
+}
+
+.glow-world-caustic {
+  z-index: 1;
+  opacity: .52;
+  background:
+    linear-gradient(104deg, transparent 0 18%, rgba(255,255,255,.23) 20%, transparent 23% 65%, rgba(255,255,255,.13) 68%, transparent 71%),
+    radial-gradient(52% 2% at 51% 91%, rgba(118,101,88,.06), transparent 70%),
+    radial-gradient(34% 12% at 76% 33%, rgba(255,255,255,.15), transparent 72%);
+  mix-blend-mode: screen;
+}
+
+.glow-world-depth-plane {
+  z-index: 2;
+  opacity: .48;
+}
+.glow-world-depth-plane-far {
+  background:
+    radial-gradient(20rem 12rem at 16% 20%, rgba(255,255,255,.18), transparent 72%),
+    linear-gradient(90deg, transparent 0 8%, rgba(255,255,255,.11) 8.2%, transparent 8.4% 91%, rgba(255,255,255,.08) 91.2%, transparent 91.4%);
+  filter: blur(4px);
+}
+.glow-world-depth-plane-near {
+  background:
+    linear-gradient(92deg, transparent 0 23%, rgba(255,255,255,.13) 23.2%, transparent 23.6% 74%, rgba(211,225,250,.06) 74.2%, rgba(225,203,245,.05) 74.5%, transparent 74.9%),
+    radial-gradient(42rem 12rem at 52% 106%, rgba(89,75,65,.035), transparent 72%);
 }
 
 .glow-room-body,
@@ -37,99 +92,197 @@
 .dashboard-main-wrap,
 .dashboard-sidebar-wrap {
   position: relative;
-  z-index: 1;
+  z-index: 4;
 }
 
-/* The five worlds share matter but not climate. */
+.glow-room-stage {
+  transform-style: preserve-3d;
+  animation: glow-room-arrival 440ms cubic-bezier(.2,.72,.22,1) both;
+}
+
+.glow-room-content {
+  position: relative;
+  transform: translateZ(0);
+}
+
+/* Five world climates. Physics remain constant; light changes. */
 [data-world='today'] {
-  --world-pearl: #fbf7f1;
-  --world-haze: rgba(231,205,187,.26);
+  --world-pearl: #f7f1eb;
+  --world-haze: rgba(229,205,187,.24);
   --world-depth: 16px;
+  --world-spectrum-cool: rgba(211,228,255,.16);
+  --world-spectrum-violet: rgba(224,204,247,.12);
+  --world-spectrum-warm: rgba(255,216,193,.14);
 }
 [data-world='plan'] {
-  --world-pearl: #f8f5f6;
-  --world-haze: rgba(205,194,220,.28);
-  --world-depth: 22px;
+  --world-pearl: #f4f3f5;
+  --world-haze: rgba(205,198,218,.25);
+  --world-depth: 21px;
+  --world-spectrum-cool: rgba(197,220,255,.20);
+  --world-spectrum-violet: rgba(207,191,235,.17);
+  --world-spectrum-warm: rgba(255,225,205,.08);
 }
 [data-world='life'] {
-  --world-pearl: #faf6ef;
-  --world-haze: rgba(213,208,188,.25);
+  --world-pearl: #f7f3ed;
+  --world-haze: rgba(214,208,191,.22);
   --world-depth: 15px;
+  --world-spectrum-green: rgba(199,229,215,.13);
 }
 [data-world='brain'] {
-  --world-pearl: #f7f4f7;
-  --world-haze: rgba(195,186,216,.28);
+  --world-pearl: #efedf2;
+  --world-haze: rgba(187,177,211,.28);
   --world-depth: 28px;
+  --world-spectrum-cool: rgba(191,214,255,.16);
+  --world-spectrum-violet: rgba(183,160,226,.21);
+  --matter-shadow: rgba(61,52,70,.12);
 }
 [data-world='create'] {
-  --world-pearl: #faf8f4;
-  --world-haze: rgba(220,205,190,.26);
-  --world-depth: 24px;
+  --world-pearl: #f8f6f1;
+  --world-haze: rgba(220,205,190,.22);
+  --world-depth: 23px;
+  --world-spectrum-cool: rgba(206,231,255,.18);
+  --world-spectrum-violet: rgba(224,197,249,.15);
+  --world-spectrum-warm: rgba(255,213,190,.14);
+  --world-spectrum-green: rgba(205,235,219,.11);
 }
 
-/* Room climate overrides. Identity comes from light + spatial behavior, not card recoloring. */
+/* Room climate overrides tune illumination rather than repainting cards. */
 [data-climate='cool-mint-ivory'] {
-  --world-pearl: #f7faf6;
-  --world-haze: rgba(185,211,199,.24);
+  --world-pearl: #f3f7f3;
+  --world-haze: rgba(185,211,199,.22);
+  --world-spectrum-green: rgba(186,225,207,.16);
 }
 [data-climate='reflective-blush-pearl'],
 [data-climate='warm-pearl-reflection'] {
-  --world-pearl: #fbf5f2;
-  --world-haze: rgba(234,194,195,.25);
+  --world-pearl: #f8f2ef;
+  --world-haze: rgba(232,198,195,.20);
+  --world-spectrum-warm: rgba(255,205,192,.16);
 }
 [data-climate='restorative-pearl'] {
-  --world-pearl: #f8faf6;
-  --world-haze: rgba(194,211,190,.22);
+  --world-pearl: #f5f8f3;
+  --world-haze: rgba(194,211,190,.20);
+  --world-spectrum-green: rgba(195,228,208,.14);
 }
 [data-climate='lavender-time-haze'],
 [data-climate='champagne-lavender-horizon'] {
-  --world-pearl: #f8f5f8;
-  --world-haze: rgba(203,189,221,.27);
+  --world-pearl: #f5f2f6;
+  --world-haze: rgba(203,189,221,.24);
+  --world-spectrum-violet: rgba(203,181,236,.20);
 }
 [data-climate='cinematic-amber-pearl'] {
-  --world-pearl: #f9f5ed;
-  --world-haze: rgba(219,197,162,.25);
+  --world-pearl: #f6f1e8;
+  --world-haze: rgba(219,197,162,.22);
+  --world-spectrum-warm: rgba(248,207,153,.15);
 }
 [data-climate='deep-violet-pearl'],
 [data-climate='deep-pearl-atmosphere'] {
-  --world-pearl: #f5f3f8;
-  --world-haze: rgba(178,168,207,.28);
+  --world-pearl: #eeecf2;
+  --world-haze: rgba(174,164,205,.28);
+  --world-spectrum-violet: rgba(171,150,219,.23);
 }
 [data-climate='mist-pearl'],
 [data-climate='clear-prismatic-pearl'] {
-  --world-pearl: #faf9f7;
-  --world-haze: rgba(205,211,220,.24);
+  --world-pearl: #f8f7f5;
+  --world-haze: rgba(205,211,220,.20);
 }
 [data-climate='neutral-pearl'] {
-  --world-pearl: #fafafa;
-  --world-haze: rgba(212,212,212,.14);
-  --world-depth: 8px;
+  --world-pearl: #f7f6f4;
+  --world-haze: rgba(212,212,212,.11);
+  --world-depth: 9px;
 }
 
-/* Physics are meaningful. Motion is quieter where accuracy matters. */
-[data-physics='temporal-depth'] .glow-room-stage { perspective: 1400px; }
-[data-physics='spatial-time'] .glow-room-stage,
-[data-physics='orbital-time'] .glow-room-stage { perspective: 1800px; }
-[data-physics='quiet-desk'] .glow-world-atmosphere,
-[data-physics='still-ledger'] .glow-world-atmosphere,
-[data-physics='minimal-motion'] .glow-world-atmosphere { opacity: .48; filter: blur(8px); }
-[data-physics='conceptual-depth'] .glow-world-atmosphere,
-[data-physics='relational-depth'] .glow-world-atmosphere { opacity: 1; filter: blur(32px); }
-[data-physics='slow-breath'] .glow-world-atmosphere { animation: glow-room-breathe 8s ease-in-out infinite alternate; }
-[data-physics='rhythmic-momentum'] .glow-room-stage { transform-origin: 50% 30%; }
-[data-physics='mist-to-structure'] .glow-world-atmosphere { animation: glow-mist-condense 7s ease-in-out infinite alternate; }
+/* Glow Matter primitive: physical pane, not a painted card. */
+.glow-matter-surface {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 0 !important;
+  border-radius: 24px 28px 22px 26px / 22px 24px 28px 26px !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.20), rgba(255,255,255,.055) 52%, rgba(245,240,235,.07)) !important;
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,.78),
+    inset -1px -1px 0 rgba(128,118,109,.07),
+    inset 0 14px 28px rgba(255,255,255,.045),
+    0 18px 34px var(--matter-shadow) !important;
+  transform: translateZ(0);
+}
+.glow-matter-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(103deg, transparent 0 23%, rgba(255,255,255,.26) 25%, transparent 28% 66%, rgba(211,227,252,.08) 69%, rgba(222,202,246,.07) 71%, rgba(255,220,200,.06) 73%, transparent 77%),
+    radial-gradient(70% 10% at 52% 102%, rgba(93,77,65,.04), transparent 72%);
+  mix-blend-mode: screen;
+}
+.glow-matter-surface::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
+}
 
-/* Navigation reads as thresholds into worlds rather than an app section list. */
+/* Shared controls change material state instead of switching to solid colored buttons. */
+.glow-matter-control {
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  transform: translateZ(0);
+}
+.glow-matter-control::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,.23), rgba(255,255,255,.055));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.76), inset 0 -1px 0 rgba(126,116,108,.07), 0 6px 14px rgba(78,67,59,.035);
+  transition: transform 200ms cubic-bezier(.2,.7,.2,1), box-shadow 200ms ease, background 200ms ease;
+}
+.glow-matter-control:hover::before,
+.glow-matter-control:focus-visible::before {
+  background: linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,.08));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.92), inset 0 -1px 0 rgba(126,116,108,.05), 0 8px 17px rgba(78,67,59,.055);
+}
+.glow-matter-control:active::before { transform: scale(.985); }
+.glow-matter-control-primary::after {
+  content: '';
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  left: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff, rgba(213,227,251,.72) 52%, rgba(177,160,218,.20));
+  box-shadow: 0 2px 5px rgba(78,67,59,.08);
+}
+.glow-matter-control-primary { padding-left: 27px !important; }
+.glow-matter-control-secondary::before { opacity: .82; }
+.glow-matter-control-ghost::before { opacity: 0; }
+.glow-matter-control-ghost:hover::before { opacity: .78; }
+
+/* Navigation is an optical architectural slab with mounted states. */
 .glow-world-rail {
-  background: linear-gradient(180deg, rgba(255,255,255,.76), rgba(249,246,241,.58)) !important;
-  border-color: rgba(151,134,117,.1) !important;
-  backdrop-filter: blur(24px) saturate(112%);
+  position: relative;
+  background: linear-gradient(102deg, rgba(255,255,255,.19), rgba(255,255,255,.045) 52%, rgba(238,232,226,.10)) !important;
+  border-color: rgba(255,255,255,.26) !important;
+  box-shadow: inset 1px 0 0 rgba(255,255,255,.74), inset -1px 0 0 rgba(129,118,109,.06), 10px 18px 34px rgba(76,65,58,.04) !important;
+  backdrop-filter: blur(7px) saturate(108%);
 }
 .glow-world-threshold {
   position: relative;
   isolation: isolate;
   border-radius: 999px !important;
   background: transparent !important;
+  transition: color 220ms ease, transform 220ms cubic-bezier(.2,.7,.2,1);
 }
 .glow-world-threshold::before {
   content: '';
@@ -138,40 +291,70 @@
   z-index: -1;
   border-radius: inherit;
   opacity: 0;
-  background: radial-gradient(circle at 24% 50%, rgba(255,255,255,.94), rgba(226,211,197,.28) 42%, transparent 78%);
-  transition: opacity 260ms ease, transform 260ms ease;
-  transform: scale(.96);
+  background: radial-gradient(circle at 28% 50%, rgba(255,255,255,.72), rgba(211,226,250,.18) 43%, rgba(223,204,244,.10) 62%, transparent 78%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.72), 0 5px 12px rgba(78,67,59,.035);
+  transition: opacity 230ms ease, transform 230ms cubic-bezier(.2,.7,.2,1);
+  transform: scale(.95);
 }
 .glow-world-threshold:hover::before,
 .glow-world-threshold.is-current::before { opacity: 1; transform: scale(1); }
-.glow-world-threshold.is-current { color: #65574f !important; box-shadow: inset 0 0 0 1px rgba(177,153,131,.13); }
+.glow-world-threshold.is-current { color: #514b46 !important; transform: translateZ(4px); box-shadow: none !important; }
 
-/* Room entry is a light/climate bridge, never a page-flip animation. */
-.glow-room-stage {
-  animation: glow-room-arrival 440ms cubic-bezier(.2,.72,.22,1) both;
+/* Existing variable-driven surfaces become lighter optical grades without fogging text. */
+.glow-world-shell [style*='var(--glow-surface)'],
+.glow-world-shell [class*='bg-[var(--glow-surface)]'] {
+  backdrop-filter: none !important;
 }
+
+/* Focus mode remains a material state, not a solid white escape hatch. */
+.glow-focus-exit {
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,.07)) !important;
+  color: var(--glow-text) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.82), inset 0 -1px 0 rgba(126,116,108,.07), 0 9px 18px rgba(78,67,59,.06) !important;
+  backdrop-filter: blur(6px);
+}
+
+/* Physics are meaningful. Motion is quieter where accuracy matters. */
+[data-physics='temporal-depth'] .glow-room-stage { perspective: 1450px; }
+[data-physics='spatial-time'] .glow-room-stage,
+[data-physics='orbital-time'] .glow-room-stage { perspective: 1850px; }
+[data-physics='quiet-desk'] .glow-world-atmosphere,
+[data-physics='still-ledger'] .glow-world-atmosphere,
+[data-physics='minimal-motion'] .glow-world-atmosphere { opacity: .48; filter: blur(9px); }
+[data-physics='conceptual-depth'] .glow-world-atmosphere,
+[data-physics='relational-depth'] .glow-world-atmosphere { opacity: 1; filter: blur(31px); }
+[data-physics='slow-breath'] .glow-world-atmosphere { animation: glow-room-breathe 9s ease-in-out infinite alternate; }
+[data-physics='rhythmic-momentum'] .glow-room-stage { transform-origin: 50% 30%; }
+[data-physics='mist-to-structure'] .glow-world-atmosphere { animation: glow-mist-condense 8s ease-in-out infinite alternate; }
 
 @keyframes glow-room-arrival {
-  from { opacity: .72; transform: translateY(4px) scale(.997); filter: blur(3px); }
-  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  from { opacity: .82; transform: translateY(3px) scale(.998); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 @keyframes glow-room-breathe {
-  from { transform: scale(1); opacity: .72; }
-  to { transform: scale(1.018); opacity: .96; }
+  from { transform: scale(1); opacity: .73; }
+  to { transform: scale(1.012); opacity: .94; }
 }
 @keyframes glow-mist-condense {
-  from { filter: blur(30px); opacity: .6; }
-  to { filter: blur(17px); opacity: .94; }
+  from { filter: blur(28px); opacity: .62; }
+  to { filter: blur(17px); opacity: .92; }
 }
 
-/* Responsive first: phone and iPad preserve identity without shrinking desktop furniture. */
+/* Responsive: phone/iPad recompose material; they do not shrink desktop scenes. */
 @media (max-width: 1023px) {
-  .glow-world-atmosphere { position: absolute; min-height: 100dvh; }
-  .glow-world-rail { backdrop-filter: blur(18px) saturate(108%); }
+  .glow-world-atmosphere,
+  .glow-world-caustic,
+  .glow-world-depth-plane { position: absolute; min-height: 100dvh; }
+  .glow-world-rail { backdrop-filter: blur(6px) saturate(106%); }
+  .glow-matter-surface { border-radius: 22px 25px 21px 24px / 21px 22px 25px 23px !important; }
 }
 
-/* Accessibility: meaning never depends on motion. */
+/* Accessibility: depth survives without motion. */
 @media (prefers-reduced-motion: reduce) {
   .glow-room-stage,
   .glow-world-atmosphere { animation: none !important; }
+  .glow-matter-control::before,
+  .glow-world-threshold::before { transition: none !important; }
 }
