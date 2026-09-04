@@ -77,7 +77,6 @@ export default async function TodayPage() {
         startAtISO: event.startAt.toISOString(),
         endAtISO: event.endAt?.toISOString() ?? null,
         allDay: event.allDay,
-        htmlLink: event.htmlLink,
       }))}
       routines={routines.map((routine) => ({
         id: routine.id,
