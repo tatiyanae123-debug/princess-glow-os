@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { ShaktiPresence } from '@/components/shakti/shakti-presence';
 import './globals.css';
 import './continuous-world.css';
 import './reference-rooms.css';
@@ -15,7 +16,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {children}
+        <ShaktiPresence />
+      </body>
     </html>
   );
 }
