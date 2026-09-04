@@ -1,6 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { TodayReferenceRebuild } from '@/components/today-reference-rebuild';
+import { TodayLivingCenterV9 } from '@/components/today-living-center-v9';
 import { getTasksByUser } from '@/lib/data/tasks';
 import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
@@ -9,6 +9,7 @@ import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
 export const dynamic = 'force-dynamic';
 
 const priorityWeight:Record<string,number>={urgent:100,high:80,medium:55,low:30};
+
 function levelToNumber(value:unknown):number|null{
   if(typeof value==='number'&&Number.isFinite(value))return value;
   if(typeof value!=='string')return null;
@@ -20,7 +21,8 @@ function dayStart(date:Date){const value=new Date(date);value.setHours(0,0,0,0);
 function taskDueLabel(dueDate:Date|null,now:Date){
   if(!dueDate)return null;
   const due=dayStart(dueDate).getTime();const today=dayStart(now).getTime();const diff=Math.round((due-today)/86400000);
-  if(diff<0)return'Overdue';if(diff===0)return'Today';if(diff===1)return'Tomorrow';return null;
+  if(diff<0)return'Overdue';if(diff===0)return'Today';if(diff===1)return'Tomorrow';
+  return null;
 }
 
 export default async function TodayPage(){
@@ -37,12 +39,16 @@ export default async function TodayPage(){
     const bDue=b.dueDate?Math.max(-40,30-Math.floor((b.dueDate.getTime()-now.getTime())/86400000)*5):0;
     return(priorityWeight[b.priority]??0)+bDue-((priorityWeight[a.priority]??0)+aDue);
   });
-  const start=dayStart(now);const end=new Date(start);end.setDate(end.getDate()+2);
-  const nearbyEvents=events.filter(e=>e.startAt>=start&&e.startAt<end).sort((a,b)=>a.startAt.getTime()-b.startAt.getTime());
-  const latestWellness=wellnessEntries[0]??null;
-  const routines=beautyRoutines.filter(r=>['morning','afternoon','evening','night'].includes(String(r.timeOfDay))).slice(0,12);
 
-  return <TodayReferenceRebuild
+  const start=dayStart(now);const end=new Date(start);end.setDate(end.getDate()+2);
+  const nearbyEvents=events.filter(e=>e.startAt>=start&&e.startAt<end).sort((a,b)=>{
+    if(a.startAt.getTime()!==b.startAt.getTime())return a.startAt.getTime()-b.startAt.getTime();
+    if(a.allDay&&!b.allDay)return 1;if(!a.allDay&&b.allDay)return-1;return 0;
+  });
+  const latestWellness=wellnessEntries[0]??null;
+  const routines=beautyRoutines.filter(r=>r.timeOfDay==='morning'||r.timeOfDay==='afternoon'||r.timeOfDay==='evening'||r.timeOfDay==='night').slice(0,12);
+
+  return <TodayLivingCenterV9
     tasks={ranked.slice(0,10).map(t=>({id:t.id,title:t.title,priority:t.priority,dueLabel:taskDueLabel(t.dueDate,now)}))}
     events={nearbyEvents.slice(0,14).map(e=>({id:e.id,title:e.title,timeLabel:e.allDay?'All day':e.startAt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}),location:e.location,startAtISO:e.startAt.toISOString(),allDay:e.allDay}))}
     routines={routines.map(r=>({id:r.id,name:r.name,timeOfDay:r.timeOfDay}))}
