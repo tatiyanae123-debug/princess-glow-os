@@ -23,10 +23,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   }),
   providers: [
     Google({
-      // Vercel can omit runtime-only secrets while Next.js is collecting page data
-      // for route handlers. Auth.js reads these values when a request is served,
-      // so keep module evaluation side-effect free and let runtime configuration
-      // supply the real Preview/Production credentials.
       clientId: process.env.PRINCESS_GOOGLE_CLIENT_ID ?? '',
       clientSecret: process.env.PRINCESS_GOOGLE_CLIENT_SECRET ?? '',
       authorization: {
@@ -49,17 +45,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     authorized({ auth: session, request: { nextUrl } }) {
-      // The Today Living Center preview is visual QA using non-personal demo data.
-      // Let that single preview route render directly so the preview link cannot
-      // bounce reviewers through sign-in and back to the legacy dashboard.
-      const isPreviewToday = process.env.VERCEL_ENV === 'preview' && nextUrl.pathname === '/today';
-      if (isPreviewToday) return true;
+      // Visual-QA preview routes use non-personal demo data and must open directly.
+      const isPreviewWorld = process.env.VERCEL_ENV === 'preview' && (nextUrl.pathname === '/today' || nextUrl.pathname === '/home' || nextUrl.pathname === '/dashboard');
+      if (isPreviewWorld) return true;
 
       const isLoggedIn = !!session?.user;
       const isOnSignIn = nextUrl.pathname === '/sign-in';
       const isApiAuth = nextUrl.pathname.startsWith('/api/auth');
       if (isLoggedIn && isOnSignIn) {
-        return Response.redirect(new URL('/dashboard', nextUrl));
+        return Response.redirect(new URL('/home', nextUrl));
       }
       if (!isLoggedIn && !isOnSignIn && !isApiAuth) {
         return Response.redirect(new URL('/sign-in', nextUrl));
