@@ -1,0 +1,43 @@
+.scope { position: relative; min-height: 100svh; }
+
+/* Glow Current supersedes the old primary navigation chrome. Keep the room architecture, remove the menu architecture. */
+.scope :global(aside[aria-label="Today world navigation"]),
+.scope :global(nav[aria-label="Today world navigation"]),
+.scope :global(footer) {
+  display: none !important;
+}
+
+.scope :global([class*="brandGroup"]),
+.scope :global([class*="brandBlock"]) {
+  visibility: hidden !important;
+}
+
+.scope :global(main[aria-live="polite"]) {
+  left: 14px !important;
+  bottom: 14px !important;
+}
+
+.scope :global([data-morning-reference="true"] main) {
+  left: 28px !important;
+}
+
+.scope :global([data-morning-reference="true"] [class*="bottomControls"]),
+.scope :global([data-morning-reference="true"] [class*="addButton"]) {
+  display: none !important;
+}
+
+/* The Morning Brief visual reference remains the room blueprint; its old rail is no longer the navigation system. */
+.scope :global([data-morning-reference="true"] [class*="content"]) {
+  left: 28px !important;
+  right: 24px !important;
+  width: auto !important;
+}
+
+@media (max-width: 820px) {
+  .scope :global(main[aria-live="polite"]),
+  .scope :global([data-morning-reference="true"] main),
+  .scope :global([data-morning-reference="true"] [class*="content"]) {
+    left: 8px !important;
+    right: 8px !important;
+  }
+}
