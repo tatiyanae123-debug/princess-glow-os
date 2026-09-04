@@ -1,0 +1,78 @@
+/* Glow OS continuous route movement. World changes should feel like material
+   reorientation, never a blank page replacement. */
+.glow-spatial-transition-field{
+  position:fixed;
+  inset:-8%;
+  z-index:2147482500;
+  pointer-events:none;
+  opacity:0;
+  overflow:hidden;
+  transform:scale(1.015);
+  transition:opacity 190ms ease,transform 430ms cubic-bezier(.18,.72,.18,1);
+  backdrop-filter:blur(0) saturate(100%);
+  -webkit-backdrop-filter:blur(0) saturate(100%);
+}
+.glow-spatial-transition-field::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(34% 40% at 52% 48%,rgba(255,255,255,.20),transparent 72%),
+    linear-gradient(104deg,transparent 0 27%,rgba(255,255,255,.05) 33%,rgba(201,224,255,.11) 42%,rgba(215,188,247,.10) 47%,rgba(255,203,181,.08) 53%,rgba(255,255,255,.14) 61%,transparent 69%);
+  transform:translate3d(-22%,0,0) skewX(-4deg);
+  transition:transform 520ms cubic-bezier(.17,.75,.2,1);
+  mix-blend-mode:screen;
+}
+.glow-spatial-transition-field span,
+.glow-spatial-transition-field i,
+.glow-spatial-transition-field b{
+  position:absolute;
+  display:block;
+  border-radius:50%;
+  pointer-events:none;
+}
+.glow-spatial-transition-field span{
+  width:54vw;height:21vh;left:17vw;top:41vh;
+  background:radial-gradient(ellipse,rgba(255,255,255,.28),rgba(205,226,255,.12) 34%,rgba(208,184,245,.10) 53%,rgba(255,210,188,.08) 67%,transparent 75%);
+  filter:blur(18px);
+  transform:rotate(-7deg) scale(.84);
+  transition:transform 520ms cubic-bezier(.17,.75,.2,1);
+}
+.glow-spatial-transition-field i{
+  width:42vw;height:1px;left:30vw;top:47vh;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.92),rgba(201,226,255,.54),rgba(219,184,247,.46),rgba(255,210,182,.34),transparent);
+  box-shadow:0 0 17px rgba(255,255,255,.32);
+  transform:translateX(-20vw) rotate(-4deg);
+  transition:transform 520ms cubic-bezier(.17,.75,.2,1);
+}
+.glow-spatial-transition-field b{
+  width:26vw;height:26vw;right:11vw;top:32vh;
+  background:radial-gradient(circle at 31% 27%,rgba(255,255,255,.58),rgba(212,231,255,.13) 38%,rgba(213,187,245,.11) 59%,rgba(255,205,181,.07) 72%,transparent 77%);
+  filter:blur(7px);
+  transform:scale(.76);
+  transition:transform 520ms cubic-bezier(.17,.75,.2,1);
+}
+html[data-glow-transition='moving'] .glow-spatial-transition-field{
+  opacity:1;
+  transform:scale(1);
+  backdrop-filter:blur(5px) saturate(108%);
+  -webkit-backdrop-filter:blur(5px) saturate(108%);
+}
+html[data-glow-transition='moving'] .glow-spatial-transition-field::before{transform:translate3d(22%,0,0) skewX(3deg)}
+html[data-glow-transition='moving'] .glow-spatial-transition-field span{transform:rotate(4deg) scale(1.12)}
+html[data-glow-transition='moving'] .glow-spatial-transition-field i{transform:translateX(18vw) rotate(3deg)}
+html[data-glow-transition='moving'] .glow-spatial-transition-field b{transform:scale(1.08)}
+
+/* Major world containers resist browser rubber-band movement. Local documents,
+   lists and editors may still scroll inside their own surfaces. */
+.glow-world-shell{overscroll-behavior:none}
+.glow-room-stage{overscroll-behavior:contain}
+
+@media(prefers-reduced-motion:reduce){
+  .glow-spatial-transition-field,
+  .glow-spatial-transition-field::before,
+  .glow-spatial-transition-field span,
+  .glow-spatial-transition-field i,
+  .glow-spatial-transition-field b{transition:none!important}
+  html[data-glow-transition='moving'] .glow-spatial-transition-field{opacity:.34;backdrop-filter:none;-webkit-backdrop-filter:none}
+}
