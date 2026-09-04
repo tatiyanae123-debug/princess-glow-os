@@ -1,0 +1,108 @@
+/* Current-room image QA overrides.
+   These rules cover pages that still render direct <img> elements instead of
+   the shared Glow image primitive. They keep those rooms collision-safe until
+   each image is migrated to the shared component. */
+
+[data-room='closet'] .glow-room-stage article,
+[data-room='hair-studio'] .glow-room-stage article,
+[data-room='timeline'] .glow-room-stage article {
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Wardrobe photography should show the whole garment. Cropping sleeves, shoes,
+   bags, or hems makes the inventory less useful. */
+[data-room='closet'] .glow-room-stage article img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  object-fit: contain !important;
+  object-position: 50% 50% !important;
+  padding: 7px;
+  background:
+    radial-gradient(70% 65% at 50% 35%, rgba(255,255,255,.62), transparent 74%),
+    linear-gradient(145deg, rgba(238,229,229,.82), rgba(247,242,238,.92));
+  image-rendering: auto;
+  backface-visibility: hidden;
+}
+[data-room='closet'] .glow-room-stage article img + svg {
+  z-index: 3;
+  filter: drop-shadow(0 2px 5px rgba(42,31,34,.18));
+}
+
+/* Hair photos normally need more room above center for the crown/length. */
+[data-room='hair-studio'] .glow-room-stage article img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  object-fit: cover !important;
+  object-position: 50% 34% !important;
+  image-rendering: auto;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+[data-room='hair-studio'] .glow-room-stage article > div:first-child {
+  isolation: isolate;
+  overflow: clip;
+  border-radius: inherit;
+}
+
+/* Timeline photos keep the original event card readable and let the timeline
+   node extend outside the card instead of being clipped by overflow:hidden. */
+[data-room='timeline'] .glow-room-stage .border-l > div > .relative {
+  overflow: visible !important;
+  isolation: isolate;
+}
+[data-room='timeline'] .glow-room-stage .border-l > div > .relative > img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: clamp(128px, 17vw, 178px) !important;
+  object-fit: cover !important;
+  object-position: 50% 40% !important;
+  image-rendering: auto;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.24), 0 7px 18px rgba(79,64,51,.06);
+}
+[data-room='timeline'] .glow-room-stage .border-l > div > .relative > span.absolute {
+  z-index: 4;
+}
+
+/* Direct photo cards must not let long titles or dates push into the image. */
+[data-room='closet'] .glow-room-stage article h3,
+[data-room='closet'] .glow-room-stage article p,
+[data-room='hair-studio'] .glow-room-stage article h3,
+[data-room='hair-studio'] .glow-room-stage article p,
+[data-room='timeline'] .glow-room-stage article h3,
+[data-room='timeline'] .glow-room-stage article p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+[data-room='hair-studio'] .glow-room-stage article h3,
+[data-room='timeline'] .glow-room-stage article h3 {
+  line-height: 1.18;
+}
+
+/* Keep image and metadata columns from fighting each other on iPad widths. */
+@media (min-width: 701px) and (max-width: 1100px) {
+  [data-room='closet'] .glow-room-stage article img { padding: 9px; }
+  [data-room='hair-studio'] .glow-room-stage article img { object-position: 50% 30% !important; }
+  [data-room='timeline'] .glow-room-stage .border-l > div > .relative > img {
+    height: 154px !important;
+  }
+}
+
+@media (max-width: 700px) {
+  [data-room='closet'] .glow-room-stage article img { padding: 10px; }
+  [data-room='hair-studio'] .glow-room-stage article > div:first-child {
+    min-height: 180px;
+  }
+  [data-room='timeline'] .glow-room-stage .border-l > div > .relative > img {
+    height: 180px !important;
+  }
+}
