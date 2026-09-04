@@ -49,6 +49,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     authorized({ auth: session, request: { nextUrl } }) {
+      // The Today Living Center preview is visual QA using non-personal demo data.
+      // Let that single preview route render directly so the preview link cannot
+      // bounce reviewers through sign-in and back to the legacy dashboard.
+      const isPreviewToday = process.env.VERCEL_ENV === 'preview' && nextUrl.pathname === '/today';
+      if (isPreviewToday) return true;
+
       const isLoggedIn = !!session?.user;
       const isOnSignIn = nextUrl.pathname === '/sign-in';
       const isApiAuth = nextUrl.pathname.startsWith('/api/auth');
