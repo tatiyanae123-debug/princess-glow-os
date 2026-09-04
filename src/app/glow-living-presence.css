@@ -1,0 +1,390 @@
+/* Glow living intelligence presence — 2026-09-04
+   Glow is not a chatbot orb. It is Glow Matter becoming visibly intelligent. */
+
+.glow-aura-mark {
+  --glow-aura-cool: rgba(180, 221, 255, .72);
+  --glow-aura-violet: rgba(203, 181, 255, .68);
+  --glow-aura-warm: rgba(255, 205, 178, .62);
+  --glow-aura-champagne: rgba(255, 231, 177, .54);
+  --glow-aura-core: rgba(255, 255, 255, .98);
+  --glow-aura-shadow: rgba(84, 70, 62, .12);
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+  isolation: isolate;
+  filter: drop-shadow(0 10px 18px var(--glow-aura-shadow));
+  transform-style: preserve-3d;
+}
+
+.glow-aura-mark--compact { width: 54px; height: 60px; }
+.glow-aura-mark--expanded { width: 78px; height: 88px; }
+
+.glow-aura-mark[data-glow-world='plan'] {
+  --glow-aura-cool: rgba(159, 211, 255, .78);
+  --glow-aura-violet: rgba(191, 167, 255, .7);
+  --glow-aura-warm: rgba(246, 218, 194, .42);
+}
+.glow-aura-mark[data-glow-world='brain'] {
+  --glow-aura-cool: rgba(174, 210, 255, .74);
+  --glow-aura-violet: rgba(170, 142, 240, .82);
+  --glow-aura-warm: rgba(235, 202, 235, .36);
+}
+.glow-aura-mark[data-glow-world='create'] {
+  --glow-aura-cool: rgba(170, 224, 255, .78);
+  --glow-aura-violet: rgba(218, 176, 255, .74);
+  --glow-aura-warm: rgba(255, 193, 169, .7);
+}
+.glow-aura-mark[data-glow-world='life'] {
+  --glow-aura-cool: rgba(197, 226, 255, .64);
+  --glow-aura-violet: rgba(218, 195, 246, .58);
+  --glow-aura-warm: rgba(255, 207, 182, .68);
+}
+
+.glow-aura-mark__field,
+.glow-aura-mark__orbit,
+.glow-aura-mark__beam,
+.glow-aura-mark__wing,
+.glow-aura-mark__fold,
+.glow-aura-mark__core,
+.glow-aura-mark__flare,
+.glow-aura-mark__drop {
+  position: absolute;
+  pointer-events: none;
+}
+
+.glow-aura-mark__field {
+  inset: 11% 4% 8%;
+  border-radius: 48% 52% 61% 39% / 44% 36% 64% 56%;
+  background:
+    radial-gradient(circle at 45% 44%, rgba(255,255,255,.6), transparent 24%),
+    radial-gradient(circle at 28% 38%, var(--glow-aura-violet), transparent 33%),
+    radial-gradient(circle at 68% 52%, var(--glow-aura-cool), transparent 37%),
+    radial-gradient(circle at 46% 70%, var(--glow-aura-warm), transparent 36%);
+  filter: blur(8px);
+  opacity: .46;
+  animation: glow-aura-breathe 6.4s ease-in-out infinite alternate;
+}
+
+.glow-aura-mark__orbit {
+  left: 8%;
+  top: 47%;
+  width: 84%;
+  height: 23%;
+  border: 1px solid rgba(255,255,255,.74);
+  border-left-color: rgba(187,215,255,.42);
+  border-right-color: rgba(255,211,184,.35);
+  border-radius: 50%;
+  box-shadow:
+    0 -1px 0 rgba(255,255,255,.46),
+    0 0 8px rgba(215,225,255,.22);
+  transform: rotate(-7deg);
+  opacity: .72;
+}
+.glow-aura-mark__orbit--inner {
+  left: 18%;
+  top: 40%;
+  width: 66%;
+  height: 32%;
+  transform: rotate(28deg);
+  opacity: .47;
+}
+
+.glow-aura-mark__beam {
+  left: 48.6%;
+  top: 2%;
+  width: 5.5%;
+  height: 94%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,.96) 19%, rgba(255,255,255,1) 49%, rgba(224,234,255,.82) 74%, transparent);
+  box-shadow:
+    0 0 6px rgba(255,255,255,.92),
+    0 0 16px rgba(206,222,255,.45),
+    0 0 30px rgba(226,199,255,.18);
+  transform: skewX(-3deg);
+  opacity: .92;
+}
+
+.glow-aura-mark__wing {
+  top: 21%;
+  width: 49%;
+  height: 58%;
+  border-radius: 58% 42% 66% 34% / 48% 54% 46% 52%;
+  background:
+    linear-gradient(136deg, rgba(255,255,255,.88) 0 9%, rgba(255,255,255,.18) 31%, rgba(203,226,255,.17) 51%, rgba(217,190,255,.19) 66%, rgba(255,210,184,.12) 77%, rgba(255,255,255,.4) 100%);
+  box-shadow:
+    inset 2px 1px 2px rgba(255,255,255,.96),
+    inset -2px -2px 4px rgba(123,116,130,.08),
+    0 3px 10px rgba(97,79,69,.06);
+  backdrop-filter: blur(2px) saturate(125%);
+  -webkit-backdrop-filter: blur(2px) saturate(125%);
+}
+.glow-aura-mark__wing--left {
+  left: 7%;
+  transform: rotate(-29deg) skewY(8deg);
+  clip-path: polygon(0 16%, 76% 0, 100% 38%, 76% 100%, 14% 80%, 28% 52%);
+}
+.glow-aura-mark__wing--right {
+  right: 5%;
+  transform: rotate(26deg) skewY(-7deg);
+  clip-path: polygon(20% 0, 100% 18%, 70% 53%, 88% 82%, 20% 100%, 0 46%);
+}
+
+.glow-aura-mark__fold {
+  left: 18%;
+  top: 35%;
+  width: 67%;
+  height: 20%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.92) 31%, rgba(196,226,255,.44) 51%, rgba(213,176,255,.4) 64%, rgba(255,198,173,.33) 75%, transparent);
+  filter: blur(.15px);
+  mix-blend-mode: screen;
+  transform: rotate(15deg);
+  box-shadow: 0 0 8px rgba(255,255,255,.38);
+}
+.glow-aura-mark__fold--two {
+  left: 24%;
+  top: 57%;
+  width: 60%;
+  height: 12%;
+  transform: rotate(-22deg);
+  opacity: .7;
+}
+
+.glow-aura-mark__core {
+  left: 40%;
+  top: 42%;
+  width: 22%;
+  height: 21%;
+  border-radius: 48% 52% 54% 46% / 57% 41% 59% 43%;
+  background:
+    radial-gradient(circle at 42% 38%, #fff 0 22%, rgba(255,255,255,.92) 32%, rgba(218,229,255,.68) 51%, rgba(219,194,250,.48) 68%, rgba(255,221,194,.32) 80%, transparent 100%);
+  box-shadow:
+    0 0 5px rgba(255,255,255,1),
+    0 0 16px rgba(225,230,255,.8),
+    0 0 26px rgba(212,185,255,.31);
+  transform: rotate(18deg);
+}
+
+.glow-aura-mark__flare {
+  left: 50%;
+  top: 52%;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.94) 38%, #fff 50%, rgba(255,255,255,.94) 62%, transparent);
+  filter: blur(.2px);
+  mix-blend-mode: screen;
+}
+.glow-aura-mark__flare--horizontal { width: 96%; height: 2px; }
+.glow-aura-mark__flare--vertical {
+  width: 2px;
+  height: 86%;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,.96) 38%, #fff 50%, rgba(255,255,255,.94) 62%, transparent);
+}
+
+.glow-aura-mark__drop {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 26%, #fff 0 18%, rgba(235,243,255,.84) 34%, rgba(203,223,255,.36) 53%, rgba(223,192,248,.28) 68%, rgba(255,220,192,.22) 79%, rgba(255,255,255,.38) 94%);
+  box-shadow: inset -2px -2px 3px rgba(96,93,106,.1), 0 2px 6px rgba(73,63,58,.09);
+}
+.glow-aura-mark__drop--one { left: 8%; top: 14%; transform: scale(.72); }
+.glow-aura-mark__drop--two { right: 4%; top: 32%; transform: scale(.95); }
+.glow-aura-mark__drop--three { left: 24%; bottom: 2%; transform: scale(.55); }
+
+/* The material state itself communicates intelligence. */
+.glow-aura-mark[data-glow-state='waking'] { transform: scale(1.045); filter: drop-shadow(0 12px 24px rgba(87,72,65,.14)) brightness(1.04); }
+.glow-aura-mark[data-glow-state='listening'] .glow-aura-mark__wing--left { transform: rotate(-36deg) skewY(5deg) scaleX(1.06); }
+.glow-aura-mark[data-glow-state='listening'] .glow-aura-mark__wing--right { transform: rotate(34deg) skewY(-5deg) scaleX(1.06); }
+.glow-aura-mark[data-glow-state='listening'] .glow-aura-mark__orbit { animation: glow-aura-orbit 4.8s linear infinite; }
+.glow-aura-mark[data-glow-state='understanding'] .glow-aura-mark__core { animation: glow-aura-gather 1.4s ease-in-out infinite alternate; }
+.glow-aura-mark[data-glow-state='understanding'] .glow-aura-mark__fold { opacity: 1; filter: brightness(1.1); }
+.glow-aura-mark[data-glow-state='speaking'] .glow-aura-mark__beam,
+.glow-aura-mark[data-glow-state='creating'] .glow-aura-mark__beam { width: 7%; left: 47.5%; }
+.glow-aura-mark[data-glow-state='creating'] .glow-aura-mark__orbit--outer { transform: rotate(-13deg) scaleX(1.11); }
+.glow-aura-mark[data-glow-state='creating'] .glow-aura-mark__orbit--inner { transform: rotate(34deg) scaleY(1.1); }
+.glow-aura-mark[data-glow-state='awaiting-approval'] { filter: drop-shadow(0 10px 18px rgba(84,70,62,.1)) saturate(.86); }
+.glow-aura-mark[data-glow-state='awaiting-approval'] .glow-aura-mark__orbit { opacity: .35; }
+.glow-aura-mark[data-glow-state='acting'] .glow-aura-mark__flare--horizontal { animation: glow-aura-action-ripple 1.3s ease-out infinite; }
+.glow-aura-mark[data-glow-state='completing'] .glow-aura-mark__field { opacity: .58; filter: blur(7px) brightness(1.08); }
+.glow-aura-mark[data-glow-state='error'] {
+  --glow-aura-warm: rgba(255, 177, 158, .76);
+  --glow-aura-violet: rgba(226, 168, 197, .65);
+  filter: drop-shadow(0 10px 18px rgba(126,76,70,.16)) saturate(.82);
+}
+
+.glow-presence-trigger {
+  position: fixed;
+  right: max(14px, env(safe-area-inset-right));
+  bottom: calc(max(18px, env(safe-area-inset-bottom)) + 68px);
+  z-index: 2147481900;
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 4px;
+  min-width: 62px;
+  min-height: 62px;
+  padding: 2px 6px 2px 3px;
+  border: 0;
+  border-radius: 30px 20px 26px 34px / 25px 29px 21px 35px;
+  color: #2f2b28;
+  background: linear-gradient(145deg, rgba(255,255,255,.18), rgba(255,255,255,.045));
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,.72),
+    inset -1px -1px 0 rgba(126,116,108,.06),
+    0 12px 28px rgba(72,61,54,.08);
+  backdrop-filter: blur(8px) saturate(116%);
+  -webkit-backdrop-filter: blur(8px) saturate(116%);
+  cursor: pointer;
+  transition: transform 260ms cubic-bezier(.2,.72,.2,1), box-shadow 260ms ease, background 260ms ease;
+}
+.glow-presence-trigger:hover,
+.glow-presence-trigger:focus-visible {
+  transform: translateY(-2px) scale(1.012);
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,.92), inset -1px -1px 0 rgba(126,116,108,.05), 0 16px 34px rgba(72,61,54,.11);
+}
+.glow-presence-trigger:active { transform: translateY(0) scale(.985); }
+.glow-presence-trigger__copy { display: flex; flex-direction: column; align-items: flex-start; padding-right: 6px; }
+.glow-presence-trigger__name { font-size: 11px; font-weight: 600; letter-spacing: .01em; }
+.glow-presence-trigger__state { margin-top: 1px; font-size: 8px; color: rgba(69,64,60,.58); white-space: nowrap; }
+
+.glow-unfolded-surface {
+  position: fixed;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(14px, env(safe-area-inset-bottom));
+  z-index: 2147482000;
+  display: flex;
+  flex-direction: column;
+  width: min(500px, calc(100vw - 24px));
+  max-height: min(82dvh, 820px);
+  overflow: hidden;
+  border: 0;
+  border-radius: 34px 42px 31px 39px / 31px 34px 42px 36px;
+  color: #25221f;
+  background:
+    radial-gradient(45% 34% at 18% 8%, rgba(255,255,255,.86), transparent 72%),
+    radial-gradient(35% 28% at 86% 14%, rgba(208,225,255,.13), transparent 72%),
+    radial-gradient(33% 28% at 72% 28%, rgba(222,198,252,.11), transparent 74%),
+    linear-gradient(145deg, rgba(250,247,242,.94), rgba(241,235,228,.91));
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,.94),
+    inset -1px -1px 0 rgba(120,109,100,.07),
+    0 35px 90px rgba(70,58,51,.22);
+  backdrop-filter: blur(20px) saturate(114%);
+  -webkit-backdrop-filter: blur(20px) saturate(114%);
+  transform-origin: 88% 92%;
+  animation: glow-unfold-in 320ms cubic-bezier(.17,.75,.18,1) both;
+}
+.glow-unfolded-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(111deg, transparent 0 18%, rgba(255,255,255,.26) 21%, transparent 25% 64%, rgba(206,224,255,.08) 67%, rgba(219,194,250,.08) 70%, rgba(255,218,194,.06) 73%, transparent 78%),
+    radial-gradient(63% 9% at 50% 101%, rgba(78,63,54,.06), transparent 72%);
+  mix-blend-mode: screen;
+}
+.glow-unfolded-header {
+  position: relative;
+  padding: 15px 16px 12px;
+  border-bottom: 1px solid rgba(128,116,107,.08);
+  background: linear-gradient(180deg, rgba(255,255,255,.17), rgba(255,255,255,.03));
+}
+.glow-unfolded-header::after {
+  content: '';
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.74), rgba(173,160,149,.08), transparent);
+}
+.glow-unfolded-orbit-labels {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  margin-top: 8px;
+}
+.glow-unfolded-orbit-labels span {
+  min-height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 8px;
+  color: rgba(73,67,62,.56);
+  background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.04));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.55);
+}
+.glow-unfolded-orbit-labels span[data-active='true'] {
+  color: #2d2925;
+  background: linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,.08));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.88), 0 5px 12px rgba(75,64,56,.035);
+}
+.glow-memory-link {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: 9px;
+  color: rgba(64,58,54,.55);
+  text-decoration: underline;
+  text-decoration-color: rgba(64,58,54,.18);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+@keyframes glow-aura-breathe {
+  from { transform: scale(.97) rotate(-1deg); opacity: .36; }
+  to { transform: scale(1.035) rotate(1deg); opacity: .55; }
+}
+@keyframes glow-aura-orbit {
+  from { transform: rotate(-7deg); }
+  to { transform: rotate(353deg); }
+}
+@keyframes glow-aura-gather {
+  from { transform: rotate(18deg) scale(.9); filter: brightness(.97); }
+  to { transform: rotate(18deg) scale(1.14); filter: brightness(1.12); }
+}
+@keyframes glow-aura-action-ripple {
+  0% { opacity: .8; transform: translate(-50%, -50%) scaleX(.7); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scaleX(1.28); }
+}
+@keyframes glow-unfold-in {
+  from { opacity: 0; transform: translateY(8px) scale(.94); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+@media (max-width: 760px) {
+  .glow-presence-trigger {
+    right: max(10px, env(safe-area-inset-right));
+    bottom: calc(max(9px, env(safe-area-inset-bottom)) + 68px);
+    grid-template-columns: 1fr;
+    width: 58px;
+    min-width: 58px;
+    height: 64px;
+    padding: 1px;
+    border-radius: 48% 52% 58% 42% / 43% 47% 53% 57%;
+  }
+  .glow-presence-trigger__copy { display: none; }
+  .glow-aura-mark--compact { width: 54px; height: 58px; }
+  .glow-unfolded-surface {
+    left: 8px;
+    right: 8px;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: auto;
+    max-height: min(86dvh, 820px);
+    border-radius: 28px 31px 25px 33px / 27px 28px 34px 31px;
+  }
+  .glow-aura-mark--expanded { width: 66px; height: 72px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-aura-mark,
+  .glow-aura-mark *,
+  .glow-unfolded-surface {
+    animation: none !important;
+    transition: none !important;
+  }
+}
