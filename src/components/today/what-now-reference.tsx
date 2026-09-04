@@ -2,22 +2,32 @@
 
 import Link from 'next/link';
 import {
-  BriefcaseBusiness,
   ChevronDown,
   Dumbbell,
-  FileText,
   Focus,
-  MapPin,
   MoreHorizontal,
   RotateCcw,
   Sparkles,
-  Users,
-  WandSparkles,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { KeyboardEvent, useEffect, useState } from 'react';
 import styles from './what-now-reference.module.css';
+import navStyles from './what-now-navigation.module.css';
 
 type RoomKey = 'morning' | 'what-now' | 'focus' | 'meeting' | 'next-up' | 'later' | 'tonight' | 'tomorrow' | 'replan';
+type DayViewMode = 'full' | 'near';
+
+type TemporalRow = {
+  key: RoomKey;
+  time: string;
+  title: string;
+  line1: string;
+  line2: string;
+  first: [string, string, string];
+  firstRoom: RoomKey;
+  second: [string, string, string];
+  secondRoom: RoomKey;
+  metric: [string, string];
+};
 
 function goToRoom(room: RoomKey) {
   const url = new URL(window.location.href);
@@ -30,45 +40,53 @@ function Pearl({ small = false, warm = false, violet = false }: { small?: boolea
   return <span aria-hidden="true" className={`${styles.pearl} ${small ? styles.pearlSmall : ''} ${warm ? styles.pearlWarm : ''} ${violet ? styles.pearlViolet : ''}`}><i /></span>;
 }
 
-const rows = [
+const rows: TemporalRow[] = [
   {
-    key: 'next-up' as const,
+    key: 'next-up',
     time: '11:00 AM',
     title: 'NEXT',
     line1: 'Build and move',
     line2: 'Protect your next hour.',
     first: ['Workout + shower', '11:00 – 11:45 AM', 'Personal'],
+    firstRoom: 'next-up',
     second: ['Design review prep', '11:45 AM – 12:30 PM', 'Deep work'],
+    secondRoom: 'meeting',
     metric: ['Time to next', '1h 18m'],
   },
   {
-    key: 'later' as const,
+    key: 'later',
     time: '1:00 PM',
     title: 'LATER',
     line1: 'Collaborate and create',
     line2: 'Afternoon momentum.',
     first: ['Design review', '1:00 – 2:00 PM', 'Meeting'],
+    firstRoom: 'meeting',
     second: ['User research synthesis', '2:30 – 3:30 PM', 'Deep work'],
+    secondRoom: 'later',
     metric: ['Time to later', '3h 18m'],
   },
   {
-    key: 'tonight' as const,
+    key: 'tonight',
     time: '7:00 PM',
     title: 'TONIGHT',
     line1: 'Unwind and reset',
     line2: 'Close the day well.',
     first: ['Dinner with Alex', '7:00 – 8:30 PM', 'Personal'],
+    firstRoom: 'tonight',
     second: ['Evening routine', '9:15 PM', 'Wellness'],
+    secondRoom: 'tonight',
     metric: ['Leave-ready', '2h 09m'],
   },
   {
-    key: 'tomorrow' as const,
+    key: 'tomorrow',
     time: '',
     title: 'TOMORROW',
     line1: 'Preview your tomorrow',
     line2: 'So today can flow.',
     first: ['Leadership sync', '9:00 – 9:45 AM', 'Meeting'],
+    firstRoom: 'tomorrow',
     second: ['Strategy block', '10:30 AM – 12:00 PM', 'Deep work'],
+    secondRoom: 'tomorrow',
     metric: ['Preview time', '12h 18m'],
   },
 ];
@@ -78,11 +96,14 @@ export function WhatNowReference() {
   const [askGlowOpen, setAskGlowOpen] = useState(false);
   const [receipt, setReceipt] = useState('All changes saved');
   const [timeText, setTimeText] = useState('9:41 AM');
+  const [dayViewMode, setDayViewMode] = useState<DayViewMode>('full');
+  const [previousDayViewMode, setPreviousDayViewMode] = useState<DayViewMode | null>(null);
 
   useEffect(() => {
     const sync = () => {
       const room = new URL(window.location.href).searchParams.get('room');
-      setVisible(room === 'what-now');
+      const isAfternoonOrLater = new Date().getHours() >= 12;
+      setVisible(room === 'what-now' || (!room && isAfternoonOrLater));
     };
     const updateTime = () => setTimeText(new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }));
     sync();
@@ -97,6 +118,37 @@ export function WhatNowReference() {
     };
   }, []);
 
+  function activateWithKeyboard(event: KeyboardEvent<HTMLElement>, room: RoomKey) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      goToRoom(room);
+    }
+  }
+
+  function toggleDayView() {
+    const next = dayViewMode === 'full' ? 'near' : 'full';
+    setPreviousDayViewMode(dayViewMode);
+    setDayViewMode(next);
+    setReceipt(next === 'full' ? 'Full day view restored' : 'Near-term view is active');
+  }
+
+  function undoLastChange() {
+    if (!previousDayViewMode) {
+      setReceipt('Nothing to undo');
+      return;
+    }
+    setDayViewMode(previousDayViewMode);
+    setPreviousDayViewMode(null);
+    setReceipt('Last view change undone');
+  }
+
+  function returnToNow() {
+    setDayViewMode('full');
+    setPreviousDayViewMode(null);
+    setReceipt('You’re back at Now');
+    goToRoom('what-now');
+  }
+
   if (!visible) return null;
 
   return (
@@ -107,20 +159,16 @@ export function WhatNowReference() {
 
         <header className={styles.topbar}>
           <Link href="/home" className={styles.wordmark} aria-label="Go to Glow OS Home">Glow OS</Link>
-          <div className={styles.worldLabel}>world 1: TODAY&nbsp;&nbsp;·&nbsp;&nbsp;THE LIVING CENTER</div>
+          <div className={styles.worldLabel}>TODAY&nbsp;&nbsp;·&nbsp;&nbsp;THE LIVING CENTER</div>
           <button className={styles.askGlow} type="button" onClick={() => setAskGlowOpen((v) => !v)} aria-expanded={askGlowOpen}>
             <Pearl small />
             <span>Ask Glow<small>⌘ K</small></span>
           </button>
         </header>
 
-        <nav className={styles.leftRail} aria-label="Today navigation">
+        <nav className={styles.leftRail} aria-label="Core Today navigation">
           <button type="button" className={`${styles.railItem} ${styles.railActive}`} onClick={() => goToRoom('what-now')}><Pearl small /><span>Today</span></button>
           <button type="button" className={styles.railItem} onClick={() => goToRoom('focus')}><Focus /><span>Focus</span></button>
-          <button type="button" className={styles.railItem} onClick={() => goToRoom('meeting')}><Users /><span>People</span></button>
-          <button type="button" className={styles.railItem} onClick={() => goToRoom('meeting')}><MapPin /><span>Places</span></button>
-          <button type="button" className={styles.railItem} onClick={() => goToRoom('tomorrow')}><FileText /><span>Resources</span></button>
-          <button type="button" className={styles.railItem} onClick={() => goToRoom('replan')}><WandSparkles /><span>Journeys</span></button>
         </nav>
 
         <main className={styles.content}>
@@ -130,7 +178,7 @@ export function WhatNowReference() {
               <h1>NOW</h1>
               <strong>You’re in flow</strong>
               <p>Keep the momentum.</p>
-              <button type="button" className={styles.protected}><i /> Protected 90 min</button>
+              <button type="button" className={styles.protected} onClick={() => goToRoom('focus')}><i /> Protected 90 min</button>
             </div>
 
             <div className={styles.heroMatter} aria-hidden="true"><span /><i /><b /></div>
@@ -146,20 +194,32 @@ export function WhatNowReference() {
             </div>
 
             <div className={styles.statusBand}>
-              <div><span>In focus</span><strong>Partnership proposal</strong><div className={styles.progress}><i /></div><small>55 min remaining</small><em>72%</em></div>
-              <div><span>Next up</span><strong>Workout + shower</strong><p><Dumbbell /> 11:00 AM · 45 min</p></div>
-              <div><span>Appointments</span><strong>Design review</strong><p>1:00 – 2:00 PM</p><button type="button" onClick={() => goToRoom('meeting')}>Join</button><button type="button" className={styles.more}><MoreHorizontal /></button></div>
+              <div className={navStyles.clickableSurface} role="button" tabIndex={0} onClick={() => goToRoom('focus')} onKeyDown={(event) => activateWithKeyboard(event, 'focus')}>
+                <span>In focus</span><strong>Partnership proposal</strong><div className={styles.progress}><i /></div><small>55 min remaining</small><em>72%</em>
+              </div>
+              <div className={navStyles.clickableSurface} role="button" tabIndex={0} onClick={() => goToRoom('next-up')} onKeyDown={(event) => activateWithKeyboard(event, 'next-up')}>
+                <span>Next up</span><strong>Workout + shower</strong><p><Dumbbell /> 11:00 AM · 45 min</p>
+              </div>
+              <div className={navStyles.clickableSurface} role="button" tabIndex={0} onClick={() => goToRoom('meeting')} onKeyDown={(event) => activateWithKeyboard(event, 'meeting')}>
+                <span>Appointments</span><strong>Design review</strong><p>1:00 – 2:00 PM</p>
+                <button type="button" onClick={(event) => { event.stopPropagation(); goToRoom('meeting'); }}>Join</button>
+                <button type="button" className={styles.more} onClick={(event) => { event.stopPropagation(); setAskGlowOpen(true); }} aria-label="More appointment options"><MoreHorizontal /></button>
+              </div>
             </div>
           </section>
 
-          <section className={styles.timeline}>
+          <section className={`${styles.timeline} ${dayViewMode === 'near' ? navStyles.timelineNear : ''}`} aria-label="Today timeline">
             {rows.map((row, index) => (
               <article key={row.title} className={styles.timelineRow}>
                 <button type="button" className={styles.rowLabel} onClick={() => goToRoom(row.key)}>
                   <small>{row.time}</small><strong>{row.title}</strong><span>{row.line1}<br />{row.line2}</span>
                 </button>
-                <div className={styles.rowItem}><Pearl warm={index === 2} violet={index === 1} /><span><strong>{row.first[0]}</strong><small>{row.first[1]} <em>{row.first[2]}</em></small></span></div>
-                <div className={styles.rowItem}><Pearl violet={index === 2} /><span><strong>{row.second[0]}</strong><small>{row.second[1]} <em>{row.second[2]}</em></small></span></div>
+                <button type="button" className={`${styles.rowItem} ${navStyles.rowItemButton}`} onClick={() => goToRoom(row.firstRoom)} aria-label={`Open ${row.first[0]}`}>
+                  <Pearl warm={index === 2} violet={index === 1} /><span><strong>{row.first[0]}</strong><small>{row.first[1]} <em>{row.first[2]}</em></small></span>
+                </button>
+                <button type="button" className={`${styles.rowItem} ${navStyles.rowItemButton}`} onClick={() => goToRoom(row.secondRoom)} aria-label={`Open ${row.second[0]}`}>
+                  <Pearl violet={index === 2} /><span><strong>{row.second[0]}</strong><small>{row.second[1]} <em>{row.second[2]}</em></small></span>
+                </button>
                 <button type="button" className={styles.metric} onClick={() => goToRoom(row.key)}><span>{row.metric[0]}</span><strong>{row.metric[1]}</strong></button>
                 {index < rows.length - 1 ? <span className={styles.downCue}>↑</span> : null}
               </article>
@@ -169,20 +229,23 @@ export function WhatNowReference() {
 
         <button type="button" className={styles.addButton} onClick={() => setAskGlowOpen(true)}>+</button>
         <footer className={styles.bottomBar}>
-          <button type="button" className={styles.dayView}>◫ <span>Day view</span><ChevronDown /></button>
-          <button type="button" className={styles.glowMini} onClick={() => setAskGlowOpen(true)}><Sparkles /></button>
+          <button type="button" className={styles.dayView} onClick={toggleDayView} aria-pressed={dayViewMode === 'near'}>◫ <span>{dayViewMode === 'full' ? 'Day view' : 'Now view'}</span><ChevronDown /></button>
+          <button type="button" className={styles.glowMini} onClick={() => setAskGlowOpen(true)} aria-label="Ask Glow"><Sparkles /></button>
           <button type="button" className={styles.replan} onClick={() => goToRoom('replan')}><Sparkles /> Replan my day</button>
-          <span className={styles.receipt}>{receipt}</span>
-          <button type="button" className={styles.undo} onClick={() => setReceipt('Changes undone')}>Undo <RotateCcw /></button>
-          <Pearl />
+          <span className={styles.receipt} role="status">{receipt}</span>
+          <button type="button" className={styles.undo} onClick={undoLastChange}>Undo <RotateCcw /></button>
+          <button type="button" className={navStyles.returnNowButton} onClick={returnToNow} aria-label="Return to Now" title="Return to Now"><Pearl /></button>
         </footer>
 
         {askGlowOpen ? (
           <aside className={styles.glowPanel} role="dialog" aria-label="Ask Glow">
             <div><Pearl small /><span><strong>Glow</strong><small>Today context is active</small></span><button onClick={() => setAskGlowOpen(false)}>×</button></div>
-            <p>Tell me what you want to do next. I’ll keep your Today context attached.</p>
-            <button onClick={() => goToRoom('focus')}>Start my focus block</button>
-            <button onClick={() => goToRoom('replan')}>Replan my day</button>
+            <p>Tell me what you want to do or where you want to go. You never need to know which Glow system owns it.</p>
+            <button onClick={() => { setAskGlowOpen(false); returnToNow(); }}>What should I do now?</button>
+            <button onClick={() => { setAskGlowOpen(false); goToRoom('focus'); }}>Start my focus block</button>
+            <button onClick={() => { setAskGlowOpen(false); goToRoom('tonight'); }}>Show tonight</button>
+            <button onClick={() => { setAskGlowOpen(false); goToRoom('tomorrow'); }}>Preview tomorrow</button>
+            <button onClick={() => { setAskGlowOpen(false); goToRoom('replan'); }}>Replan my day</button>
           </aside>
         ) : null}
       </div>
