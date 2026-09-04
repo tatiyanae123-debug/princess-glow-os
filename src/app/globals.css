@@ -141,6 +141,38 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--glow-border); border-radius: 99px; }
 
+/* ─── Reference semantics: product content vs production labels ─────────── */
+/*
+  The Today reference includes a hidden Home link followed by the visible Glow OS
+  wordmark. Keep the wordmark as the product-facing Home control and suppress
+  reference-only production labels such as "Batch 1".
+*/
+a[aria-label="Go to Glow OS Home"]:has(+ strong) {
+  position: absolute !important;
+  z-index: 50 !important;
+  left: 22px !important;
+  top: 20px !important;
+  width: 58px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  opacity: 0 !important;
+}
+a[aria-label="Go to Glow OS Home"]:has(+ strong) + strong {
+  position: relative;
+  z-index: 49;
+  pointer-events: none;
+}
+a[aria-label="Go to Glow OS Home"]:has(+ strong) ~ span {
+  display: none !important;
+}
+a[aria-label="Glow OS Home"] {
+  display: none !important;
+}
+
 /* ─── Reduced motion ─────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
