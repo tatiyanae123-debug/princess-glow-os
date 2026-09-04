@@ -1,4 +1,5 @@
 import 'server-only';
+import { getGlowGatewayToken } from '@/lib/intelligence/vercel-ai-auth';
 
 type GlowModelContent =
   | { type: 'input_text'; text: string }
@@ -35,13 +36,12 @@ export function extractGlowModelText(payload: unknown): string {
 }
 
 export function glowModelIsConfigured() {
-  return Boolean(process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN || process.env.OPENAI_API_KEY);
+  return Boolean(process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN || process.env.OPENAI_API_KEY || process.env.VERCEL);
 }
 
 export async function requestGlowModel(options: GlowModelOptions): Promise<string> {
-  const gatewayToken = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN || '';
+  const gatewayToken = await getGlowGatewayToken();
   const directOpenAIKey = process.env.OPENAI_API_KEY || '';
-
   if (!gatewayToken && !directOpenAIKey) return '';
 
   const usingGateway = Boolean(gatewayToken);
@@ -71,6 +71,5 @@ export async function requestGlowModel(options: GlowModelOptions): Promise<strin
     const detail = await response.text().catch(() => '');
     throw new Error(detail || `Glow model request failed (${response.status}).`);
   }
-
   return extractGlowModelText(await response.json());
 }
