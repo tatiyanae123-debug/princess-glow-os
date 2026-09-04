@@ -14,32 +14,23 @@ import './shakti-living-presence.css';
 import './shakti-volumetric-v3.css';
 import './today-shakti-fidelity-v4.css';
 import './today-live-v6.css';
+import './today-live-v7.css';
 import { GlowNavigationNormalizer } from '@/components/glow-navigation-normalizer';
 import { GlowWorldRuntime } from '@/components/glow-world-runtime-v3';
 import { ShaktiProductLanguage } from '@/components/shakti-product-language';
 import { TodayViewportMode } from '@/components/today-viewport-mode';
 
-export const metadata: Metadata = {
-  title: 'Glow OS',
-  description: 'A calm intelligent personal life operating system',
+export const metadata:Metadata={
+  title:'Glow OS',
+  description:'A calm intelligent personal life operating system',
 };
 
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  viewportFit: 'cover',
+export const viewport:Viewport={
+  width:'device-width',
+  initialScale:1,
+  viewportFit:'cover',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <body>
-        <TodayViewportMode />
-        <ShaktiProductLanguage />
-        {children}
-        <GlowNavigationNormalizer />
-        <GlowWorldRuntime />
-      </body>
-    </html>
-  );
+export default function RootLayout({children}:{children:React.ReactNode}){
+  return <html lang="en"><body><TodayViewportMode/><ShaktiProductLanguage/>{children}<GlowNavigationNormalizer/><GlowWorldRuntime/></body></html>;
 }
