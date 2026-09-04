@@ -33,5 +33,6 @@ These rules are mandatory for all future Glow OS work:
 26. Thoughts, feelings, preferences and hypotheticals must not silently become tasks. Persistent action requires actual intent, a proposal where required, approval, verified execution and a truthful receipt.
 27. Ambiguous consequential references resolve from selected object, current room, recent conversation and active context. Ask one concise clarification only when safe resolution is genuinely impossible.
 28. Every future page must pass the acceptance tests in `docs/GLOW_GLOBAL_INTELLIGENCE_INHERITANCE_LOCK_2026-09-04.md` before being considered complete.
+29. Glow production AI must use the maintained Vercel AI SDK and `@ai-sdk/gateway` provider abstraction for language, speech, and transcription. Do not hand-call `ai-gateway.vercel.sh/v4/ai/*`, do not hard-code Gateway protocol versions, and do not make individual pages own Gateway authentication. Provider/model fallback belongs in the centralized Glow runtime so protocol upgrades cannot break page-specific voice behavior.
 
 Before finishing any UI task, verify responsive behavior on iPhone, iPad and desktop, keyboard/focus behavior, reduced-motion compatibility, that all visible actions have a functional path, and that the global intelligence behavior remains available without requiring page-specific command syntax.
