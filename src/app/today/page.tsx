@@ -1,6 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { TodayStabilized } from '@/components/today-stabilized';
+import { TodayOpticalCenter } from '@/components/today-optical-center';
 import { getTasksByUser } from '@/lib/data/tasks';
 import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
@@ -41,8 +41,10 @@ export default async function TodayPage() {
   ]);
 
   const openTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'cancelled');
-  const start = new Date(now); start.setHours(0, 0, 0, 0);
-  const end = new Date(start); end.setDate(end.getDate() + 2);
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 2);
   const nearbyEvents = events
     .filter((event) => event.startAt >= start && event.startAt < end)
     .sort((a, b) => a.startAt.getTime() - b.startAt.getTime());
@@ -52,14 +54,14 @@ export default async function TodayPage() {
     .slice(0, 12);
 
   return (
-    <TodayStabilized
-      tasks={openTasks.slice(0, 16).map((task) => ({
+    <TodayOpticalCenter
+      tasks={openTasks.slice(0, 20).map((task) => ({
         id: task.id,
         title: task.title,
         priority: task.priority,
         dueDateISO: task.dueDate?.toISOString() ?? null,
       }))}
-      events={nearbyEvents.slice(0, 20).map((event) => ({
+      events={nearbyEvents.slice(0, 24).map((event) => ({
         id: event.id,
         title: event.title,
         location: event.location,
