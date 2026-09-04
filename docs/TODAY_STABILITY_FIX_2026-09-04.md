@@ -8,4 +8,4 @@ Fix strategy:
 3. Build the Today environment natively in CSS so there is only one renderer.
 4. Keep all mutable information native and crisp.
 5. Preserve a three-zone landscape composition and a separate portrait flow using the same DOM.
-6. Shakti remains native light/refraction with no expanding pulse circle.
+6. Glow remains the single native intelligent presence; no retired assistant naming or duplicate intelligence layer may return.
