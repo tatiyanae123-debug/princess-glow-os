@@ -3,6 +3,10 @@
 import { useEffect } from 'react';
 
 const TEXT_REPLACEMENTS: Array<[RegExp,string]> = [
+  [/Good morning, (?:Princess|Editor)(?: ♡)?/g,'Good morning, Tatiyana ♡'],
+  [/Good afternoon, (?:Princess|Editor)(?: ♡)?/g,'Good afternoon, Tatiyana ♡'],
+  [/Good evening, (?:Princess|Editor)(?: ♡)?/g,'Good evening, Tatiyana ♡'],
+  [/Good night, (?:Princess|Editor)(?: ♡)?/g,'Good night, Tatiyana ♡'],
   [/\bASK GLOW\b/g,'ASK SHAKTI'],
   [/\bAsk Glow\b/g,'Ask Shakti'],
   [/\bGlow ·/g,'Shakti ·'],
