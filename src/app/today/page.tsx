@@ -5,6 +5,7 @@ import { getTasksByUser } from '@/lib/data/tasks';
 import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
+import { getActiveFocusSession } from '@/lib/intelligence/adaptive-os';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,6 +41,13 @@ export default async function TodayPage() {
     getCalendarEventsByUser(userId),
   ]);
 
+  let activeFocus: Awaited<ReturnType<typeof getActiveFocusSession>> = null;
+  try {
+    activeFocus = await getActiveFocusSession(userId);
+  } catch {
+    activeFocus = null;
+  }
+
   const openTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'cancelled');
   const start = new Date(now);
   start.setHours(0, 0, 0, 0);
@@ -59,6 +67,7 @@ export default async function TodayPage() {
         id: task.id,
         title: task.title,
         priority: task.priority,
+        status: task.status,
         dueDateISO: task.dueDate?.toISOString() ?? null,
       }))}
       events={nearbyEvents.slice(0, 24).map((event) => ({
@@ -66,13 +75,23 @@ export default async function TodayPage() {
         title: event.title,
         location: event.location,
         startAtISO: event.startAt.toISOString(),
+        endAtISO: event.endAt?.toISOString() ?? null,
         allDay: event.allDay,
+        htmlLink: event.htmlLink,
       }))}
       routines={routines.map((routine) => ({
         id: routine.id,
         name: routine.name,
         timeOfDay: routine.timeOfDay,
       }))}
+      activeFocus={activeFocus ? {
+        id: activeFocus.id,
+        title: activeFocus.title,
+        startedAtISO: activeFocus.startedAt.toISOString(),
+        plannedMinutes: activeFocus.plannedMinutes ?? 25,
+        entityId: activeFocus.entityId,
+        entityType: activeFocus.entityType,
+      } : null}
       energy={levelToNumber(latestWellness?.energy)}
       mood={levelToNumber(latestWellness?.mood)}
       sleepHours={latestWellness?.sleepHours ?? null}
