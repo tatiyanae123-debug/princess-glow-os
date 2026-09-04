@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Check, Mic, Send, X } from 'lucide-react';
+import { Check, Mic, Send, Square, Volume2, VolumeX, X } from 'lucide-react';
 import { GlowAuraMark } from '@/components/glow/glow-aura-mark';
 import {
   glowPromptsForRoute,
@@ -32,20 +32,6 @@ type Receipt = {
   needsAttention?: boolean;
 };
 type SelectedContext = { label: string; type?: string; id?: string; route: string; capturedAt: number };
-type RecognitionEvent = { results: ArrayLike<{ 0: { transcript: string } }> };
-type RecognitionError = { error: string };
-type Recognition = {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  start(): void;
-  stop(): void;
-  onresult: ((event: RecognitionEvent) => void) | null;
-  onend: (() => void) | null;
-  onerror: ((event: RecognitionError) => void) | null;
-};
-type RecognitionCtor = new () => Recognition;
-
 type GlowResponse = {
   ok?: boolean;
   mode?: 'answer' | 'proposal' | 'completed';
@@ -63,6 +49,10 @@ type GlowResponse = {
     needsAttention?: boolean;
   };
 };
+
+type TranscriptionResponse = { ok?: boolean; text?: string; message?: string };
+
+type AudioWindow = Window & { webkitAudioContext?: typeof AudioContext };
 
 const STATE_LABEL: Record<GlowState, string> = {
   resting: 'available',
@@ -96,11 +86,30 @@ function creationLike(text: string) {
   return /\b(create|make|draft|write|build|turn .* into|visual card|image|plan with me)\b/i.test(text);
 }
 
+function recordingMimeType() {
+  if (typeof MediaRecorder === 'undefined') return '';
+  const choices = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'];
+  return choices.find((type) => MediaRecorder.isTypeSupported(type)) ?? '';
+}
+
+function extensionForMime(mime: string) {
+  if (mime.includes('mp4')) return 'm4a';
+  if (mime.includes('webm')) return 'webm';
+  if (mime.includes('ogg')) return 'ogg';
+  return 'webm';
+}
+
 export function GlowPresence() {
   const pathname = usePathname();
   const router = useRouter();
-  const recognitionRef = useRef<Recognition | null>(null);
   const settleTimerRef = useRef<number | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingTimeoutRef = useRef<number | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
+
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<GlowState>('resting');
   const [input, setInput] = useState('');
@@ -109,6 +118,8 @@ export function GlowPresence() {
   const [proposal, setProposal] = useState<PendingProposal | null>(null);
   const [selectedContext, setSelectedContext] = useState<SelectedContext | null>(null);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
+  const [voiceReplies, setVoiceReplies] = useState(true);
+  const [voiceStatus, setVoiceStatus] = useState('');
 
   const currentWorld = glowWorldForRoute(pathname);
   const currentRole = glowRoleForRoute(pathname);
@@ -117,12 +128,30 @@ export function GlowPresence() {
     ? `${selectedContext.type ? `${selectedContext.type} · ` : ''}${selectedContext.label}${selectedContext.route !== pathname ? ` · from ${selectedContext.route}` : ''}`
     : pathname;
 
+  const settle = useCallback((nextFrom: GlowState | GlowState[], delay = 1100) => {
+    if (settleTimerRef.current) window.clearTimeout(settleTimerRef.current);
+    const allowed = Array.isArray(nextFrom) ? nextFrom : [nextFrom];
+    settleTimerRef.current = window.setTimeout(() => {
+      setState((current) => allowed.includes(current) ? 'resting' : current);
+    }, delay);
+  }, []);
+
+  const wake = useCallback((prefill?: string) => {
+    setOpen(true);
+    setState('waking');
+    setReceipt(null);
+    if (prefill) setInput(prefill);
+    settle('waking', 320);
+  }, [settle]);
+
   useEffect(() => {
     try {
       const savedTurns = window.sessionStorage.getItem('glow.presence.turns');
       const savedContext = window.sessionStorage.getItem('glow.presence.context');
+      const savedVoiceReplies = window.localStorage.getItem('glow.voice.replies');
       if (savedTurns) setTurns(JSON.parse(savedTurns) as Turn[]);
       if (savedContext) setSelectedContext(JSON.parse(savedContext) as SelectedContext);
+      if (savedVoiceReplies !== null) setVoiceReplies(savedVoiceReplies !== 'off');
     } catch {}
   }, []);
 
@@ -137,26 +166,18 @@ export function GlowPresence() {
     } catch {}
   }, [selectedContext]);
 
+  useEffect(() => {
+    try { window.localStorage.setItem('glow.voice.replies', voiceReplies ? 'on' : 'off'); } catch {}
+  }, [voiceReplies]);
+
   useEffect(() => () => {
     if (settleTimerRef.current) window.clearTimeout(settleTimerRef.current);
-    recognitionRef.current?.stop();
+    if (recordingTimeoutRef.current) window.clearTimeout(recordingTimeoutRef.current);
+    if (mediaRecorderRef.current?.state === 'recording') mediaRecorderRef.current.stop();
+    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+    try { audioSourceRef.current?.stop(); } catch {}
+    void audioContextRef.current?.close();
   }, []);
-
-  function settle(nextFrom: GlowState | GlowState[], delay = 1100) {
-    if (settleTimerRef.current) window.clearTimeout(settleTimerRef.current);
-    const allowed = Array.isArray(nextFrom) ? nextFrom : [nextFrom];
-    settleTimerRef.current = window.setTimeout(() => {
-      setState((current) => allowed.includes(current) ? 'resting' : current);
-    }, delay);
-  }
-
-  function wake(prefill?: string) {
-    setOpen(true);
-    setState('waking');
-    setReceipt(null);
-    if (prefill) setInput(prefill);
-    settle('waking', 320);
-  }
 
   useEffect(() => {
     const openGlow = (event: Event) => {
@@ -191,7 +212,7 @@ export function GlowPresence() {
       document.removeEventListener('glow:clear-context', clearContext);
       document.removeEventListener('keydown', key);
     };
-  }, [pathname]);
+  }, [pathname, wake]);
 
   function addTurn(turn: Turn) {
     setTurns((current) => [...current, turn].slice(-24));
@@ -203,6 +224,7 @@ export function GlowPresence() {
     setProposal(null);
     setReceipt(null);
     setInput('');
+    setVoiceStatus('');
     setState('resting');
     try {
       window.sessionStorage.removeItem('glow.presence.turns');
@@ -210,33 +232,165 @@ export function GlowPresence() {
     } catch {}
   }
 
-  function startListening() {
-    const browser = window as Window & { SpeechRecognition?: RecognitionCtor; webkitSpeechRecognition?: RecognitionCtor };
-    const Ctor = browser.SpeechRecognition ?? browser.webkitSpeechRecognition;
-    if (!Ctor) {
-      setState('error');
-      addTurn({ role: 'glow', text: 'Voice recognition is not available in this browser. Type to Glow instead.' });
+  async function ensureAudioContext() {
+    const Ctor = window.AudioContext ?? (window as AudioWindow).webkitAudioContext;
+    if (!Ctor) return null;
+    if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
+      audioContextRef.current = new Ctor();
+    }
+    if (audioContextRef.current.state === 'suspended') {
+      await audioContextRef.current.resume();
+    }
+    return audioContextRef.current;
+  }
+
+  function stopSpeaking() {
+    try { audioSourceRef.current?.stop(); } catch {}
+    audioSourceRef.current = null;
+    setVoiceStatus('');
+  }
+
+  async function speak(text: string) {
+    if (!voiceReplies || !text.trim()) return;
+    try {
+      const context = await ensureAudioContext();
+      if (!context) throw new Error('Audio playback is not available on this device.');
+      stopSpeaking();
+      setVoiceStatus('Glow is speaking…');
+      const response = await fetch('/api/glow/speak', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ text }),
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null) as { message?: string } | null;
+        throw new Error(payload?.message || 'Voice reply could not be generated.');
+      }
+      const buffer = await response.arrayBuffer();
+      const decoded = await context.decodeAudioData(buffer.slice(0));
+      const source = context.createBufferSource();
+      source.buffer = decoded;
+      source.connect(context.destination);
+      source.onended = () => {
+        if (audioSourceRef.current === source) audioSourceRef.current = null;
+        setVoiceStatus('');
+      };
+      audioSourceRef.current = source;
+      source.start();
+    } catch (error) {
+      setVoiceStatus(error instanceof Error ? error.message : 'Glow could not play the voice reply.');
+    }
+  }
+
+  function stopListening() {
+    if (recordingTimeoutRef.current) {
+      window.clearTimeout(recordingTimeoutRef.current);
+      recordingTimeoutRef.current = null;
+    }
+    if (mediaRecorderRef.current?.state === 'recording') mediaRecorderRef.current.stop();
+  }
+
+  async function startListening() {
+    if (mediaRecorderRef.current?.state === 'recording') {
+      stopListening();
       return;
     }
-    recognitionRef.current?.stop();
-    const recognition = new Ctor();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = 'en-US';
-    recognition.onresult = (event) => {
-      const spoken = Array.from(event.results).map((result) => result[0]?.transcript ?? '').join(' ').trim();
-      setInput(spoken);
-      setState('understanding');
-      settle('understanding', 520);
-    };
-    recognition.onend = () => setState((current) => current === 'listening' ? 'resting' : current);
-    recognition.onerror = (event) => {
+
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
       setState('error');
-      addTurn({ role: 'glow', text: `Glow could not hear that clearly (${event.error}).` });
-    };
-    recognitionRef.current = recognition;
-    setState('listening');
-    recognition.start();
+      const message = 'This browser cannot record microphone audio. Open Glow OS in Safari or another current browser and allow microphone access.';
+      setVoiceStatus(message);
+      addTurn({ role: 'glow', text: message });
+      return;
+    }
+
+    try {
+      await ensureAudioContext();
+      stopSpeaking();
+      setOpen(true);
+      setVoiceStatus('Requesting microphone…');
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+      mediaStreamRef.current = stream;
+      audioChunksRef.current = [];
+
+      const mimeType = recordingMimeType();
+      const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunksRef.current.push(event.data);
+      };
+
+      recorder.onerror = () => {
+        setState('error');
+        setVoiceStatus('Glow lost access to the microphone. Tap the mic and try again.');
+      };
+
+      recorder.onstop = async () => {
+        if (recordingTimeoutRef.current) {
+          window.clearTimeout(recordingTimeoutRef.current);
+          recordingTimeoutRef.current = null;
+        }
+        mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+
+        const type = recorder.mimeType || mimeType || 'audio/webm';
+        const blob = new Blob(audioChunksRef.current, { type });
+        audioChunksRef.current = [];
+        if (!blob.size) {
+          setState('error');
+          setVoiceStatus('I did not receive any audio. Tap the microphone and try again.');
+          return;
+        }
+
+        setState('understanding');
+        setVoiceStatus('Understanding what you said…');
+        try {
+          const formData = new FormData();
+          formData.append('audio', blob, `glow-voice.${extensionForMime(type)}`);
+          const response = await fetch('/api/glow/transcribe', {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: formData,
+          });
+          const payload = await response.json() as TranscriptionResponse;
+          if (!response.ok || !payload.ok || !payload.text?.trim()) {
+            throw new Error(payload.message || 'Glow could not understand that recording.');
+          }
+          const spoken = payload.text.trim();
+          setInput(spoken);
+          setVoiceStatus('');
+          await run(spoken);
+        } catch (error) {
+          setState('error');
+          const message = error instanceof Error ? error.message : 'Glow could not understand that recording.';
+          setVoiceStatus(message);
+          addTurn({ role: 'glow', text: message });
+        }
+      };
+
+      recorder.start(250);
+      setState('listening');
+      setVoiceStatus('Listening… tap the microphone again when you are finished.');
+      recordingTimeoutRef.current = window.setTimeout(() => stopListening(), 45000);
+    } catch (error) {
+      mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
+      setState('error');
+      const denied = error instanceof DOMException && (error.name === 'NotAllowedError' || error.name === 'SecurityError');
+      const message = denied
+        ? 'Microphone access is blocked. Allow microphone access for Glow OS in Safari, then tap the mic again.'
+        : error instanceof Error ? error.message : 'Glow could not start the microphone.';
+      setVoiceStatus(message);
+      addTurn({ role: 'glow', text: message });
+    }
   }
 
   async function run(text: string, approved = false) {
@@ -247,10 +401,12 @@ export function GlowPresence() {
     if (!approved) {
       const destination = navigationTarget(command);
       if (destination) {
+        const reply = `Moving with you toward ${destination === '/today' ? 'Today' : destination.replace(/^\//, '').replace(/-/g, ' ')}.`;
         addTurn({ role: 'user', text: command });
-        addTurn({ role: 'glow', text: `Moving with you toward ${destination === '/today' ? 'Today' : destination.replace(/^\//, '').replace(/-/g, ' ')}.` });
+        addTurn({ role: 'glow', text: reply });
         setInput('');
         setState('completing');
+        void speak(reply);
         router.push(destination);
         settle('completing', 1100);
         return;
@@ -279,16 +435,20 @@ export function GlowPresence() {
       if (!response.ok || !payload.ok) throw new Error(payload.message || 'Glow could not complete that request.');
 
       if (payload.requiresConfirmation && !approved) {
+        const message = payload.message || 'I have a proposed change ready for your approval.';
         setProposal({ text: command, actions: payload.actions ?? [], responseForm: payload.responseForm });
         setState('awaiting-approval');
-        addTurn({ role: 'glow', text: payload.message || 'Glow has a proposed change ready for your approval.', meta: 'Approval required' });
+        addTurn({ role: 'glow', text: message, meta: 'Approval required' });
+        void speak(message);
       } else {
         setProposal(null);
         setInput('');
         const completed = payload.mode === 'completed';
+        const message = payload.message || 'Done.';
         setState(completed ? 'completing' : 'speaking');
         const responseMeta = payload.responseForm ? payload.responseForm.replace('-', ' ') : undefined;
-        addTurn({ role: 'glow', text: payload.message || 'Done.', meta: payload.receipt?.summary ? `Receipt · ${payload.receipt.summary}` : responseMeta });
+        addTurn({ role: 'glow', text: message, meta: payload.receipt?.summary ? `Receipt · ${payload.receipt.summary}` : responseMeta });
+        void speak(message);
         if (payload.receipt?.summary) {
           setReceipt({
             summary: payload.receipt.summary,
@@ -305,23 +465,38 @@ export function GlowPresence() {
       }
     } catch (error) {
       setState('error');
-      addTurn({ role: 'glow', text: error instanceof Error ? error.message : 'Glow could not complete that request.' });
+      const message = error instanceof Error ? error.message : 'Glow could not complete that request.';
+      addTurn({ role: 'glow', text: message });
+      void speak(message);
     } finally {
       setPending(false);
     }
   }
 
   function approve() {
-    if (proposal && !pending) void run(proposal.text, true);
+    if (proposal && !pending) {
+      void ensureAudioContext();
+      void run(proposal.text, true);
+    }
   }
 
   function cancelProposal() {
     setProposal(null);
     setState('resting');
-    addTurn({ role: 'glow', text: 'Nothing changed.' });
+    const message = 'Nothing changed.';
+    addTurn({ role: 'glow', text: message });
+    void speak(message);
+  }
+
+  function toggleVoiceReplies() {
+    if (voiceReplies) stopSpeaking();
+    else void ensureAudioContext();
+    setVoiceReplies((current) => !current);
   }
 
   if (pathname === '/sign-in' || pathname.startsWith('/api/')) return null;
+
+  const recording = state === 'listening' && mediaRecorderRef.current?.state === 'recording';
 
   return (
     <>
@@ -374,7 +549,7 @@ export function GlowPresence() {
           <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-4 py-3">
             {turns.length === 0 ? (
               <div className="rounded-[20px] border border-white/60 bg-white/26 px-3 py-3 text-[12px] leading-5 text-neutral-600 shadow-[inset_0_1px_0_rgba(255,255,255,.7)]">
-                Glow is with you in this room. Speak naturally. Glow uses the current room, selected object, recent conversation, active work, and available system context before asking you to repeat yourself.
+                Glow is with you in this room. Tap the microphone, speak naturally, then tap it again when you are done. Glow will understand you, answer, and speak back out loud.
               </div>
             ) : null}
 
@@ -425,14 +600,46 @@ export function GlowPresence() {
                 <button type="button" onClick={() => setSelectedContext(null)} className="shrink-0 underline decoration-neutral-300 underline-offset-2">clear</button>
               </div>
             ) : null}
-            <textarea rows={2} value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void run(input); } }} placeholder="Talk to Glow…" className="w-full resize-none rounded-[20px] border border-white/70 bg-white/42 px-3 py-2 text-[12px] outline-none shadow-[inset_0_1px_0_rgba(255,255,255,.75)]"/>
+            <textarea
+              rows={2}
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                  event.preventDefault();
+                  void ensureAudioContext();
+                  void run(input);
+                }
+              }}
+              placeholder="Talk to Glow…"
+              className="w-full resize-none rounded-[20px] border border-white/70 bg-white/42 px-3 py-2 text-[12px] outline-none shadow-[inset_0_1px_0_rgba(255,255,255,.75)]"
+            />
+            {voiceStatus ? <div role="status" className="mt-2 rounded-[14px] border border-white/55 bg-white/26 px-3 py-2 text-[10px] leading-4 text-neutral-600">{voiceStatus}</div> : null}
             <div className="mt-2 flex items-center gap-2">
-              <button type="button" onClick={startListening} className="grid h-11 w-11 place-items-center rounded-full border border-white/70 bg-white/38" aria-label="Speak to Glow"><Mic size={16}/></button>
-              <button type="button" onClick={() => void run(input)} disabled={!input.trim() || pending || Boolean(proposal)} className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-neutral-900 px-4 text-[12px] font-semibold text-white disabled:opacity-40"><Send size={14}/>{pending ? STATE_LABEL[state] : 'Send'}</button>
+              <button
+                type="button"
+                onClick={() => void startListening()}
+                aria-label={recording ? 'Stop recording and ask Glow' : 'Speak to Glow'}
+                aria-pressed={recording}
+                className={`grid h-11 w-11 place-items-center rounded-full border transition ${recording ? 'border-neutral-900 bg-neutral-900 text-white shadow-[0_0_0_6px_rgba(255,255,255,.48),0_0_28px_rgba(154,182,255,.25)]' : 'border-white/70 bg-white/38 text-neutral-800'}`}
+              >
+                {recording ? <Square size={14} fill="currentColor"/> : <Mic size={16}/>} 
+              </button>
+              <button
+                type="button"
+                onClick={() => { void ensureAudioContext(); void run(input); }}
+                disabled={!input.trim() || pending || Boolean(proposal) || recording}
+                className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-neutral-900 px-4 text-[12px] font-semibold text-white disabled:opacity-40"
+              >
+                <Send size={14}/>{pending ? STATE_LABEL[state] : 'Send'}
+              </button>
             </div>
             <div className="mt-2 flex items-center justify-between gap-3 px-1">
-              <button type="button" className="glow-memory-link" onClick={() => router.push('/settings/intelligence')}>Memory & intelligence controls</button>
-              <button type="button" className="glow-memory-link" onClick={clearSessionMemory}>Clear this session</button>
+              <button type="button" className="glow-memory-link inline-flex items-center gap-1.5" onClick={toggleVoiceReplies}>
+                {voiceReplies ? <Volume2 size={12}/> : <VolumeX size={12}/>} {voiceReplies ? 'Voice replies on' : 'Voice replies off'}
+              </button>
+              <button type="button" className="glow-memory-link" onClick={() => router.push('/settings/intelligence')}>Memory & intelligence</button>
+              <button type="button" className="glow-memory-link" onClick={clearSessionMemory}>Clear session</button>
             </div>
           </div>
         </section>
