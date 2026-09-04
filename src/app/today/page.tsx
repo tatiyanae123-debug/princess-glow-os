@@ -41,7 +41,7 @@ export default async function TodayPage() {
     getCalendarEventsByUser(userId),
   ]);
 
-  let activeFocus: Awaited<ReturnType<typeof getActiveFocusSession>> = null;
+  let activeFocus: Awaited<ReturnType<typeof getActiveFocusSession>> | null = null;
   try {
     activeFocus = await getActiveFocusSession(userId);
   } catch {
