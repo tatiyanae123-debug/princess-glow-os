@@ -5,20 +5,13 @@ import { usePathname, useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { Sidebar } from '@/components/ui/sidebar';
 import { GlowProvider } from '@/lib/context/glow-provider';
-import { QuickAdd } from '@/components/quick-add/quick-add';
-import { ReferenceRoomWorkspace } from '@/components/reference-room-workspace';
-import { ReferenceRoomInteractions } from '@/components/reference-room-interactions';
-import { GlowVoiceCommand } from '@/components/voice/glow-voice-command';
-import { DataConnectionVault } from '@/components/data-connection-vault';
 import { GlobalHeader } from '@/components/global-header';
-import { GlowActionButton } from '@/components/glow-action-button';
 import { roomExperienceFor } from '@/lib/glow-world/room-experience';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const experience = roomExperienceFor(pathname);
-  const isDashboard = experience.room === 'today';
   const [focus, setFocus] = useState(false);
 
   useEffect(() => {
@@ -48,40 +41,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     'data-completion-behavior': experience.completion,
   } as const;
 
-  if (isDashboard && !focus) {
-    return <GlowProvider>
-      <div {...worldData} data-dashboard-shell className="glow-world-shell dashboard-shell-grid min-h-screen text-[#171719]">
-        <div className="glow-world-atmosphere" aria-hidden="true" />
-        <div className="dashboard-sidebar-wrap"><Sidebar /></div>
-        <div className="dashboard-main-wrap">
-          <GlobalHeader />
-          <main className="dashboard-main glow-room-stage" data-primary-question={experience.primaryQuestion}>{children}</main>
-        </div>
-      </div>
-      <GlowVoiceCommand />
-      <QuickAdd />
-    </GlowProvider>;
-  }
-
   return (
     <GlowProvider>
       <div className="glow-world-shell room-canvas min-h-screen text-[#1C1C1E]" {...worldData} data-focus-mode={focus ? 'true' : 'false'}>
-        <div className="glow-world-atmosphere" aria-hidden="true" />
         <div className="mx-auto flex min-h-screen w-full max-w-[1920px] flex-col lg:flex-row">
           {!focus ? <div className="glow-world-nav-wrap w-full lg:sticky lg:top-0 lg:h-screen lg:w-[176px] lg:shrink-0"><Sidebar /></div> : null}
           <div className="glow-room-body min-w-0 flex-1">
             {!focus ? <GlobalHeader /> : null}
-            <main className={focus ? 'glow-room-stage min-h-screen px-4 py-8 sm:px-7 lg:px-10' : 'glow-room-stage min-h-screen px-4 pb-20 pt-3 sm:px-5 lg:px-6 lg:pt-4'} data-primary-question={experience.primaryQuestion}>
-              <div className="mx-auto w-full max-w-[1500px]">
-                <ReferenceRoomWorkspace />
-                {!focus ? <DataConnectionVault>{children}</DataConnectionVault> : null}
-              </div>
+            <main className={focus ? 'min-h-screen px-4 py-8 sm:px-7 lg:px-10' : 'min-h-screen px-4 pb-20 pt-3 sm:px-5 lg:px-6 lg:pt-4'} data-primary-question={experience.primaryQuestion}>
+              <div className="mx-auto w-full max-w-[1500px]">{children}</div>
             </main>
           </div>
         </div>
       </div>
-      {focus ? <button type="button" onClick={exitFocus} className="fixed right-5 top-5 z-[100] inline-flex h-10 items-center gap-2 rounded-full border border-[#E6E6E6] bg-white px-4 text-[13px] font-medium text-[#444448] shadow-sm"><X size={15}/>Exit Focus</button> : null}
-      {!focus ? <><ReferenceRoomInteractions /><GlowVoiceCommand /><QuickAdd /><GlowActionButton /></> : null}
+      {focus ? <button type="button" onClick={exitFocus} className="fixed right-5 top-5 z-[80] inline-flex h-10 items-center gap-2 rounded-full border border-[#E6E6E6] bg-white px-4 text-[13px] font-medium text-[#444448] shadow-sm"><X size={15}/>Exit Focus</button> : null}
     </GlowProvider>
   );
 }
