@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { Bell, Brain, CalendarDays, ChevronRight, Heart, PawPrint, Search, Sparkles, SunMedium, WandSparkles } from 'lucide-react';
-import { TODAY_LIVING_CENTER_REFERENCE } from '@/lib/design/today-living-center-reference';
 import styles from './today-living-center.module.css';
 
 type TaskLite={id:string;title:string;priority:string;dueDateISO?:string|null};
@@ -130,7 +129,6 @@ export function TodayLivingCenter({tasks,events,routines,energy,mood,sleepHours,
   function submitAsk(event:FormEvent){event.preventDefault();if(!askText.trim())return;setAskReceipt(glowMessage||`Shakti understood. ${askText.trim()}`)}
 
   return <main className={styles.root} data-daypart={daypart}>
-    <img src={TODAY_LIVING_CENTER_REFERENCE} alt="" aria-hidden="true" className={styles.room}/>
     <div className={styles.dayClimate}/><div className={styles.uiSoftener}/>
     <div className={styles.stage}>
       <header className={styles.header}><div className={styles.brand}>GLOW OS</div><div className={styles.greeting}>{greeting}</div><div className={styles.date}>{dateLabel}</div></header>
@@ -156,8 +154,6 @@ export function TodayLivingCenter({tasks,events,routines,energy,mood,sleepHours,
       </section>
     </div>
 
-    <img src={TODAY_LIVING_CENTER_REFERENCE} alt="" aria-hidden="true" className={styles.avatarReveal}/>
-    <div className={styles.navMask}/>
     <nav className={styles.nav}><button type="button" className={styles.active}><SunMedium size={15}/><span>Today</span></button><button type="button" onClick={()=>go('/planning')}><CalendarDays size={15}/><span>Plan</span></button><button type="button" onClick={()=>go('/world')}><Heart size={15}/><span>Life</span></button><button type="button" onClick={()=>go('/brain')}><Brain size={15}/><span>Brain</span></button><button type="button" onClick={()=>go('/world')}><WandSparkles size={15}/><span>Create</span></button></nav>
     <button type="button" className={styles.saint} onClick={()=>setPanel('saint')}><PawPrint size={15}/><span>Saint</span></button>
 
