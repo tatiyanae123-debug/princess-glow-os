@@ -3,24 +3,32 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Check, Mic, Send, X } from 'lucide-react';
+import {
+  glowPromptsForRoute,
+  glowRiskForText,
+  glowWorldForRoute,
+  type GlowResponseForm,
+  type GlowState,
+} from '@/lib/intelligence/glow-operating-model';
 
-type GlowState =
-  | 'resting'
-  | 'waking'
-  | 'listening'
-  | 'understanding'
-  | 'speaking'
-  | 'creating'
-  | 'awaiting-approval'
-  | 'acting'
-  | 'completing'
-  | 'error';
-
-type ResponseForm = 'conversation' | 'guide' | 'plan' | 'search' | 'visual';
 type Turn = { role: 'user' | 'glow'; text: string; meta?: string };
-type ProposalAction = { title: string; type: string; destinations: string[]; confidence: number };
-type PendingProposal = { text: string; actions: ProposalAction[]; responseForm?: ResponseForm };
-type Receipt = { summary: string; destinations: string[] };
+type ProposalAction = {
+  title: string;
+  type: string;
+  destinations: string[];
+  confidence: number;
+  executor?: 'verified' | 'review-queue';
+};
+type PendingProposal = { text: string; actions: ProposalAction[]; responseForm?: GlowResponseForm };
+type Receipt = {
+  summary: string;
+  status?: 'completed' | 'partially-completed' | 'queued';
+  completed?: string[];
+  queued?: string[];
+  destinations: string[];
+  queuedDestinations?: string[];
+  needsAttention?: boolean;
+};
 type SelectedContext = { label: string; type?: string; id?: string; route: string; capturedAt: number };
 type RecognitionEvent = { results: ArrayLike<{ 0: { transcript: string } }> };
 type RecognitionError = { error: string };
@@ -39,11 +47,19 @@ type RecognitionCtor = new () => Recognition;
 type GlowResponse = {
   ok?: boolean;
   mode?: 'answer' | 'proposal' | 'completed';
-  responseForm?: ResponseForm;
+  responseForm?: GlowResponseForm;
   message?: string;
   requiresConfirmation?: boolean;
   actions?: ProposalAction[];
-  receipt?: { summary?: string; destinations?: string[] };
+  receipt?: {
+    summary?: string;
+    status?: 'completed' | 'partially-completed' | 'queued';
+    completed?: string[];
+    queued?: string[];
+    destinations?: string[];
+    queuedDestinations?: string[];
+    needsAttention?: boolean;
+  };
 };
 
 const STATE_LABEL: Record<GlowState, string> = {
@@ -74,30 +90,8 @@ function navigationTarget(text: string) {
   return entries.find(([label]) => value.includes(label))?.[1] ?? null;
 }
 
-function riskFor(text: string) {
-  const value = text.toLowerCase();
-  if (/\b(delete|erase|remove all|cancel|pay|purchase|transfer|send email|external account|clear all|archive all)\b/.test(value)) return 'high';
-  if (/\b(move|reschedule|change|edit|update|replace|reorganize|everything|all unfinished)\b/.test(value)) return 'medium';
-  if (/\b(add|create|save|file|log|remind|schedule|make a task|make a note)\b/.test(value)) return 'low';
-  return 'read';
-}
 function creationLike(text: string) {
   return /\b(create|make|draft|write|build|turn .* into|visual card|image|plan with me)\b/i.test(text);
-}
-function roomName(pathname: string) {
-  if (pathname === '/today') return 'Today';
-  if (pathname.startsWith('/calendar') || pathname.startsWith('/planning') || pathname.startsWith('/tasks') || pathname.startsWith('/goals') || pathname.startsWith('/projects') || pathname.startsWith('/reminders') || pathname.startsWith('/routines') || pathname.startsWith('/habits')) return 'Plan';
-  if (pathname.startsWith('/brain') || pathname.startsWith('/notes') || pathname.startsWith('/memory') || pathname.startsWith('/timeline') || pathname.startsWith('/graph') || pathname.startsWith('/observations')) return 'Brain';
-  if (pathname.startsWith('/inbox') || pathname.startsWith('/import') || pathname.startsWith('/gmail')) return 'Create';
-  return 'Life';
-}
-function quickPrompts(pathname: string) {
-  if (pathname === '/today') return ['What should I do next?', 'Fix the rest of today', 'Move what can wait'];
-  if (pathname.startsWith('/calendar') || pathname.startsWith('/planning')) return ['Find conflicts', 'Show my free time', 'Plan this with me'];
-  if (pathname.startsWith('/notes') || pathname.startsWith('/brain') || pathname.startsWith('/memory')) return ['Find a previous note', 'Show related ideas', 'Help me connect this'];
-  if (pathname.startsWith('/beauty') || pathname.startsWith('/hair') || pathname.startsWith('/fitness') || pathname.startsWith('/food')) return ['Guide me step by step', 'What comes next?', 'Make this easier today'];
-  if (pathname.startsWith('/inbox') || pathname.startsWith('/import')) return ['Organize this', 'Turn this into tasks', 'Where should this go?'];
-  return ['What can you help with here?', 'Show me what matters', 'Help me with this'];
 }
 
 export function GlowPresence() {
@@ -114,8 +108,8 @@ export function GlowPresence() {
   const [selectedContext, setSelectedContext] = useState<SelectedContext | null>(null);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
 
-  const currentRoom = roomName(pathname);
-  const prompts = useMemo(() => quickPrompts(pathname), [pathname]);
+  const currentRoom = glowWorldForRoute(pathname);
+  const prompts = useMemo(() => glowPromptsForRoute(pathname), [pathname]);
   const contextText = selectedContext
     ? `${selectedContext.type ? `${selectedContext.type} · ` : ''}${selectedContext.label}${selectedContext.route !== pathname ? ` · from ${selectedContext.route}` : ''}`
     : pathname;
@@ -251,7 +245,7 @@ export function GlowPresence() {
           sourceRoute: pathname,
           selectedContext: selectedContext ? JSON.stringify(selectedContext) : '',
           approved,
-          risk: riskFor(command),
+          risk: glowRiskForText(command),
           history: turns.slice(-10),
         }),
       });
@@ -269,7 +263,15 @@ export function GlowPresence() {
         const responseMeta = payload.responseForm ? payload.responseForm.replace('-', ' ') : undefined;
         addTurn({ role: 'glow', text: payload.message || 'Done.', meta: payload.receipt?.summary ? `Receipt · ${payload.receipt.summary}` : responseMeta });
         if (payload.receipt?.summary) {
-          setReceipt({ summary: payload.receipt.summary, destinations: payload.receipt.destinations ?? [] });
+          setReceipt({
+            summary: payload.receipt.summary,
+            status: payload.receipt.status,
+            completed: payload.receipt.completed ?? [],
+            queued: payload.receipt.queued ?? [],
+            destinations: payload.receipt.destinations ?? [],
+            queuedDestinations: payload.receipt.queuedDestinations ?? [],
+            needsAttention: payload.receipt.needsAttention,
+          });
         }
         if (approved) router.refresh();
         settle(completed ? 'completing' : 'speaking', completed ? 1500 : 1200);
@@ -340,7 +342,7 @@ export function GlowPresence() {
           <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-4 py-3">
             {turns.length === 0 ? (
               <div className="rounded-2xl border border-white/80 bg-white/45 px-3 py-3 text-sm text-neutral-600">
-                Talk to Glow without leaving this room. Glow can listen, answer, search, guide, create a proposal, and act after approval. The current page and selected object travel with the conversation.
+                Talk to Glow without leaving this room. Glow can listen, answer, search, guide, create a proposal, and act after approval. The current page, Glow world, selected object, and its original page travel with the conversation.
               </div>
             ) : null}
             {turns.map((turn, index) => (
@@ -351,10 +353,13 @@ export function GlowPresence() {
             ))}
 
             {receipt ? (
-              <div className="mr-8 rounded-2xl border border-emerald-200/70 bg-emerald-50/70 px-3 py-3">
-                <div className="text-[10px] font-semibold uppercase tracking-[.16em] text-emerald-800">Action receipt</div>
+              <div className={`mr-8 rounded-2xl px-3 py-3 ${receipt.needsAttention ? 'border border-amber-200/80 bg-amber-50/75' : 'border border-emerald-200/70 bg-emerald-50/70'}`}>
+                <div className={`text-[10px] font-semibold uppercase tracking-[.16em] ${receipt.needsAttention ? 'text-amber-800' : 'text-emerald-800'}`}>Action receipt · {receipt.status ?? 'completed'}</div>
                 <div className="mt-1 text-sm text-neutral-800">{receipt.summary}</div>
-                {receipt.destinations.length ? <div className="mt-2 text-[10px] text-neutral-500">Changed in: {receipt.destinations.join(' · ')}</div> : null}
+                {receipt.completed?.length ? <div className="mt-2 text-[10px] text-emerald-800"><span className="font-semibold">Completed:</span> {receipt.completed.join(' · ')}</div> : null}
+                {receipt.destinations.length ? <div className="mt-1 text-[10px] text-neutral-500">Completed in: {receipt.destinations.join(' · ')}</div> : null}
+                {receipt.queued?.length ? <div className="mt-2 text-[10px] text-amber-800"><span className="font-semibold">Queued for review:</span> {receipt.queued.join(' · ')}</div> : null}
+                {receipt.queuedDestinations?.length ? <div className="mt-1 text-[10px] text-neutral-500">Waiting in: {receipt.queuedDestinations.join(' · ')}</div> : null}
               </div>
             ) : null}
           </div>
@@ -368,7 +373,7 @@ export function GlowPresence() {
                   {proposal.actions.map((action, index) => (
                     <li key={`${action.type}-${index}`} className="rounded-xl border border-white/80 bg-white/55 px-3 py-2">
                       <div>• {action.title}</div>
-                      <div className="mt-1 text-[10px] text-neutral-500">{action.type}{action.destinations.length ? ` · ${action.destinations.join(', ')}` : ''}</div>
+                      <div className="mt-1 text-[10px] text-neutral-500">{action.type}{action.destinations.length ? ` · ${action.destinations.join(', ')}` : ''}{action.executor ? ` · ${action.executor === 'verified' ? 'verified executor' : 'review queue'}` : ''}</div>
                     </li>
                   ))}
                 </ul>
