@@ -21,10 +21,10 @@ export type CustomizableVisualProps = {
 };
 
 const ASPECT_MAP = {
-  square:    'aspect-square',
-  portrait:  'aspect-[3/4]',
+  square: 'aspect-square',
+  portrait: 'aspect-[3/4]',
   landscape: 'aspect-[4/3]',
-  wide:      'aspect-[16/9]',
+  wide: 'aspect-[16/9]',
 };
 
 export function CustomizableVisual({
@@ -51,20 +51,14 @@ export function CustomizableVisual({
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
 
-  // Sync src prop → internal state
   useEffect(() => {
     setImgSrc(src);
     setBroken(false);
     setLoading(!!src);
   }, [src]);
 
-  useEffect(() => {
-    setPos(position);
-  }, [position]);
-
-  useEffect(() => {
-    setImgMode(mode);
-  }, [mode]);
+  useEffect(() => { setPos(position); }, [position]);
+  useEffect(() => { setImgMode(mode); }, [mode]);
 
   const emit = useCallback(
     (updates: Partial<{ imageUrl?: string; position?: ImagePosition; mode: VisualMode }>) => {
@@ -74,9 +68,9 @@ export function CustomizableVisual({
   );
 
   const handleFileChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file || !file.type.startsWith('image/')) return;
       const url = onFileUpload ? onFileUpload(file) : URL.createObjectURL(file);
       setImgSrc(url);
       setImgMode('photo');
@@ -130,12 +124,12 @@ export function CustomizableVisual({
     [pos, emit]
   );
 
-  const hasImage = imgSrc && !broken && imgMode !== 'none';
+  const hasImage = Boolean(imgSrc && !broken && imgMode !== 'none');
 
   return (
     <div
       className={cn(
-        'group relative overflow-hidden',
+        'glow-image-surface group relative min-w-0 max-w-full',
         ASPECT_MAP[aspectRatio],
         editable && 'ring-2 ring-[var(--glow-accent)] ring-offset-2 ring-offset-[var(--glow-bg)]',
         className
@@ -144,18 +138,15 @@ export function CustomizableVisual({
       onMouseEnter={() => editable && setShowControls(true)}
       onMouseLeave={() => editable && setShowControls(false)}
       onFocus={() => editable && setShowControls(true)}
-      onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget)) setShowControls(false);
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setShowControls(false);
       }}
       role={editable ? 'group' : undefined}
       aria-label={editable ? `Editable visual: ${alt}` : undefined}
     >
-      {/* Image or placeholder */}
       {hasImage ? (
         <>
-          {loading && (
-            <div className="absolute inset-0 animate-pulse bg-[var(--glow-surface-muted)]" />
-          )}
+          {loading ? <div className="absolute inset-0 z-[1] animate-pulse bg-[var(--glow-surface-muted)]" /> : null}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imgSrc}
@@ -163,14 +154,16 @@ export function CustomizableVisual({
             onLoad={() => setLoading(false)}
             onError={() => { setBroken(true); setLoading(false); }}
             className={cn(
-              'h-full w-full object-cover',
+              'glow-image-media absolute inset-0',
               !prefersReducedMotion.current && 'transition-[object-position,transform] duration-500'
             )}
             style={{
               objectPosition: `${pos.x}% ${pos.y}%`,
-              transform: `scale(${pos.zoom})`,
+              transform: `scale(${pos.zoom}) translateZ(0)`,
               transformOrigin: `${pos.x}% ${pos.y}%`,
             }}
+            loading="lazy"
+            decoding="async"
             draggable={false}
           />
         </>
@@ -182,67 +175,43 @@ export function CustomizableVisual({
               <span className="text-xs">Image unavailable</span>
             </div>
           ) : (
-            <div className="text-[var(--glow-text-muted)] opacity-30">
-              {fallbackIcon ?? <ImageIcon size={32} />}
-            </div>
+            <div className="text-[var(--glow-text-muted)] opacity-30">{fallbackIcon ?? <ImageIcon size={32} />}</div>
           )}
         </div>
       )}
 
-      {/* Edit overlay */}
-      {editable && (
+      {editable ? (
         <div
           className={cn(
-            'absolute inset-0 flex flex-col items-end justify-between p-2 transition-opacity',
+            'pointer-events-none absolute inset-0 z-[5] flex flex-col items-end justify-between p-2 transition-opacity',
             showControls ? 'opacity-100' : 'opacity-0 focus-within:opacity-100',
             !prefersReducedMotion.current && 'duration-200'
           )}
-          style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, transparent 40%, rgba(0,0,0,0.15) 100%)' }}
+          style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,.18) 0%, transparent 35%, rgba(0,0,0,.12) 100%)' }}
         >
-          {/* Top-right action buttons */}
-          <div className="flex gap-1">
-            <ControlButton
-              aria-label={`Upload image for ${alt}`}
-              onClick={() => fileInputRef.current?.click()}
-              title="Replace image"
-            >
-              <Upload size={12} />
-            </ControlButton>
-            {hasImage && (
-              <>
-                <ControlButton aria-label={`Remove image for ${alt}`} onClick={handleRemove} title="Remove">
-                  <Trash2 size={12} />
-                </ControlButton>
-                <ControlButton aria-label={`Restore default for ${alt}`} onClick={handleRestore} title="Restore default">
-                  <RotateCcw size={12} />
-                </ControlButton>
-              </>
-            )}
+          <div className="pointer-events-auto flex flex-wrap justify-end gap-1">
+            <ControlButton aria-label={`Upload image for ${alt}`} onClick={() => fileInputRef.current?.click()} title="Replace image"><Upload size={12}/></ControlButton>
+            {hasImage ? <>
+              <ControlButton aria-label={`Remove image for ${alt}`} onClick={handleRemove} title="Remove"><Trash2 size={12}/></ControlButton>
+              <ControlButton aria-label={`Restore default for ${alt}`} onClick={handleRestore} title="Restore default"><RotateCcw size={12}/></ControlButton>
+            </> : null}
           </div>
 
-          {/* Bottom position/zoom controls */}
-          {hasImage && (
-            <div className="flex items-center gap-1">
-              <span className="mr-1 text-[10px] font-medium text-white/80 select-none flex items-center gap-0.5">
-                <Move size={10} />
-              </span>
+          {hasImage ? (
+            <div className="pointer-events-auto flex max-w-full flex-wrap items-center justify-end gap-1">
+              <span className="mr-1 flex select-none items-center gap-0.5 text-[10px] font-medium text-white/85"><Move size={10}/></span>
               <ControlButton aria-label="Move left" onClick={() => adjustX(-10)} title="Left">←</ControlButton>
               <ControlButton aria-label="Move right" onClick={() => adjustX(10)} title="Right">→</ControlButton>
               <ControlButton aria-label="Move up" onClick={() => adjustY(-10)} title="Up">↑</ControlButton>
               <ControlButton aria-label="Move down" onClick={() => adjustY(10)} title="Down">↓</ControlButton>
-              <ControlButton aria-label="Zoom in" onClick={() => adjustZoom(0.25)} title="Zoom in">
-                <ZoomIn size={10} />
-              </ControlButton>
-              <ControlButton aria-label="Zoom out" onClick={() => adjustZoom(-0.25)} title="Zoom out">
-                <ZoomOut size={10} />
-              </ControlButton>
+              <ControlButton aria-label="Zoom in" onClick={() => adjustZoom(.25)} title="Zoom in"><ZoomIn size={10}/></ControlButton>
+              <ControlButton aria-label="Zoom out" onClick={() => adjustZoom(-.25)} title="Zoom out"><ZoomOut size={10}/></ControlButton>
             </div>
-          )}
+          ) : null}
         </div>
-      )}
+      ) : null}
 
-      {/* Hidden file input */}
-      {editable && (
+      {editable ? (
         <input
           ref={fileInputRef}
           id={`visual-upload-${id}`}
@@ -253,29 +222,19 @@ export function CustomizableVisual({
           aria-label={`Upload image for ${alt}`}
           onChange={handleFileChange}
         />
-      )}
+      ) : null}
     </div>
   );
 }
 
-function ControlButton({
-  children,
-  onClick,
-  title,
-  'aria-label': ariaLabel,
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
-  title?: string;
-  'aria-label': string;
-}) {
+function ControlButton({ children, onClick, title, 'aria-label': ariaLabel }: { children: React.ReactNode; onClick: () => void; title?: string; 'aria-label': string }) {
   return (
     <button
       type="button"
       title={title}
       aria-label={ariaLabel}
       onClick={onClick}
-      className="flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+      className="flex h-7 w-7 items-center justify-center rounded-full border border-white/65 bg-black/42 text-white shadow-[0_3px_10px_rgba(0,0,0,.16)] backdrop-blur-md transition hover:bg-black/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
     >
       {children}
     </button>
