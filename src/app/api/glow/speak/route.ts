@@ -18,6 +18,18 @@ function gatewayToken() {
   return process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN || '';
 }
 
+function speechRequest(model: string, text: string) {
+  const modern = /gpt-4o-mini-tts/i.test(model);
+  return {
+    text,
+    voice: process.env.OPENAI_GLOW_VOICE || (modern ? 'coral' : 'nova'),
+    outputFormat: 'mp3',
+    speed: 1,
+    language: 'en',
+    ...(modern ? { instructions: VOICE_INSTRUCTIONS } : {}),
+  };
+}
+
 async function speakThroughGateway(text: string, token: string) {
   const models = [
     process.env.OPENAI_GLOW_TTS_MODEL || 'openai/gpt-4o-mini-tts',
@@ -33,14 +45,7 @@ async function speakThroughGateway(text: string, token: string) {
         'Content-Type': 'application/json',
         'ai-model-id': model,
       },
-      body: JSON.stringify({
-        text,
-        voice: process.env.OPENAI_GLOW_VOICE || 'coral',
-        outputFormat: 'mp3',
-        instructions: VOICE_INSTRUCTIONS,
-        speed: 1,
-        language: 'en',
-      }),
+      body: JSON.stringify(speechRequest(model, text)),
       cache: 'no-store',
     });
 
@@ -54,6 +59,8 @@ async function speakThroughGateway(text: string, token: string) {
 }
 
 async function speakDirectOpenAI(text: string, apiKey: string) {
+  const model = process.env.OPENAI_GLOW_TTS_MODEL || 'gpt-4o-mini-tts';
+  const modern = /gpt-4o-mini-tts/i.test(model);
   const response = await fetch('https://api.openai.com/v1/audio/speech', {
     method: 'POST',
     headers: {
@@ -61,11 +68,11 @@ async function speakDirectOpenAI(text: string, apiKey: string) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: process.env.OPENAI_GLOW_TTS_MODEL || 'gpt-4o-mini-tts',
-      voice: process.env.OPENAI_GLOW_VOICE || 'coral',
+      model,
+      voice: process.env.OPENAI_GLOW_VOICE || (modern ? 'coral' : 'nova'),
       input: text,
-      instructions: VOICE_INSTRUCTIONS,
       response_format: 'mp3',
+      ...(modern ? { instructions: VOICE_INSTRUCTIONS } : {}),
     }),
     cache: 'no-store',
   });
