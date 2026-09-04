@@ -1,0 +1,67 @@
+/* Today Living Center clarity pass
+   Keeps the approved composition intact while removing the milky/blurred overlay effect.
+   This file is intentionally visual-only so the stable renderer and live behavior remain untouched. */
+
+.glow-stage {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+  isolation: isolate;
+}
+
+/* Preserve the reference room but recover perceived edge definition on high-DPI iPad displays. */
+.glow-stage > img {
+  image-rendering: auto;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  filter: contrast(1.045) saturate(1.02) brightness(1.008);
+}
+
+/* The old live-text replacement strips blurred the room beneath them.
+   Keep the live data, remove the optical blur. */
+.glow-stage [style*="blur(2px)"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Soften the replacement wash across live text areas so it reads as Glow Matter,
+   not as opaque white highlighter. */
+.glow-stage [style*="mask-image"] {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 248, 244, 0.74) 0%,
+    rgba(255, 248, 244, 0.52) 78%,
+    rgba(255, 248, 244, 0) 100%
+  ) !important;
+}
+
+/* The right-side time/event rail was the most visibly highlighted area.
+   Make those live text washes substantially more transparent while preserving legibility. */
+.glow-stage div[style*="left: 82.15%"] {
+  background: linear-gradient(
+    90deg,
+    rgba(250, 239, 234, 0.38) 0%,
+    rgba(250, 239, 234, 0.14) 76%,
+    rgba(250, 239, 234, 0) 100%
+  ) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Greeting stays readable without looking like a pasted white rectangle. */
+.glow-stage > div[aria-live="polite"] {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 249, 246, 0.78) 0%,
+    rgba(255, 249, 246, 0.52) 70%,
+    rgba(255, 249, 246, 0) 100%
+  ) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Keep native text crisp instead of visually dissolving into the luminous room. */
+.glow-stage span,
+.glow-stage [aria-live="polite"] {
+  text-shadow: 0 0 0.01px rgba(49, 37, 34, 0.9);
+}
