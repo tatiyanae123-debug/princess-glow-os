@@ -2,6 +2,7 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { MorningBriefReference } from '@/components/today/morning-brief-reference';
 import { TodayLivingCenter } from '@/components/today/today-living-center';
+import { TodaySimpleChrome } from '@/components/today/today-simple-chrome';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +22,7 @@ export default async function TodayPage() {
     <>
       <TodayLivingCenter />
       <MorningBriefReference />
+      <TodaySimpleChrome />
     </>
   );
 }
