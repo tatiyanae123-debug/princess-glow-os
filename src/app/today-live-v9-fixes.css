@@ -1,0 +1,35 @@
+/* V9 polish: keep the approved architecture visible and prevent a blank first paint. */
+.v9-compact{display:block}
+html[data-today-mode="reference"] .v9-compact,html[data-today-mode="portrait"] .v9-compact{display:none}
+html[data-today-mode="reference"] .v9-full{display:block}
+html[data-today-mode="compact"] .v9-full,html[data-today-mode="portrait"] .v9-full{display:none}
+html[data-today-mode="portrait"] .v9-portrait{display:block}
+html[data-today-mode="reference"] .v9-portrait,html[data-today-mode="compact"] .v9-portrait{display:none}
+
+/* Full room uses the reference hosts, not replacement white cards. */
+.v9-full .v9-now,.v9-full .v9-what,.v9-full .v9-capacity,.v9-full .v9-counts,.v9-full .v9-replan,.v9-full .v9-priorities,.v9-full .v9-routines,.v9-full .v9-ask{
+  background:linear-gradient(145deg,rgba(255,251,247,.13),rgba(255,255,255,.035))!important;
+  border-color:rgba(255,255,255,.27)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.34)!important;
+  backdrop-filter:blur(1.5px) saturate(1.04)!important;
+}
+.v9-full .v9-world-nav{background:rgba(246,237,233,.32)!important;border-color:rgba(255,255,255,.42)!important}
+.v9-full .v9-tools button{background:rgba(248,238,233,.24)!important}
+
+/* Shakti's name belongs to the presence, not underneath it like an image caption. */
+.v9-full .v9-shakti>span:last-child{bottom:27%!important;font-size:1.0vw!important}
+.v9c-shakti .v9-shakti>span:last-child{bottom:24%!important}
+.v9p-shakti .v9-shakti>span:last-child{bottom:15%!important}
+
+/* Compact landscape keeps legibility without becoming a giant mobile page. */
+.v9-compact .v9-kicker{font-size:8px!important}
+.v9c-header h1{font-size:clamp(24px,3.45vw,34px)!important;white-space:nowrap}
+.v9c-now h2{font-size:clamp(24px,3.5vw,35px)!important}
+.v9c-left,.v9c-right,.v9c-bottom{min-width:0}
+.v9c-right strong,.v9c-bottom strong,.v9c-what strong{overflow-wrap:anywhere}
+
+/* The verified-milestone rule: no premature achievement badge can cover Today. */
+body:has(.today-v9) .becoming-pearl-trigger,body:has(.today-v9) [class*="crownlight"],body:has(.today-v9) [data-achievement-trigger]{display:none!important}
+
+/* Do not let old Today responsive helpers reappear above V9. */
+body:has(.today-v9) .today-portrait-scroll,body:has(.today-v9) .adaptive-today-panel{display:none!important}
