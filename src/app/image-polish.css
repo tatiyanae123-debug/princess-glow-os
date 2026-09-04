@@ -1,0 +1,263 @@
+/* Glow OS image fidelity + collision contract — 2026-09-04
+   Images belong to a physical surface. They may never leak, stack accidentally,
+   cover unrelated copy, or become blurry because a layout stretched them. */
+
+.glow-image-surface {
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow: clip;
+  contain: paint;
+  background:
+    radial-gradient(80% 70% at 32% 20%, rgba(255,255,255,.36), transparent 70%),
+    linear-gradient(145deg, rgba(247,242,237,.92), rgba(222,213,205,.72));
+}
+
+.glow-image-surface::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.32),
+    inset 1px 1px 0 rgba(255,255,255,.54),
+    inset -1px -1px 0 rgba(104,92,82,.055);
+}
+
+.glow-image-media {
+  position: relative;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  min-width: 0;
+  object-fit: cover;
+  object-position: 50% 50%;
+  image-rendering: auto;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.glow-image-content {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  overflow-wrap: anywhere;
+}
+
+.glow-image-controls {
+  position: absolute;
+  z-index: 5;
+  pointer-events: auto;
+}
+
+/* Never allow arbitrary media to escape its information surface. */
+.glow-room-stage img,
+.reference-room img,
+.glow-room-stage video,
+.reference-room video {
+  display: block;
+  max-width: 100%;
+}
+
+.glow-room-stage article,
+.glow-room-stage section,
+.glow-room-stage [class*='grid'] > *,
+.reference-room article,
+.reference-room section,
+.reference-room [class*='grid'] > * {
+  min-width: 0;
+}
+
+/* Legacy/reference image slots inherit the same rules instead of behaving like
+   independent background rectangles. */
+.reference-room .board-img {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: clip !important;
+  contain: paint;
+}
+.reference-room .board-img > img {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  object-fit: cover !important;
+  object-position: var(--glow-image-x, 50%) var(--glow-image-y, 50%) !important;
+  backface-visibility: hidden;
+  transform-origin: var(--glow-image-x, 50%) var(--glow-image-y, 50%);
+}
+.reference-room .board-img > .glow-image-content {
+  position: relative;
+  z-index: 2;
+}
+
+/* Text intentionally placed over photography gets a protected optical reading
+   zone. It must never collide with editing controls or run beyond the surface. */
+.reference-room .photo-quote,
+.reference-room .hair-quote,
+.reference-room .world-copy,
+.reference-room .center-quote,
+.reference-room .img-caption,
+.reference-room .routine-copy,
+.reference-room .glow-quote {
+  z-index: 3;
+  max-width: calc(100% - 24px);
+  overflow-wrap: anywhere;
+}
+.reference-room .photo-quote,
+.reference-room .hair-quote,
+.reference-room .world-copy,
+.reference-room .glow-quote {
+  text-shadow: 0 1px 7px rgba(30,24,21,.24);
+}
+.reference-room .img-caption {
+  backdrop-filter: blur(10px) saturate(108%);
+  -webkit-backdrop-filter: blur(10px) saturate(108%);
+}
+.reference-room .routine-copy {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(255,255,255,.58), rgba(255,255,255,.18));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.58), 0 8px 20px rgba(56,44,37,.05);
+}
+
+/* Image-heavy grids must be explicit about tracks and clipping. */
+.reference-room .routine-cards,
+.reference-room .meal-grid,
+.reference-room .product-shelf,
+.reference-room .spaces,
+.reference-room .project-cards,
+.reference-room .recent-grid,
+.reference-room .beauty-top,
+.reference-room .recommend,
+.reference-room .planning-board,
+.reference-room .dash-glance {
+  grid-auto-flow: row;
+  align-items: stretch;
+}
+.reference-room .routine-cards > *,
+.reference-room .meal-grid > *,
+.reference-room .product-shelf > *,
+.reference-room .spaces > *,
+.reference-room .project-cards > *,
+.reference-room .recent-grid > *,
+.reference-room .beauty-top > *,
+.reference-room .recommend > *,
+.reference-room .planning-board > *,
+.reference-room .dash-glance > * {
+  min-width: 0;
+  max-width: 100%;
+  overflow: clip;
+}
+
+/* Optical hero images need a stable stage. */
+.reference-room .routine-banner,
+.reference-room .garden-img,
+.reference-room .vision-board,
+.reference-room .world-hero,
+.reference-room .hair-layout > .board-img,
+.reference-room .wellness-grid > .board-img,
+.reference-room .brief-card .board-img,
+.reference-room .glow-main > .board-img {
+  min-width: 0;
+  max-width: 100%;
+  overflow: clip !important;
+}
+
+/* On tablets, reduce competing overlays before shrinking type. */
+@media (max-width: 900px) {
+  .reference-room .routine-copy {
+    left: auto !important;
+    right: 18px;
+    top: 18px;
+    width: min(54%, 360px) !important;
+    max-height: calc(100% - 36px);
+    overflow: auto;
+  }
+  .reference-room .hair-layout > .board-img,
+  .reference-room .wellness-grid > .board-img,
+  .reference-room .garden-img,
+  .reference-room .vision-board {
+    min-height: 230px;
+  }
+  .reference-room .world-copy {
+    left: 20px;
+    right: 20px;
+    top: auto;
+    bottom: 22px;
+    max-width: 72%;
+  }
+}
+
+/* Phone layouts recompose rather than forcing desktop overlays to survive in
+   a narrow rectangle. */
+@media (max-width: 600px) {
+  .reference-room .routine-banner {
+    height: auto !important;
+    min-height: 320px;
+  }
+  .reference-room .routine-copy {
+    left: 14px !important;
+    right: 14px !important;
+    top: auto !important;
+    bottom: 14px !important;
+    width: auto !important;
+    max-height: 48%;
+  }
+  .reference-room .routine-cards,
+  .reference-room .product-shelf,
+  .reference-room .meal-grid,
+  .reference-room .spaces,
+  .reference-room .recent-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .reference-room .meal-grid .board-img {
+    width: min(160px, 60vw) !important;
+    height: min(160px, 60vw) !important;
+  }
+  .reference-room .world-hero {
+    height: 360px !important;
+  }
+  .reference-room .world-copy {
+    left: 16px;
+    right: 16px;
+    bottom: 18px;
+    max-width: none;
+  }
+  .reference-room .hair-layout > .board-img,
+  .reference-room .wellness-grid > .board-img,
+  .reference-room .garden-img,
+  .reference-room .vision-board {
+    width: 100%;
+    min-height: 260px;
+  }
+  .reference-room .img-caption,
+  .reference-room .photo-quote,
+  .reference-room .hair-quote,
+  .reference-room .glow-quote {
+    max-width: calc(100% - 20px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-image-media { transition: none !important; }
+}
