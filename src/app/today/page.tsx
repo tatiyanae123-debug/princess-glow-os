@@ -1,6 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { TodayOpticalCenter } from '@/components/today-optical-center';
+import { TodayGlowMatterCenter } from '@/components/today-glow-matter-center';
 import { getTasksByUser } from '@/lib/data/tasks';
 import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
@@ -54,7 +54,7 @@ export default async function TodayPage() {
     .slice(0, 12);
 
   return (
-    <TodayOpticalCenter
+    <TodayGlowMatterCenter
       tasks={openTasks.slice(0, 20).map((task) => ({
         id: task.id,
         title: task.title,
