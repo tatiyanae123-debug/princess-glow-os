@@ -23,6 +23,36 @@ Glow OS keeps one dependable owner for each user action. Do not mount competing 
 - Undo only when a real reversible implementation exists.
 - Responsive layouts reorganize the same objects rather than mounting duplicate page implementations.
 
+## New Glow destination law — permanent
+
+Any control visible inside the redesigned Glow OS is a promise that its destination also belongs to the redesigned Glow OS.
+
+A redesigned page must never route the user into a legacy visual shell, legacy dashboard, retired room system, or old-generation page experience.
+
+If a destination page has not yet received a fully art-directed reference, it must still open in a **clean new Glow shell** with:
+
+- the current new Glow material language
+- current refined typography
+- the persistent Glow presence and Ask Glow access
+- current redesigned navigation
+- a purpose-specific structure appropriate to that destination
+- truthful live data where available
+- no screenshot-backed or legacy page underneath
+
+The temporary destination may be visually simpler than its eventual final art direction, but it must still feel unmistakably part of the new Glow OS generation.
+
+Never expose an old interface while waiting for a future reference image.
+
+This rule applies to every destination reached from Today, Plan, Life, Brain, Create, utility rails, world navigation, contextual controls, and Glow-driven navigation.
+
+Examples:
+
+- Today → Focus must open a new-generation Focus experience, never the old Tasks/dashboard styling.
+- Today → People, Places, Resources, or Journeys must each open a clean new Glow destination shell even before their final art direction is approved.
+- Plan → Calendar, Tasks, Reminders, Goals, Projects, Routines, or Habits must never fall back to legacy page styling.
+
+When no final reference exists, infer the destination structure from its human purpose and the current Glow design system. Do not invent fake data to fill empty space.
+
 ## Removed from the shared runtime shell
 
 These may exist as page-local features later, but they must not all mount globally:
@@ -238,5 +268,6 @@ Before adding a new global feature, ask:
 6. Does it preserve one Glow identity and one conversation context?
 7. Does it require approval before a meaningful mutation?
 8. Will the receipt accurately distinguish completed work from queued work?
+9. Does every visible redesigned navigation control land on a redesigned Glow destination rather than exposing a legacy interface?
 
-If a feature duplicates ownership, increases global competition, loses context, or can report false success, it does not enter the stable core.
+If a feature duplicates ownership, increases global competition, loses context, exposes legacy UI, or can report false success, it does not enter the stable core.
