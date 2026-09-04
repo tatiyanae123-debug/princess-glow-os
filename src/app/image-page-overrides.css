@@ -3,6 +3,15 @@
    the shared Glow image primitive. They keep those rooms collision-safe until
    each image is migrated to the shared component. */
 
+/* Shared editable/customizable images are full-bleed media layers. This selector
+   intentionally outranks the generic .glow-image-media position rule loaded
+   earlier so Tailwind/source-order changes cannot turn them back into normal-flow
+   elements and push text or controls out of place. */
+.glow-image-surface > .glow-image-media {
+  position: absolute !important;
+  inset: 0 !important;
+}
+
 [data-room='closet'] .glow-room-stage article,
 [data-room='hair-studio'] .glow-room-stage article,
 [data-room='timeline'] .glow-room-stage article {
