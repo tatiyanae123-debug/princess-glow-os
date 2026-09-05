@@ -13,7 +13,7 @@ export function LifeHistoryControls() {
   }, []);
 
   function quickAdd() {
-    document.dispatchEvent(new CustomEvent('glow:quick-add'));
+    window.location.assign('/ask-glow');
   }
 
   return (
