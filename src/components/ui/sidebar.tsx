@@ -14,6 +14,7 @@ const PRIMARY = [
   {label:'Life',href:'/life'},
   {label:'Brain',href:'/brain'},
   {label:'Create',href:'/intake'},
+  {label:'Beauty',href:'/beauty'},
 ];
 
 export function Sidebar(){
@@ -36,7 +37,7 @@ export function Sidebar(){
     </div>
 
     <div id="glow-navigation-panel" className={cn('mt-4 min-h-0 flex-1 border-t border-[#F3F3F3] pt-3 sm:mt-5 lg:mt-6 lg:border-t-0 lg:pt-0',mobileOpen?'block':'hidden lg:block')}>
-      <nav aria-label="Five Glow worlds" className="space-y-1">
+      <nav aria-label="Glow worlds" className="space-y-1">
         {PRIMARY.map(item=>{
           const targetPath=item.href.split('?')[0];
           const active=navigationPathIsActive(pathname,targetPath);
