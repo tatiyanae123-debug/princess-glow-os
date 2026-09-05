@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import styles from './life-personal-house-v2.module.css';
+import styles from './life-personal-house-v3.module.css';
 
 export function LifeHistoryControls() {
   const [canBack, setCanBack] = useState(false);
@@ -12,13 +12,19 @@ export function LifeHistoryControls() {
     setCanForward(true);
   }, []);
 
+  function quickAdd() {
+    document.dispatchEvent(new CustomEvent('glow:quick-add'));
+  }
+
   return (
     <div className={styles.historyControls} aria-label="Life history controls">
       <button type="button" onClick={() => window.history.back()} disabled={!canBack} title="Return to the previous Glow view">
         <span aria-hidden="true">←</span>
         <span>Undo</span>
       </button>
-      <span className={styles.historyDivider} aria-hidden="true" />
+      <button type="button" onClick={quickAdd} className={styles.historyAdd} aria-label="Add with Glow" title="Add with Glow">
+        <span aria-hidden="true">+</span>
+      </button>
       <button type="button" onClick={() => window.history.forward()} disabled={!canForward} title="Move forward to the next Glow view">
         <span>Redo</span>
         <span aria-hidden="true">→</span>
