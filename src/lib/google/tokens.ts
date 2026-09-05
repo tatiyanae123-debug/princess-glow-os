@@ -14,6 +14,7 @@ const EXPIRY_BUFFER_SECONDS = 60;
 export const REQUIRED_SCOPES = {
   calendar: 'https://www.googleapis.com/auth/calendar.readonly',
   gmail: 'https://www.googleapis.com/auth/gmail.readonly',
+  contacts: 'https://www.googleapis.com/auth/contacts.readonly',
 } as const;
 
 export type GoogleTokenFailureReason =
