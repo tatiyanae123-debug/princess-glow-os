@@ -1,7 +1,8 @@
 'use client';
 
 import { ArrowRight, Sparkles } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { usePersonalContext } from '@/lib/personal-context/use-personal-context';
 import styles from './glow-current-home-world.module.css';
 
 function GlowMatter() {
@@ -16,10 +17,14 @@ function moveToday(room = 'what-now') {
 }
 
 const regions = ['Today', 'Plan', 'Life', 'Brain', 'Create'] as const;
-
 type Region = (typeof regions)[number];
 
+function formatEventTime(value: string) {
+  return new Date(value).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
 export function GlowCurrentHomeWorld() {
+  const personal = usePersonalContext();
   const [dateText, setDateText] = useState('');
   const [timeText, setTimeText] = useState('');
   const [glowOpen, setGlowOpen] = useState(false);
@@ -36,6 +41,38 @@ export function GlowCurrentHomeWorld() {
     return () => window.clearInterval(timer);
   }, []);
 
+  const homeContext = useMemo(() => {
+    if (personal.status !== 'ready') {
+      return {
+        nowTitle: personal.status === 'loading' ? 'Loading your day…' : 'Your day is not connected yet',
+        nowDetail: personal.status === 'loading' ? 'Reading your Glow data' : 'Sign in to show your real tasks and schedule',
+        continueTitle: 'No active focus yet',
+        continueDetail: 'Open Today to choose what matters now',
+        focusRoom: 'what-now',
+      };
+    }
+
+    const data = personal.data;
+    const activeTask = data.activeTask;
+    const nextEvent = data.todayEvents.find((event) => new Date(event.startAt).getTime() >= Date.now()) ?? data.events[0] ?? null;
+
+    const nowTitle = activeTask?.title ?? nextEvent?.title ?? 'Nothing is demanding your attention';
+    const nowDetail = activeTask
+      ? `${activeTask.priority} priority · ${activeTask.status === 'in_progress' ? 'in progress' : 'ready when you are'}`
+      : nextEvent
+        ? `${formatEventTime(nextEvent.startAt)}${nextEvent.location ? ` · ${nextEvent.location}` : ''}`
+        : 'Your real tasks and calendar are clear right now';
+
+    const continueTask = data.tasks.find((task) => task.status === 'in_progress') ?? null;
+    return {
+      nowTitle,
+      nowDetail,
+      continueTitle: continueTask ? 'Continue focus' : 'Choose a focus',
+      continueDetail: continueTask?.title ?? 'No in-progress task is currently set',
+      focusRoom: continueTask ? 'focus' : 'what-now',
+    };
+  }, [personal]);
+
   function openGlow(prompt = '') {
     setGlowPrompt(prompt);
     setGlowOpen(true);
@@ -46,7 +83,14 @@ export function GlowCurrentHomeWorld() {
       moveToday('what-now');
       return;
     }
-    openGlow(`Take me into ${region}`);
+
+    const routes: Record<Exclude<Region, 'Today'>, string> = {
+      Plan: '/planning',
+      Life: '/routines',
+      Brain: '/notes',
+      Create: '/notes',
+    };
+    window.location.assign(routes[region]);
   }
 
   return (
@@ -67,9 +111,9 @@ export function GlowCurrentHomeWorld() {
         </header>
 
         <section className={styles.intro}>
-          <span>{dateText || 'Friday, Sep 4'} · {timeText || 'Now'}</span>
+          <span>{dateText} · {timeText}</span>
           <h1>What matters now?</h1>
-          <p>Home stays simple. Continue what matters, return to Today, or ask Glow for anything.</p>
+          <p>{personal.status === 'ready' && personal.data.user.name ? `${personal.data.user.name.split(' ')[0]}, this Home reflects your connected Glow data.` : 'Home shows only information that belongs to the signed-in account.'}</p>
         </section>
 
         <section className={styles.homeCenter}>
@@ -77,17 +121,17 @@ export function GlowCurrentHomeWorld() {
 
           <button type="button" className={`${styles.choice} ${styles.todayChoice}`} onClick={() => moveToday('what-now')}>
             <span className={styles.choiceEyebrow}>What matters now?</span>
-            <strong>Today</strong>
-            <span>Partnership proposal · 55 min remaining</span>
-            <small>Open the current-day center</small>
+            <strong>{homeContext.nowTitle}</strong>
+            <span>{homeContext.nowDetail}</span>
+            <small>Open your current-day center</small>
             <ArrowRight />
           </button>
 
-          <button type="button" className={`${styles.choice} ${styles.continueChoice}`} onClick={() => moveToday('focus')}>
+          <button type="button" className={`${styles.choice} ${styles.continueChoice}`} onClick={() => moveToday(homeContext.focusRoom)}>
             <span className={styles.choiceEyebrow}>Where was I?</span>
-            <strong>Continue focus</strong>
-            <span>Partnership proposal</span>
-            <small>Your active work stays attached</small>
+            <strong>{homeContext.continueTitle}</strong>
+            <span>{homeContext.continueDetail}</span>
+            <small>Only your real active work appears here</small>
             <ArrowRight />
           </button>
 
@@ -113,11 +157,11 @@ export function GlowCurrentHomeWorld() {
         <aside className={styles.glowPanel} role="dialog" aria-label="Ask Glow">
           <div className={styles.panelHead}>
             <span className={styles.miniMatter} />
-            <div><strong>Glow</strong><small>Ask for anything in your own words.</small></div>
+            <div><strong>Glow</strong><small>Your connected context stays attached.</small></div>
             <button onClick={() => setGlowOpen(false)} aria-label="Close">×</button>
           </div>
           {glowPrompt ? <div className={styles.promptPreview}>{glowPrompt}</div> : null}
-          <p>You do not need to know whether something lives in Today, Plan, Life, Brain, or Create. Tell Glow what you mean.</p>
+          <p>Glow will not substitute sample people, appointments, tasks, or plans for missing data.</p>
           <button type="button" onClick={() => moveToday('what-now')}>What should I do now?</button>
           <button type="button" onClick={() => moveToday('tomorrow')}>Show me tomorrow</button>
           <button type="button" onClick={() => moveToday('replan')}>Help me replan</button>
