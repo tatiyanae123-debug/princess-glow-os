@@ -1,261 +1,292 @@
-# Glow Current — Simple Interaction Law
+# Glow Current — Effortless Interaction Law
 
 **Status:** CANONICAL · AUTHORITATIVE · PERMANENT
 
-This implementation law clarifies the canonical Glow Current navigation constitution. It supersedes any interpretation that makes gesture vocabulary, database categories, or hidden movement rules necessary for ordinary Glow OS use.
+This law is the product-facing implementation layer for the Glow Current constitution. It supersedes any interpretation that makes gestures, internal navigation vocabulary, database categories, or persistent navigation chrome necessary for ordinary use.
 
-## Governing rule
+## Governing principle
 
-**Visible interaction must be simple. Underlying navigation physics may be sophisticated.**
+**The interface should be simple enough to use without learning the navigation system.**
 
-The user should normally see a clear object, control, destination, time region, or piece of information and press it. Glow OS then performs continuous movement, context preservation, material transformation, spatial orientation, and Glow Current behavior underneath that simple action.
+Visible interaction stays obvious. Glow Current remains sophisticated underneath.
 
-The user must never need to memorize World Fold, Reverse the Current, Dive, Surface, Orbit, Navigation Field, Glow Thread, or other internal navigation vocabulary to use Glow OS.
+Default behavior:
 
-## Permanent visible navigation model
+**See the thing → press the thing → Glow opens or transforms toward the thing → context stays attached.**
 
-### Glow OS = Home
+## The only three permanent navigation anchors
 
-The **Glow OS** wordmark is the permanent route to the true new Glow OS Home.
+### 1. Glow OS = Home
 
-It never routes to the legacy dashboard generation.
+The **Glow OS** wordmark is the permanent route to the true current Glow OS Home.
 
-### Today = What Now
+It never opens the legacy dashboard generation.
 
-**Today** always means the main living Today center: **What Now?**
+### 2. Today = current-day center
 
-Pressing Today from Morning Brief, Focus, Design Review, Tonight, Replan, or another connected Today context returns to What Now.
+**Today** always returns to the main living Today center: **What Now?**
 
-Today must never ambiguously mean Morning Brief, an old dashboard, or an unrelated route.
+It does not ambiguously mean Morning Brief, an old dashboard, or a category page.
 
-### Focus = active focus
+### 3. Ask Glow = anywhere
 
-**Focus** brings the active focus environment forward. If no focus block is active, it becomes the clearest route to start one.
+**Ask Glow** is the universal shortcut when the user does not know where something lives.
 
-### Ask Glow = universal shortcut
-
-**Ask Glow** is the universal conversational route when the user does not know where something lives.
-
-The user may ask naturally, for example:
+The user can say what they mean naturally:
 
 - Take me to my skincare.
 - Show me my money.
 - Where is my birthday plan?
+- Open Saint.
+- Show me tomorrow.
+- Take me back to my workout.
 - What should I do now?
-- Show me tonight.
-- Replan my day.
 
-Glow resolves the information architecture underneath the request.
+Glow resolves the architecture underneath the request.
 
-### Meaningful objects are doorways
+## Focus is contextual, not permanent
 
-If something meaningful is visible, pressing it should open that thing or its connected context.
+Focus is not required permanent navigation.
+
+If a focus block is active or directly relevant, a small **Focus active** object may appear.
+
+If focus is not relevant, it disappears.
+
+The page itself can also expose focus through the active task, protected-time object, or In Focus surface.
+
+## The page is the navigation
+
+Meaningful visible objects are direct doorways.
 
 Examples:
 
+- NOW → current activity.
+- NEXT → next commitment.
+- LATER → later today.
+- TONIGHT → evening environment.
+- TOMORROW → tomorrow preview.
 - Workout + shower → workout context.
 - Design review → meeting context.
-- Dinner with Alex → the connected dinner/person/place context.
+- Dinner with Alex → connected dinner/person/place context.
 - A task → its work environment.
 - A product → its product/routine/inventory context.
-- An appointment → its meeting or appointment environment.
+- A person → that person/context.
+- A date → that date.
 
-The user should not have to first choose People, Places, Resources, Journeys, Life, or another database category.
+Do not force the user through an intermediate category first.
 
-## Permanent category-navigation rule
+## Category navigation is contextual only
 
-**People, Places, Resources, Journeys, and similar database categories are not permanent primary navigation.**
+People, Places, Resources, Journeys, Plan, Life, Brain, Create, and similar architecture remain valid Glow systems.
 
-They remain valid systems and contextual relationships, but they appear where they matter.
+They are not automatically permanent navigation.
 
-Examples:
+They surface where they matter.
 
-- Design Review can expose its people, location, files, and agenda inside the meeting context.
-- Dinner with Alex can expose Alex and the restaurant from the dinner itself.
-- A workout can expose the gym, playlist, instructions, and recovery context from the workout.
-
-The user navigates the thing they mean, not the database that owns it.
-
-## Today time navigation
-
-The main What Now surface uses time itself as navigation:
-
-- **NOW** = what is happening now.
-- **NEXT** = the next meaningful commitment.
-- **LATER** = the rest of the active day.
-- **TONIGHT** = evening environment.
-- **TOMORROW** = tomorrow preview.
-
-Pressing a time region opens that whole temporal environment.
-
-Pressing an activity inside a time region opens that activity directly.
-
-Time is visible, understandable navigation.
-
-## Return to Now
-
-The bottom-right pearl has one permanent meaning when it is interactive:
-
-**Return to Now.**
-
-It recenters Today on the present without sending the user to Home or an unrelated page.
-
-Decorative objects must not look like buttons unless they have meaning.
-
-## Bottom control law
-
-Keep only controls with an obvious purpose:
-
-- **Day View** → changes the temporal presentation of Today.
-- **Replan my day** → opens Replan while preserving context.
-- **All changes saved** → status/receipt only, not a button.
-- **Undo** → reverses the most recent meaningful reversible change.
-- **Return pearl** → Return to Now.
-
-Do not add extra bottom navigation simply because space is available.
+The user navigates meaning, not ownership.
 
 ## Morning Brief law
 
-Morning Brief is an **AM state of Today**, not a mandatory navigation level.
+Morning Brief is an optional AM state of Today.
 
-Canonical flow:
+Before noon:
 
-**Glow OS Home → Today / What Now**
+**Today may open → Morning Brief → Start my day → What Now**
 
-In the morning:
+After noon:
 
-**Today opens → Morning Brief may appear as the opening AM state → Start with intention → What Now**
+**Today → What Now directly**
 
-Later in the day:
+Morning Brief does not remain a permanent navigation level after its useful time window.
 
-**Today opens → What Now directly**
+## Return to Now law
 
-Pressing Today from Morning Brief always returns to What Now.
+The bottom-right pearl is interactive only when the user is away from Now.
 
-## Deeper-room return law
+When interactive, it has one meaning:
 
-Every deeper Today room uses the same two predictable anchors:
+**Return to Now.**
 
-- **Glow OS** → Home.
-- **Today** → What Now.
+When the user is already at Now, it is passive visual Glow Matter or omitted.
 
-Focus remains available as a direct active-work destination.
+Do not make decorative objects look like buttons without meaning.
 
-Do not fill deeper rooms with competing Back buttons, category rails, or unrelated navigation systems when these anchors already provide orientation.
+## Contextual-control law
 
-## Product-facing orientation language
+Controls appear only when useful.
 
-Use concise product language.
+Examples:
 
-Prefer:
+- **Undo** appears only after a reversible change.
+- **Saved** receipts appear briefly, then fade.
+- **Focus active** appears only while relevant.
+- **Join** appears only when a meeting is near enough to act on.
+- **Return to Now** appears only away from Now.
+- **Replan my day** becomes prominent when replanning is relevant.
 
-**TODAY · THE LIVING CENTER**
+Do not keep controls permanently visible only because space exists.
 
-Do not show production labels such as:
+## One-press law
+
+Every meaningful object gets one obvious primary action.
+
+Press the thing → open the thing.
+
+Secondary actions belong inside the opened context unless they are genuinely time-sensitive.
+
+Avoid menus before the obvious action.
+
+## Home law
+
+Glow OS Home is not a giant dashboard or launcher.
+
+Home should answer only three questions clearly:
+
+1. **What matters now?**
+2. **Where was I?**
+3. **What do I want to do?**
+
+Home may contain:
+
+- one current Today object,
+- one continuation/unfinished object,
+- Ask Glow,
+- subtle entrances into major Glow regions.
+
+Do not fill Home with dozens of cards or controls.
+
+## Major worlds stay mostly behind the scenes
+
+Today, Plan, Life, Brain, and Create remain core Glow geography.
+
+They do not all need permanent visible controls.
+
+Meaningful objects naturally lead toward them:
+
+- Tomorrow can lead toward Plan.
+- Skincare can lead toward Life.
+- A memory can lead toward Brain.
+- A design idea can lead toward Create.
+
+## Advanced Glow Current vocabulary is internal
+
+Keep these concepts in the design system and underlying physics:
+
+- Glow Thread
+- World Fold
+- Dive
+- Orbit
+- Surface
+- Temporary Current
+- Reverse the Current
+- Navigation Field
+
+Do not show this terminology in normal product use.
+
+User-facing actions should use plain language such as:
+
+- Open
+- Return
+- Continue
+- See more
+- Go to Today
+- Ask Glow
+
+## Orientation language
+
+Use only as much labeling as needed.
+
+Prefer concise room identity such as:
+
+**TODAY**
+
+A richer subtitle may appear when genuinely useful, but orientation text must not compete with the content.
+
+Reference-only production labels never become product content automatically.
+
+Examples that must remain out of the product unless explicitly requested:
 
 - Batch 1
 - Batch 2
 - Concept A
 - Version 3
-- Screen 04
 - Mockup
 - Reference
-- Design exploration
+- Screen 04
 
-Do not show unnecessary orientation prefixes such as **world 1:** unless the user explicitly requests them as product-facing language.
+## Product-facing naming
 
-## Primary visible interaction
+The primary conversational command is **Ask Glow**.
 
-The default interaction is:
+Do not use **Ask Shakti** as the main product-facing command label unless the user explicitly changes this rule later.
 
-**See destination → Press destination → Glow transforms toward it → Context remains attached.**
-
-Examples:
-
-- Press Glow OS → Home.
-- Press Today → What Now.
-- Press Focus → Focus.
-- Press Ask Glow → conversational intelligence.
-- Press NEXT → next commitment environment.
-- Press Dinner with Alex → dinner context.
-- Press Return pearl → Now.
-
-## Advanced Glow Current vocabulary
-
-World Fold, Glow Thread, Orbit, Dive, Surface, Reverse the Current, Temporary Currents, and related concepts remain valid Glow Current physics and future advanced capabilities.
-
-They may exist as optional shortcuts, power-user gestures, accessibility alternatives, contextual enhancements, internal transition logic, or future discoverable interactions.
-
-They are not required operating instructions.
-
-They must never replace reliable visible controls.
+Shakti may remain part of the underlying intelligent-presence architecture.
 
 ## Visual preservation law
-
-Navigation implementation must not overwrite an approved room design.
 
 When a room has a locked reference image or approved live state:
 
 - preserve its architecture,
 - preserve its Glow Matter treatment,
-- preserve its object placement,
 - preserve its approved composition,
-- simplify only navigation semantics and controls when required,
-- improve movement between destinations without turning the room into a generic navigation shell.
+- preserve the visual identity of that room,
+- simplify navigation semantics without turning the room into generic app chrome.
 
 **Reference image = visual source of truth.**
 
-**Glow Current = behavioral movement system underneath the reference.**
+**Glow Current = movement and continuity underneath.**
 
-Newer explicit user navigation rules supersede older reference-only navigation labels or category rails.
-
-## Product-facing naming
-
-The conversational control is **Ask Glow**.
-
-Do not show **Ask Shakti** as the primary product-facing command label unless the user explicitly changes this rule later.
-
-Shakti may remain part of Glow OS intelligence/presence architecture, but the command the user presses is Ask Glow.
+Newer explicit user navigation rules supersede older reference-only rails, labels, or category controls.
 
 ## Reliability law
 
-Every visible navigation control must do something understandable on press.
+Every visible interactive control must work and have an understandable result.
 
-Do not ship visible controls that only look interactive.
+Do not ship decorative controls.
 
-Do not require hidden gestures to make visible controls work.
+Do not require a hidden gesture to make a visible control work.
 
-Do not route users into old legacy layouts simply because a region is unfinished. Keep them inside the current Glow Matter generation with a connected preview or unfinished-room state until the new room is ready.
+Do not send the user into an older Glow OS generation because a newer destination is unfinished.
 
-## Future-page inheritance law
+## Permanent future-page inheritance
 
-**Every current and future Glow OS page inherits this simple visible navigation model automatically.**
+**Every current and future Glow OS page inherits this law automatically.**
 
-Before a new page is considered complete, verify:
+Before any future room is considered complete, verify:
 
-1. Glow OS returns to the new Home.
-2. The page has one obvious local/current-center return when needed.
+1. Glow OS clearly returns Home.
+2. Today clearly returns to What Now when relevant.
 3. Ask Glow is available as the universal shortcut.
-4. Meaningful visible objects open themselves directly.
-5. Database categories are not used as permanent primary navigation unless the user explicitly requests them.
-6. The page does not require memorized gestures.
-7. Interactive-looking objects work.
-8. The page preserves the current Glow Matter generation.
-9. Navigation preserves context.
-10. The user can understand where to press without being taught the navigation system.
+4. Meaningful objects open themselves directly.
+5. Category navigation is contextual rather than permanently exposed.
+6. Focus is contextual rather than permanently exposed.
+7. Duplicate return controls have been removed.
+8. Undo, save receipts, Join, Return to Now, and other controls appear only when useful.
+9. Advanced Glow Current terminology is hidden from ordinary product use.
+10. No memorized gesture is required.
+11. Interactive-looking objects work.
+12. The current Glow Matter generation is preserved.
+13. Context survives movement.
+14. A first-time user can tell where to press without being taught the navigation system.
 
-If the answer to number 10 is no, the navigation is too complicated.
+If number 14 is no, the navigation is too complicated.
 
-## Accessibility and discoverability
+## Accessibility law
 
-Advanced navigation can be taught gradually, but ordinary use must remain obvious without instruction.
+Simple visible controls must remain available across touch, pointer, keyboard, screen reader, Reduced Motion, and accessibility settings.
 
-Reduced Motion, keyboard, touch, pointer, screen-reader, and accessibility paths must preserve the same navigation meaning.
+Advanced movement may adapt, but the meaning stays stable.
 
-## Final implementation principle
+## Final permanent standard
 
-**Simple controls. Futuristic movement.**
+**Glow OS = Home.**
 
-**Glow OS = Home. Today = What Now. Focus = active focus. Ask Glow = anywhere. Press the thing you mean. Time moves the day. Return pearl = Now.**
+**Today = current-day center.**
+
+**Ask Glow = anywhere.**
+
+**Press a meaningful object = open that object.**
+
+**Contextual controls appear only when useful.**
 
 Everything else happens underneath.
