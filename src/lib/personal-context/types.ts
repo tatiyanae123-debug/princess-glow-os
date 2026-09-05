@@ -76,7 +76,7 @@ export type PersonalContextData = {
   goals: PersonalGoal[];
   wellness: PersonalWellness;
   sourceStatus: {
-    googleCalendar: 'connected' | 'not_connected' | 'insufficient_scope' | 'revoked' | 'error';
+    googleCalendar: 'connected' | 'not_connected' | 'insufficient_scope' | 'expired' | 'revoked' | 'error';
   };
 };
 
