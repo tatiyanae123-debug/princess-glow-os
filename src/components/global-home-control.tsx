@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
- * Universal Home guarantee for Glow OS.
+ * Universal Home + viewport-position guarantee for Glow OS.
  *
  * Every current and future page inherits this component from the root layout.
  * If a room already exposes its own visible /home link (normally the Glow OS
@@ -13,12 +13,19 @@ import { useEffect, useState } from 'react';
  * missing OR has scrolled outside the visible viewport, Glow OS appears as a
  * fixed Home anchor that never requires the user to scroll back to the top.
  *
- * Permanent product rule:
- * Glow OS = Home, and Home must always be reachable from the current viewport.
+ * The same root guard also notices Glow room/route changes and resets the new
+ * destination to its top. A newly opened room must never inherit the old
+ * room's scroll position and hide its orientation controls.
+ *
+ * Permanent product rules:
+ * Glow OS = Home.
+ * Home must always be reachable from the current viewport.
+ * Every new destination opens at its intended top/orientation state.
  */
 export function GlobalHomeControl() {
   const pathname = usePathname();
   const [hasVisibleLocalHomeAnchor, setHasVisibleLocalHomeAnchor] = useState(false);
+  const lastLocationRef = useRef('');
 
   useEffect(() => {
     if (pathname === '/' || pathname === '/home' || pathname === '/sign-in') {
@@ -26,7 +33,15 @@ export function GlobalHomeControl() {
       return;
     }
 
+    lastLocationRef.current = window.location.href;
+
     const update = () => {
+      const currentLocation = window.location.href;
+      if (lastLocationRef.current && currentLocation !== lastLocationRef.current) {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      }
+      lastLocationRef.current = currentLocation;
+
       const localAnchors = Array.from(
         document.querySelectorAll<HTMLElement>(
           '[data-glow-home-anchor="true"], a[href="/home"]',
