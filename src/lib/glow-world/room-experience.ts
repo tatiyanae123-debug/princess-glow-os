@@ -29,7 +29,7 @@ export function roomExperienceFor(pathname: string): RoomExperience {
   if (pathname.startsWith('/food')) return experience('food', 'life', 'warm-ivory-kitchen', 'practical-flow', 'use-and-preparation', 'What do I need to eat, make, or use?', 'dish-becomes-memory');
   if (pathname.startsWith('/closet')) return experience('closet', 'life', 'textile-pearl', 'rail-and-layer', 'outfit-context', 'What should I wear?', 'outfit-composes');
   if (pathname.startsWith('/home')) return experience('home', 'life', 'stone-and-daylight', 'place-navigation', 'spatial-organization', 'What does this place need?', 'space-settles');
-  if (pathname.startsWith('/world') || pathname.startsWith('/life-world')) return experience('life', 'life', 'lived-daylight', 'thresholds-and-rooms', 'domain-orchestration', 'Which part of life needs me?', 'room-glows-quietly');
+  if (pathname.startsWith('/life') || pathname.startsWith('/world') || pathname.startsWith('/life-world')) return experience('life', 'life', 'lived-daylight', 'thresholds-and-rooms', 'domain-orchestration', 'Which part of life needs me?', 'room-glows-quietly');
   if (pathname.startsWith('/finance')) return experience('money', 'life', 'cool-mint-ivory', 'still-ledger', 'exact-and-restrained', 'What is true about my money?', 'number-resolves');
 
   if (pathname.startsWith('/calendar')) return experience('time-observatory', 'plan', 'lavender-time-haze', 'orbital-time', 'conflict-and-preparation', 'Where does this belong in time?', 'time-slot-seals');
