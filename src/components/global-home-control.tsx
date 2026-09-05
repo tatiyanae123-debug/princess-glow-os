@@ -4,18 +4,19 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 /**
- * Permanent Glow OS Home anchor.
+ * Permanent Glow OS Home anchor for routes that do not own a stronger local
+ * navigation authority.
  *
- * Reliability wins over clever hiding. Every current and future Glow page
- * inherits this from the root layout, and the control stays in the current
- * viewport even when a room has its own scrolling header or full-screen layer.
+ * /today has its own single TodayNavigationAuthority, which permanently owns
+ * Glow OS / Today / Ask Glow above every Today room. Keeping this fallback out
+ * of /today prevents duplicate or competing navigation layers.
  *
  * Permanent rule: Glow OS = Home.
  */
 export function GlobalHomeControl() {
   const pathname = usePathname();
 
-  if (pathname === '/' || pathname === '/home' || pathname === '/sign-in') {
+  if (pathname === '/' || pathname === '/home' || pathname === '/sign-in' || pathname === '/today') {
     return null;
   }
 
