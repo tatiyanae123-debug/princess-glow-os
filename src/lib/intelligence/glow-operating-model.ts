@@ -93,6 +93,17 @@ export const GLOW_CAPABILITY_REGISTRY = [
   'Rambling and Brain-Dump Understanding',
   'Contextual Pronoun Resolution',
   'Voice Conversation',
+  'Multimodal Conversation',
+  'Photo and Image Understanding',
+  'Video Understanding',
+  'Audio and Voice Note Understanding',
+  'Multi-File Context',
+  'Paste and Drag-Drop Capture',
+  'Native Image Generation',
+  'Conversational Image Editing',
+  'Cross-Modal Creation',
+  'Inline Generated Artifacts',
+  'Reference-Aware Creation',
   'Universal Capture',
   'Speak It Once, Place It Correctly',
   'What Should I Do Now',
@@ -147,11 +158,12 @@ export function glowWorldForRoute(pathname: string): GlowWorld {
   if (pathname === '/today') return 'Today';
   if (/^\/(calendar|planning|tasks|goals|projects|reminders|routines|habits|tomorrow)(\/|$)/.test(pathname)) return 'Plan';
   if (/^\/(brain|notes|memory|timeline|graph|observations)(\/|$)/.test(pathname)) return 'Brain';
-  if (/^\/(inbox|import|gmail|create)(\/|$)/.test(pathname)) return 'Create';
+  if (/^\/(inbox|import|gmail|create|ask-glow)(\/|$)/.test(pathname)) return 'Create';
   return 'Life';
 }
 
 export function glowRoleForRoute(pathname: string) {
+  if (pathname === '/ask-glow') return 'open multimodal conversation and creation partner';
   if (pathname === '/today') return 'attentive present-moment guide';
   if (/^\/(calendar|planning)(\/|$)/.test(pathname)) return 'precise time architect';
   if (/^\/(tasks|goals|projects|reminders|routines|habits)(\/|$)/.test(pathname)) return 'readiness and execution guide';
@@ -166,6 +178,7 @@ export function glowRoleForRoute(pathname: string) {
 }
 
 export function glowPromptsForRoute(pathname: string): string[] {
+  if (pathname === '/ask-glow') return ['Tell me what is on your mind', 'Attach something for me to understand', 'Create a visual with me'];
   if (pathname === '/today') return ['What should I do next?', 'Plan my next hour', 'What can wait today?'];
   if (/^\/(calendar|planning)(\/|$)/.test(pathname)) return ['Find conflicts', 'Show hidden preparation', 'Plan this with me'];
   if (/^\/(tasks)(\/|$)/.test(pathname)) return ['What is ready now?', 'What is blocked?', 'Make this realistic today'];
@@ -181,7 +194,7 @@ export function glowPromptsForRoute(pathname: string): string[] {
 
 export function glowResponseFormFor(text: string): GlowResponseForm {
   const value = text.toLowerCase();
-  if (/\b(image|visual card|visual cards|mood board|visual|diagram|face map|map)\b/.test(value)) return 'visual';
+  if (/\b(image|picture|photo|illustration|visual card|visual cards|mood board|moodboard|visual|diagram|face map|map|wallpaper)\b/.test(value)) return 'visual';
   if (/\b(step by step|guide me|talk me through|routine|walk me through|conductor|show me how)\b/.test(value)) return 'guide';
   if (/\b(plan|replan|fix the rest|schedule|scenario|reorganize|rearrange|compare choices|next hour|fit this|make this work|too much today)\b/.test(value)) return 'plan';
   if (/\b(find|search|show me|pull up|where is|previous note|look for|remember where)\b/.test(value)) return 'search';
@@ -190,14 +203,15 @@ export function glowResponseFormFor(text: string): GlowResponseForm {
 
 export function isVisualCreationRequest(text: string) {
   const value = text.toLowerCase();
-  return /\b(create|make|build|turn|convert|render|generate)\b/.test(value) && /\b(image|visual|visual card|visual cards|mood board|diagram|map)\b/.test(value);
+  return /\b(create|make|build|turn|convert|render|generate|draw|design)\b/.test(value)
+    && /\b(image|picture|photo|illustration|visual|visual card|visual cards|mood board|moodboard|diagram|map|wallpaper)\b/.test(value);
 }
 
 export function glowRiskForText(text: string): GlowRisk {
   const value = text.toLowerCase();
   if (/\b(delete|erase|remove all|cancel|pay|purchase|transfer|send email|external account|clear all|archive all)\b/.test(value)) return 'high';
   if (/\b(move|reschedule|change|edit|update|replace|reorganize|rearrange|replan|fix the rest|all unfinished|push that|shift that|do that later|make room for|move that)\b/.test(value)) return 'medium';
-  if (isVisualCreationRequest(text)) return 'low';
+  if (isVisualCreationRequest(text)) return 'read';
   if (/\b(add|create|save|file|log|remind|schedule|make a task|make a note|don't let me forget|do not let me forget|write this down|keep this|put this somewhere|make sure i)\b/.test(value)) return 'low';
   if (/\b(i need to|i have to|i was supposed to|i should probably|i should |need to |have to )\b/.test(value)) return 'low';
   return 'read';
