@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { GlowCurrent } from '@/components/glow/glow-current';
 import { GlowPresence } from '@/components/glow/glow-presence';
 import { SpatialRouteTransition } from '@/components/glow/spatial-route-transition';
 import './globals.css';
@@ -11,6 +12,7 @@ import './dashboard-sidebar-exact.css';
 import './image-polish.css';
 import './image-page-overrides.css';
 import './spatial-navigation.css';
+import './glow-current.css';
 import './today-spatial-world.css';
 import './sidebar-precision.css';
 import './plan-time-observatory.css';
@@ -27,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         {children}
+        <GlowCurrent />
         <SpatialRouteTransition />
         <GlowPresence />
       </body>
