@@ -1,6 +1,5 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/app-shell';
 import { FacialMassageStudio } from '@/components/beauty/facial-massage-studio';
 import { MASTER_BEAUTY_INVENTORY } from '@/lib/beauty/skincare-master';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
@@ -35,8 +34,10 @@ export default async function FacialMassagePage() {
     }));
 
   return (
-    <AppShell>
-      <FacialMassageStudio savedRoutineSteps={savedRoutineSteps} ownedTools={ownedTools} />
-    </AppShell>
+    <FacialMassageStudio
+      savedRoutineSteps={savedRoutineSteps}
+      ownedTools={ownedTools}
+      userName={session.user.name}
+    />
   );
 }
