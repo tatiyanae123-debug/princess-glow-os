@@ -162,7 +162,14 @@ function PeopleWorld() {
         const data = await response.json();
         if (!live) return;
         if (!response.ok || !data.ok) {
-          setStatus(data.reason === 'not_signed_in' || data.reason === 'not_connected' || data.reason === 'insufficient_scope' ? 'connect' : 'error');
+          setStatus(
+            data.reason === 'not_signed_in' ||
+            data.reason === 'not_connected' ||
+            data.reason === 'insufficient_scope' ||
+            data.reason === 'revoked'
+              ? 'connect'
+              : 'error',
+          );
           return;
         }
         setContacts(data.contacts ?? []);
@@ -194,9 +201,9 @@ function PeopleWorld() {
 
       {status === 'loading' ? <div className={styles.stateCard}>Loading your connected contacts…</div> : null}
       {status === 'connect' ? (
-        <div className={styles.stateCard}><strong>Connect Contacts</strong><p>Your People page will stay empty rather than inventing names. Sign in with Google once to grant read-only Contacts access.</p><Link href="/sign-in" className={styles.primaryLink}>Connect contacts <ArrowRight size={15} /></Link></div>
+        <div className={styles.stateCard}><strong>Connect Contacts</strong><p>Glow needs one explicit read-only Contacts authorization. After Google approves it, you return directly here.</p><Link href="/sign-in?connect=contacts" className={styles.primaryLink}>Connect contacts <ArrowRight size={15} /></Link></div>
       ) : null}
-      {status === 'error' ? <div className={styles.stateCard}><strong>Contacts could not load.</strong><p>Glow did not replace them with fake people. Try again after your Google connection is available.</p></div> : null}
+      {status === 'error' ? <div className={styles.stateCard}><strong>Contacts could not load.</strong><p>Google returned a service error after sign-in. Glow will not send you through another permission loop automatically.</p></div> : null}
 
       {status === 'ready' ? (
         <section className={styles.contactGrid}>
