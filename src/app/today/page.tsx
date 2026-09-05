@@ -1,6 +1,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { MorningBriefReference } from '@/components/today/morning-brief-reference';
+import { TodayContextWorlds } from '@/components/today/today-context-worlds';
 import { TodayLivingCenter } from '@/components/today/today-living-center';
 import { TodaySimpleChrome } from '@/components/today/today-simple-chrome';
 import { WhatNowReference } from '@/components/today/what-now-reference';
@@ -22,6 +23,7 @@ export default async function TodayPage() {
       <TodayLivingCenter />
       <MorningBriefReference />
       <WhatNowReference />
+      <TodayContextWorlds />
       <TodaySimpleChrome />
     </>
   );
