@@ -1,0 +1,103 @@
+.clickableSurface {
+  cursor: pointer;
+  transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.clickableSurface:hover,
+.clickableSurface:focus-visible {
+  transform: translateY(-0.08cqw);
+  background: rgba(255,255,255,.18);
+  outline: none;
+  box-shadow: inset 0 0 0 .07cqw rgba(255,255,255,.8);
+}
+
+.singleAnchorRail {
+  bottom: auto;
+}
+
+.nowTitleButton {
+  display: block;
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.nowTitleButton h1 {
+  margin: .75cqw 0 .65cqw;
+}
+
+.rowItemButton {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: .8cqw;
+  transition: transform 180ms ease, background 180ms ease;
+}
+
+.rowItemButton:hover,
+.rowItemButton:focus-visible,
+.nowTitleButton:hover,
+.nowTitleButton:focus-visible {
+  transform: translateY(-0.06cqw);
+  background: rgba(255,255,255,.18);
+  outline: none;
+}
+
+.timelineNear > article:nth-child(n + 3) {
+  opacity: .22;
+  filter: blur(.05cqw) saturate(.8);
+  pointer-events: none;
+}
+
+.timelineNear > article:nth-child(-n + 2) {
+  box-shadow: inset 0 .06cqw 0 rgba(255,255,255,.9), 0 .8cqw 2cqw rgba(110,91,82,.06);
+}
+
+.simpleBottomBar {
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+}
+
+.replanCenter {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.passivePearl {
+  display: grid;
+  place-items: center;
+  opacity: .76;
+  pointer-events: none;
+}
+
+.returnNowButton {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.returnNowButton:focus-visible {
+  outline: .12cqw solid rgba(104,96,129,.28);
+  outline-offset: .25cqw;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clickableSurface,
+  .rowItemButton,
+  .nowTitleButton {
+    transition: none;
+  }
+}
