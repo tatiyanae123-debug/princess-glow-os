@@ -17,6 +17,19 @@ const beautyKeywords = [
   'manicure', 'pedicure', 'wax', 'laser', 'derm', 'dermatology', 'esthetic', 'spa', 'makeup',
 ];
 
+const BEAUTY_DESTINATIONS = [
+  { label: 'Beauty Home', detail: 'Your command center', href: '/beauty' },
+  { label: 'Makeup', detail: 'Looks · products · application', href: '/beauty/lab' },
+  { label: 'Skincare', detail: 'Treatment Lab · inventory · progress', href: '/beauty/skincare' },
+  { label: 'Wash Up', detail: 'Shower · hygiene · getting ready', href: '/routines' },
+  { label: 'Facial Massage', detail: 'Gua sha · massage · movement', href: '/beauty/lab?view=facial-massage' },
+  { label: 'Hair', detail: 'Care · wash · styling · maintenance', href: '/hair' },
+  { label: 'Body Care', detail: 'Skin · hydration · sun · sweat', href: '/beauty/skincare?view=body-skin' },
+  { label: 'Fragrance', detail: 'Scent wardrobe · layering · wear', href: '/beauty?studio=fragrance' },
+  { label: 'Closet', detail: 'Wardrobe · outfits · ownership', href: '/closet' },
+  { label: 'Fashion', detail: 'Style · expression · looks', href: '/closet?view=fashion' },
+] as const;
+
 function isBeautyEvent(title: string, description: string | null) {
   const haystack = `${title} ${description ?? ''}`.toLowerCase();
   return beautyKeywords.some((keyword) => haystack.includes(keyword));
@@ -59,8 +72,27 @@ export default async function BeautyPage({ searchParams }: { searchParams: Promi
 
   return (
     <AppShell>
-      <SectionPage eyebrow="Beauty" title="Your personal beauty ritual" description="Run daily routines, keep appointments visible, review skin response, and stay ahead of maintenance from one place.">
+      <SectionPage eyebrow="Beauty" title="Your personal beauty world" description="Enter Beauty directly from the main Glow Current or through Life. Both paths open this same connected system and keep the same routines, inventory, history, and Glow context.">
         <div className="space-y-5">
+          <section aria-label="Beauty rooms" className="rounded-[28px] border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,.7),rgba(239,237,245,.46),rgba(247,238,232,.54))] p-4 shadow-[0_18px_50px_rgba(86,77,88,.08)] backdrop-blur-2xl sm:p-5">
+            <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="glow-eyebrow">Beauty · connected region</p>
+                <h2 className="glow-display mt-1 text-[22px] text-[#493733]">Choose the room that matches what you are doing</h2>
+              </div>
+              <p className="max-w-md text-[8px] leading-4 text-[#806a64]">Beauty stays reachable from both the primary world navigation and Life. These are thresholds into one shared Beauty system, not duplicated apps.</p>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {BEAUTY_DESTINATIONS.map((destination) => (
+                <Link key={destination.label} href={destination.href} className="group min-w-[150px] flex-1 rounded-[20px] border border-white/80 bg-white/38 px-4 py-4 shadow-[inset_0_1px_rgba(255,255,255,.9),0_8px_24px_rgba(80,72,80,.05)] transition hover:-translate-y-0.5 hover:bg-white/55">
+                  <span className="mb-4 block h-7 w-7 rounded-full border border-white/90 bg-[radial-gradient(circle_at_32%_28%,#fff_0_12%,rgba(255,255,255,.55)_22%,rgba(218,226,255,.42)_48%,rgba(247,218,236,.25)_72%,rgba(255,255,255,.45))] shadow-[0_6px_16px_rgba(92,84,98,.12)]" />
+                  <strong className="block text-[11px] font-medium text-[#443b3b]">{destination.label}</strong>
+                  <small className="mt-1 block text-[7px] leading-3 text-[#8b7d79]">{destination.detail}</small>
+                </Link>
+              ))}
+            </div>
+          </section>
+
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <Card className="relative overflow-hidden bg-[linear-gradient(145deg,#f6e7e4,#f2ddd6)]">
               <Sparkles size={34} strokeWidth={0.8} className="absolute right-4 top-3 text-[#a66c75]/20" />
@@ -93,7 +125,7 @@ export default async function BeautyPage({ searchParams }: { searchParams: Promi
               <div>
                 <p className="glow-eyebrow">Skincare · Treatment Lab</p>
                 <h2 className="glow-display mt-1 text-[20px] text-[#493733]">Inventory-driven skin intelligence</h2>
-                <p className="mt-2 max-w-2xl text-[8px] leading-4 text-[#806a64]">Open the new Treatment Lab where ownership, current routine, testing, compatibility, provider rules, and personal results stay separate and connected.</p>
+                <p className="mt-2 max-w-2xl text-[8px] leading-4 text-[#806a64]">Open the Treatment Lab where ownership, current routine, testing, compatibility, provider rules, and personal results stay separate and connected.</p>
               </div>
               <Link href="/beauty/skincare" className="rounded-full border border-white/80 bg-white/55 px-4 py-2.5 text-[8px] text-[#5f5550] shadow-[0_10px_25px_rgba(87,78,73,.08)]">Open Treatment Lab</Link>
             </div>
