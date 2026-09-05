@@ -16,7 +16,7 @@ function moveToday(room = 'what-now') {
   window.location.assign(url.toString());
 }
 
-const regions = ['Today', 'Plan', 'Life', 'Brain', 'Create'] as const;
+const regions = ['Today', 'Plan', 'Life', 'Brain', 'Create', 'Beauty'] as const;
 type Region = (typeof regions)[number];
 
 function formatEventTime(value: string) {
@@ -89,6 +89,7 @@ export function GlowCurrentHomeWorld() {
       Life: '/life',
       Brain: '/notes',
       Create: '/notes',
+      Beauty: '/beauty',
     };
     window.location.assign(routes[region]);
   }
