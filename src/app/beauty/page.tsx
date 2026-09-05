@@ -26,7 +26,10 @@ function dayLabel(date: Date) {
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(date);
 }
 
-export default async function BeautyPage() {
+export default async function BeautyPage({ searchParams }: { searchParams: Promise<{ studio?: string }> }) {
+  const params = await searchParams;
+  if (params.studio === 'skincare') redirect('/beauty/skincare');
+
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
 
@@ -84,6 +87,17 @@ export default async function BeautyPage() {
               <p className="mt-1 text-[8px] text-[#8a716b]">expiring or repurchase items needing attention</p>
             </Card>
           </div>
+
+          <Card className="relative overflow-hidden border-white/70 bg-[linear-gradient(145deg,rgba(255,255,255,.78),rgba(235,241,249,.58))]">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="glow-eyebrow">Skincare · Treatment Lab</p>
+                <h2 className="glow-display mt-1 text-[20px] text-[#493733]">Inventory-driven skin intelligence</h2>
+                <p className="mt-2 max-w-2xl text-[8px] leading-4 text-[#806a64]">Open the new Treatment Lab where ownership, current routine, testing, compatibility, provider rules, and personal results stay separate and connected.</p>
+              </div>
+              <Link href="/beauty/skincare" className="rounded-full border border-white/80 bg-white/55 px-4 py-2.5 text-[8px] text-[#5f5550] shadow-[0_10px_25px_rgba(87,78,73,.08)]">Open Treatment Lab</Link>
+            </div>
+          </Card>
 
           <div className="grid gap-4 xl:grid-cols-[1.15fr_.85fr]">
             <Card className="p-0 overflow-hidden">
