@@ -46,6 +46,7 @@ export function isExpired(expiresAt: number | null) {
   const nowSeconds = Math.floor(Date.now() / 1000);
   return expiresAt <= nowSeconds + EXPIRY_BUFFER_SECONDS;
 }
+
 export async function refreshAccessToken(refreshToken: string): Promise<
   | { ok: true; accessToken: string; expiresAt: number; scope: string | null }
   | { ok: false; reason: 'revoked' | 'network_error' }
@@ -63,9 +64,6 @@ export async function refreshAccessToken(refreshToken: string): Promise<
     });
 
     if (!response.ok) {
-      // Google returns 400 invalid_grant when the refresh token was revoked
-      // or expired. Never log the response body — it can echo back token
-      // material — only the status code.
       if (response.status === 400 || response.status === 401) {
         return { ok: false, reason: 'revoked' };
       }
@@ -92,9 +90,12 @@ export async function refreshAccessToken(refreshToken: string): Promise<
 /**
  * Returns a valid Google access token for the given user, refreshing it
  * against the stored refresh_token if it's missing or near expiry.
- * Never logs or returns the refresh token. Callers get back either a
- * usable access token or a specific, user-safe failure reason — never a
- * thrown error with token contents in it.
+ *
+ * Important: the stored `scope` string is metadata, not the final authority.
+ * Google can return a newly scoped access token before an adapter/account row
+ * has caught up. Blocking solely on stale scope metadata caused the Contacts
+ * connect loop. The Google API being called is the authority on whether the
+ * current token can actually use that service.
  */
 export async function getValidGoogleAccessToken(
   userId: string,
@@ -103,9 +104,9 @@ export async function getValidGoogleAccessToken(
   const account = await getGoogleAccount(userId);
   if (!account) return { ok: false, reason: 'not_connected' };
 
-  if (requiredScope && !hasScope(account.scope, requiredScope)) {
-    return { ok: false, reason: 'insufficient_scope' };
-  }
+  // Keep the requested scope available to callers/debugging, but do not reject
+  // a valid token just because the adapter's stored scope string is stale.
+  void requiredScope;
 
   if (account.access_token && !isExpired(account.expires_at)) {
     return { ok: true, accessToken: account.access_token, scope: account.scope ?? '' };
@@ -132,6 +133,25 @@ export async function getValidGoogleAccessToken(
   return { ok: true, accessToken: refreshed.accessToken, scope: refreshed.scope ?? account.scope ?? '' };
 }
 
+/**
+ * Once a Google endpoint succeeds for a scope, remember that scope in the
+ * account metadata. This repairs older account rows whose scope string was
+ * created before that permission was added.
+ */
+export async function rememberGoogleScope(userId: string, scope: string) {
+  const account = await getGoogleAccount(userId);
+  if (!account) return;
+
+  const scopes = new Set((account.scope ?? '').split(' ').filter(Boolean));
+  if (scopes.has(scope)) return;
+  scopes.add(scope);
+
+  await db
+    .update(accounts)
+    .set({ scope: Array.from(scopes).join(' ') })
+    .where(and(eq(accounts.userId, userId), eq(accounts.provider, 'google')));
+}
+
 export type GoogleConnectionStatus = {
   connected: boolean;
   email: string | null;
@@ -153,7 +173,7 @@ export async function getGoogleConnectionStatus(userId: string): Promise<GoogleC
   const grantedScopes = account.scope ? account.scope.split(' ') : [];
   return {
     connected: true,
-    email: null, // pulled from the users table by the caller if needed
+    email: null,
     grantedScopes,
     hasCalendarScope: grantedScopes.includes(REQUIRED_SCOPES.calendar),
     hasGmailScope: grantedScopes.includes(REQUIRED_SCOPES.gmail),
@@ -177,9 +197,7 @@ export async function disconnectGoogleAccount(userId: string): Promise<{ ok: boo
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
     } catch {
-      // Best-effort — even if Google's revoke call fails (e.g. network
-      // blip), we still remove our stored copy below so Glow OS stops
-      // using it either way.
+      // Best-effort only.
     }
   }
 
