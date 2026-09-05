@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import styles from './morning-brief-reference.module.css';
+import navStyles from './morning-brief-navigation.module.css';
 
 type RoomKey = 'morning' | 'what-now' | 'focus' | 'meeting' | 'next-up' | 'later' | 'tonight' | 'tomorrow' | 'replan';
 
@@ -95,7 +96,7 @@ export function MorningBriefReference() {
           </button>
         </header>
 
-        <nav className={styles.leftRail} aria-label="Today navigation">
+        <nav className={`${styles.leftRail} ${navStyles.singleAnchorRail}`} aria-label="Today navigation">
           <button type="button" className={`${styles.railItem} ${styles.railActive}`} onClick={() => goToRoom('what-now')}><Pearl size="xs" /><span>Today</span></button>
         </nav>
 
@@ -226,12 +227,12 @@ export function MorningBriefReference() {
           </section>
         </main>
 
-        <div className={styles.bottomControls}>
+        <div className={`${styles.bottomControls} ${navStyles.simpleBottomControls}`}>
           <button type="button" className={`${styles.bottomButton} ${styles.dayView}`} onClick={() => goToRoom('what-now')}>◫ <span>Day view</span><ChevronDown /></button>
           <button type="button" className={`${styles.bottomButton} ${styles.writeDay}`} onClick={() => setGlowOpen(true)}><Sparkles /> Write to my day</button>
           {receipt ? <span className={styles.saveReceipt} role="status">{receipt}</span> : null}
           {hasChanges ? <button type="button" className={`${styles.bottomButton} ${styles.undoButton}`} onClick={() => { setChecked({}); setReceipt('Changes undone'); }}>Undo <RotateCcw /></button> : null}
-          <Pearl size="sm" className={styles.bottomPearl} />
+          <span className={navStyles.passivePearl} aria-label="Morning Brief is part of Today"><Pearl size="sm" className={styles.bottomPearl} /></span>
         </div>
 
         {glowOpen ? (
