@@ -21,6 +21,7 @@ const experience = (
 ): RoomExperience => ({ room, world, climate, physics, intelligence, primaryQuestion, completion });
 
 export function roomExperienceFor(pathname: string): RoomExperience {
+  if (pathname.startsWith('/beauty/facial-massage')) return experience('gua-sha-studio', 'life', 'mint-water-pearl', 'guided-glide', 'saved-routine-and-tool-context', 'What facial movement am I doing now?', 'soft-release');
   if (pathname.startsWith('/beauty/lab')) return experience('makeup-studio', 'life', 'reflective-blush-pearl', 'mirror-refraction', 'placement-and-sequencing', 'How do I create the look I need?', 'look-settles-into-memory');
   if (pathname.startsWith('/beauty')) return experience('beauty-command', 'life', 'warm-pearl-reflection', 'orchestrated-layers', 'ready-state-orchestration', 'How do I get completely ready?', 'final-look-warm-light');
   if (pathname.startsWith('/hair')) return experience('hair-studio', 'life', 'silk-pearl', 'directional-flow', 'sequence-and-maintenance', 'What does my hair need now?', 'style-settles');
