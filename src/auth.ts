@@ -76,18 +76,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     async signIn({ account }) {
-      // On a reconnect, Auth.js can return a fresh access token before the
-      // adapter has refreshed the existing account row. Persist it here before
-      // redirecting back to People so the first Contacts request uses the new token.
       await persistGoogleAccount(account);
       return true;
     },
     authorized({ auth: session, request: { nextUrl } }) {
-      const isGlowDataApi = nextUrl.pathname === '/api/contacts' || nextUrl.pathname === '/api/places';
+      // These endpoints return their own clean JSON auth/connection states.
+      const isGlowDataApi =
+        nextUrl.pathname === '/api/contacts' ||
+        nextUrl.pathname === '/api/places' ||
+        nextUrl.pathname === '/api/personal-context';
       if (isGlowDataApi) return true;
-
-      const isPreviewWorld = process.env.VERCEL_ENV === 'preview' && (nextUrl.pathname === '/today' || nextUrl.pathname === '/home' || nextUrl.pathname === '/dashboard');
-      if (isPreviewWorld) return true;
 
       const isLoggedIn = !!session?.user;
       const isOnSignIn = nextUrl.pathname === '/sign-in';
