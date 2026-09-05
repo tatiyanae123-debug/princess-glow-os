@@ -77,7 +77,7 @@ export function GlobalHomeControl() {
     };
   }, [clearHideTimer, reveal]);
 
-  if (pathname === '/' || pathname === '/home' || pathname === '/sign-in' || pathname === '/today') {
+  if (pathname === '/' || pathname === '/home' || pathname === '/sign-in' || pathname === '/today' || pathname === '/planning') {
     return null;
   }
 
