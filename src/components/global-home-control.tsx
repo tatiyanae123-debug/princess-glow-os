@@ -9,19 +9,20 @@ import { useEffect, useState } from 'react';
  *
  * Every current and future page inherits this component from the root layout.
  * If a room already exposes its own visible /home link (normally the Glow OS
- * wordmark), this fallback stays out of the way. If the room does not expose
- * one, Glow OS appears automatically as a small fixed Home anchor.
+ * wordmark), this fallback stays out of the way. If that local Home control is
+ * missing OR has scrolled outside the visible viewport, Glow OS appears as a
+ * fixed Home anchor that never requires the user to scroll back to the top.
  *
- * This keeps the product rule simple and permanent:
- * Glow OS = Home.
+ * Permanent product rule:
+ * Glow OS = Home, and Home must always be reachable from the current viewport.
  */
 export function GlobalHomeControl() {
   const pathname = usePathname();
-  const [hasLocalHomeAnchor, setHasLocalHomeAnchor] = useState(true);
+  const [hasVisibleLocalHomeAnchor, setHasVisibleLocalHomeAnchor] = useState(false);
 
   useEffect(() => {
     if (pathname === '/' || pathname === '/home' || pathname === '/sign-in') {
-      setHasLocalHomeAnchor(true);
+      setHasVisibleLocalHomeAnchor(true);
       return;
     }
 
@@ -32,19 +33,26 @@ export function GlobalHomeControl() {
         ),
       ).filter((node) => !node.hasAttribute('data-global-glow-home-control'));
 
-      const hasVisibleAnchor = localAnchors.some((node) => {
+      const hasAnchorInsideCurrentViewport = localAnchors.some((node) => {
         const style = window.getComputedStyle(node);
         const rect = node.getBoundingClientRect();
-        return (
+        const rendered =
           style.display !== 'none' &&
           style.visibility !== 'hidden' &&
           Number(style.opacity || '1') > 0 &&
           rect.width > 0 &&
-          rect.height > 0
-        );
+          rect.height > 0;
+
+        const insideViewport =
+          rect.bottom > 8 &&
+          rect.top < window.innerHeight - 8 &&
+          rect.right > 8 &&
+          rect.left < window.innerWidth - 8;
+
+        return rendered && insideViewport;
       });
 
-      setHasLocalHomeAnchor(hasVisibleAnchor);
+      setHasVisibleLocalHomeAnchor(hasAnchorInsideCurrentViewport);
     };
 
     update();
@@ -57,10 +65,15 @@ export function GlobalHomeControl() {
       attributeFilter: ['href', 'class', 'style', 'hidden', 'aria-hidden'],
     });
 
+    window.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', update);
+    window.addEventListener('popstate', update);
+
     return () => {
       observer.disconnect();
+      window.removeEventListener('scroll', update);
       window.removeEventListener('resize', update);
+      window.removeEventListener('popstate', update);
     };
   }, [pathname]);
 
@@ -68,7 +81,7 @@ export function GlobalHomeControl() {
     pathname === '/' ||
     pathname === '/home' ||
     pathname === '/sign-in' ||
-    hasLocalHomeAnchor
+    hasVisibleLocalHomeAnchor
   ) {
     return null;
   }
