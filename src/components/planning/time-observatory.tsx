@@ -53,7 +53,6 @@ const HORIZONS: Array<{ id: Horizon; label: string }> = [
   { id: 'month', label: 'Month' },
   { id: 'threeMonths', label: '3 Months' },
 ];
-
 const TONES: OrbitItem['tone'][] = ['violet', 'blue', 'pearl', 'mint', 'blush'];
 
 function startOfDay(date = new Date()) {
@@ -61,30 +60,24 @@ function startOfDay(date = new Date()) {
   d.setHours(0, 0, 0, 0);
   return d;
 }
-
 function addDays(date: Date, days: number) {
   const d = new Date(date);
   d.setDate(d.getDate() + days);
   return d;
 }
-
 function startOfMonth(date = new Date()) {
   return new Date(date.getFullYear(), date.getMonth(), 1);
 }
-
 function addMonths(date: Date, months: number) {
   return new Date(date.getFullYear(), date.getMonth() + months, 1);
 }
-
 function shortDate(value: string | Date) {
   const d = typeof value === 'string' ? new Date(value) : value;
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
-
 function shortTime(value: string) {
   return new Date(value).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
-
 function monthName(value: Date, short = false) {
   return value.toLocaleDateString('en-US', { month: short ? 'short' : 'long' });
 }
@@ -125,10 +118,9 @@ function rangeFor(horizon: Horizon): Range {
   }
   if (horizon === 'month') {
     const start = startOfMonth(today);
-    const end = addMonths(start, 1);
     return {
       start,
-      end,
+      end: addMonths(start, 1),
       title: 'THIS MONTH',
       detail: today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
       short: monthName(today),
@@ -136,11 +128,10 @@ function rangeFor(horizon: Horizon): Range {
     };
   }
   const start = startOfMonth(today);
-  const end = addMonths(start, 3);
   const third = addMonths(start, 2);
   return {
     start,
-    end,
+    end: addMonths(start, 3),
     title: 'NEXT 3 MONTHS',
     detail: `${monthName(start, true)} – ${monthName(third, true)} ${third.getFullYear()}`,
     short: '3 months',
@@ -153,11 +144,9 @@ function inRange(value: string | null, range: Range) {
   const d = new Date(value);
   return d >= range.start && d < range.end;
 }
-
 function dayKey(date: Date) {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 }
-
 function eventDuration(event: PersonalEvent) {
   if (event.allDay) return 'All day';
   if (!event.endAt) return shortTime(event.startAt);
@@ -169,16 +158,13 @@ function eventDuration(event: PersonalEvent) {
   }
   return `${minutes}m`;
 }
-
 function isMeeting(event: PersonalEvent) {
   return /(meeting|call|sync|review|interview|appointment|session|1:1|one-on-one)/i.test(event.title);
 }
-
 function overlaps(a: PersonalEvent, b: PersonalEvent) {
   if (a.allDay || b.allDay || !a.endAt || !b.endAt) return false;
   return new Date(a.startAt).getTime() < new Date(b.endAt).getTime() && new Date(b.startAt).getTime() < new Date(a.endAt).getTime();
 }
-
 function conflictsFor(events: PersonalEvent[]) {
   const out: Array<{ a: PersonalEvent; b: PersonalEvent }> = [];
   for (let i = 0; i < events.length; i += 1) {
@@ -188,7 +174,6 @@ function conflictsFor(events: PersonalEvent[]) {
   }
   return out;
 }
-
 function openMinutes(range: Range, events: PersonalEvent[]) {
   let total = 0;
   for (let d = new Date(range.start); d < range.end; d = addDays(d, 1)) {
@@ -208,7 +193,6 @@ function openMinutes(range: Range, events: PersonalEvent[]) {
   }
   return Math.max(0, total);
 }
-
 function seriesPoints(events: PersonalEvent[], tasks: PersonalTask[], range: Range) {
   const buckets = 7;
   const span = Math.max(1, range.end.getTime() - range.start.getTime());
@@ -225,13 +209,13 @@ function seriesPoints(events: PersonalEvent[], tasks: PersonalTask[], range: Ran
     load[i] += 1;
   }
   const max = Math.max(1, ...load);
-  const points = load.map((value, index) => `${12 + index * 48},${69 - (value / max) * 50}`).join(' ');
-  const open = load.map((value, index) => `${12 + index * 48},${20 + (value / max) * 42}`).join(' ');
-  return { points, open };
+  return {
+    points: load.map((value, index) => `${12 + index * 48},${69 - (value / max) * 50}`).join(' '),
+    open: load.map((value, index) => `${12 + index * 48},${20 + (value / max) * 42}`).join(' '),
+  };
 }
-
-function EmptyOrbit({ children }: { children: string }) {
-  return <div className={styles.emptyOrbit}><Sparkles size={13} /><span>{children}</span></div>;
+function EmptyOrbit({ detail }: { detail: string }) {
+  return <div className={styles.emptyOrbit}><Sparkles size={13} /><span>{detail}</span></div>;
 }
 
 export function TimeObservatory() {
@@ -274,31 +258,19 @@ export function TimeObservatory() {
 
     const eventItem = (event: PersonalEvent, index: number): OrbitItem => ({
       id: `event-${event.source}-${event.id}`,
-      kind: 'event',
-      title: event.title,
+      kind: 'event', title: event.title,
       meta: event.allDay ? shortDate(event.startAt) : `${shortDate(event.startAt)} · ${shortTime(event.startAt)}`,
-      detail: eventDuration(event),
-      href: event.htmlLink || '/calendar',
-      external: Boolean(event.htmlLink),
-      tone: TONES[index % TONES.length],
+      detail: eventDuration(event), href: event.htmlLink || '/calendar', external: Boolean(event.htmlLink), tone: TONES[index % TONES.length],
     });
     const taskItem = (task: PersonalTask, index: number): OrbitItem => ({
-      id: `task-${task.id}`,
-      kind: 'task',
-      title: task.title,
+      id: `task-${task.id}`, kind: 'task', title: task.title,
       meta: task.dueDate ? `Due ${shortDate(task.dueDate)}` : `${task.priority} priority`,
-      detail: task.status === 'in_progress' ? 'In progress' : 'Open',
-      href: '/tasks',
-      tone: TONES[(index + 1) % TONES.length],
+      detail: task.status === 'in_progress' ? 'In progress' : 'Open', href: '/tasks', tone: TONES[(index + 1) % TONES.length],
     });
     const goalItem = (goal: (typeof data.goals)[number], index: number): OrbitItem => ({
-      id: `goal-${goal.id}`,
-      kind: 'goal',
-      title: goal.title,
+      id: `goal-${goal.id}`, kind: 'goal', title: goal.title,
       meta: goal.targetDate ? `Target ${shortDate(goal.targetDate)}` : goal.category,
-      detail: `${Math.round(goal.progress)}%`,
-      href: '/goals',
-      tone: TONES[(index + 2) % TONES.length],
+      detail: `${Math.round(goal.progress)}%`, href: '/goals', tone: TONES[(index + 2) % TONES.length],
     });
 
     let items: OrbitItem[] = [];
@@ -366,21 +338,7 @@ export function TimeObservatory() {
     const score = Math.max(35, Math.min(100, Math.round(96 - conflicts.length * 11 - Math.max(0, density - 3) * 5)));
     const nextEvent = events.find((event) => new Date(event.startAt).getTime() >= Date.now()) ?? null;
     const prepTasks = nextEvent ? openTasks.filter((task) => task.dueDate && new Date(task.dueDate).getTime() <= new Date(nextEvent.startAt).getTime()).slice(0, 2) : [];
-    return {
-      events,
-      dueTasks,
-      goals,
-      items,
-      conflicts,
-      focusPct,
-      meetingPct,
-      adminPct,
-      score,
-      nextEvent,
-      prepTasks,
-      openMinutes: openMinutes(range, events),
-      chart: seriesPoints(events, dueTasks, range),
-    };
+    return { events, dueTasks, goals, items, conflicts, focusPct, meetingPct, adminPct, score, nextEvent, prepTasks, openMinutes: openMinutes(range, events), chart: seriesPoints(events, dueTasks, range) };
   }, [data, horizon, range]);
 
   function selectHorizon(next: Horizon) {
@@ -389,7 +347,6 @@ export function TimeObservatory() {
     setFuture([]);
     setHorizon(next);
   }
-
   function undo() {
     const previous = history.at(-1);
     if (!previous) return;
@@ -397,7 +354,6 @@ export function TimeObservatory() {
     setFuture((f) => [horizon, ...f].slice(0, 10));
     setHorizon(previous);
   }
-
   function redo() {
     const next = future[0];
     if (!next) return;
@@ -405,21 +361,18 @@ export function TimeObservatory() {
     setHistory((h) => [...h, horizon].slice(-10));
     setHorizon(next);
   }
-
   function selectMode(next: Mode) {
     setMode(next);
     if (next === 'focus') window.location.assign('/today?room=focus');
     if (next === 'build') window.location.assign('/tasks');
     if (next === 'reflect') window.location.assign('/notes');
   }
-
   function drillCenter() {
     const order: Horizon[] = ['today', 'week', 'twoWeeks', 'month', 'threeMonths'];
     const i = order.indexOf(horizon);
     if (i <= 0) window.location.assign('/today?room=what-now');
     else selectHorizon(order[i - 1]);
   }
-
   function step(direction: -1 | 1) {
     const order: Horizon[] = ['today', 'week', 'twoWeeks', 'month', 'threeMonths'];
     const i = order.indexOf(horizon);
@@ -443,13 +396,9 @@ export function TimeObservatory() {
             <h1>PLAN · THE TIME OBSERVATORY</h1>
             <p>See the arc. Shape the day. Align the becoming.</p>
           </div>
-
           <nav className={`${styles.modeRail} ${navVisible || askOpen ? styles.visible : styles.receded}`} aria-label="Plan modes">
-            {(['plan', 'focus', 'build', 'reflect'] as Mode[]).map((item) => (
-              <button key={item} type="button" className={mode === item ? styles.modeActive : ''} onClick={() => selectMode(item)}>{item}</button>
-            ))}
+            {(['plan', 'focus', 'build', 'reflect'] as Mode[]).map((item) => <button key={item} type="button" className={mode === item ? styles.modeActive : ''} onClick={() => selectMode(item)}>{item}</button>)}
           </nav>
-
           <button type="button" className={`${styles.askGlow} ${navVisible || askOpen ? styles.visible : styles.receded}`} onClick={() => setAskOpen((v) => !v)} aria-expanded={askOpen}>
             <span className={styles.askPearl} aria-hidden="true"><i /><b /></span><span>Ask Glow</span>
           </button>
@@ -469,7 +418,6 @@ export function TimeObservatory() {
           <div className={styles.zoneA}><span>{range.zones[0][0]}</span><small>{range.zones[0][1]}</small></div>
           <div className={styles.zoneB}><span>{range.zones[1][0]}</span><small>{range.zones[1][1]}</small></div>
           <div className={styles.zoneC}><span>{range.zones[2][0]}</span><small>{range.zones[2][1]}</small></div>
-
           <div className={`${styles.orbit} ${styles.orbitFar}`} />
           <div className={`${styles.orbit} ${styles.orbitOuter}`} />
           <div className={`${styles.orbit} ${styles.orbitSecond}`} />
@@ -498,9 +446,9 @@ export function TimeObservatory() {
             <span className={styles.coreText}><strong>{range.title}</strong><small>{range.detail}</small></span>
           </button>
 
-          {personal.status === 'loading' ? <EmptyOrbit>Reading your connected time…</EmptyOrbit> : null}
-          {personal.status === 'error' ? <EmptyOrbit>Your Plan data is unavailable. Glow will not insert sample commitments.</EmptyOrbit> : null}
-          {model && model.items.length === 0 ? <EmptyOrbit>No real connected activity was found for {range.short.toLowerCase()}.</EmptyOrbit> : null}
+          {personal.status === 'loading' ? <EmptyOrbit detail="Reading your connected time…" /> : null}
+          {personal.status === 'error' ? <EmptyOrbit detail="Your Plan data is unavailable. Glow will not insert sample commitments." /> : null}
+          {model && model.items.length === 0 ? <EmptyOrbit detail={`No real connected activity was found for ${range.short.toLowerCase()}.`} /> : null}
 
           {model?.items.map((item, index) => {
             const className = `${styles.orbitCard} ${styles[`slot${index + 1}`]} ${styles[`tone_${item.tone}`]}`;
@@ -512,7 +460,6 @@ export function TimeObservatory() {
             if (item.drill) return <button key={item.id} type="button" className={className} onClick={() => selectHorizon(item.drill!)}>{content}</button>;
             return <a key={item.id} href={item.href || '#'} target={item.external ? '_blank' : undefined} rel={item.external ? 'noreferrer' : undefined} className={className}>{content}</a>;
           })}
-
           <div className={styles.nodes} aria-hidden="true">{Array.from({ length: 58 }).map((_, i) => <i key={i} />)}</div>
         </section>
 
@@ -522,13 +469,11 @@ export function TimeObservatory() {
             ['Focus', model?.focusPct ?? 0, 'focus'],
             ['Meetings', model?.meetingPct ?? 0, 'meetings'],
             ['Admin', model?.adminPct ?? 0, 'admin'],
-          ].map(([label, value, key]) => (
-            <div className={styles.analysisRow} key={String(key)}>
-              <span><i data-dot={key} />{label}</span>
-              <b style={{ '--meter': `${value}%` } as CSSProperties} />
-              <em>{value}%</em>
-            </div>
-          ))}
+          ].map(([label, value, key]) => <div className={styles.analysisRow} key={String(key)}>
+            <span><i data-dot={key} />{label}</span>
+            <b style={{ '--meter': `${value}%` } as CSSProperties} />
+            <em>{value}%</em>
+          </div>)}
           <div className={styles.alertBlock}>
             <a href="#conflicts"><span><CircleDot />{model?.conflicts.length ?? 0} conflicts</span><em>Resolve <ChevronRight /></em></a>
             <a href="/tasks"><span><Clock3 />{model?.dueTasks.length ?? 0} deadlines</span><em>Prepare <ChevronRight /></em></a>
@@ -543,13 +488,11 @@ export function TimeObservatory() {
             <svg className={styles.chart} viewBox="0 0 310 82" aria-label="Connected schedule load"><polyline points={model?.chart.points ?? ''} /><polyline points={model?.chart.open ?? ''} /><line x1="10" x2="300" y1="74" y2="74" /></svg>
             <div className={styles.axis}><span>Near</span><span>Middle</span><span>Later</span></div>
           </article>
-
           <article className={styles.intelCard} id="conflicts">
             <span className={styles.eyebrow}>Conflicts</span>
             {model?.conflicts.length ? model.conflicts.slice(0, 2).map((conflict, index) => <div className={styles.conflict} key={`${conflict.a.id}-${conflict.b.id}`}><i data-index={index} /><span><strong>{conflict.a.title}</strong><small>{shortDate(conflict.a.startAt)} · {shortTime(conflict.a.startAt)} overlaps {conflict.b.title}</small></span></div>) : <p className={styles.quiet}>No overlapping connected events.</p>}
             <a className={styles.softButton} href="/calendar">Review</a>
           </article>
-
           <article className={styles.intelCard}>
             <span className={styles.eyebrow}>Preparation</span>
             {model?.nextEvent ? <>
@@ -559,7 +502,6 @@ export function TimeObservatory() {
               <a className={styles.softButton} href={model.nextEvent.htmlLink || '/calendar'} target={model.nextEvent.htmlLink ? '_blank' : undefined} rel={model.nextEvent.htmlLink ? 'noreferrer' : undefined}>Open prep <ChevronRight /></a>
             </> : <p className={styles.quiet}>No connected event currently needs preparation.</p>}
           </article>
-
           <article className={styles.intelCard}>
             <span className={styles.eyebrow}>Open time</span>
             <div className={styles.openLine}><span>{range.short}</span><strong>{openHours}h {openRemainder ? `${openRemainder}m` : ''}</strong></div>
