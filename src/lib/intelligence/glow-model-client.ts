@@ -5,7 +5,7 @@ import { gateway } from '@ai-sdk/gateway';
 type GlowModelContent =
   | { type: 'input_text'; text: string }
   | { type: 'input_image'; image_url: string; detail?: 'low' | 'high' | 'auto' }
-  | { type: 'input_file'; file_data: string; filename: string };
+  | { type: 'input_file'; file_data: string; filename: string; media_type?: string };
 
 type GlowModelOptions = {
   content: GlowModelContent[];
@@ -22,6 +22,22 @@ function mediaTypeForFilename(filename: string) {
   if (name.endsWith('.png')) return 'image/png';
   if (name.endsWith('.jpg') || name.endsWith('.jpeg')) return 'image/jpeg';
   if (name.endsWith('.webp')) return 'image/webp';
+  if (name.endsWith('.gif')) return 'image/gif';
+  if (name.endsWith('.heic')) return 'image/heic';
+  if (name.endsWith('.heif')) return 'image/heif';
+  if (name.endsWith('.mp4')) return 'video/mp4';
+  if (name.endsWith('.mov')) return 'video/quicktime';
+  if (name.endsWith('.webm')) return 'video/webm';
+  if (name.endsWith('.mp3')) return 'audio/mpeg';
+  if (name.endsWith('.m4a')) return 'audio/mp4';
+  if (name.endsWith('.wav')) return 'audio/wav';
+  if (name.endsWith('.doc')) return 'application/msword';
+  if (name.endsWith('.docx')) return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  if (name.endsWith('.xls')) return 'application/vnd.ms-excel';
+  if (name.endsWith('.xlsx')) return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  if (name.endsWith('.ppt')) return 'application/vnd.ms-powerpoint';
+  if (name.endsWith('.pptx')) return 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+  if (name.endsWith('.zip')) return 'application/zip';
   return 'application/octet-stream';
 }
 
@@ -36,7 +52,7 @@ function toAiSdkContent(content: GlowModelContent[]) {
     return {
       type: 'file',
       data: Buffer.from(part.file_data, 'base64'),
-      mediaType: mediaTypeForFilename(part.filename),
+      mediaType: part.media_type || mediaTypeForFilename(part.filename),
       filename: part.filename,
     };
   });
