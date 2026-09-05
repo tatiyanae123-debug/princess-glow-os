@@ -10,6 +10,7 @@ import {
   Sparkles,
   Users,
 } from 'lucide-react';
+import { LifeWing, isLifeRoomId } from '@/components/life/life-wing';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
 import { getConnectionsOverview } from '@/lib/data/connections';
@@ -28,16 +29,20 @@ export const dynamic = 'force-dynamic';
 type ChamberId = 'body' | 'beauty' | 'closet' | 'food' | 'home' | 'money' | 'work' | 'relationships' | 'travel';
 type Chamber = { id: ChamberId; title: string; descriptor: string; href: string; keywords: string[] };
 
+type LifePageProps = {
+  searchParams: Promise<{ room?: string }>;
+};
+
 const CHAMBERS: Chamber[] = [
-  { id: 'body', title: 'Body', descriptor: 'Energy · Sleep · Movement', href: '/wellness', keywords: ['body', 'fitness', 'workout', 'sleep', 'movement', 'wellness', 'health', 'energy', 'gym'] },
-  { id: 'beauty', title: 'Beauty', descriptor: 'Skin · Hair · Glow', href: '/beauty', keywords: ['beauty', 'skin', 'skincare', 'hair', 'makeup', 'gua sha', 'face', 'glow'] },
-  { id: 'closet', title: 'Closet', descriptor: 'Style · Wardrobe · Expression', href: '/closet', keywords: ['closet', 'style', 'wardrobe', 'outfit', 'fashion', 'clothes'] },
-  { id: 'food', title: 'Food', descriptor: 'Nourish · Recipes · Balance', href: '/food', keywords: ['food', 'meal', 'nutrition', 'grocery', 'recipe', 'protein', 'breakfast', 'lunch', 'dinner'] },
-  { id: 'home', title: 'Home', descriptor: 'Spaces · Objects · Atmosphere', href: '/tasks', keywords: ['home', 'room', 'bedroom', 'clean', 'organize', 'storage', 'space', 'laundry'] },
-  { id: 'money', title: 'Money', descriptor: 'Wealth · Budget · Freedom', href: '/finance', keywords: ['money', 'finance', 'budget', 'saving', 'debt', 'credit', 'invest', 'pay', 'bill'] },
-  { id: 'work', title: 'Work', descriptor: 'Focus · Projects · Impact', href: '/work', keywords: ['work', 'job', 'career', 'interview', 'project', 'client', 'design', 'shift'] },
-  { id: 'relationships', title: 'Relationships', descriptor: 'People · Connection · Boundaries', href: '/today?room=people', keywords: ['relationship', 'friend', 'family', 'people', 'boundary', 'birthday', 'social'] },
-  { id: 'travel', title: 'Travel', descriptor: 'Places · Plans · Experiences', href: '/today?room=places', keywords: ['travel', 'trip', 'flight', 'hotel', 'vacation', 'airport', 'visit'] },
+  { id: 'body', title: 'Body', descriptor: 'Energy · Sleep · Movement', href: '/life?room=body', keywords: ['body', 'fitness', 'workout', 'sleep', 'movement', 'wellness', 'health', 'energy', 'gym'] },
+  { id: 'beauty', title: 'Beauty', descriptor: 'Skin · Hair · Glow', href: '/life?room=beauty', keywords: ['beauty', 'skin', 'skincare', 'hair', 'makeup', 'gua sha', 'face', 'glow'] },
+  { id: 'closet', title: 'Closet', descriptor: 'Style · Wardrobe · Expression', href: '/life?room=closet', keywords: ['closet', 'style', 'wardrobe', 'outfit', 'fashion', 'clothes'] },
+  { id: 'food', title: 'Food', descriptor: 'Nourish · Recipes · Balance', href: '/life?room=food', keywords: ['food', 'meal', 'nutrition', 'grocery', 'recipe', 'protein', 'breakfast', 'lunch', 'dinner'] },
+  { id: 'home', title: 'Home', descriptor: 'Spaces · Objects · Atmosphere', href: '/life?room=home', keywords: ['home', 'room', 'bedroom', 'clean', 'organize', 'storage', 'space', 'laundry'] },
+  { id: 'money', title: 'Money', descriptor: 'Wealth · Budget · Freedom', href: '/life?room=money', keywords: ['money', 'finance', 'budget', 'saving', 'debt', 'credit', 'invest', 'pay', 'bill'] },
+  { id: 'work', title: 'Work', descriptor: 'Focus · Projects · Impact', href: '/life?room=work', keywords: ['work', 'job', 'career', 'interview', 'project', 'client', 'design', 'shift'] },
+  { id: 'relationships', title: 'Relationships', descriptor: 'People · Connection · Boundaries', href: '/life?room=relationships', keywords: ['relationship', 'friend', 'family', 'people', 'boundary', 'birthday', 'social'] },
+  { id: 'travel', title: 'Travel', descriptor: 'Places · Plans · Experiences', href: '/life?room=travel', keywords: ['travel', 'trip', 'flight', 'hotel', 'vacation', 'airport', 'visit'] },
 ];
 
 async function safe<T>(load: () => Promise<T>, fallback: T): Promise<T> {
@@ -63,10 +68,11 @@ function formatEnergy(value: string | null | undefined) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-export default async function LifePage() {
+export default async function LifePage({ searchParams }: LifePageProps) {
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
   const userId = session.user.id;
+  const params = await searchParams;
 
   const [tasks, events, habits, goals, routines, finance, wellness, notes, beauty, projects, connections] = await Promise.all([
     safe(() => getTasksByUser(userId), []),
@@ -92,6 +98,10 @@ export default async function LifePage() {
     if (chamber.id === 'travel') count += events.filter((event) => Boolean(event.location)).length;
     return [chamber.id, count];
   })) as Record<ChamberId, number>;
+
+  if (isLifeRoomId(params.room)) {
+    return <LifeWing room={params.room} connectedCount={counts[params.room]} />;
+  }
 
   const now = new Date();
   const firstName = session.user.name?.trim().split(/\s+/)[0] ?? 'you';
@@ -133,8 +143,8 @@ export default async function LifePage() {
           <Link href="/life" className={styles.lifeActive}><span className={styles.navPearl} /><strong>Life</strong></Link>
           <Link href="/notes"><NotebookText /><span>Journal</span></Link>
           <Link href="/calendar"><CalendarDays /><span>Calendar</span></Link>
-          <Link href="/today?room=people"><Users /><span>People</span></Link>
-          <Link href="/today?room=places"><Compass /><span>Explore</span></Link>
+          <Link href="/life?room=relationships"><Users /><span>People</span></Link>
+          <Link href="/life?room=travel"><Compass /><span>Explore</span></Link>
           <Link href="/settings"><Settings /><span>Settings</span></Link>
 
           <div className={styles.profileCard}>
