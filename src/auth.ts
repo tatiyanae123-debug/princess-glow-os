@@ -28,7 +28,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       authorization: {
         params: {
           access_type: 'offline',
-          prompt: 'consent',
+          include_granted_scopes: 'true',
           scope: [
             'openid',
             'email',
