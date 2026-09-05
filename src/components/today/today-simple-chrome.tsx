@@ -45,15 +45,17 @@ export function TodaySimpleChrome() {
         </div>
       </div>
 
-      <nav className={styles.coreRail} aria-label="Core Today navigation">
+      <nav className={styles.coreRail} aria-label="Today navigation">
         <button type="button" className={styles.coreNavButton} onClick={() => goToRoom('what-now')}>
           <span className={styles.miniPearl} aria-hidden="true" />
           <span>Today</span>
         </button>
-        <button type="button" className={`${styles.coreNavButton} ${room === 'focus' ? styles.coreNavActive : ''}`} onClick={() => goToRoom('focus')}>
-          <Focus size={18} strokeWidth={1.45} />
-          <span>Focus</span>
-        </button>
+        {room === 'focus' ? (
+          <button type="button" className={`${styles.coreNavButton} ${styles.coreNavActive}`} onClick={() => goToRoom('focus')} aria-label="Active focus">
+            <Focus size={18} strokeWidth={1.45} />
+            <span>Focus active</span>
+          </button>
+        ) : null}
       </nav>
 
       <button type="button" className={styles.returnNow} onClick={() => goToRoom('what-now')} aria-label="Return to Now" title="Return to Now">
@@ -65,8 +67,9 @@ export function TodaySimpleChrome() {
         <aside className={styles.panel} role="dialog" aria-label="Ask Glow">
           <div className={styles.panelHead}><strong>Glow</strong><button className={styles.close} onClick={() => setGlowOpen(false)} aria-label="Close">×</button></div>
           <p>Tell me what you want to do or where you want to go. You do not need to know which Glow system owns it.</p>
-          <button onClick={() => { setGlowOpen(false); goToRoom('what-now'); }}>What should I do now?</button>
-          <button onClick={() => { setGlowOpen(false); goToRoom('focus'); }}>Open Focus</button>
+          <button onClick={() => { setGlowOpen(false); goToRoom('what-now'); }}>Go to Today</button>
+          {room === 'focus' ? <button onClick={() => { setGlowOpen(false); goToRoom('focus'); }}>Return to active focus</button> : null}
+          <button onClick={() => { setGlowOpen(false); goToRoom('tomorrow'); }}>Show tomorrow</button>
           <button onClick={() => { setGlowOpen(false); goToRoom('replan'); }}>Replan my day</button>
         </aside>
       ) : null}
