@@ -9,13 +9,8 @@ import { WhatNowReference } from '@/components/today/what-now-reference';
 export const dynamic = 'force-dynamic';
 
 export default async function TodayPage() {
-  // Preview deployments stay available for visual QA. The live personal-data
-  // surfaces themselves never substitute another person's sample records when
-  // no signed-in account is available.
-  if (process.env.VERCEL_ENV !== 'preview') {
-    const session = await auth();
-    if (!session?.user?.id) redirect('/sign-in');
-  }
+  const session = await auth();
+  if (!session?.user?.id) redirect('/sign-in');
 
   // One navigation authority. One set of live room renderers.
   // The old TodayLivingCenter sample room is intentionally not mounted: it
