@@ -1,4 +1,4 @@
-import { auth, signIn } from '@/auth';
+import { signIn } from '@/auth';
 
 const GOOGLE_SCOPES = [
   'openid',
@@ -9,9 +9,13 @@ const GOOGLE_SCOPES = [
   'https://www.googleapis.com/auth/contacts.readonly',
 ].join(' ');
 
-export default async function SignInPage() {
-  const session = await auth();
-  const connectingContacts = !!session?.user;
+type SignInPageProps = {
+  searchParams: Promise<{ connect?: string }>;
+};
+
+export default async function SignInPage({ searchParams }: SignInPageProps) {
+  const params = await searchParams;
+  const connectingContacts = params.connect === 'contacts';
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.92),_transparent_36%),radial-gradient(circle_at_bottom_right,_rgba(218,210,255,0.28),_transparent_34%),linear-gradient(135deg,_#fbf7f1_0%,_#fffdf9_48%,_#f6f1f7_100%)] flex items-center justify-center p-4">
