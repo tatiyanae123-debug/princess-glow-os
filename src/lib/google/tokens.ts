@@ -6,9 +6,6 @@ import { eq, and } from 'drizzle-orm';
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const GOOGLE_REVOKE_URL = 'https://oauth2.googleapis.com/revoke';
-
-// Refresh proactively if the token expires within this window, so a request
-// never starts with a token that's about to die mid-flight.
 const EXPIRY_BUFFER_SECONDS = 60;
 
 export const REQUIRED_SCOPES = {
@@ -64,18 +61,11 @@ export async function refreshAccessToken(refreshToken: string): Promise<
     });
 
     if (!response.ok) {
-      if (response.status === 400 || response.status === 401) {
-        return { ok: false, reason: 'revoked' };
-      }
+      if (response.status === 400 || response.status === 401) return { ok: false, reason: 'revoked' };
       return { ok: false, reason: 'network_error' };
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      expires_in: number;
-      scope?: string;
-    };
-
+    const data = (await response.json()) as { access_token: string; expires_in: number; scope?: string };
     return {
       ok: true,
       accessToken: data.access_token,
@@ -87,65 +77,39 @@ export async function refreshAccessToken(refreshToken: string): Promise<
   }
 }
 
-/**
- * Returns a valid Google access token for the given user, refreshing it
- * against the stored refresh_token if it's missing or near expiry.
- *
- * Important: the stored `scope` string is metadata, not the final authority.
- * Google can return a newly scoped access token before an adapter/account row
- * has caught up. Blocking solely on stale scope metadata caused the Contacts
- * connect loop. The Google API being called is the authority on whether the
- * current token can actually use that service.
- */
+/** Stored scope metadata may lag behind a newly-granted token. The Google API
+ * being called is the authority, so callers are allowed to test the token and
+ * remember a successful scope afterwards instead of being trapped in a loop. */
 export async function getValidGoogleAccessToken(
   userId: string,
   requiredScope?: string,
 ): Promise<GoogleTokenResult> {
   const account = await getGoogleAccount(userId);
   if (!account) return { ok: false, reason: 'not_connected' };
-
-  // Keep the requested scope available to callers/debugging, but do not reject
-  // a valid token just because the adapter's stored scope string is stale.
   void requiredScope;
 
   if (account.access_token && !isExpired(account.expires_at)) {
     return { ok: true, accessToken: account.access_token, scope: account.scope ?? '' };
   }
-
-  if (!account.refresh_token) {
-    return { ok: false, reason: 'missing_refresh_token' };
-  }
+  if (!account.refresh_token) return { ok: false, reason: 'missing_refresh_token' };
 
   const refreshed = await refreshAccessToken(account.refresh_token);
-  if (!refreshed.ok) {
-    return { ok: false, reason: refreshed.reason };
-  }
+  if (!refreshed.ok) return { ok: false, reason: refreshed.reason };
 
   await db
     .update(accounts)
-    .set({
-      access_token: refreshed.accessToken,
-      expires_at: refreshed.expiresAt,
-      scope: refreshed.scope ?? account.scope,
-    })
+    .set({ access_token: refreshed.accessToken, expires_at: refreshed.expiresAt, scope: refreshed.scope ?? account.scope })
     .where(and(eq(accounts.userId, userId), eq(accounts.provider, 'google')));
 
   return { ok: true, accessToken: refreshed.accessToken, scope: refreshed.scope ?? account.scope ?? '' };
 }
 
-/**
- * Once a Google endpoint succeeds for a scope, remember that scope in the
- * account metadata. This repairs older account rows whose scope string was
- * created before that permission was added.
- */
 export async function rememberGoogleScope(userId: string, scope: string) {
   const account = await getGoogleAccount(userId);
   if (!account) return;
-
   const scopes = new Set((account.scope ?? '').split(' ').filter(Boolean));
   if (scopes.has(scope)) return;
   scopes.add(scope);
-
   await db
     .update(accounts)
     .set({ scope: Array.from(scopes).join(' ') })
@@ -159,16 +123,21 @@ export type GoogleConnectionStatus = {
   hasCalendarScope: boolean;
   hasGmailScope: boolean;
   tokenExpiresAt: Date | null;
+  needsReauthorization: boolean;
 };
 
-/**
- * Read-only connection status for the Connections page and dashboard.
- * Does not refresh or return any token value.
- */
 export async function getGoogleConnectionStatus(userId: string): Promise<GoogleConnectionStatus> {
   const account = await getGoogleAccount(userId);
   if (!account) {
-    return { connected: false, email: null, grantedScopes: [], hasCalendarScope: false, hasGmailScope: false, tokenExpiresAt: null };
+    return {
+      connected: false,
+      email: null,
+      grantedScopes: [],
+      hasCalendarScope: false,
+      hasGmailScope: false,
+      tokenExpiresAt: null,
+      needsReauthorization: false,
+    };
   }
   const grantedScopes = account.scope ? account.scope.split(' ') : [];
   return {
@@ -178,14 +147,10 @@ export async function getGoogleConnectionStatus(userId: string): Promise<GoogleC
     hasCalendarScope: grantedScopes.includes(REQUIRED_SCOPES.calendar),
     hasGmailScope: grantedScopes.includes(REQUIRED_SCOPES.gmail),
     tokenExpiresAt: account.expires_at ? new Date(account.expires_at * 1000) : null,
+    needsReauthorization: !account.refresh_token && isExpired(account.expires_at),
   };
 }
 
-/**
- * Disconnects Google: best-effort revoke with Google, then removes only
- * the stored Google account/token row. Never touches the user record or
- * any Glow OS data (tasks, habits, routines, etc.).
- */
 export async function disconnectGoogleAccount(userId: string): Promise<{ ok: boolean }> {
   const account = await getGoogleAccount(userId);
   if (!account) return { ok: true };
@@ -197,7 +162,7 @@ export async function disconnectGoogleAccount(userId: string): Promise<{ ok: boo
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
     } catch {
-      // Best-effort only.
+      // Best-effort only. Stored access is removed below either way.
     }
   }
 
