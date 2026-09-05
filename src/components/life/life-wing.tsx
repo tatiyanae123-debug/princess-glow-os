@@ -1,4 +1,4 @@
-import { LifeReferenceRoom } from './life-reference-room';
+import { LifeRoomArchitecture } from './life-room-architecture';
 
 export type LifeRoomId =
   | 'body'
@@ -28,5 +28,5 @@ export function isLifeRoomId(value: string | undefined): value is LifeRoomId {
 }
 
 export function LifeWing({ room, connectedCount }: { room: LifeRoomId; connectedCount: number }) {
-  return <LifeReferenceRoom room={room} connectedCount={connectedCount} />;
+  return <LifeRoomArchitecture room={room} connectedCount={connectedCount} />;
 }

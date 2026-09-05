@@ -1,0 +1,1 @@
+QA: verify every visible Life room tab changes URL view state, active tab, central artifact, module layout, and contextual copy without collapsing into the old stacked-card pattern. Confirm Back to Life, Ask Glow, previous/next subpage controls, iPad landscape scaling, reduced motion, and real-data-only copy.
