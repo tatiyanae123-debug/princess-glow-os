@@ -46,6 +46,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     authorized({ auth: session, request: { nextUrl } }) {
+      // These read-only JSON routes handle their own auth state so client
+      // surfaces receive JSON rather than a sign-in HTML redirect.
+      const isGlowDataApi = nextUrl.pathname === '/api/contacts' || nextUrl.pathname === '/api/places';
+      if (isGlowDataApi) return true;
+
       // Visual-QA preview routes use non-personal demo data and must open directly.
       const isPreviewWorld = process.env.VERCEL_ENV === 'preview' && (nextUrl.pathname === '/today' || nextUrl.pathname === '/home' || nextUrl.pathname === '/dashboard');
       if (isPreviewWorld) return true;
