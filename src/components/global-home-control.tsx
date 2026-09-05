@@ -15,11 +15,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 export function GlobalHomeControl() {
   const pathname = usePathname();
   const [visible, setVisible] = useState(true);
-  const hideTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const hideTimer = useRef<number | null>(null);
   const lastScrollY = useRef(0);
 
   const clearHideTimer = useCallback(() => {
-    if (hideTimer.current) {
+    if (hideTimer.current !== null) {
       window.clearTimeout(hideTimer.current);
       hideTimer.current = null;
     }
@@ -109,7 +109,7 @@ export function GlobalHomeControl() {
       >
         <span
           aria-hidden="true"
-          className="h-4.5 w-4.5 rounded-full border border-white/85 bg-[radial-gradient(circle_at_30%_24%,_#fff_0%,_#fff_20%,_#eee8ff_43%,_#f7e7dd_67%,_rgba(255,255,255,0.52)_100%)] shadow-[0_4px_12px_rgba(126,111,148,0.14),inset_0_1px_3px_rgba(255,255,255,0.82)]"
+          className="h-[18px] w-[18px] rounded-full border border-white/85 bg-[radial-gradient(circle_at_30%_24%,_#fff_0%,_#fff_20%,_#eee8ff_43%,_#f7e7dd_67%,_rgba(255,255,255,0.52)_100%)] shadow-[0_4px_12px_rgba(126,111,148,0.14),inset_0_1px_3px_rgba(255,255,255,0.82)]"
         />
         <span>Glow OS</span>
       </Link>
