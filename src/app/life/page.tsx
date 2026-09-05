@@ -3,19 +3,15 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import {
   CalendarDays,
-  ChevronRight,
   Compass,
-  Home as HomeIcon,
   NotebookText,
   Search,
   Settings,
-  Sparkles,
   Users,
 } from 'lucide-react';
 import { LifeWing, isLifeRoomId } from '@/components/life/life-wing';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
-import { getConnectionsOverview } from '@/lib/data/connections';
 import { getFinanceEntriesByUser } from '@/lib/data/finance-entries';
 import { getGoalsByUser } from '@/lib/data/goals';
 import { getHabitsByUser } from '@/lib/data/habits';
@@ -25,7 +21,7 @@ import { getTasksByUser } from '@/lib/data/tasks';
 import { getProjectsByUser } from '@/lib/data/user-scope';
 import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
 import { LifeHistoryControls } from './life-history-controls';
-import styles from './life-personal-house-v2.module.css';
+import styles from './life-personal-house-v3.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,10 +29,7 @@ const NEW_YORK_TZ = 'America/New_York';
 
 type ChamberId = 'body' | 'beauty' | 'closet' | 'food' | 'home' | 'money' | 'work' | 'relationships' | 'travel';
 type Chamber = { id: ChamberId; title: string; descriptor: string; href: string; keywords: string[] };
-
-type LifePageProps = {
-  searchParams: Promise<{ room?: string }>;
-};
+type LifePageProps = { searchParams: Promise<{ room?: string }> };
 
 const CHAMBERS: Chamber[] = [
   { id: 'body', title: 'Body', descriptor: 'Energy · Sleep · Movement', href: '/life?room=body', keywords: ['body', 'fitness', 'workout', 'sleep', 'movement', 'wellness', 'health', 'energy', 'gym'] },
@@ -77,23 +70,13 @@ function countMatches(items: unknown[], keywords: string[]) {
 function dateKey(date: Date) {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone: NEW_YORK_TZ,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
+    year: 'numeric', month: '2-digit', day: '2-digit',
   }).format(date);
 }
 
 function formatEnergy(value: string | null | undefined) {
-  if (!value) return 'Not logged';
+  if (!value) return null;
   return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
-function formatEventTime(value: Date) {
-  return new Intl.DateTimeFormat('en-US', {
-    timeZone: NEW_YORK_TZ,
-    hour: 'numeric',
-    minute: '2-digit',
-  }).format(value);
 }
 
 function greetingForHour(hour: number) {
@@ -101,6 +84,28 @@ function greetingForHour(hour: number) {
   if (hour < 17) return 'Good afternoon';
   if (hour < 21) return 'Good evening';
   return 'Good night';
+}
+
+function quietCount(count: number, singular: string, plural: string, fallback: string, active: string) {
+  if (!count) return fallback;
+  if (count <= 12) return `${count} ${count === 1 ? singular : plural}`;
+  return active;
+}
+
+function shortLocation(value: string) {
+  const first = value.split(',')[0]?.trim();
+  return first && first.length <= 22 ? first : first?.slice(0, 20) || 'Trip planned';
+}
+
+function humanMoveTitle(title: string) {
+  const clean = title
+    .replace(/^\[[^\]]*GLOW[^\]]*\]\s*/i, '')
+    .replace(/^GLOW\s*(VOICE|ACTION|COMMAND|CAPTURE)?\s*[·:\-–—]*\s*/i, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!clean || /^(voice|action|command|capture)$/i.test(clean)) return 'Journal updated';
+  if (clean.length > 31) return `${clean.slice(0, 29).trim()}…`;
+  return clean;
 }
 
 function Scene({ id }: { id: ChamberId }) {
@@ -121,7 +126,7 @@ export default async function LifePage({ searchParams }: LifePageProps) {
   const userId = session.user.id;
   const params = await searchParams;
 
-  const [tasks, events, habits, goals, routines, finance, wellness, notes, beauty, projects, connections] = await Promise.all([
+  const [tasks, events, habits, goals, routines, finance, wellness, notes, beauty, projects] = await Promise.all([
     safe(() => getTasksByUser(userId), []),
     safe(() => getCalendarEventsByUser(userId), []),
     safe(() => getHabitsByUser(userId), []),
@@ -132,7 +137,6 @@ export default async function LifePage({ searchParams }: LifePageProps) {
     safe(() => getNotesByUser(userId), []),
     safe(() => getBeautyRoutinesByUser(userId), []),
     safe(() => getProjectsByUser(userId), []),
-    safe(() => getConnectionsOverview(userId), null),
   ]);
 
   const shared = [tasks, habits, goals, routines, notes, events].flat() as unknown[];
@@ -154,15 +158,11 @@ export default async function LifePage({ searchParams }: LifePageProps) {
   const firstName = session.user.name?.trim().split(/\s+/)[0] ?? 'you';
   const hour = Number(new Intl.DateTimeFormat('en-US', { timeZone: NEW_YORK_TZ, hour: '2-digit', hourCycle: 'h23' }).format(now));
   const greeting = greetingForHour(hour);
-  const dateText = new Intl.DateTimeFormat('en-US', { timeZone: NEW_YORK_TZ, weekday: 'short', month: 'short', day: 'numeric' }).format(now);
   const todayKey = dateKey(now);
-  const todayEvents = [...events]
-    .filter((event) => dateKey(event.startAt) === todayKey)
-    .sort((a, b) => a.startAt.getTime() - b.startAt.getTime());
-  const remainingToday = todayEvents.filter((event) => event.startAt.getTime() >= now.getTime() - 30 * 60 * 1000).slice(0, 4);
+  const todayEvents = [...events].filter((event) => dateKey(event.startAt) === todayKey);
   const latestWellness = wellness[0] ?? null;
+  const energy = formatEnergy(latestWellness?.energy);
   const recentNotes = [...notes].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()).slice(0, 3);
-  const calendarConnected = connections?.calendarState === 'connected';
 
   const styleCount = countMatches([...notes, ...tasks, ...goals] as unknown[], ['closet', 'style', 'wardrobe', 'outfit', 'fashion']);
   const foodCount = countMatches([...notes, ...tasks, ...routines] as unknown[], ['food', 'meal', 'recipe', 'grocery', 'breakfast', 'lunch', 'dinner']);
@@ -172,19 +172,19 @@ export default async function LifePage({ searchParams }: LifePageProps) {
   const nextTravelEvent = [...events].find((event) => event.startAt.getTime() >= now.getTime() && Boolean(event.location));
 
   const roomStatus: Record<ChamberId, string> = {
-    body: latestWellness?.energy ? `Energy ${formatEnergy(latestWellness.energy)} →` : wellness.length ? `${wellness.length} wellness update${wellness.length === 1 ? '' : 's'} →` : 'No wellness logged →',
-    beauty: beauty.length ? `${beauty.length} ritual${beauty.length === 1 ? '' : 's'} →` : 'No rituals yet →',
-    closet: styleCount ? `${styleCount} style note${styleCount === 1 ? '' : 's'} →` : 'No looks saved →',
-    food: foodCount ? `${foodCount} meal idea${foodCount === 1 ? '' : 's'} →` : 'No meal ideas saved →',
-    home: homeCount ? `${homeCount} home item${homeCount === 1 ? '' : 's'} →` : 'Home is clear →',
-    money: finance.length ? 'Money updated →' : 'No money entries yet →',
-    work: workCount ? `${workCount} active priorit${workCount === 1 ? 'y' : 'ies'} →` : 'No active priorities →',
-    relationships: relationshipCount ? `${relationshipCount} people note${relationshipCount === 1 ? '' : 's'} →` : 'Open people →',
-    travel: nextTravelEvent?.location ? `Next: ${nextTravelEvent.location} →` : 'No trip on calendar →',
+    body: energy ? `Energy ${energy}` : wellness.length ? 'Wellness updated' : 'Ready',
+    beauty: quietCount(beauty.length, 'ritual', 'rituals', 'Ready', 'Rituals active'),
+    closet: quietCount(styleCount, 'look', 'looks', 'Ready', 'Style in motion'),
+    food: quietCount(foodCount, 'meal idea', 'meal ideas', 'Ready', 'Meal ideas ready'),
+    home: homeCount ? 'In motion' : 'Calm',
+    money: finance.length ? 'Updated' : 'Ready',
+    work: quietCount(workCount, 'priority', 'priorities', 'Clear', 'Priorities active'),
+    relationships: relationshipCount ? 'Connections active' : 'Open',
+    travel: nextTravelEvent?.location ? `Next: ${shortLocation(nextTravelEvent.location)}` : 'Open',
   };
 
   const flowStatus: Record<ChamberId, string> = {
-    body: latestWellness?.energy ? formatEnergy(latestWellness.energy) : 'Not logged',
+    body: energy ?? 'Ready',
     beauty: beauty.length ? 'Active' : 'Quiet',
     closet: styleCount ? 'In motion' : 'Open',
     food: foodCount ? 'Planned' : 'Open',
@@ -202,12 +202,13 @@ export default async function LifePage({ searchParams }: LifePageProps) {
       <div className={styles.causticA} aria-hidden="true" />
       <div className={styles.causticB} aria-hidden="true" />
       <div className={styles.causticC} aria-hidden="true" />
+      <div className={styles.causticD} aria-hidden="true" />
 
       <section className={styles.frame} aria-label="Life · The Personal House">
         <header className={styles.header}>
           <div className={styles.brandBlock}>
             <Link href="/home">Glow OS <span aria-hidden="true">⌄</span></Link>
-            <small>Life</small>
+            <small>Personal House</small>
           </div>
 
           <div className={styles.identity}>
@@ -216,16 +217,17 @@ export default async function LifePage({ searchParams }: LifePageProps) {
             <p>Your life, organized around you.</p>
           </div>
 
-          <Link href="/ask-glow" className={styles.askGlow}>
-            <Search size={13} strokeWidth={1.5} />
-            <span>Ask Glow…</span>
-            <i aria-hidden="true" />
-          </Link>
+          <div className={styles.askCluster}>
+            <Link href="/ask-glow" className={styles.askGlow}>
+              <Search size={12} strokeWidth={1.45} />
+              <span>Ask Glow…</span>
+            </Link>
+            <Link href="/ask-glow" className={styles.askOrb} aria-label="Open Ask Glow" />
+          </div>
         </header>
 
         <aside className={styles.leftRail} aria-label="Life instruments">
           <nav className={styles.lifeNav}>
-            <Link href="/home"><span className={styles.iconShell}><HomeIcon /></span><span>Home</span></Link>
             <Link href="/life" className={styles.lifeActive}><span className={styles.navPearl} /><strong>Life</strong></Link>
             <Link href="/notes"><span className={styles.iconShell}><NotebookText /></span><span>Journal</span></Link>
             <Link href="/calendar"><span className={styles.iconShell}><CalendarDays /></span><span>Calendar</span></Link>
@@ -239,12 +241,12 @@ export default async function LifePage({ searchParams }: LifePageProps) {
             <small>{greeting},</small>
             <strong>{firstName}</strong>
             <div><span>Today</span><b>{todayEvents.length} event{todayEvents.length === 1 ? '' : 's'}</b></div>
-            <div><span>Energy</span><b>{formatEnergy(latestWellness?.energy)}</b></div>
+            <div><span>Energy</span><b>{energy ?? 'Not logged'}</b></div>
           </div>
 
           <Link href="/ask-glow" className={styles.voiceGlow}>
             <span className={styles.voicePearl} />
-            <span><small>Ask Glow</small><strong>Listening when you need it</strong></span>
+            <span><small>Ask Glow</small><strong>Listening</strong></span>
           </Link>
         </aside>
 
@@ -261,7 +263,8 @@ export default async function LifePage({ searchParams }: LifePageProps) {
           ))}
 
           <Link href="/ask-glow" className={styles.centerYou}>
-            <span className={styles.centerHalo} aria-hidden="true" />
+            <span className={styles.centerHaloA} aria-hidden="true" />
+            <span className={styles.centerHaloB} aria-hidden="true" />
             <span className={styles.centerRefraction} aria-hidden="true" />
             <strong>You at<br />the center</strong>
             <i />
@@ -270,7 +273,7 @@ export default async function LifePage({ searchParams }: LifePageProps) {
         </section>
 
         <aside className={styles.rightRail} aria-label="Life intelligence">
-          <section className={styles.flowCard}>
+          <section className={styles.flowSection}>
             <span className={styles.eyebrow}>Life Flow</span>
             <small>This week</small>
             <div className={styles.flowList}>
@@ -287,61 +290,30 @@ export default async function LifePage({ searchParams }: LifePageProps) {
             </div>
           </section>
 
-          <section className={styles.scoreCard}>
+          <section className={styles.scoreSection}>
             <span className={styles.eyebrow}>Life Score</span>
             <small>Aligned</small>
             <strong>—</strong>
             <div className={styles.scoreArc} aria-hidden="true" />
-            <p>Not enough verified signal yet to calculate a real alignment score.</p>
+            <p>Still forming</p>
           </section>
 
-          <section className={styles.movesCard}>
+          <section className={styles.movesSection}>
             <span className={styles.eyebrow}>Recent moves</span>
             {recentNotes.length ? recentNotes.map((note) => (
               <Link href="/notes" key={note.id}>
-                <NotebookText size={12} strokeWidth={1.35} />
-                <span><strong>{note.title}</strong><small>Updated {note.updatedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</small></span>
-                <ChevronRight size={12} strokeWidth={1.3} />
+                <span className={styles.moveIcon} aria-hidden="true">✓</span>
+                <span><strong>{humanMoveTitle(note.title)}</strong><small>Updated {note.updatedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</small></span>
               </Link>
-            )) : <p>No recent moves yet.</p>}
+            )) : <p>Nothing new yet.</p>}
           </section>
         </aside>
-
-        <section className={styles.bottomBand} aria-label="Today at a glance">
-          <div className={styles.todayGlance}>
-            <div className={styles.glanceDate}>
-              <span>Today at a glance</span>
-              <strong>{dateText}</strong>
-              <small>{calendarConnected ? 'Weather not connected' : 'Calendar and weather are not fully connected'}</small>
-            </div>
-            <div className={styles.eventStrip}>
-              {remainingToday.length ? remainingToday.map((event) => (
-                <Link href="/calendar" key={event.id} className={styles.eventItem}>
-                  <b>{formatEventTime(event.startAt)}</b>
-                  <span>{event.title}</span>
-                </Link>
-              )) : <div className={styles.emptyEvent}>No more events today.</div>}
-            </div>
-            <Link href="/calendar" className={styles.viewCalendar}>View calendar <span aria-hidden="true">→</span></Link>
-          </div>
-
-          <Link href="/ask-glow" className={styles.editorialCard}>
-            <span className={styles.editorialGlow} aria-hidden="true" />
-            <small>GLOW</small>
-            <strong>A more intentional you,<br />in a more beautiful life.</strong>
-            <span>Ask Glow <span aria-hidden="true">→</span></span>
-          </Link>
-        </section>
-
-        <footer className={styles.footer}>
-          <LifeHistoryControls />
-          <Link href="/today?room=replan" className={styles.planDay}>
-            <span className={styles.planOrb}><Sparkles size={12} /></span>
-            <strong>Plan my day with Glow</strong>
-          </Link>
-          <div className={styles.savedReceipt}><span aria-hidden="true">✓</span> All changes saved</div>
-        </footer>
       </section>
+
+      <div className={styles.externalControls}>
+        <LifeHistoryControls />
+        <div className={styles.savedReceipt}><span aria-hidden="true">✓</span> All changes saved</div>
+      </div>
     </main>
   );
 }
