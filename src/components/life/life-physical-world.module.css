@@ -1,0 +1,361 @@
+.world {
+  --accent: 187, 201, 228;
+  --accent2: 235, 205, 185;
+  --ink: 39, 36, 40;
+  min-height: 100svh;
+  overflow-x: hidden;
+  padding: 12px;
+  color: rgb(var(--ink));
+  background:
+    radial-gradient(ellipse at 14% 3%, rgba(255,255,255,.98), transparent 38%),
+    radial-gradient(ellipse at 86% 8%, rgba(var(--accent),.22), transparent 32%),
+    radial-gradient(ellipse at 48% 102%, rgba(var(--accent2),.20), transparent 38%),
+    linear-gradient(145deg,#e9e4df 0%,#f8f4ef 48%,#e7e1dc 100%);
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.world *, .world *::before, .world *::after { box-sizing: border-box; }
+.world a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+.room_home { --accent: 210,194,225; --accent2: 231,194,165; }
+.room_body { --accent: 184,207,239; --accent2: 242,190,188; }
+.room_beauty { --accent: 226,195,226; --accent2: 244,196,176; }
+.room_closet { --accent: 187,197,235; --accent2: 226,204,186; }
+.room_food { --accent: 173,215,186; --accent2: 237,205,162; }
+.room_money { --accent: 166,217,207; --accent2: 202,195,232; }
+.room_work { --accent: 166,191,235; --accent2: 218,198,176; }
+.room_relationships { --accent: 239,183,196; --accent2: 244,211,174; }
+.room_travel { --accent: 157,208,246; --accent2: 244,202,158; }
+
+.worldLightA,.worldLightB { position:fixed; pointer-events:none; z-index:0; border-radius:50%; filter:blur(54px); }
+.worldLightA { width:48vw; height:28vw; left:8vw; top:-10vw; background:radial-gradient(ellipse,rgba(255,255,255,.94),rgba(var(--accent),.22) 48%,transparent 75%); }
+.worldLightB { width:44vw; height:34vw; right:-12vw; bottom:-12vw; background:radial-gradient(ellipse,rgba(var(--accent2),.25),rgba(255,255,255,.12) 53%,transparent 76%); }
+
+.frame {
+  position:relative;
+  z-index:1;
+  width:min(1500px,100%);
+  min-height:calc(100svh - 24px);
+  margin:0 auto;
+  padding:0 24px 24px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.96);
+  border-radius:31px;
+  background:
+    radial-gradient(ellipse at 50% 42%,rgba(255,255,255,.58),transparent 56%),
+    linear-gradient(145deg,rgba(255,255,255,.48),rgba(249,245,242,.16));
+  box-shadow:0 34px 98px rgba(78,65,75,.11), inset 0 1px 0 #fff, inset 0 -1px 0 rgba(188,180,190,.20);
+  backdrop-filter:blur(28px) saturate(122%);
+}
+.frame::before { content:""; position:absolute; inset:6px; pointer-events:none; border:1px solid rgba(255,255,255,.50); border-radius:25px; }
+
+.header { position:relative; z-index:20; min-height:124px; padding:24px 4px 0; }
+.returnAnchor,.glowPresence {
+  position:absolute; top:22px; height:44px; display:inline-flex; align-items:center; gap:9px; padding:0 15px;
+  border:1px solid rgba(255,255,255,.92); border-radius:999px;
+  background:linear-gradient(145deg,rgba(255,255,255,.54),rgba(255,255,255,.16));
+  box-shadow:inset 0 1px 0 #fff,0 10px 25px rgba(75,64,78,.06); backdrop-filter:blur(20px) saturate(130%);
+  color:rgba(var(--ink),.70); font-size:12px; font-weight:650;
+}
+.returnAnchor { left:4px; padding-left:12px; }
+.returnAnchor i { width:9px; height:9px; border-radius:50%; background:rgba(var(--accent),.75); box-shadow:0 0 12px rgba(var(--accent),.78); }
+.glowPresence { right:4px; }
+.glowPresence i { width:28px; height:28px; border-radius:50%; border:1px solid rgba(255,255,255,.98); background:radial-gradient(circle at 28% 20%,#fff 0 11%,rgba(var(--accent),.55) 38%,rgba(var(--accent2),.40) 69%,rgba(255,255,255,.14)); box-shadow:inset 4px 4px 9px #fff,0 5px 15px rgba(76,65,86,.13),0 0 15px rgba(255,255,255,.8); }
+.identity { text-align:center; padding:2px 150px 0; }
+.identity small { display:block; font-size:9px; letter-spacing:.28em; color:rgba(var(--ink),.40); }
+.identity h1 { margin:8px 0 0; font-family:Georgia,"Times New Roman",serif; font-size:32px; font-weight:500; letter-spacing:.28em; }
+.identity p { max-width:700px; margin:9px auto 0; color:rgba(var(--ink),.57); font-size:13px; line-height:1.45; }
+
+.depthPath {
+  position:relative; z-index:18; width:min(760px,78%); min-height:45px; margin:-6px auto 16px;
+  display:flex; align-items:center; justify-content:center; gap:clamp(13px,2vw,30px); padding:0 18px;
+}
+.depthPath::before { content:""; position:absolute; left:5%; right:5%; top:15px; height:1px; background:linear-gradient(90deg,transparent,rgba(var(--accent),.32),rgba(255,255,255,.95),rgba(var(--accent2),.30),transparent); }
+.depthPath a { position:relative; min-width:74px; display:grid; justify-items:center; gap:7px; color:rgba(var(--ink),.46); font-size:10px; font-weight:650; transition:.25s ease; }
+.depthPath a i { position:relative; z-index:2; width:9px; height:9px; border-radius:50%; border:1px solid rgba(255,255,255,.96); background:rgba(255,255,255,.64); box-shadow:0 3px 10px rgba(72,62,75,.08),inset 1px 1px 3px #fff; }
+.depthPath a:hover { color:rgba(var(--ink),.77); transform:translateY(-1px); }
+.depthPath .depthActive { color:rgba(var(--ink),.88); }
+.depthPath .depthActive i { width:17px; height:17px; margin-top:-4px; background:radial-gradient(circle at 29% 23%,#fff 0 14%,rgba(var(--accent),.65) 43%,rgba(var(--accent2),.44) 72%,rgba(255,255,255,.14)); box-shadow:inset 3px 3px 6px #fff,0 5px 16px rgba(76,65,86,.12),0 0 17px rgba(var(--accent),.27); }
+
+.roomLayout { display:grid; grid-template-columns:minmax(0,1fr) 230px; gap:18px; align-items:stretch; }
+.scene {
+  position:relative; min-height:700px; overflow:hidden; border:1px solid rgba(255,255,255,.62); border-radius:42px;
+  background:
+    radial-gradient(circle at 50% 48%,rgba(255,255,255,.86) 0 5%,rgba(var(--accent),.12) 31%,transparent 56%),
+    radial-gradient(ellipse at 16% 17%,rgba(255,255,255,.52),transparent 34%),
+    radial-gradient(ellipse at 84% 82%,rgba(var(--accent2),.12),transparent 38%),
+    linear-gradient(145deg,rgba(255,255,255,.26),rgba(255,255,255,.07));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.88),inset 0 -18px 46px rgba(var(--accent),.035),0 22px 58px rgba(78,65,76,.055);
+  isolation:isolate;
+}
+.scene::after { content:""; position:absolute; inset:10px; pointer-events:none; border:1px solid rgba(255,255,255,.32); border-radius:34px; }
+.causticSweep { position:absolute; z-index:0; width:74%; height:53%; left:13%; top:22%; border-radius:50%; background:radial-gradient(ellipse,rgba(255,255,255,.80),rgba(var(--accent),.14) 43%,transparent 72%); filter:blur(24px); opacity:.78; }
+
+.sceneObject { position:absolute; z-index:3; left:50%; top:51%; width:42%; height:57%; transform:translate(-50%,-50%); filter:drop-shadow(0 24px 30px rgba(73,61,75,.11)); animation:materialReveal .55s ease both; }
+.objectGlow { position:absolute; inset:-14%; border-radius:50%; background:radial-gradient(ellipse,rgba(255,255,255,.76),rgba(var(--accent),.18) 43%,transparent 70%); filter:blur(18px); }
+.objectShell,.objectA,.objectB,.objectC,.objectD,.objectE,.objectF,.objectG,.objectH,.objectI,.objectJ { position:absolute; display:block; border:1px solid rgba(255,255,255,.88); box-shadow:inset 4px 4px 12px rgba(255,255,255,.70),0 9px 20px rgba(72,61,75,.06); }
+.objectShell { inset:8%; border-radius:32px; background:linear-gradient(145deg,rgba(255,255,255,.48),rgba(var(--accent),.11)); }
+.pearlOne,.pearlTwo,.pearlThree { position:absolute; border-radius:50%; border:1px solid rgba(255,255,255,.95); background:radial-gradient(circle at 27% 20%,#fff 0 14%,rgba(var(--accent),.48) 44%,rgba(var(--accent2),.28) 72%,rgba(255,255,255,.08)); box-shadow:inset 3px 3px 7px #fff,0 8px 18px rgba(76,64,83,.10); }
+.pearlOne { width:32px; height:32px; left:5%; top:17%; }
+.pearlTwo { width:19px; height:19px; right:4%; top:32%; }
+.pearlThree { width:24px; height:24px; right:12%; bottom:5%; }
+
+.heroCopy { position:absolute; z-index:8; left:50%; bottom:23px; transform:translateX(-50%); width:min(420px,50%); text-align:center; display:grid; justify-items:center; gap:6px; }
+.heroCopy svg { opacity:.54; }
+.heroCopy strong { font-family:Georgia,"Times New Roman",serif; font-size:20px; line-height:1.1; font-weight:600; }
+.heroCopy p { margin:0; max-width:410px; color:rgba(var(--ink),.53); font-size:10px; line-height:1.45; }
+
+.moduleField { position:absolute; inset:0; z-index:7; }
+.module { position:absolute; min-height:142px; width:26%; padding:18px 17px 15px; overflow:hidden; border:1px solid rgba(255,255,255,.89); background:linear-gradient(145deg,rgba(255,255,255,.51),rgba(255,255,255,.12)); box-shadow:inset 0 2px 1px rgba(255,255,255,.93),0 15px 34px rgba(75,62,73,.065); backdrop-filter:blur(18px) saturate(128%); animation:moduleReveal .48s ease both; }
+.module:nth-child(2){ animation-delay:.035s; }.module:nth-child(3){ animation-delay:.07s; }.module:nth-child(4){ animation-delay:.105s; }.module:nth-child(5){ animation-delay:.14s; }.module:nth-child(6){ animation-delay:.175s; }
+.module_1 { left:2.5%; top:4%; border-radius:31px 54px 35px 48px; }
+.module_2 { right:2.7%; top:5%; border-radius:54px 31px 46px 34px; }
+.module_3 { left:1.7%; top:38%; border-radius:45px 32px 57px 35px; }
+.module_4 { right:1.5%; top:38%; border-radius:34px 49px 31px 58px; }
+.module_5 { left:4.2%; bottom:4.8%; border-radius:37px 58px 35px 46px; }
+.module_6 { right:4%; bottom:4.5%; border-radius:58px 34px 49px 32px; }
+.moduleObject { float:right; width:48px; height:48px; margin:-3px -2px 8px 10px; display:grid; place-items:center; border-radius:50%; border:1px solid rgba(255,255,255,.96); background:radial-gradient(circle at 28% 22%,#fff 0 13%,rgba(var(--accent),.45) 47%,rgba(var(--accent2),.22) 74%,rgba(255,255,255,.10)); box-shadow:inset 3px 3px 8px #fff,0 8px 16px rgba(78,65,84,.08); color:rgba(var(--ink),.44); }
+.moduleText strong { display:block; font-family:Georgia,"Times New Roman",serif; font-size:16px; line-height:1.04; font-weight:600; }
+.moduleText small { display:block; margin-top:5px; color:rgba(var(--ink),.51); font-size:9px; line-height:1.25; }
+.moduleText > div { clear:both; margin-top:10px; display:grid; gap:4px; }
+.moduleText > div span { display:flex; align-items:center; gap:6px; color:rgba(var(--ink),.57); font-size:8px; line-height:1.2; }
+.moduleText > div i { width:5px; height:5px; flex:0 0 auto; border-radius:50%; background:rgba(var(--accent),.80); box-shadow:0 0 7px rgba(var(--accent),.30); }
+
+.intelligence { display:grid; align-content:start; gap:12px; }
+.intelligenceMain,.glowInside,.continuity { border:1px solid rgba(255,255,255,.74); background:linear-gradient(145deg,rgba(255,255,255,.43),rgba(255,255,255,.12)); box-shadow:inset 0 1px 0 rgba(255,255,255,.90),0 16px 38px rgba(76,64,74,.055); backdrop-filter:blur(18px) saturate(125%); }
+.intelligenceMain { min-height:400px; padding:23px 19px; border-radius:31px 39px 34px 30px; }
+.eyebrow { display:block; color:rgba(var(--ink),.42); font-size:9px; letter-spacing:.14em; text-transform:uppercase; }
+.intelligenceMain > strong { display:block; margin-top:13px; font-family:Georgia,"Times New Roman",serif; font-size:20px; line-height:1.12; font-weight:600; }
+.intelligenceMain > p { margin:10px 0 0; color:rgba(var(--ink),.54); font-size:10px; line-height:1.55; }
+.signalList { margin-top:22px; display:grid; gap:13px; }
+.signalList span { min-height:31px; display:flex; align-items:center; gap:9px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,.34); color:rgba(var(--ink),.65); font-size:10px; }
+.signalList i { width:9px; height:9px; border-radius:50%; background:radial-gradient(circle at 30% 25%,#fff 0 10%,rgba(var(--accent),.85) 54%,rgba(var(--accent2),.55)); box-shadow:0 0 9px rgba(var(--accent),.34); }
+.glowInside { padding:18px; border-radius:29px 34px 27px 37px; }
+.glowInside svg { opacity:.58; }
+.glowInside strong { display:block; margin-top:8px; font-family:Georgia,"Times New Roman",serif; font-size:16px; }
+.glowInside p { margin:7px 0 0; color:rgba(var(--ink),.53); font-size:9px; line-height:1.45; }
+.glowInside a { display:inline-flex; min-height:38px; align-items:center; margin-top:10px; color:rgba(var(--ink),.75); font-size:9px; font-weight:700; }
+.continuity { min-height:43px; padding:10px 13px; border-radius:999px; display:flex; align-items:center; gap:8px; color:rgba(var(--ink),.53); font-size:8px; }
+
+/* HOME: architecture, not cards */
+.scene_home-model .sceneObject,.scene_house-cutaway .sceneObject,.scene_home-rhythm .sceneObject,.scene_home-xray .sceneObject,.scene_home-storage .sceneObject,.scene_home-drafting .sceneObject { width:48%; height:61%; }
+.motif_home-model .objectShell,.motif_house-cutaway .objectShell,.motif_home-rhythm .objectShell,.motif_home-xray .objectShell,.motif_home-storage .objectShell,.motif_home-drafting .objectShell { inset:8% 5%; border-radius:24px; transform:perspective(700px) rotateX(54deg) rotateZ(-2deg); transform-origin:center; background:linear-gradient(145deg,rgba(255,255,255,.62),rgba(239,219,199,.18)); }
+.motif_home-model .objectA,.motif_home-model .objectB,.motif_home-model .objectC,.motif_home-model .objectD,.motif_home-model .objectE,.motif_home-model .objectF,
+.motif_house-cutaway .objectA,.motif_house-cutaway .objectB,.motif_house-cutaway .objectC,.motif_house-cutaway .objectD,.motif_house-cutaway .objectE,.motif_house-cutaway .objectF { background:linear-gradient(145deg,rgba(255,255,255,.68),rgba(var(--accent),.12)); border-radius:10px; }
+.motif_home-model .objectA,.motif_house-cutaway .objectA { left:13%; top:21%; width:31%; height:27%; }
+.motif_home-model .objectB,.motif_house-cutaway .objectB { left:46%; top:21%; width:20%; height:27%; }
+.motif_home-model .objectC,.motif_house-cutaway .objectC { right:12%; top:21%; width:20%; height:27%; }
+.motif_home-model .objectD,.motif_house-cutaway .objectD { left:13%; bottom:20%; width:32%; height:27%; }
+.motif_home-model .objectE,.motif_house-cutaway .objectE { left:47%; bottom:20%; width:20%; height:27%; }
+.motif_home-model .objectF,.motif_house-cutaway .objectF { right:12%; bottom:20%; width:19%; height:27%; }
+.motif_house-cutaway .objectA,.motif_house-cutaway .objectD { transform:translateY(-12px); box-shadow:inset 0 14px 18px rgba(255,255,255,.65),0 18px 25px rgba(83,67,72,.09); }
+.motif_home-rhythm .objectA,.motif_home-rhythm .objectB,.motif_home-rhythm .objectC,.motif_home-rhythm .objectD { border-radius:50%; background:transparent; }
+.motif_home-rhythm .objectA { inset:8%; border-color:rgba(var(--accent),.34); }
+.motif_home-rhythm .objectB { inset:17%; border-color:rgba(var(--accent2),.36); }
+.motif_home-rhythm .objectC { inset:27%; border-color:rgba(255,255,255,.95); }
+.motif_home-rhythm .objectD { left:45%; top:45%; width:11%; height:11%; background:rgba(255,255,255,.66); }
+.motif_home-xray .objectShell { background:rgba(255,255,255,.12); border-color:rgba(var(--accent),.55); }
+.motif_home-xray .objectA,.motif_home-xray .objectB,.motif_home-xray .objectC,.motif_home-xray .objectD,.motif_home-xray .objectE { height:5px; border:0; border-radius:999px; background:linear-gradient(90deg,rgba(106,182,221,.20),rgba(106,182,221,.88),rgba(160,213,205,.66)); box-shadow:0 0 14px rgba(116,188,221,.26); transform-origin:left; }
+.motif_home-xray .objectA { left:14%; top:28%; width:68%; transform:rotate(14deg); }.motif_home-xray .objectB { left:18%; top:44%; width:58%; transform:rotate(-19deg); }.motif_home-xray .objectC { left:35%; top:18%; width:54%; transform:rotate(71deg); }.motif_home-xray .objectD { left:22%; top:62%; width:61%; transform:rotate(8deg); }.motif_home-xray .objectE { left:56%; top:32%; width:43%; transform:rotate(104deg); }
+.motif_home-storage .objectShell { background:linear-gradient(145deg,rgba(255,255,255,.62),rgba(228,217,205,.16)); }
+.motif_home-storage .objectA,.motif_home-storage .objectB,.motif_home-storage .objectC,.motif_home-storage .objectD { left:16%; width:68%; height:9%; border-radius:8px; background:rgba(255,255,255,.58); }
+.motif_home-storage .objectA{top:24%}.motif_home-storage .objectB{top:40%}.motif_home-storage .objectC{top:56%}.motif_home-storage .objectD{top:72%}
+.motif_home-storage .objectE,.motif_home-storage .objectF,.motif_home-storage .objectG { bottom:17%; width:17%; height:20%; border-radius:10px; background:linear-gradient(145deg,rgba(var(--accent),.18),rgba(255,255,255,.52)); }
+.motif_home-storage .objectE{left:20%}.motif_home-storage .objectF{left:42%}.motif_home-storage .objectG{right:20%}
+.motif_home-drafting .objectShell { border-radius:12px; background:repeating-linear-gradient(0deg,rgba(var(--accent),.08) 0 1px,transparent 1px 24px),repeating-linear-gradient(90deg,rgba(var(--accent),.08) 0 1px,transparent 1px 24px),rgba(255,255,255,.46); }
+.motif_home-drafting .objectA { left:12%; top:15%; width:64%; height:1px; transform:rotate(23deg); background:rgba(var(--accent),.48); }.motif_home-drafting .objectB { right:12%; top:24%; width:18%; height:55%; border-radius:5px; background:linear-gradient(rgba(var(--accent2),.16),rgba(255,255,255,.48)); }.motif_home-drafting .objectC { left:19%; bottom:20%; width:48%; height:20%; border-radius:9px; background:rgba(255,255,255,.42); }
+
+/* BODY */
+.scene_body-form .sceneObject,.scene_mind-cloud .sceneObject,.scene_energy-current .sceneObject,.scene_recovery-cocoon .sceneObject { width:38%; height:65%; }
+.motif_body-form .objectShell,.motif_recovery-cocoon .objectShell { inset:2% 8%; border-radius:48% 52% 47% 53% / 38% 39% 61% 62%; background:radial-gradient(ellipse,rgba(255,255,255,.48),rgba(var(--accent),.13) 53%,rgba(255,255,255,.08)); }
+.motif_body-form .objectA { left:43%; top:8%; width:15%; height:15%; border-radius:50%; background:rgba(255,255,255,.68); }
+.motif_body-form .objectB { left:39%; top:23%; width:23%; height:34%; border-radius:48% 52% 40% 60%; background:linear-gradient(rgba(255,255,255,.65),rgba(var(--accent2),.14)); }
+.motif_body-form .objectC,.motif_body-form .objectD { top:27%; width:7%; height:38%; border-radius:999px; background:rgba(255,255,255,.55); }.motif_body-form .objectC{left:31%;transform:rotate(8deg)}.motif_body-form .objectD{right:30%;transform:rotate(-8deg)}
+.motif_body-form .objectE,.motif_body-form .objectF { top:53%; width:8%; height:38%; border-radius:999px; background:rgba(255,255,255,.56); }.motif_body-form .objectE{left:41%}.motif_body-form .objectF{right:40%}
+.motif_body-form .objectG { left:48%; top:34%; width:8%; height:8%; border-radius:50%; background:radial-gradient(circle,#fff,rgba(247,188,171,.70)); box-shadow:0 0 24px rgba(244,181,164,.62); }
+.motif_mind-cloud .objectShell { inset:15%; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.72),rgba(197,205,244,.18) 55%,rgba(255,255,255,.05)); }
+.motif_mind-cloud .objectA,.motif_mind-cloud .objectB,.motif_mind-cloud .objectC,.motif_mind-cloud .objectD,.motif_mind-cloud .objectE { border-radius:50%; background:radial-gradient(circle at 30% 20%,#fff,rgba(var(--accent),.35) 60%,rgba(255,255,255,.08)); }
+.motif_mind-cloud .objectA{left:18%;top:20%;width:24%;height:24%}.motif_mind-cloud .objectB{right:14%;top:27%;width:31%;height:31%}.motif_mind-cloud .objectC{left:34%;bottom:18%;width:25%;height:25%}.motif_mind-cloud .objectD{left:38%;top:38%;width:14%;height:14%}.motif_mind-cloud .objectE{right:25%;bottom:24%;width:12%;height:12%}
+.motif_energy-current .objectShell { inset:8% 18%; border-radius:999px; background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(var(--accent),.13)); }
+.motif_energy-current .objectA,.motif_energy-current .objectB,.motif_energy-current .objectC,.motif_energy-current .objectD,.motif_energy-current .objectE { bottom:16%; width:9%; border-radius:999px; border:0; background:linear-gradient(180deg,rgba(255,255,255,.90),rgba(163,190,245,.65),rgba(244,194,179,.28)); box-shadow:0 0 16px rgba(var(--accent),.20); }
+.motif_energy-current .objectA{left:18%;height:22%}.motif_energy-current .objectB{left:32%;height:38%}.motif_energy-current .objectC{left:46%;height:58%}.motif_energy-current .objectD{left:60%;height:43%}.motif_energy-current .objectE{left:74%;height:29%}
+.motif_recovery-cocoon .objectShell { inset:3% 10%; border-radius:50%; background:radial-gradient(ellipse,rgba(255,255,255,.77),rgba(198,218,239,.17) 55%,rgba(247,210,207,.10)); }
+.motif_recovery-cocoon .objectA,.motif_recovery-cocoon .objectB,.motif_recovery-cocoon .objectC { border-radius:50%; background:transparent; }
+.motif_recovery-cocoon .objectA{inset:13%;border-color:rgba(255,255,255,.76)}.motif_recovery-cocoon .objectB{inset:25%;border-color:rgba(var(--accent),.35)}.motif_recovery-cocoon .objectC{inset:37%;background:radial-gradient(circle,#fff,rgba(var(--accent2),.25))}
+
+/* BEAUTY */
+.scene_beauty-vanity .sceneObject,.scene_skin-lab .sceneObject,.scene_hair-studio .sceneObject,.scene_makeup-station .sceneObject,.scene_body-bath .sceneObject,.scene_fragrance-cabinet .sceneObject { width:44%; height:63%; }
+.motif_beauty-vanity .objectShell { inset:3% 17% 19%; border-radius:48% 48% 42% 42%; background:linear-gradient(145deg,rgba(255,255,255,.30),rgba(242,221,211,.17)); box-shadow:inset 0 0 36px rgba(255,255,255,.67),0 0 30px rgba(244,210,189,.24); }
+.motif_beauty-vanity .objectA { left:21%; right:21%; bottom:13%; height:12%; border-radius:12px; background:rgba(255,255,255,.65); }
+.motif_beauty-vanity .objectB,.motif_beauty-vanity .objectC,.motif_beauty-vanity .objectD { bottom:19%; width:9%; border-radius:8px 8px 3px 3px; background:linear-gradient(rgba(255,255,255,.85),rgba(233,208,198,.28)); }.motif_beauty-vanity .objectB{left:24%;height:19%}.motif_beauty-vanity .objectC{left:34%;height:13%}.motif_beauty-vanity .objectD{right:25%;height:24%}
+.motif_beauty-vanity .objectE,.motif_beauty-vanity .objectF,.motif_beauty-vanity .objectG { right:32%; bottom:23%; width:2px; height:17%; border:0; background:rgba(173,142,130,.42); transform-origin:bottom; }.motif_beauty-vanity .objectE{transform:rotate(-14deg)}.motif_beauty-vanity .objectF{transform:rotate(4deg)}.motif_beauty-vanity .objectG{transform:rotate(18deg)}
+.motif_skin-lab .objectShell,.motif_fragrance-cabinet .objectShell { inset:7% 10%; border-radius:24px; background:linear-gradient(145deg,rgba(255,255,255,.62),rgba(230,212,228,.13)); }
+.motif_skin-lab .objectA,.motif_skin-lab .objectB,.motif_skin-lab .objectC,.motif_skin-lab .objectD,.motif_fragrance-cabinet .objectA,.motif_fragrance-cabinet .objectB,.motif_fragrance-cabinet .objectC,.motif_fragrance-cabinet .objectD { bottom:18%; width:15%; border-radius:10px 10px 5px 5px; background:linear-gradient(180deg,rgba(255,255,255,.85),rgba(var(--accent),.16)); }
+.motif_skin-lab .objectA{left:15%;height:39%}.motif_skin-lab .objectB{left:34%;height:29%}.motif_skin-lab .objectC{right:34%;height:47%}.motif_skin-lab .objectD{right:15%;height:34%}
+.motif_skin-lab .objectE,.motif_skin-lab .objectF { left:13%; right:13%; height:5px; border-radius:999px; background:rgba(255,255,255,.72); }.motif_skin-lab .objectE{top:29%}.motif_skin-lab .objectF{top:52%}
+.motif_hair-studio .objectShell { inset:12% 6%; border-radius:50%; background:transparent; }
+.motif_hair-studio .objectA,.motif_hair-studio .objectB,.motif_hair-studio .objectC { border-radius:50% 20% 55% 25%; border-width:4px; background:transparent; box-shadow:none; }.motif_hair-studio .objectA{inset:15% 8%;border-color:rgba(216,185,169,.46);transform:rotate(-18deg)}.motif_hair-studio .objectB{inset:22% 14%;border-color:rgba(181,168,203,.38);transform:rotate(20deg)}.motif_hair-studio .objectC{inset:30% 20%;border-color:rgba(255,255,255,.82);transform:rotate(-30deg)}
+.motif_hair-studio .objectD { right:11%; bottom:14%; width:17%; height:40%; border-radius:999px; background:repeating-linear-gradient(90deg,rgba(153,133,129,.38) 0 2px,transparent 2px 5px),rgba(255,255,255,.50); transform:rotate(20deg); }
+.motif_makeup-station .objectShell { inset:15% 8% 22%; border-radius:24px; background:linear-gradient(145deg,rgba(255,255,255,.67),rgba(235,211,225,.16)); }
+.motif_makeup-station .objectA,.motif_makeup-station .objectB,.motif_makeup-station .objectC,.motif_makeup-station .objectD { top:35%; width:15%; height:15%; border-radius:50%; background:radial-gradient(circle,#fff,rgba(235,187,175,.38)); }.motif_makeup-station .objectA{left:16%}.motif_makeup-station .objectB{left:34%}.motif_makeup-station .objectC{left:52%}.motif_makeup-station .objectD{right:15%}
+.motif_makeup-station .objectE { left:18%; right:18%; bottom:29%; height:14%; border-radius:999px; background:rgba(255,255,255,.55); }
+.motif_body-bath .objectShell { inset:24% 7% 18%; border-radius:18px 18px 45% 45%; background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(188,220,235,.16)); }
+.motif_body-bath .objectA { left:22%; right:22%; bottom:26%; height:31%; border-radius:50%; background:radial-gradient(ellipse,#fff,rgba(202,225,240,.22)); }.motif_body-bath .objectB,.motif_body-bath .objectC{bottom:18%;width:17%;height:26%;border-radius:10px;background:rgba(255,255,255,.60)}.motif_body-bath .objectB{left:14%}.motif_body-bath .objectC{right:14%}
+.motif_fragrance-cabinet .objectA{left:17%;height:34%}.motif_fragrance-cabinet .objectB{left:37%;height:43%}.motif_fragrance-cabinet .objectC{right:36%;height:29%}.motif_fragrance-cabinet .objectD{right:15%;height:39%}
+.motif_fragrance-cabinet .objectE,.motif_fragrance-cabinet .objectF,.motif_fragrance-cabinet .objectG,.motif_fragrance-cabinet .objectH { top:34%; width:9%; height:8%; border-radius:50%; background:radial-gradient(circle,#fff,rgba(var(--accent2),.45)); }.motif_fragrance-cabinet .objectE{left:20%}.motif_fragrance-cabinet .objectF{left:40%}.motif_fragrance-cabinet .objectG{right:39%}.motif_fragrance-cabinet .objectH{right:18%}
+
+/* CLOSET: garment architecture */
+.scene_closet-wardrobe .sceneObject,.scene_closet-outfits .sceneObject,.scene_closet-occasions .sceneObject,.scene_closet-favorites .sceneObject,.scene_closet-history .sceneObject { width:56%; height:64%; }
+.motif_closet-wardrobe .objectShell,.motif_closet-outfits .objectShell { inset:4% 3% 18%; border-radius:20px; background:linear-gradient(145deg,rgba(255,255,255,.69),rgba(208,211,236,.15)); box-shadow:inset 0 2px 0 #fff,inset 0 -12px 26px rgba(177,172,199,.08),0 20px 30px rgba(80,68,78,.09); }
+.motif_closet-wardrobe .objectA,.motif_closet-wardrobe .objectB,.motif_closet-wardrobe .objectC,.motif_closet-wardrobe .objectD { top:14%; bottom:24%; width:1px; background:rgba(157,153,167,.28); border:0; box-shadow:none; }.motif_closet-wardrobe .objectA{left:23%}.motif_closet-wardrobe .objectB{left:42%}.motif_closet-wardrobe .objectC{left:61%}.motif_closet-wardrobe .objectD{left:80%}
+.motif_closet-wardrobe .objectE { left:8%; right:8%; top:23%; height:4px; border:0; border-radius:999px; background:linear-gradient(90deg,rgba(150,145,154,.20),rgba(255,255,255,.9),rgba(150,145,154,.20)); }
+.motif_closet-wardrobe .objectF,.motif_closet-wardrobe .objectG,.motif_closet-wardrobe .objectH,.motif_closet-wardrobe .objectI,.motif_closet-wardrobe .objectJ { top:25%; width:11%; height:38%; border-radius:45% 45% 10px 10px; border-color:rgba(255,255,255,.73); background:linear-gradient(150deg,rgba(255,255,255,.82),rgba(188,194,225,.28),rgba(229,207,198,.20)); box-shadow:inset 4px 3px 10px rgba(255,255,255,.77),0 8px 13px rgba(78,66,77,.06); }.motif_closet-wardrobe .objectF{left:10%}.motif_closet-wardrobe .objectG{left:28%;height:45%}.motif_closet-wardrobe .objectH{left:47%;height:34%}.motif_closet-wardrobe .objectI{left:66%;height:47%}.motif_closet-wardrobe .objectJ{right:7%;height:40%}
+.motif_closet-outfits .objectShell { inset:7% 10% 23%; }
+.motif_closet-outfits .objectA,.motif_closet-outfits .objectB,.motif_closet-outfits .objectC { top:24%; width:20%; height:48%; border-radius:48% 48% 18px 18px; background:linear-gradient(155deg,rgba(255,255,255,.82),rgba(194,195,224,.25),rgba(233,205,191,.18)); }.motif_closet-outfits .objectA{left:15%}.motif_closet-outfits .objectB{left:40%;height:55%;top:18%}.motif_closet-outfits .objectC{right:15%}
+.motif_closet-outfits .objectD { left:10%; right:10%; top:19%; height:4px; border:0; border-radius:999px; background:rgba(151,146,158,.34); }
+.motif_closet-occasions .objectShell { inset:10% 5% 20%; background:transparent; border:0; box-shadow:none; }
+.motif_closet-occasions .objectA,.motif_closet-occasions .objectB,.motif_closet-occasions .objectC,.motif_closet-occasions .objectD,.motif_closet-occasions .objectE { top:18%; width:16%; height:58%; border-radius:50% 50% 22px 22px; background:linear-gradient(180deg,rgba(255,255,255,.64),rgba(var(--accent),.13)); }.motif_closet-occasions .objectA{left:4%}.motif_closet-occasions .objectB{left:24%}.motif_closet-occasions .objectC{left:44%}.motif_closet-occasions .objectD{left:64%}.motif_closet-occasions .objectE{right:0}
+.motif_closet-favorites .objectShell { inset:10%; border-radius:28px; background:linear-gradient(145deg,rgba(255,255,255,.67),rgba(223,205,227,.11)); }
+.motif_closet-favorites .objectA,.motif_closet-favorites .objectB,.motif_closet-favorites .objectC,.motif_closet-favorites .objectD { width:31%; height:30%; border-radius:18px; background:radial-gradient(circle at 55% 38%,rgba(255,255,255,.95),rgba(var(--accent),.18)); }.motif_closet-favorites .objectA{left:14%;top:18%}.motif_closet-favorites .objectB{right:14%;top:18%}.motif_closet-favorites .objectC{left:14%;bottom:18%}.motif_closet-favorites .objectD{right:14%;bottom:18%}
+.motif_closet-history .objectShell { inset:15% 2% 30%; border:0; border-radius:0; background:linear-gradient(90deg,transparent,rgba(var(--accent),.34),rgba(255,255,255,.88),rgba(var(--accent2),.30),transparent); height:3px; top:47%; box-shadow:0 0 16px rgba(255,255,255,.70); }
+.motif_closet-history .objectA,.motif_closet-history .objectB,.motif_closet-history .objectC,.motif_closet-history .objectD,.motif_closet-history .objectE { top:28%; width:16%; height:39%; border-radius:15px; background:linear-gradient(145deg,rgba(255,255,255,.72),rgba(var(--accent),.14)); }.motif_closet-history .objectA{left:2%}.motif_closet-history .objectB{left:22%}.motif_closet-history .objectC{left:42%}.motif_closet-history .objectD{left:62%}.motif_closet-history .objectE{right:2%}
+.scene_closet-wardrobe .module { border-radius:14px; background:linear-gradient(145deg,rgba(255,255,255,.60),rgba(215,216,237,.10)); }
+.scene_closet-wardrobe .moduleObject { border-radius:14px; }
+
+/* FOOD */
+.scene_food-table .sceneObject,.scene_meal-clock .sceneObject,.scene_recipe-surface .sceneObject,.scene_pantry-wall .sceneObject,.scene_market-basket .sceneObject { width:45%; height:62%; }
+.motif_food-table .objectShell { inset:17%; border-radius:50%; background:radial-gradient(circle at 42% 35%,rgba(255,255,255,.95),rgba(234,226,210,.32) 58%,rgba(255,255,255,.22)); box-shadow:inset 8px 8px 18px #fff,0 18px 28px rgba(79,68,69,.09); }
+.motif_food-table .objectA,.motif_food-table .objectB,.motif_food-table .objectC,.motif_food-table .objectD,.motif_food-table .objectE { border:0; box-shadow:none; border-radius:50% 12% 50% 12%; background:linear-gradient(135deg,rgba(111,169,91,.72),rgba(187,214,145,.46)); }.motif_food-table .objectA{left:30%;top:32%;width:17%;height:11%;transform:rotate(-25deg)}.motif_food-table .objectB{right:29%;top:34%;width:18%;height:12%;transform:rotate(24deg)}.motif_food-table .objectC{left:39%;bottom:29%;width:15%;height:10%;transform:rotate(42deg)}.motif_food-table .objectD{left:26%;bottom:38%;width:11%;height:9%}.motif_food-table .objectE{right:29%;bottom:37%;width:12%;height:10%}
+.motif_meal-clock .objectShell { inset:12%; border-radius:50%; background:radial-gradient(circle,#fff,rgba(223,233,214,.18) 64%,rgba(255,255,255,.12)); }.motif_meal-clock .objectA,.motif_meal-clock .objectB { left:50%; top:50%; transform-origin:left center; height:3px; border:0; border-radius:999px; background:rgba(78,70,68,.32); }.motif_meal-clock .objectA{width:25%;transform:rotate(-90deg)}.motif_meal-clock .objectB{width:19%;transform:rotate(-24deg)}
+.motif_meal-clock .objectC,.motif_meal-clock .objectD,.motif_meal-clock .objectE,.motif_meal-clock .objectF { width:12%; height:12%; border-radius:50%; background:radial-gradient(circle,#fff,rgba(var(--accent),.34)); }.motif_meal-clock .objectC{left:44%;top:9%}.motif_meal-clock .objectD{right:9%;top:44%}.motif_meal-clock .objectE{left:44%;bottom:9%}.motif_meal-clock .objectF{left:9%;top:44%}
+.motif_recipe-surface .objectShell { inset:7% 11% 15%; border-radius:18px; transform:rotate(-4deg); background:linear-gradient(145deg,rgba(255,255,255,.74),rgba(229,221,207,.18)); }
+.motif_recipe-surface .objectA { left:28%; top:22%; width:44%; height:44%; border-radius:50%; background:radial-gradient(circle,#fff,rgba(226,217,198,.33)); }.motif_recipe-surface .objectB,.motif_recipe-surface .objectC,.motif_recipe-surface .objectD { left:15%; width:15%; height:3px; border:0; border-radius:99px; background:rgba(102,95,88,.19); }.motif_recipe-surface .objectB{top:29%}.motif_recipe-surface .objectC{top:38%}.motif_recipe-surface .objectD{top:47%}
+.motif_pantry-wall .objectShell { inset:5%; border-radius:22px; background:linear-gradient(145deg,rgba(255,255,255,.67),rgba(210,226,211,.13)); }.motif_pantry-wall .objectA,.motif_pantry-wall .objectB,.motif_pantry-wall .objectC { left:12%; right:12%; height:5px; border-radius:999px; background:rgba(255,255,255,.78); }.motif_pantry-wall .objectA{top:29%}.motif_pantry-wall .objectB{top:50%}.motif_pantry-wall .objectC{top:71%}
+.motif_pantry-wall .objectD,.motif_pantry-wall .objectE,.motif_pantry-wall .objectF,.motif_pantry-wall .objectG,.motif_pantry-wall .objectH { bottom:29%; width:10%; height:22%; border-radius:8px; background:linear-gradient(rgba(255,255,255,.85),rgba(var(--accent),.20)); }.motif_pantry-wall .objectD{left:15%}.motif_pantry-wall .objectE{left:30%}.motif_pantry-wall .objectF{left:45%}.motif_pantry-wall .objectG{left:60%}.motif_pantry-wall .objectH{right:15%}
+.motif_market-basket .objectShell { left:14%; right:14%; top:30%; bottom:18%; border-radius:12px 12px 32px 32px; background:repeating-linear-gradient(90deg,rgba(255,255,255,.58) 0 12px,rgba(var(--accent),.10) 12px 18px); }.motif_market-basket .objectA { left:27%; top:15%; width:46%; height:38%; border:7px solid rgba(255,255,255,.68); border-bottom:0; border-radius:50% 50% 0 0; background:transparent; box-shadow:none; }
+.motif_market-basket .objectB,.motif_market-basket .objectC,.motif_market-basket .objectD { top:23%; width:16%; height:25%; border-radius:50% 15% 50% 15%; background:linear-gradient(135deg,rgba(102,169,88,.68),rgba(225,220,161,.42)); }.motif_market-basket .objectB{left:24%}.motif_market-basket .objectC{left:43%}.motif_market-basket .objectD{right:23%}
+
+/* MONEY */
+.scene_money-flow .sceneObject,.scene_account-reservoirs .sceneObject,.scene_spending-streams .sceneObject,.scene_saving-vessels .sceneObject,.scene_money-path .sceneObject { width:51%; height:59%; }
+.motif_money-flow .objectShell { inset:30% 2%; border:0; background:transparent; box-shadow:none; }
+.motif_money-flow .objectA,.motif_money-flow .objectB,.motif_money-flow .objectC { left:5%; right:5%; height:24%; border-radius:50%; border-width:3px; background:transparent; box-shadow:0 0 15px rgba(var(--accent),.17); }.motif_money-flow .objectA{top:24%;border-color:rgba(119,195,184,.55);transform:rotate(5deg)}.motif_money-flow .objectB{top:39%;border-color:rgba(159,166,224,.44);transform:rotate(-8deg)}.motif_money-flow .objectC{top:54%;border-color:rgba(231,191,160,.43);transform:rotate(4deg)}
+.motif_account-reservoirs .objectShell { inset:8%; border:0; background:transparent; box-shadow:none; }
+.motif_account-reservoirs .objectA,.motif_account-reservoirs .objectB,.motif_account-reservoirs .objectC,.motif_account-reservoirs .objectD { bottom:18%; width:18%; border-radius:14px 14px 30px 30px; background:linear-gradient(180deg,rgba(255,255,255,.84),rgba(132,206,194,.20)); }.motif_account-reservoirs .objectA{left:8%;height:49%}.motif_account-reservoirs .objectB{left:30%;height:63%}.motif_account-reservoirs .objectC{left:52%;height:39%}.motif_account-reservoirs .objectD{right:8%;height:55%}
+.motif_spending-streams .objectShell { inset:10%; border:0; background:transparent; box-shadow:none; }.motif_spending-streams .objectA,.motif_spending-streams .objectB,.motif_spending-streams .objectC,.motif_spending-streams .objectD { left:8%; right:8%; height:8%; border:0; border-radius:999px; background:linear-gradient(90deg,rgba(105,197,181,.30),rgba(255,255,255,.80),rgba(171,171,225,.45),rgba(234,190,160,.28)); }.motif_spending-streams .objectA{top:22%;transform:rotate(-4deg)}.motif_spending-streams .objectB{top:38%;transform:rotate(5deg)}.motif_spending-streams .objectC{top:54%;transform:rotate(-2deg)}.motif_spending-streams .objectD{top:70%;transform:rotate(6deg)}
+.motif_saving-vessels .objectShell { inset:8%; border:0; background:transparent; box-shadow:none; }.motif_saving-vessels .objectA,.motif_saving-vessels .objectB,.motif_saving-vessels .objectC { bottom:16%; width:24%; border-radius:22px 22px 35px 35px; background:linear-gradient(180deg,rgba(255,255,255,.73) 0 45%,rgba(117,201,185,.34) 46% 100%); }.motif_saving-vessels .objectA{left:9%;height:48%}.motif_saving-vessels .objectB{left:38%;height:67%;background:linear-gradient(180deg,rgba(255,255,255,.73) 0 27%,rgba(117,201,185,.42) 28% 100%)}.motif_saving-vessels .objectC{right:9%;height:55%;background:linear-gradient(180deg,rgba(255,255,255,.73) 0 58%,rgba(151,160,221,.28) 59% 100%)}
+.motif_money-path .objectShell { inset:12% 4%; border:0; background:transparent; box-shadow:none; perspective:700px; }.motif_money-path .objectA,.motif_money-path .objectB,.motif_money-path .objectC,.motif_money-path .objectD,.motif_money-path .objectE { left:16%; height:13%; border-radius:9px; background:linear-gradient(90deg,rgba(255,255,255,.78),rgba(var(--accent),.18)); transform:skewX(-16deg); }.motif_money-path .objectA{bottom:12%;width:70%}.motif_money-path .objectB{bottom:28%;width:60%;left:21%}.motif_money-path .objectC{bottom:44%;width:50%;left:26%}.motif_money-path .objectD{bottom:60%;width:40%;left:31%}.motif_money-path .objectE{bottom:76%;width:30%;left:36%}
+
+/* WORK */
+.scene_work-desk .sceneObject,.scene_work-week .sceneObject,.scene_project-models .sceneObject,.scene_career-stair .sceneObject,.scene_idea-cloud .sceneObject { width:49%; height:61%; }
+.motif_work-desk .objectShell { inset:22% 5% 18%; border-radius:16px; transform:perspective(700px) rotateX(55deg); background:linear-gradient(145deg,rgba(255,255,255,.70),rgba(188,204,235,.14)); }.motif_work-desk .objectA,.motif_work-desk .objectB,.motif_work-desk .objectC { top:31%; border-radius:8px; background:rgba(255,255,255,.63); }.motif_work-desk .objectA{left:17%;width:27%;height:25%;transform:rotate(-7deg)}.motif_work-desk .objectB{left:43%;width:33%;height:31%;transform:rotate(4deg)}.motif_work-desk .objectC{right:12%;width:10%;height:38%;border-radius:999px;transform:rotate(20deg);background:linear-gradient(90deg,rgba(184,188,205,.55),rgba(255,255,255,.82))}
+.motif_work-week .objectShell { inset:12% 5%; border-radius:18px; background:linear-gradient(145deg,rgba(255,255,255,.67),rgba(190,206,239,.13)); }.motif_work-week .objectA,.motif_work-week .objectB,.motif_work-week .objectC,.motif_work-week .objectD,.motif_work-week .objectE { top:17%; bottom:17%; width:15%; border-radius:10px; background:linear-gradient(180deg,rgba(255,255,255,.77),rgba(var(--accent),.13)); }.motif_work-week .objectA{left:7%}.motif_work-week .objectB{left:26%}.motif_work-week .objectC{left:45%}.motif_work-week .objectD{left:64%}.motif_work-week .objectE{right:6%}
+.motif_project-models .objectShell { inset:12%; border:0; background:transparent; box-shadow:none; }.motif_project-models .objectA,.motif_project-models .objectB,.motif_project-models .objectC,.motif_project-models .objectD { left:18%; width:64%; height:22%; border-radius:13px; background:linear-gradient(145deg,rgba(255,255,255,.75),rgba(172,193,237,.15)); transform:skewX(-10deg); }.motif_project-models .objectA{top:15%}.motif_project-models .objectB{top:34%;left:14%}.motif_project-models .objectC{top:53%;left:22%}.motif_project-models .objectD{top:72%;left:17%}
+.motif_career-stair .objectShell { inset:8%; border:0; background:transparent; box-shadow:none; }.motif_career-stair .objectA,.motif_career-stair .objectB,.motif_career-stair .objectC,.motif_career-stair .objectD,.motif_career-stair .objectE { height:15%; border-radius:8px; background:linear-gradient(90deg,rgba(255,255,255,.80),rgba(var(--accent),.18)); }.motif_career-stair .objectA{left:9%;bottom:10%;width:82%}.motif_career-stair .objectB{left:20%;bottom:27%;width:70%}.motif_career-stair .objectC{left:31%;bottom:44%;width:58%}.motif_career-stair .objectD{left:42%;bottom:61%;width:46%}.motif_career-stair .objectE{left:53%;bottom:78%;width:34%}
+.motif_idea-cloud .objectShell { inset:15%; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.67),rgba(var(--accent),.12),transparent 72%); }.motif_idea-cloud .objectA,.motif_idea-cloud .objectB,.motif_idea-cloud .objectC,.motif_idea-cloud .objectD,.motif_idea-cloud .objectE { width:30%; height:22%; border-radius:9px; background:linear-gradient(145deg,rgba(255,255,255,.78),rgba(205,213,239,.12)); }.motif_idea-cloud .objectA{left:8%;top:19%;transform:rotate(-12deg)}.motif_idea-cloud .objectB{right:8%;top:20%;transform:rotate(10deg)}.motif_idea-cloud .objectC{left:18%;bottom:18%;transform:rotate(7deg)}.motif_idea-cloud .objectD{right:16%;bottom:17%;transform:rotate(-8deg)}.motif_idea-cloud .objectE{left:36%;top:39%;transform:rotate(2deg)}
+
+/* RELATIONSHIPS */
+.scene_people-constellation .sceneObject,.scene_conversation-field .sceneObject,.scene_memory-glass .sceneObject,.scene_relationship-orbit .sceneObject,.scene_boundary-field .sceneObject { width:45%; height:62%; }
+.motif_people-constellation .objectShell,.motif_relationship-orbit .objectShell,.motif_boundary-field .objectShell { inset:10%; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.72),rgba(243,195,202,.14) 55%,rgba(255,255,255,.05)); }
+.motif_people-constellation .objectA,.motif_people-constellation .objectB,.motif_people-constellation .objectC,.motif_people-constellation .objectD,.motif_people-constellation .objectE { border-radius:50%; background:radial-gradient(circle at 33% 24%,#fff,rgba(236,184,194,.44) 57%,rgba(255,255,255,.10)); }.motif_people-constellation .objectA{left:18%;top:18%;width:24%;height:24%}.motif_people-constellation .objectB{right:17%;top:21%;width:20%;height:20%}.motif_people-constellation .objectC{left:39%;top:37%;width:25%;height:25%}.motif_people-constellation .objectD{left:21%;bottom:17%;width:19%;height:19%}.motif_people-constellation .objectE{right:20%;bottom:16%;width:23%;height:23%}
+.motif_conversation-field .objectShell { inset:10%; border:0; background:transparent; box-shadow:none; }.motif_conversation-field .objectA,.motif_conversation-field .objectB,.motif_conversation-field .objectC,.motif_conversation-field .objectD { width:37%; height:24%; border-radius:26px 26px 26px 8px; background:linear-gradient(145deg,rgba(255,255,255,.76),rgba(245,204,211,.15)); }.motif_conversation-field .objectA{left:6%;top:16%}.motif_conversation-field .objectB{right:6%;top:28%;transform:scaleX(-1)}.motif_conversation-field .objectC{left:16%;bottom:23%}.motif_conversation-field .objectD{right:13%;bottom:12%;transform:scaleX(-1)}
+.motif_memory-glass .objectShell,.motif_travel-memories .objectShell { inset:8%; border:0; background:transparent; box-shadow:none; }.motif_memory-glass .objectA,.motif_memory-glass .objectB,.motif_memory-glass .objectC,.motif_memory-glass .objectD { width:34%; height:35%; border-radius:11px; background:linear-gradient(145deg,rgba(255,255,255,.82),rgba(239,191,189,.16)); box-shadow:0 12px 22px rgba(76,61,68,.09),inset 0 1px 0 #fff; }.motif_memory-glass .objectA{left:8%;top:15%;transform:rotate(-8deg)}.motif_memory-glass .objectB{right:8%;top:14%;transform:rotate(8deg)}.motif_memory-glass .objectC{left:18%;bottom:13%;transform:rotate(5deg)}.motif_memory-glass .objectD{right:17%;bottom:10%;transform:rotate(-6deg)}
+.motif_relationship-orbit .objectA,.motif_relationship-orbit .objectB,.motif_relationship-orbit .objectC { border-radius:50%; background:transparent; }.motif_relationship-orbit .objectA{inset:8%;border-color:rgba(236,179,192,.40)}.motif_relationship-orbit .objectB{inset:22%;border-color:rgba(255,255,255,.82)}.motif_relationship-orbit .objectC{left:43%;top:43%;width:14%;height:14%;background:radial-gradient(circle,#fff,rgba(240,184,196,.42))}
+.motif_boundary-field .objectA,.motif_boundary-field .objectB,.motif_boundary-field .objectC { border-radius:50%; background:transparent; }.motif_boundary-field .objectA{inset:4%;border-width:3px;border-color:rgba(239,180,192,.36)}.motif_boundary-field .objectB{inset:18%;border-color:rgba(255,255,255,.84)}.motif_boundary-field .objectC{inset:33%;background:radial-gradient(circle,#fff,rgba(240,193,199,.26))}
+
+/* TRAVEL */
+.scene_travel-landscape .sceneObject,.scene_trip-capsules .sceneObject,.scene_travel-map .sceneObject,.scene_travel-suitcase .sceneObject,.scene_travel-memories .sceneObject { width:53%; height:64%; }
+.motif_travel-landscape .objectShell { inset:8% 2% 20%; border-radius:42% 58% 35% 65% / 45% 42% 58% 55%; background:linear-gradient(180deg,rgba(186,220,248,.42),rgba(255,227,191,.30) 48%,rgba(169,211,235,.30) 49% 100%); }
+.motif_travel-landscape .objectA,.motif_travel-landscape .objectB,.motif_travel-landscape .objectC { bottom:23%; border:0; clip-path:polygon(50% 0,100% 100%,0 100%); background:linear-gradient(145deg,rgba(255,255,255,.75),rgba(157,194,222,.42)); box-shadow:none; }.motif_travel-landscape .objectA{left:8%;width:32%;height:38%}.motif_travel-landscape .objectB{left:32%;width:38%;height:45%}.motif_travel-landscape .objectC{right:6%;width:29%;height:33%}
+.motif_travel-landscape .objectD { left:16%; right:15%; bottom:17%; height:18%; border-radius:50%; background:linear-gradient(180deg,rgba(255,255,255,.62),rgba(99,180,222,.25)); }
+.motif_trip-capsules .objectShell { inset:10%; border:0; background:transparent; box-shadow:none; }.motif_trip-capsules .objectA,.motif_trip-capsules .objectB,.motif_trip-capsules .objectC,.motif_trip-capsules .objectD { width:41%; height:34%; border-radius:38% 62% 45% 55% / 51% 39% 61% 49%; background:linear-gradient(145deg,rgba(255,255,255,.70),rgba(171,215,246,.18),rgba(244,207,169,.14)); }.motif_trip-capsules .objectA{left:4%;top:12%}.motif_trip-capsules .objectB{right:4%;top:13%}.motif_trip-capsules .objectC{left:6%;bottom:11%}.motif_trip-capsules .objectD{right:6%;bottom:10%}
+.motif_travel-map .objectShell { inset:7% 5% 18%; border-radius:18px; transform:perspective(700px) rotateX(52deg); background:repeating-linear-gradient(15deg,rgba(110,171,205,.08) 0 1px,transparent 1px 35px),repeating-linear-gradient(105deg,rgba(120,180,205,.07) 0 1px,transparent 1px 41px),rgba(255,255,255,.54); }
+.motif_travel-map .objectA,.motif_travel-map .objectB,.motif_travel-map .objectC,.motif_travel-map .objectD { width:12px; height:12px; border-radius:50%; background:radial-gradient(circle,#fff,rgba(110,191,231,.82)); box-shadow:0 0 13px rgba(104,183,224,.45); }.motif_travel-map .objectA{left:24%;top:31%}.motif_travel-map .objectB{right:30%;top:24%}.motif_travel-map .objectC{left:46%;bottom:28%}.motif_travel-map .objectD{right:18%;bottom:38%}
+.motif_travel-suitcase .objectShell { left:21%; right:21%; top:22%; bottom:12%; border-radius:22px; background:linear-gradient(90deg,rgba(255,255,255,.73),rgba(188,208,224,.22),rgba(255,255,255,.64)); }
+.motif_travel-suitcase .objectA { left:36%; top:10%; width:28%; height:22%; border:7px solid rgba(255,255,255,.73); border-bottom:0; border-radius:19px 19px 0 0; background:transparent; box-shadow:none; }.motif_travel-suitcase .objectB,.motif_travel-suitcase .objectC { top:28%; bottom:18%; width:3px; border:0; background:rgba(151,161,176,.18); }.motif_travel-suitcase .objectB{left:38%}.motif_travel-suitcase .objectC{right:38%}.motif_travel-suitcase .objectD { left:30%; right:30%; top:45%; height:18%; border-radius:10px; background:rgba(255,255,255,.58); }
+.motif_travel-memories .objectA,.motif_travel-memories .objectB,.motif_travel-memories .objectC,.motif_travel-memories .objectD { width:31%; height:34%; border-radius:10px; background:linear-gradient(145deg,rgba(255,255,255,.82),rgba(170,211,240,.17),rgba(244,207,169,.13)); }.motif_travel-memories .objectA{left:7%;top:14%;transform:rotate(-7deg)}.motif_travel-memories .objectB{right:8%;top:13%;transform:rotate(8deg)}.motif_travel-memories .objectC{left:20%;bottom:14%;transform:rotate(5deg)}.motif_travel-memories .objectD{right:18%;bottom:10%;transform:rotate(-5deg)}
+
+/* Page-specific information surfaces. Organic does not mean one repeated pebble. */
+.scene_home-xray .module,.scene_home-drafting .module,.scene_travel-map .module,.scene_work-week .module { border-radius:14px; }
+.scene_pantry-wall .module,.scene_closet-wardrobe .module,.scene_fragrance-cabinet .module { border-radius:16px; }
+.scene_people-constellation .module,.scene_relationship-orbit .module,.scene_boundary-field .module { border-radius:48% 52% 43% 57% / 55% 42% 58% 45%; }
+.scene_food-table .module,.scene_recipe-surface .module { background:linear-gradient(145deg,rgba(255,255,255,.60),rgba(222,235,215,.13)); }
+.scene_money-flow .module,.scene_account-reservoirs .module,.scene_saving-vessels .module { background:linear-gradient(145deg,rgba(255,255,255,.60),rgba(201,232,224,.12)); }
+.scene_work-desk .module,.scene_project-models .module,.scene_career-stair .module { background:linear-gradient(145deg,rgba(255,255,255,.58),rgba(199,211,240,.11)); }
+.scene_travel-landscape .module,.scene_trip-capsules .module,.scene_travel-map .module,.scene_travel-suitcase .module,.scene_travel-memories .module { background:linear-gradient(145deg,rgba(255,255,255,.57),rgba(187,220,245,.12)); }
+
+@keyframes materialReveal { from { opacity:0; transform:translate(-50%,-46%) scale(.96); filter:blur(8px) drop-shadow(0 20px 30px rgba(73,61,75,.06)); } to { opacity:1; transform:translate(-50%,-50%) scale(1); filter:blur(0) drop-shadow(0 24px 30px rgba(73,61,75,.11)); } }
+@keyframes moduleReveal { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+/* Tablet: recompose, never miniaturize the desktop canvas. */
+@media (max-width:1100px) {
+  .world { padding:0; }
+  .frame { width:100%; min-height:100svh; border-radius:0; padding:0 18px 22px; }
+  .header { min-height:128px; }
+  .roomLayout { grid-template-columns:1fr; }
+  .scene { min-height:720px; }
+  .intelligence { grid-template-columns:1.35fr 1fr auto; align-items:stretch; }
+  .intelligenceMain { min-height:220px; }
+  .glowInside { min-height:220px; }
+  .continuity { align-self:center; min-width:160px; border-radius:28px; }
+  .module { width:28%; min-height:148px; padding:17px 15px; }
+  .moduleText strong { font-size:15px; }
+  .moduleText small { font-size:9px; }
+  .moduleText > div span { font-size:8.5px; }
+  .sceneObject { width:43%; }
+  .scene_closet-wardrobe .sceneObject,.scene_closet-outfits .sceneObject,.scene_closet-occasions .sceneObject,.scene_closet-favorites .sceneObject,.scene_closet-history .sceneObject { width:52%; }
+}
+
+@media (max-width:820px) {
+  .frame { padding:0 12px 20px; }
+  .header { min-height:142px; padding-top:18px; }
+  .returnAnchor,.glowPresence { top:16px; min-width:44px; height:44px; padding:0 12px; }
+  .returnAnchor span,.glowPresence span { display:none; }
+  .glowPresence i { display:none; }
+  .identity { padding:49px 48px 0; }
+  .identity h1 { font-size:25px; letter-spacing:.20em; }
+  .identity p { font-size:12px; }
+  .depthPath { width:100%; max-width:100%; justify-content:flex-start; overflow-x:auto; padding:0 8px 4px; gap:20px; scrollbar-width:none; }
+  .depthPath::-webkit-scrollbar { display:none; }
+  .depthPath::before { left:8px; right:8px; }
+  .depthPath a { min-width:76px; font-size:10px; }
+  .scene { min-height:auto; padding:22px 14px 18px; display:grid; grid-template-rows:310px auto auto; overflow:visible; border-radius:33px; }
+  .sceneObject { position:relative; left:auto; top:auto; width:min(420px,86%); height:300px; margin:0 auto; transform:none; grid-row:1; }
+  .scene_closet-wardrobe .sceneObject,.scene_closet-outfits .sceneObject,.scene_closet-occasions .sceneObject,.scene_closet-favorites .sceneObject,.scene_closet-history .sceneObject,
+  .scene_home-model .sceneObject,.scene_house-cutaway .sceneObject,.scene_home-rhythm .sceneObject,.scene_home-xray .sceneObject,.scene_home-storage .sceneObject,.scene_home-drafting .sceneObject { width:min(500px,94%); height:300px; }
+  .heroCopy { position:relative; left:auto; bottom:auto; transform:none; width:100%; max-width:540px; margin:-8px auto 16px; grid-row:2; }
+  .heroCopy strong { font-size:20px; }
+  .heroCopy p { font-size:11px; }
+  .moduleField { position:relative; inset:auto; grid-row:3; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:11px; }
+  .module { position:relative; inset:auto !important; width:100%; min-height:150px; border-radius:24px !important; padding:16px; }
+  .moduleObject { width:44px; height:44px; }
+  .moduleText strong { font-size:16px; }
+  .moduleText small { font-size:10px; }
+  .moduleText > div span { font-size:9px; }
+  .intelligence { grid-template-columns:1fr; }
+  .intelligenceMain,.glowInside { min-height:0; }
+  .continuity { min-width:0; }
+  @keyframes materialReveal { from { opacity:0; transform:translateY(14px) scale(.97); filter:blur(7px); } to { opacity:1; transform:translateY(0) scale(1); filter:blur(0); } }
+}
+
+@media (max-width:520px) {
+  .world { background:linear-gradient(145deg,#f0ebe7,#faf7f3 52%,#ede7e3); }
+  .frame { padding:0 9px 18px; }
+  .identity { padding-left:42px; padding-right:42px; }
+  .identity small { font-size:8px; }
+  .identity h1 { font-size:22px; }
+  .identity p { font-size:11px; }
+  .scene { padding:18px 10px 14px; grid-template-rows:270px auto auto; }
+  .sceneObject,.scene_closet-wardrobe .sceneObject,.scene_closet-outfits .sceneObject,.scene_closet-occasions .sceneObject,.scene_closet-favorites .sceneObject,.scene_closet-history .sceneObject,
+  .scene_home-model .sceneObject,.scene_house-cutaway .sceneObject,.scene_home-rhythm .sceneObject,.scene_home-xray .sceneObject,.scene_home-storage .sceneObject,.scene_home-drafting .sceneObject { width:96%; height:265px; }
+  .moduleField { grid-template-columns:1fr 1fr; gap:8px; }
+  .module { min-height:140px; padding:14px 12px; }
+  .moduleText strong { font-size:14px; }
+  .moduleText small { font-size:9px; }
+  .moduleText > div { margin-top:8px; }
+  .moduleText > div span { font-size:8px; }
+  .moduleObject { width:38px; height:38px; }
+  .intelligenceMain { padding:19px 16px; }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .sceneObject,.module { animation:none; }
+  .depthPath a { transition:none; }
+}
