@@ -1,5 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
+import { MeetingPeopleAlias } from '@/components/today/meeting-people-alias';
 import { MorningBriefReference } from '@/components/today/morning-brief-reference';
 import { TodayContextWorlds } from '@/components/today/today-context-worlds';
 import { TodayLivingCenter } from '@/components/today/today-living-center';
@@ -20,6 +21,7 @@ export default async function TodayPage() {
   // Locked visual references remain the source of truth for each Today room.
   return (
     <>
+      <MeetingPeopleAlias />
       <TodayLivingCenter />
       <MorningBriefReference />
       <WhatNowReference />
