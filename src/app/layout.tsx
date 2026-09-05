@@ -15,6 +15,7 @@ import './today-spatial-world.css';
 import './sidebar-precision.css';
 import './plan-time-observatory.css';
 import './glow-living-presence.css';
+import './glow-canonical-integration.css';
 
 export const metadata: Metadata = {
   title: 'Glow OS',
