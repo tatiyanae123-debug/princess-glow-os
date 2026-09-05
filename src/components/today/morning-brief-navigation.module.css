@@ -1,0 +1,21 @@
+.singleAnchorRail {
+  bottom: auto;
+}
+
+.simpleBottomControls {
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+}
+
+.simpleBottomControls > :nth-child(2) {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.passivePearl {
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  opacity: .76;
+}

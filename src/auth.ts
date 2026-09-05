@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import Google from 'next-auth/providers/google';
+import { and, eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { users, accounts, sessions, verificationTokens } from '@/db/schema/auth';
 
@@ -8,8 +9,37 @@ function getDeploymentBaseUrl(baseUrl: string) {
   if (process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
   }
-
   return baseUrl;
+}
+
+async function persistGoogleAccount(account: {
+  provider?: string;
+  providerAccountId?: string;
+  access_token?: string;
+  refresh_token?: string;
+  expires_at?: number;
+  token_type?: string;
+  scope?: string;
+  id_token?: string;
+} | null | undefined) {
+  if (!account || account.provider !== 'google' || !account.providerAccountId) return;
+
+  await db
+    .update(accounts)
+    .set({
+      access_token: account.access_token ?? undefined,
+      refresh_token: account.refresh_token ?? undefined,
+      expires_at: account.expires_at ?? undefined,
+      token_type: account.token_type ?? undefined,
+      scope: account.scope ?? undefined,
+      id_token: account.id_token ?? undefined,
+    })
+    .where(
+      and(
+        eq(accounts.provider, 'google'),
+        eq(accounts.providerAccountId, account.providerAccountId),
+      ),
+    );
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -23,22 +53,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   }),
   providers: [
     Google({
-      // Vercel can omit runtime-only secrets while Next.js is collecting page data
-      // for route handlers. Auth.js reads these values when a request is served,
-      // so keep module evaluation side-effect free and let runtime configuration
-      // supply the real Preview/Production credentials.
       clientId: process.env.PRINCESS_GOOGLE_CLIENT_ID ?? '',
       clientSecret: process.env.PRINCESS_GOOGLE_CLIENT_SECRET ?? '',
       authorization: {
         params: {
           access_type: 'offline',
-          prompt: 'consent',
+          include_granted_scopes: 'true',
           scope: [
             'openid',
             'email',
             'profile',
             'https://www.googleapis.com/auth/calendar.readonly',
             'https://www.googleapis.com/auth/gmail.readonly',
+            'https://www.googleapis.com/auth/contacts.readonly',
           ].join(' '),
         },
       },
@@ -48,13 +75,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: '/sign-in',
   },
   callbacks: {
+    async signIn({ account }) {
+      await persistGoogleAccount(account);
+      return true;
+    },
     authorized({ auth: session, request: { nextUrl } }) {
+      // These endpoints return their own clean JSON auth/connection states.
+      const isGlowDataApi =
+        nextUrl.pathname === '/api/contacts' ||
+        nextUrl.pathname === '/api/places' ||
+        nextUrl.pathname === '/api/personal-context';
+      if (isGlowDataApi) return true;
+
       const isLoggedIn = !!session?.user;
       const isOnSignIn = nextUrl.pathname === '/sign-in';
       const isApiAuth = nextUrl.pathname.startsWith('/api/auth');
-      if (isLoggedIn && isOnSignIn) {
-        return Response.redirect(new URL('/dashboard', nextUrl));
-      }
+
+      if (isLoggedIn && isOnSignIn) return true;
+
       if (!isLoggedIn && !isOnSignIn && !isApiAuth) {
         return Response.redirect(new URL('/sign-in', nextUrl));
       }
@@ -84,6 +122,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     session({ session, user }) {
       session.user.id = user.id;
       return session;
+    },
+  },
+  events: {
+    async signIn({ account }) {
+      await persistGoogleAccount(account);
     },
   },
 });
