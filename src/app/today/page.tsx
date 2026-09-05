@@ -2,6 +2,7 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { MeetingPeopleAlias } from '@/components/today/meeting-people-alias';
 import { MorningBriefReference } from '@/components/today/morning-brief-reference';
+import { TodayContextNavigationSafety } from '@/components/today/today-context-navigation-safety';
 import { TodayContextWorlds } from '@/components/today/today-context-worlds';
 import { TodayLivingCenter } from '@/components/today/today-living-center';
 import { TodaySimpleChrome } from '@/components/today/today-simple-chrome';
@@ -27,6 +28,7 @@ export default async function TodayPage() {
       <WhatNowReference />
       <TodayContextWorlds />
       <TodaySimpleChrome />
+      <TodayContextNavigationSafety />
     </>
   );
 }
