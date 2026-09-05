@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import styles from './life-personal-house.module.css';
+import styles from './life-personal-house-v2.module.css';
 
 export function LifeHistoryControls() {
   const [canBack, setCanBack] = useState(false);
@@ -9,8 +9,6 @@ export function LifeHistoryControls() {
 
   useEffect(() => {
     setCanBack(window.history.length > 1);
-    // Browsers do not expose forward-stack length. Keep Redo available as a real history action;
-    // if there is no forward entry the browser simply stays in place.
     setCanForward(true);
   }, []);
 
