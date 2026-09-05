@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import Google from 'next-auth/providers/google';
+import { and, eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { users, accounts, sessions, verificationTokens } from '@/db/schema/auth';
 
@@ -11,8 +12,37 @@ function getDeploymentBaseUrl(baseUrl: string) {
     const previewHost = process.env.VERCEL_BRANCH_URL ?? process.env.VERCEL_URL;
     if (previewHost) return `https://${previewHost}`;
   }
-
   return baseUrl;
+}
+
+async function persistGoogleAccount(account: {
+  provider?: string;
+  providerAccountId?: string;
+  access_token?: string;
+  refresh_token?: string;
+  expires_at?: number;
+  token_type?: string;
+  scope?: string;
+  id_token?: string;
+} | null | undefined) {
+  if (!account || account.provider !== 'google' || !account.providerAccountId) return;
+
+  await db
+    .update(accounts)
+    .set({
+      access_token: account.access_token ?? undefined,
+      refresh_token: account.refresh_token ?? undefined,
+      expires_at: account.expires_at ?? undefined,
+      token_type: account.token_type ?? undefined,
+      scope: account.scope ?? undefined,
+      id_token: account.id_token ?? undefined,
+    })
+    .where(
+      and(
+        eq(accounts.provider, 'google'),
+        eq(accounts.providerAccountId, account.providerAccountId),
+      ),
+    );
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
@@ -32,7 +62,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
       authorization: {
         params: {
           access_type: 'offline',
-          prompt: 'consent',
           include_granted_scopes: 'true',
           scope: [
             'openid',
@@ -40,6 +69,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
             'profile',
             'https://www.googleapis.com/auth/calendar.readonly',
             'https://www.googleapis.com/auth/gmail.readonly',
+            'https://www.googleapis.com/auth/contacts.readonly',
           ].join(' '),
         },
       },
@@ -49,13 +79,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
     signIn: '/sign-in',
   },
   callbacks: {
+    async signIn({ account }) {
+      await persistGoogleAccount(account);
+      return true;
+    },
     authorized({ auth: session, request: { nextUrl } }) {
+      const isGlowDataApi =
+        nextUrl.pathname === '/api/contacts' ||
+        nextUrl.pathname === '/api/places' ||
+        nextUrl.pathname === '/api/personal-context';
+      if (isGlowDataApi) return true;
+
       const isLoggedIn = !!session?.user;
       const isOnSignIn = nextUrl.pathname === '/sign-in';
+      const isContactConnect = isOnSignIn && nextUrl.searchParams.get('connect') === 'contacts';
       const isApiAuth = nextUrl.pathname.startsWith('/api/auth');
 
-      if (isLoggedIn && isOnSignIn) {
-        return Response.redirect(new URL('/dashboard', nextUrl));
+      if (isLoggedIn && isOnSignIn && !isContactConnect) {
+        return Response.redirect(new URL('/home', nextUrl));
       }
 
       if (!isLoggedIn && !isOnSignIn && !isApiAuth) {
@@ -88,6 +129,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
     session({ session, user }) {
       session.user.id = user.id;
       return session;
+    },
+  },
+  events: {
+    async signIn({ account }) {
+      await persistGoogleAccount(account);
     },
   },
 }));

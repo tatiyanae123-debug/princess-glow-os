@@ -1,0 +1,27 @@
+/* Canonical Glow integration layer.
+   Today reference rooms keep their visual architecture, but only the
+   TodayNavigationAuthority owns visible global navigation. */
+
+[data-what-now-reference='true'] header[aria-hidden='true'],
+[data-morning-reference='true'] header[aria-hidden='true'] {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Progress in What Now must not pretend a percentage Glow does not store. */
+[data-what-now-reference='true'] [class*='statusBand'] [class*='progress'] {
+  display: none !important;
+}
+
+/* The fixed authority is intentionally ambient rather than a page-blocking bar. */
+[data-glow-navigation-authority='true'] {
+  -webkit-backdrop-filter: blur(18px) saturate(118%);
+  backdrop-filter: blur(18px) saturate(118%);
+}
+
+/* Life is its own world. Prevent stale Today state from visually carrying over. */
+[data-glow-room='life-personal-house'] {
+  isolation: isolate;
+  position: relative;
+  z-index: 1;
+}

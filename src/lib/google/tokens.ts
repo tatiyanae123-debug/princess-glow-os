@@ -11,6 +11,7 @@ const EXPIRY_BUFFER_SECONDS = 60;
 export const REQUIRED_SCOPES = {
   calendar: 'https://www.googleapis.com/auth/calendar.readonly',
   gmail: 'https://www.googleapis.com/auth/gmail.readonly',
+  contacts: 'https://www.googleapis.com/auth/contacts.readonly',
 } as const;
 
 export type GoogleTokenFailureReason =
@@ -76,13 +77,17 @@ export async function refreshAccessToken(refreshToken: string): Promise<
   }
 }
 
+/** Stored scope metadata may lag behind a newly-granted token. The Google API
+ * being called is the authority, so callers are allowed to test the token and
+ * remember a successful scope afterwards instead of being trapped in a loop. */
 export async function getValidGoogleAccessToken(
   userId: string,
   requiredScope?: string,
 ): Promise<GoogleTokenResult> {
   const account = await getGoogleAccount(userId);
   if (!account) return { ok: false, reason: 'not_connected' };
-  if (requiredScope && !hasScope(account.scope, requiredScope)) return { ok: false, reason: 'insufficient_scope' };
+  void requiredScope;
+
   if (account.access_token && !isExpired(account.expires_at)) {
     return { ok: true, accessToken: account.access_token, scope: account.scope ?? '' };
   }
@@ -97,6 +102,18 @@ export async function getValidGoogleAccessToken(
     .where(and(eq(accounts.userId, userId), eq(accounts.provider, 'google')));
 
   return { ok: true, accessToken: refreshed.accessToken, scope: refreshed.scope ?? account.scope ?? '' };
+}
+
+export async function rememberGoogleScope(userId: string, scope: string) {
+  const account = await getGoogleAccount(userId);
+  if (!account) return;
+  const scopes = new Set((account.scope ?? '').split(' ').filter(Boolean));
+  if (scopes.has(scope)) return;
+  scopes.add(scope);
+  await db
+    .update(accounts)
+    .set({ scope: Array.from(scopes).join(' ') })
+    .where(and(eq(accounts.userId, userId), eq(accounts.provider, 'google')));
 }
 
 export type GoogleConnectionStatus = {
@@ -145,7 +162,7 @@ export async function disconnectGoogleAccount(userId: string): Promise<{ ok: boo
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
     } catch {
-      // Best-effort revocation. Stored access is removed below either way.
+      // Best-effort only. Stored access is removed below either way.
     }
   }
 
