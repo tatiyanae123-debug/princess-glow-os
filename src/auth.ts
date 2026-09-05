@@ -21,7 +21,7 @@ async function persistGoogleAccount(account: {
   token_type?: string;
   scope?: string;
   id_token?: string;
-} | null) {
+} | null | undefined) {
   if (!account || account.provider !== 'google' || !account.providerAccountId) return;
 
   await db
@@ -127,8 +127,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
   events: {
-    // Keep the post-sign-in event as a second persistence pass for first-time
-    // accounts where the adapter row may not exist yet during callbacks.signIn.
     async signIn({ account }) {
       await persistGoogleAccount(account);
     },
