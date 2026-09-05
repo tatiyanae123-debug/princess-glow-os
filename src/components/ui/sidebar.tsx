@@ -11,7 +11,7 @@ import { useMemo, useState } from 'react';
 const PRIMARY = [
   {label:'Today',href:'/dashboard'},
   {label:'Plan',href:'/planning'},
-  {label:'Life',href:'/world'},
+  {label:'Life',href:'/life'},
   {label:'Brain',href:'/brain'},
   {label:'Create',href:'/intake'},
 ];
