@@ -1,32 +1,32 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { MeetingPeopleAlias } from '@/components/today/meeting-people-alias';
 import { MorningBriefReference } from '@/components/today/morning-brief-reference';
 import { TodayContextWorlds } from '@/components/today/today-context-worlds';
-import { TodayLivingCenter } from '@/components/today/today-living-center';
+import { TodayLiveRooms } from '@/components/today/today-live-rooms';
 import { TodayNavigationAuthority } from '@/components/today/today-navigation-authority';
 import { WhatNowReference } from '@/components/today/what-now-reference';
 
 export const dynamic = 'force-dynamic';
 
 export default async function TodayPage() {
-  // Preview deployments open directly for visual QA.
-  // Production keeps the existing authentication gate.
+  // Preview deployments stay available for visual QA. The live personal-data
+  // surfaces themselves never substitute another person's sample records when
+  // no signed-in account is available.
   if (process.env.VERCEL_ENV !== 'preview') {
     const session = await auth();
     if (!session?.user?.id) redirect('/sign-in');
   }
 
-  // There is exactly one navigation authority for every Today environment.
-  // Room content and reference surfaces live underneath it and may scroll,
-  // transform, or change independently without ever hiding Home / Today / Ask Glow.
+  // One navigation authority. One set of live room renderers.
+  // The old TodayLivingCenter sample room is intentionally not mounted: it
+  // contained reference-only names, meetings, files, meals, medications, and
+  // schedules that must never be presented as the user's real life.
   return (
     <>
-      <MeetingPeopleAlias />
-      <TodayLivingCenter />
       <MorningBriefReference />
       <WhatNowReference />
       <TodayContextWorlds />
+      <TodayLiveRooms />
       <TodayNavigationAuthority />
     </>
   );
