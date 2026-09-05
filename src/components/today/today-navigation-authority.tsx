@@ -59,11 +59,11 @@ export function TodayNavigationAuthority() {
   const [room, setRoom] = useState<TodayRoom>('what-now');
   const [askOpen, setAskOpen] = useState(false);
   const [navVisible, setNavVisible] = useState(true);
-  const hideTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const hideTimer = useRef<number | null>(null);
   const lastScrollY = useRef(0);
 
   const clearHideTimer = useCallback(() => {
-    if (hideTimer.current) {
+    if (hideTimer.current !== null) {
       window.clearTimeout(hideTimer.current);
       hideTimer.current = null;
     }
