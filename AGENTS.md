@@ -2,6 +2,7 @@
 
 Before changing any UI, read `docs/glow-os-3-design-rulebook.md`.
 Before changing, adding, or rebuilding any room, page, voice surface, Ask Glow/Shakti interaction, or intelligence behavior, read `docs/GLOW_GLOBAL_INTELLIGENCE_INHERITANCE_LOCK_2026-09-04.md`.
+Before changing Ask Glow, Shakti conversation surfaces, uploads, media understanding, image generation, creation workflows, or any multimodal input/output behavior, read `docs/GLOW_ASK_MULTIMODAL_CREATION_LOCK_2026-09-05.md`.
 
 These rules are mandatory for all future Glow OS work:
 
@@ -33,6 +34,9 @@ These rules are mandatory for all future Glow OS work:
 26. Thoughts, feelings, preferences and hypotheticals must not silently become tasks. Persistent action requires actual intent, a proposal where required, approval, verified execution and a truthful receipt.
 27. Ambiguous consequential references resolve from selected object, current room, recent conversation and active context. Ask one concise clarification only when safe resolution is genuinely impossible.
 28. Every future page must pass the acceptance tests in `docs/GLOW_GLOBAL_INTELLIGENCE_INHERITANCE_LOCK_2026-09-04.md` before being considered complete.
-29. Glow production AI must use the maintained Vercel AI SDK and `@ai-sdk/gateway` provider abstraction for language, speech, and transcription. Do not hand-call `ai-gateway.vercel.sh/v4/ai/*`, do not hard-code Gateway protocol versions, and do not make individual pages own Gateway authentication. Provider/model fallback belongs in the centralized Glow runtime so protocol upgrades cannot break page-specific voice behavior.
+29. Glow production AI must use the maintained Vercel AI SDK and `@ai-sdk/gateway` provider abstraction for language, speech, transcription, image generation, and supported multimodal reasoning. Do not hand-call `ai-gateway.vercel.sh/v4/ai/*`, do not hard-code Gateway protocol versions, and do not make individual pages own Gateway authentication. Provider/model fallback belongs in the centralized Glow runtime so protocol upgrades cannot break page-specific behavior.
+30. Ask Glow is conversation-first and multimodal. Free typing, voice, attachments, pasted media, media understanding, inline generated outputs, and creation must remain available without forcing prompt buttons or separate assistant modes. Prompt buttons are optional suggestions only.
+31. Never claim unlimited processing where platform or model limits exist. Remove artificially tiny product limits, process/persist large inputs in chunks where infrastructure supports it, and truthfully disclose what has and has not been read.
+32. Explicit image-generation requests must use the verified centralized image renderer when available and show the generated image inline. Never queue an image request merely because an older UI did not expose rendering.
 
 Before finishing any UI task, verify responsive behavior on iPhone, iPad and desktop, keyboard/focus behavior, reduced-motion compatibility, that all visible actions have a functional path, and that the global intelligence behavior remains available without requiring page-specific command syntax.
