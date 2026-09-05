@@ -322,12 +322,11 @@ export function TimeObservatory() {
       const weekTwoEvents = events.filter((e) => new Date(e.startAt) >= split);
       const weekOneTasks = dueTasks.filter((t) => t.dueDate && new Date(t.dueDate) < split);
       const weekTwoTasks = dueTasks.filter((t) => t.dueDate && new Date(t.dueDate) >= split);
-      items = [
+      const clusters: OrbitItem[] = [
         { id: 'this-week', kind: 'cluster', title: 'This week', meta: `${weekOneEvents.length + weekOneTasks.length} connected items`, detail: weekOneEvents[0]?.title ?? weekOneTasks[0]?.title ?? 'Open horizon', drill: 'week', tone: 'violet' },
         { id: 'next-week', kind: 'cluster', title: 'Next week', meta: `${weekTwoEvents.length + weekTwoTasks.length} connected items`, detail: weekTwoEvents[0]?.title ?? weekTwoTasks[0]?.title ?? 'Open horizon', drill: 'week', tone: 'blue' },
-        ...events.slice(0, 4).map(eventItem),
-        ...dueTasks.slice(0, 2).map(taskItem),
-      ].slice(0, 8);
+      ];
+      items = [...clusters, ...events.slice(0, 4).map(eventItem), ...dueTasks.slice(0, 2).map(taskItem)].slice(0, 8);
     } else if (horizon === 'month') {
       const clusters: OrbitItem[] = [];
       for (let i = 0; i < 5; i += 1) {
