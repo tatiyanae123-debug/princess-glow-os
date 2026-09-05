@@ -1,7 +1,7 @@
 'use client';
 
 import { Focus, Sparkles } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 type TodayRoom =
   | 'morning'
@@ -45,24 +45,44 @@ function hardGo(room: TodayRoom) {
 /**
  * The single navigation authority for every Today environment.
  *
- * This component intentionally sits above every room, overlay, reference
- * surface, and internal scroller. Room content may scroll underneath it, but
- * the three primary anchors never disappear:
+ * The three anchors are always AVAILABLE, but they no longer have to remain
+ * visually present. The bar is intentionally light, translucent, and
+ * auto-receding so it never becomes a permanent object sitting on top of the
+ * room. Moving toward the top edge, scrolling upward, tabbing into navigation,
+ * or opening Ask Glow brings it back immediately.
  *
  * Glow OS = Home
  * Today = What Now
  * Ask Glow = anywhere
- *
- * It also captures older contextual navigation controls and routes them with a
- * full browser navigation so a visible button can never become a frozen UI
- * decoration on iPad Safari.
  */
 export function TodayNavigationAuthority() {
   const [room, setRoom] = useState<TodayRoom>('what-now');
   const [askOpen, setAskOpen] = useState(false);
+  const [navVisible, setNavVisible] = useState(true);
+  const hideTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const lastScrollY = useRef(0);
+
+  const clearHideTimer = useCallback(() => {
+    if (hideTimer.current) {
+      window.clearTimeout(hideTimer.current);
+      hideTimer.current = null;
+    }
+  }, []);
+
+  const scheduleHide = useCallback((delay = 1900) => {
+    clearHideTimer();
+    if (askOpen) return;
+    hideTimer.current = window.setTimeout(() => setNavVisible(false), delay);
+  }, [askOpen, clearHideTimer]);
+
+  const revealNavigation = useCallback((delay = 1900) => {
+    setNavVisible(true);
+    scheduleHide(delay);
+  }, [scheduleHide]);
 
   useEffect(() => {
     setRoom(currentRoom());
+    lastScrollY.current = window.scrollY;
 
     const resetAllScrollers = () => {
       window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
@@ -91,9 +111,58 @@ export function TodayNavigationAuthority() {
       hardGo(directRoomMap[matchedKey]);
     };
 
+    const handlePointerMove = (event: PointerEvent) => {
+      if (event.clientY <= 92) revealNavigation(2100);
+    };
+
+    const handleTouchStart = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      if (touch && touch.clientY <= 52) revealNavigation(2300);
+    };
+
+    const handleKeyboard = (event: KeyboardEvent) => {
+      if (event.key === 'Tab' || (event.metaKey && event.key.toLowerCase() === 'k')) {
+        revealNavigation(3000);
+      }
+    };
+
+    const handleScroll = () => {
+      const nextY = window.scrollY;
+      if (nextY < lastScrollY.current - 4 || nextY < 16) {
+        revealNavigation(1700);
+      } else if (nextY > lastScrollY.current + 8 && !askOpen) {
+        setNavVisible(false);
+        clearHideTimer();
+      }
+      lastScrollY.current = nextY;
+    };
+
     document.addEventListener('click', handleLegacyNavigation, true);
-    return () => document.removeEventListener('click', handleLegacyNavigation, true);
-  }, []);
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('keydown', handleKeyboard);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    revealNavigation(2800);
+
+    return () => {
+      document.removeEventListener('click', handleLegacyNavigation, true);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('keydown', handleKeyboard);
+      window.removeEventListener('scroll', handleScroll);
+      clearHideTimer();
+    };
+  }, [askOpen, clearHideTimer, revealNavigation]);
+
+  useEffect(() => {
+    if (askOpen) {
+      clearHideTimer();
+      setNavVisible(true);
+      return;
+    }
+    scheduleHide(1900);
+  }, [askOpen, clearHideTimer, scheduleHide]);
 
   const focusActive = room === 'focus';
   const roomLabel = useMemo(() => {
@@ -104,17 +173,44 @@ export function TodayNavigationAuthority() {
     return room.charAt(0).toUpperCase() + room.slice(1).replace('-', ' ');
   }, [room]);
 
+  const navigationState = navVisible
+    ? 'translate-y-0 opacity-100'
+    : '-translate-y-[calc(100%+22px)] opacity-0 pointer-events-none';
+
   return (
     <>
+      <div
+        aria-hidden="true"
+        className="fixed inset-x-0 top-0 z-[60001] h-[18px]"
+        onPointerEnter={() => revealNavigation(2400)}
+        onPointerDown={() => revealNavigation(2400)}
+      />
+
+      <span
+        aria-hidden="true"
+        className={`pointer-events-none fixed left-1/2 top-[max(2px,env(safe-area-inset-top))] z-[60000] h-[3px] w-10 -translate-x-1/2 rounded-full bg-white/75 shadow-[0_0_12px_rgba(255,255,255,0.75)] transition-opacity duration-500 ${navVisible ? 'opacity-0' : 'opacity-35'}`}
+      />
+
       <nav
         aria-label="Glow OS primary navigation"
         data-glow-navigation-authority="true"
-        className="fixed left-1/2 top-[max(10px,env(safe-area-inset-top))] z-[60000] grid h-[62px] w-[min(1480px,calc(100vw-20px))] -translate-x-1/2 grid-cols-[1fr_auto_1fr] items-center rounded-[24px] border border-white/85 bg-[rgba(249,246,242,0.90)] px-5 shadow-[0_14px_50px_rgba(80,67,72,0.13),inset_0_1px_0_rgba(255,255,255,0.98)] backdrop-blur-2xl"
+        data-navigation-visibility={navVisible ? 'visible' : 'receded'}
+        onPointerEnter={() => {
+          clearHideTimer();
+          setNavVisible(true);
+        }}
+        onPointerLeave={() => scheduleHide(1200)}
+        onFocusCapture={() => {
+          clearHideTimer();
+          setNavVisible(true);
+        }}
+        onBlurCapture={() => scheduleHide(1400)}
+        className={`fixed left-1/2 top-[max(7px,env(safe-area-inset-top))] z-[60000] grid h-[48px] w-[min(980px,calc(100vw-24px))] -translate-x-1/2 grid-cols-[1fr_auto_1fr] items-center rounded-[20px] border border-white/45 bg-[rgba(249,246,242,0.34)] px-4 shadow-[0_8px_28px_rgba(80,67,72,0.06),inset_0_1px_0_rgba(255,255,255,0.72)] backdrop-blur-xl backdrop-saturate-125 transition-[transform,opacity,background-color,box-shadow] duration-500 ease-[cubic-bezier(.22,.8,.22,1)] hover:bg-[rgba(249,246,242,0.52)] hover:shadow-[0_10px_32px_rgba(80,67,72,0.08),inset_0_1px_0_rgba(255,255,255,0.82)] ${navigationState}`}
       >
         <a
           href="/home"
           aria-label="Glow OS Home"
-          className="justify-self-start text-[13px] font-semibold tracking-[-0.02em] text-neutral-900 no-underline"
+          className="justify-self-start text-[12px] font-semibold tracking-[-0.02em] text-neutral-900 no-underline"
         >
           Glow OS
         </a>
@@ -122,13 +218,13 @@ export function TodayNavigationAuthority() {
         <a
           href="/today?room=what-now"
           aria-label="Go to Today"
-          className="inline-flex min-h-10 items-center gap-2 rounded-full px-3 text-[12px] font-medium text-neutral-700 no-underline transition hover:bg-white/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/30"
+          className="inline-flex min-h-9 items-center gap-2 rounded-full px-3 text-[11px] font-medium text-neutral-700 no-underline transition hover:bg-white/32 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/25"
         >
-          <span className="h-4 w-4 rounded-full border border-white/95 bg-[radial-gradient(circle_at_30%_24%,#fff_0%,#fff_22%,#eee8ff_45%,#f7e7dd_72%)] shadow-[0_4px_12px_rgba(126,111,148,0.16)]" aria-hidden="true" />
+          <span className="h-3.5 w-3.5 rounded-full border border-white/85 bg-[radial-gradient(circle_at_30%_24%,#fff_0%,#fff_22%,#eee8ff_45%,#f7e7dd_72%)] shadow-[0_3px_10px_rgba(126,111,148,0.12)]" aria-hidden="true" />
           Today
           {focusActive ? (
-            <span className="ml-1 inline-flex items-center gap-1 rounded-full border border-white/80 bg-white/45 px-2 py-1 text-[10px] text-neutral-600">
-              <Focus size={11} strokeWidth={1.5} /> Focus active
+            <span className="ml-1 hidden items-center gap-1 rounded-full border border-white/55 bg-white/25 px-2 py-1 text-[9px] text-neutral-600 sm:inline-flex">
+              <Focus size={10} strokeWidth={1.5} /> Focus active
             </span>
           ) : null}
         </a>
@@ -137,36 +233,31 @@ export function TodayNavigationAuthority() {
           type="button"
           aria-expanded={askOpen}
           onClick={() => setAskOpen((value) => !value)}
-          className="inline-flex min-h-10 items-center gap-2 justify-self-end rounded-full border-0 bg-transparent px-2 text-[12px] font-medium text-neutral-800"
+          className="inline-flex min-h-9 items-center gap-2 justify-self-end rounded-full border-0 bg-transparent px-2 text-[11px] font-medium text-neutral-800"
         >
-          <span className="h-7 w-7 rounded-[48%_52%_57%_43%/45%_42%_58%_55%] border border-white/95 bg-[radial-gradient(circle_at_32%_24%,#fff_0%,#fff_18%,#ececff_46%,#f8e5d4_76%)] shadow-[inset_4px_4px_10px_rgba(255,255,255,0.85),0_6px_16px_rgba(94,83,90,0.14)]" aria-hidden="true" />
+          <span className="h-6 w-6 rounded-[48%_52%_57%_43%/45%_42%_58%_55%] border border-white/82 bg-[radial-gradient(circle_at_32%_24%,#fff_0%,#fff_18%,#ececff_46%,#f8e5d4_76%)] shadow-[inset_3px_3px_8px_rgba(255,255,255,0.72),0_4px_12px_rgba(94,83,90,0.10)]" aria-hidden="true" />
           Ask Glow
         </button>
       </nav>
-
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed left-1/2 top-[max(10px,env(safe-area-inset-top))] z-[59999] h-[76px] w-[min(1490px,calc(100vw-8px))] -translate-x-1/2 bg-gradient-to-b from-[rgba(247,243,239,0.58)] to-transparent"
-      />
 
       {askOpen ? (
         <aside
           role="dialog"
           aria-label="Ask Glow"
-          className="fixed right-[max(16px,env(safe-area-inset-right))] top-[max(82px,calc(env(safe-area-inset-top)+82px))] z-[60010] w-[min(380px,calc(100vw-32px))] rounded-[24px] border border-white/85 bg-[rgba(249,246,243,0.94)] p-4 shadow-[0_24px_72px_rgba(85,74,82,0.18),inset_0_1px_0_white] backdrop-blur-3xl"
+          className="fixed right-[max(16px,env(safe-area-inset-right))] top-[max(64px,calc(env(safe-area-inset-top)+64px))] z-[60010] w-[min(380px,calc(100vw-32px))] rounded-[24px] border border-white/68 bg-[rgba(249,246,243,0.78)] p-4 shadow-[0_22px_62px_rgba(85,74,82,0.14),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-3xl"
         >
           <div className="flex items-center justify-between gap-3">
             <div>
               <strong className="block text-[13px] text-neutral-900">Glow</strong>
               <span className="text-[11px] text-neutral-500">You do not need to know which page owns it.</span>
             </div>
-            <button type="button" onClick={() => setAskOpen(false)} aria-label="Close Ask Glow" className="h-8 w-8 rounded-full border border-white/80 bg-white/45 text-neutral-700">×</button>
+            <button type="button" onClick={() => setAskOpen(false)} aria-label="Close Ask Glow" className="h-8 w-8 rounded-full border border-white/65 bg-white/30 text-neutral-700">×</button>
           </div>
           <p className="mt-3 text-[12px] leading-5 text-neutral-600">Tell Glow what you want to do, find, continue, or open.</p>
           <div className="mt-3 grid gap-2">
-            <a href="/today?room=what-now" className="rounded-full border border-white/80 bg-white/45 px-3 py-2 text-center text-[12px] font-medium text-neutral-700 no-underline">What should I do now?</a>
-            <a href="/today?room=tomorrow" className="rounded-full border border-white/80 bg-white/45 px-3 py-2 text-center text-[12px] font-medium text-neutral-700 no-underline">Show tomorrow</a>
-            <a href="/today?room=replan" className="rounded-full border border-white/80 bg-white/45 px-3 py-2 text-center text-[12px] font-medium text-neutral-700 no-underline">Replan my day</a>
+            <a href="/today?room=what-now" className="rounded-full border border-white/65 bg-white/30 px-3 py-2 text-center text-[12px] font-medium text-neutral-700 no-underline">What should I do now?</a>
+            <a href="/today?room=tomorrow" className="rounded-full border border-white/65 bg-white/30 px-3 py-2 text-center text-[12px] font-medium text-neutral-700 no-underline">Show tomorrow</a>
+            <a href="/today?room=replan" className="rounded-full border border-white/65 bg-white/30 px-3 py-2 text-center text-[12px] font-medium text-neutral-700 no-underline">Replan my day</a>
           </div>
           <div className="mt-3 flex items-center gap-2 text-[10px] text-neutral-500"><Sparkles size={11} /> Current context: {roomLabel}</div>
         </aside>
