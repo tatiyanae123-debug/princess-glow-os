@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import Google from 'next-auth/providers/google';
+import { and, eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { users, accounts, sessions, verificationTokens } from '@/db/schema/auth';
 
@@ -58,9 +59,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const isLoggedIn = !!session?.user;
       const isOnSignIn = nextUrl.pathname === '/sign-in';
       const isApiAuth = nextUrl.pathname.startsWith('/api/auth');
-      if (isLoggedIn && isOnSignIn) {
-        return Response.redirect(new URL('/home', nextUrl));
-      }
+
+      // IMPORTANT: a signed-in user may deliberately visit /sign-in to grant
+      // a newly added Google permission such as Contacts. Do not bounce that
+      // request back to Home/What Now; the page becomes a connection screen.
+      if (isLoggedIn && isOnSignIn) return true;
+
       if (!isLoggedIn && !isOnSignIn && !isApiAuth) {
         return Response.redirect(new URL('/sign-in', nextUrl));
       }
@@ -90,6 +94,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     session({ session, user }) {
       session.user.id = user.id;
       return session;
+    },
+  },
+  events: {
+    // Auth.js does not need to force a consent screen on every normal sign-in.
+    // When Google returns refreshed permissions/tokens, persist them on the
+    // existing account row so newly granted Contacts access becomes usable.
+    async signIn({ account }) {
+      if (!account || account.provider !== 'google' || !account.providerAccountId) return;
+
+      await db
+        .update(accounts)
+        .set({
+          access_token: account.access_token ?? undefined,
+          refresh_token: account.refresh_token ?? undefined,
+          expires_at: account.expires_at ?? undefined,
+          token_type: account.token_type ?? undefined,
+          scope: account.scope ?? undefined,
+          id_token: account.id_token ?? undefined,
+        })
+        .where(
+          and(
+            eq(accounts.provider, 'google'),
+            eq(accounts.providerAccountId, account.providerAccountId),
+          ),
+        );
     },
   },
 });
