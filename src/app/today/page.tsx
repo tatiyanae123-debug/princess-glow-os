@@ -2,10 +2,9 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { MeetingPeopleAlias } from '@/components/today/meeting-people-alias';
 import { MorningBriefReference } from '@/components/today/morning-brief-reference';
-import { TodayContextNavigationSafety } from '@/components/today/today-context-navigation-safety';
 import { TodayContextWorlds } from '@/components/today/today-context-worlds';
 import { TodayLivingCenter } from '@/components/today/today-living-center';
-import { TodaySimpleChrome } from '@/components/today/today-simple-chrome';
+import { TodayNavigationAuthority } from '@/components/today/today-navigation-authority';
 import { WhatNowReference } from '@/components/today/what-now-reference';
 
 export const dynamic = 'force-dynamic';
@@ -18,8 +17,9 @@ export default async function TodayPage() {
     if (!session?.user?.id) redirect('/sign-in');
   }
 
-  // Glow Current lives underneath the interaction model.
-  // Locked visual references remain the source of truth for each Today room.
+  // There is exactly one navigation authority for every Today environment.
+  // Room content and reference surfaces live underneath it and may scroll,
+  // transform, or change independently without ever hiding Home / Today / Ask Glow.
   return (
     <>
       <MeetingPeopleAlias />
@@ -27,8 +27,7 @@ export default async function TodayPage() {
       <MorningBriefReference />
       <WhatNowReference />
       <TodayContextWorlds />
-      <TodaySimpleChrome />
-      <TodayContextNavigationSafety />
+      <TodayNavigationAuthority />
     </>
   );
 }
