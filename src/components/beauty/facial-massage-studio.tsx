@@ -123,7 +123,6 @@ function FaceMap({ mirror }: { mirror: boolean }) {
           <stop offset="1" stopColor="#f0ece8" stopOpacity=".08" />
         </radialGradient>
         <filter id="portraitSoft"><feGaussianBlur stdDeviation="1.1" /></filter>
-        <filter id="routeGlow"><feGaussianBlur stdDeviation=".7" /></filter>
         <marker id="massageArrow" markerWidth="7" markerHeight="7" refX="5.5" refY="3" orient="auto">
           <path d="M0,0 L0,6 L6.5,3 z" fill="rgba(255,255,255,.96)" />
         </marker>
@@ -239,7 +238,6 @@ export function FacialMassageStudio({ savedRoutineSteps, ownedTools, userName }:
 
   const activeStep = guided && hasGuidedRoutine ? savedRoutineSteps[stepIndex] : null;
   const selectedTool = mode === 'tool' ? ownedTools[selectedToolIndex] ?? null : null;
-  const unresolvedTools = ownedTools.filter((tool) => tool.status === 'needs-confirmation' || tool.status === 'needs-identification').length;
   const firstName = userName?.trim().split(/\s+/)[0] || 'You';
   const linkedSlip = activeStep?.products?.[0] ?? null;
 
@@ -416,7 +414,7 @@ export function FacialMassageStudio({ savedRoutineSteps, ownedTools, userName }:
               </section>
 
               <section className={`${styles.panel} ${styles.focusPanel}`}>
-                <div><div className={styles.panelTitle}>Today's focus</div><strong>{activeStep ? activeStep.name : 'Current focus'}</strong><span>{zone} · {hasGuidedRoutine ? 'Saved routine' : 'User-selected zone'}</span></div>
+                <div><div className={styles.panelTitle}>Today&apos;s focus</div><strong>{activeStep ? activeStep.name : 'Current focus'}</strong><span>{zone} · {hasGuidedRoutine ? 'Saved routine' : 'User-selected zone'}</span></div>
                 <div className={styles.blossom} aria-hidden="true"><i /><i /><i /><i /><i /><b /></div>
               </section>
             </aside>
