@@ -4,7 +4,6 @@ import Link from 'next/link';
 import {
   ChevronDown,
   Dumbbell,
-  Focus,
   MoreHorizontal,
   RotateCcw,
   Sparkles,
@@ -94,16 +93,18 @@ const rows: TemporalRow[] = [
 export function WhatNowReference() {
   const [visible, setVisible] = useState(false);
   const [askGlowOpen, setAskGlowOpen] = useState(false);
-  const [receipt, setReceipt] = useState('All changes saved');
+  const [receipt, setReceipt] = useState('');
   const [timeText, setTimeText] = useState('9:41 AM');
   const [dayViewMode, setDayViewMode] = useState<DayViewMode>('full');
   const [previousDayViewMode, setPreviousDayViewMode] = useState<DayViewMode | null>(null);
+  const [joinAvailable, setJoinAvailable] = useState(false);
 
   useEffect(() => {
     const sync = () => {
       const room = new URL(window.location.href).searchParams.get('room');
-      const isAfternoonOrLater = new Date().getHours() >= 12;
-      setVisible(room === 'what-now' || (!room && isAfternoonOrLater));
+      const now = new Date();
+      setVisible(room === 'what-now' || (!room && now.getHours() >= 12));
+      setJoinAvailable(now.getHours() === 12 || now.getHours() === 13);
     };
     const updateTime = () => setTimeText(new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }));
     sync();
@@ -118,6 +119,12 @@ export function WhatNowReference() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!receipt) return;
+    const timer = window.setTimeout(() => setReceipt(''), 2400);
+    return () => window.clearTimeout(timer);
+  }, [receipt]);
+
   function activateWithKeyboard(event: KeyboardEvent<HTMLElement>, room: RoomKey) {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
@@ -129,24 +136,14 @@ export function WhatNowReference() {
     const next = dayViewMode === 'full' ? 'near' : 'full';
     setPreviousDayViewMode(dayViewMode);
     setDayViewMode(next);
-    setReceipt(next === 'full' ? 'Full day view restored' : 'Near-term view is active');
+    setReceipt(next === 'full' ? 'Full day restored · saved' : 'Near-term view active · saved');
   }
 
   function undoLastChange() {
-    if (!previousDayViewMode) {
-      setReceipt('Nothing to undo');
-      return;
-    }
+    if (!previousDayViewMode) return;
     setDayViewMode(previousDayViewMode);
     setPreviousDayViewMode(null);
-    setReceipt('Last view change undone');
-  }
-
-  function returnToNow() {
-    setDayViewMode('full');
-    setPreviousDayViewMode(null);
-    setReceipt('You’re back at Now');
-    goToRoom('what-now');
+    setReceipt('Last change undone');
   }
 
   if (!visible) return null;
@@ -159,26 +156,25 @@ export function WhatNowReference() {
 
         <header className={styles.topbar}>
           <Link href="/home" className={styles.wordmark} aria-label="Go to Glow OS Home">Glow OS</Link>
-          <div className={styles.worldLabel}>TODAY&nbsp;&nbsp;·&nbsp;&nbsp;THE LIVING CENTER</div>
+          <div className={styles.worldLabel}>TODAY</div>
           <button className={styles.askGlow} type="button" onClick={() => setAskGlowOpen((v) => !v)} aria-expanded={askGlowOpen}>
             <Pearl small />
             <span>Ask Glow<small>⌘ K</small></span>
           </button>
         </header>
 
-        <nav className={styles.leftRail} aria-label="Core Today navigation">
+        <nav className={`${styles.leftRail} ${navStyles.singleAnchorRail}`} aria-label="Today navigation">
           <button type="button" className={`${styles.railItem} ${styles.railActive}`} onClick={() => goToRoom('what-now')}><Pearl small /><span>Today</span></button>
-          <button type="button" className={styles.railItem} onClick={() => goToRoom('focus')}><Focus /><span>Focus</span></button>
         </nav>
 
         <main className={styles.content}>
           <section className={styles.hero}>
             <div className={styles.nowCopy}>
               <span>{timeText}</span>
-              <h1>NOW</h1>
+              <button type="button" className={navStyles.nowTitleButton} onClick={() => goToRoom('focus')} aria-label="Open what is active now"><h1>NOW</h1></button>
               <strong>You’re in flow</strong>
               <p>Keep the momentum.</p>
-              <button type="button" className={styles.protected} onClick={() => goToRoom('focus')}><i /> Protected 90 min</button>
+              <button type="button" className={styles.protected} onClick={() => goToRoom('focus')}><i /> Focus active · 90 min</button>
             </div>
 
             <div className={styles.heroMatter} aria-hidden="true"><span /><i /><b /></div>
@@ -202,7 +198,7 @@ export function WhatNowReference() {
               </div>
               <div className={navStyles.clickableSurface} role="button" tabIndex={0} onClick={() => goToRoom('meeting')} onKeyDown={(event) => activateWithKeyboard(event, 'meeting')}>
                 <span>Appointments</span><strong>Design review</strong><p>1:00 – 2:00 PM</p>
-                <button type="button" onClick={(event) => { event.stopPropagation(); goToRoom('meeting'); }}>Join</button>
+                {joinAvailable ? <button type="button" onClick={(event) => { event.stopPropagation(); goToRoom('meeting'); }}>Join</button> : null}
                 <button type="button" className={styles.more} onClick={(event) => { event.stopPropagation(); setAskGlowOpen(true); }} aria-label="More appointment options"><MoreHorizontal /></button>
               </div>
             </div>
@@ -227,22 +223,20 @@ export function WhatNowReference() {
           </section>
         </main>
 
-        <button type="button" className={styles.addButton} onClick={() => setAskGlowOpen(true)}>+</button>
-        <footer className={styles.bottomBar}>
+        <footer className={`${styles.bottomBar} ${navStyles.simpleBottomBar}`}>
           <button type="button" className={styles.dayView} onClick={toggleDayView} aria-pressed={dayViewMode === 'near'}>◫ <span>{dayViewMode === 'full' ? 'Day view' : 'Now view'}</span><ChevronDown /></button>
-          <button type="button" className={styles.glowMini} onClick={() => setAskGlowOpen(true)} aria-label="Ask Glow"><Sparkles /></button>
-          <button type="button" className={styles.replan} onClick={() => goToRoom('replan')}><Sparkles /> Replan my day</button>
-          <span className={styles.receipt} role="status">{receipt}</span>
-          <button type="button" className={styles.undo} onClick={undoLastChange}>Undo <RotateCcw /></button>
-          <button type="button" className={navStyles.returnNowButton} onClick={returnToNow} aria-label="Return to Now" title="Return to Now"><Pearl /></button>
+          <button type="button" className={`${styles.replan} ${navStyles.replanCenter}`} onClick={() => goToRoom('replan')}><Sparkles /> Replan my day</button>
+          {receipt ? <span className={styles.receipt} role="status">{receipt}</span> : null}
+          {previousDayViewMode ? <button type="button" className={styles.undo} onClick={undoLastChange}>Undo <RotateCcw /></button> : null}
+          <span className={navStyles.passivePearl} aria-label="You are already at Now"><Pearl /></span>
         </footer>
 
         {askGlowOpen ? (
           <aside className={styles.glowPanel} role="dialog" aria-label="Ask Glow">
             <div><Pearl small /><span><strong>Glow</strong><small>Today context is active</small></span><button onClick={() => setAskGlowOpen(false)}>×</button></div>
             <p>Tell me what you want to do or where you want to go. You never need to know which Glow system owns it.</p>
-            <button onClick={() => { setAskGlowOpen(false); returnToNow(); }}>What should I do now?</button>
-            <button onClick={() => { setAskGlowOpen(false); goToRoom('focus'); }}>Start my focus block</button>
+            <button onClick={() => { setAskGlowOpen(false); goToRoom('what-now'); }}>What should I do now?</button>
+            <button onClick={() => { setAskGlowOpen(false); goToRoom('focus'); }}>Open my active focus</button>
             <button onClick={() => { setAskGlowOpen(false); goToRoom('tonight'); }}>Show tonight</button>
             <button onClick={() => { setAskGlowOpen(false); goToRoom('tomorrow'); }}>Preview tomorrow</button>
             <button onClick={() => { setAskGlowOpen(false); goToRoom('replan'); }}>Replan my day</button>
