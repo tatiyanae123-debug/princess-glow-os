@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import {
   Ban,
   Circle,
-  CheckCircle2,
   Clock3,
   Hourglass,
   ListTree,
@@ -72,7 +71,7 @@ function classifyTask(task: PlanTaskItem, now: Date): ZoneId {
   if (/\bblocked\b|\bstuck\b|cannot proceed|can't proceed|can’t proceed|cannot start|can't start|can’t start/.test(text)) return 'blocked';
   if (/waiting on|awaiting|pending feedback|pending reply|pending approval|need response|waiting for/.test(text)) return 'waiting';
   if (/prepare|preparation|prep\b|gather|materials|research first|set up|setup|before i can|before starting/.test(text)) return 'prep';
-  if (task.status === 'in_progress' || (estimate >= 45 && (task.priority === 'urgent' || task.priority === 'high')) || /deep focus|design|write|research|study|build|strategy|synthesis/.test(text) && estimate >= 45) return 'deep';
+  if (task.status === 'in_progress' || (estimate >= 45 && (task.priority === 'urgent' || task.priority === 'high')) || (/deep focus|design|write|research|study|build|strategy|synthesis/.test(text) && estimate >= 45)) return 'deep';
   if (estimate <= 15) return 'quick';
   if (task.priority === 'urgent' || task.priority === 'high' || (msUntilDue !== null && msUntilDue <= DAY * 2)) return 'ready';
   if (task.priority === 'low' || (msUntilDue !== null && msUntilDue > DAY * 7)) return 'later';
@@ -81,7 +80,9 @@ function classifyTask(task: PlanTaskItem, now: Date): ZoneId {
 
 function horizonEnd(horizon: PlanHorizon, now: Date) {
   if (horizon === 'today') {
-    const end = new Date(now); end.setHours(23, 59, 59, 999); return end;
+    const end = new Date(now);
+    end.setHours(23, 59, 59, 999);
+    return end;
   }
   if (horizon === 'week') return new Date(now.getTime() + DAY * 7);
   if (horizon === 'two-weeks') return new Date(now.getTime() + DAY * 14);
@@ -111,7 +112,11 @@ function energyMarks(priority: PlanTaskItem['priority']) {
 
 function subtaskLines(task: PlanTaskItem) {
   if (!task.description) return [];
-  return task.description.split(/\n+/).map((line) => line.trim()).filter((line) => /^[-*]?\s*\[[ xX]\]\s+/.test(line)).map((line) => line.replace(/^[-*]?\s*\[[ xX]\]\s+/, ''));
+  return task.description
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter((line) => /^[-*]?\s*\[[ xX]\]\s+/.test(line))
+    .map((line) => line.replace(/^[-*]?\s*\[[ xX]\]\s+/, ''));
 }
 
 function priorityRank(priority: PlanTaskItem['priority']) {
@@ -145,12 +150,14 @@ export function PlanTasksRoom({ initialTasks }: { initialTasks: PlanTaskItem[] }
     if (contextFilter !== 'all') values = values.filter((task) => (task.source ?? 'Glow') === contextFilter);
     if (locationFilter !== 'all') values = values.filter((task) => explicitLocation(task) === locationFilter);
     if (priorityFilter !== 'all') values = values.filter((task) => task.priority === priorityFilter);
-    if (durationFilter !== 'all') values = values.filter((task) => {
-      const minutes = estimateMinutes(task);
-      if (durationFilter === 'quick') return minutes <= 15;
-      if (durationFilter === 'medium') return minutes > 15 && minutes <= 45;
-      return minutes > 45;
-    });
+    if (durationFilter !== 'all') {
+      values = values.filter((task) => {
+        const minutes = estimateMinutes(task);
+        if (durationFilter === 'quick') return minutes <= 15;
+        if (durationFilter === 'medium') return minutes > 15 && minutes <= 45;
+        return minutes > 45;
+      });
+    }
     return values.sort((a, b) => {
       if (viewBy === 'priority') return priorityRank(b.priority) - priorityRank(a.priority);
       if (viewBy === 'due') return (a.dueDate ? new Date(a.dueDate).getTime() : Number.MAX_SAFE_INTEGER) - (b.dueDate ? new Date(b.dueDate).getTime() : Number.MAX_SAFE_INTEGER);
@@ -168,7 +175,7 @@ export function PlanTasksRoom({ initialTasks }: { initialTasks: PlanTaskItem[] }
   const completed = tasks.filter((task) => task.status === 'done');
   const progressTotal = tasks.filter((task) => task.status !== 'cancelled').length;
   const progress = progressTotal ? Math.round((completed.length / progressTotal) * 100) : 0;
-  const nonEmptyZones = (['deep','ready','quick','prep','later','waiting','blocked'] as ZoneId[]).filter((zone) => zones[zone].length).length;
+  const nonEmptyZones = (['deep', 'ready', 'quick', 'prep', 'later', 'waiting', 'blocked'] as ZoneId[]).filter((zone) => zones[zone].length).length;
 
   function toggleTask(task: PlanTaskItem) {
     const nextStatus = task.status === 'done' ? 'pending' : 'done';
@@ -188,7 +195,7 @@ export function PlanTasksRoom({ initialTasks }: { initialTasks: PlanTaskItem[] }
     { id: 'prep' as const, title: 'NEEDS PREPARATION', subtitle: 'Set things up', className: `${styles.needsPrep} ${styles.zoneViolet}`, icon: Wrench },
     { id: 'later' as const, title: 'CAN WAIT', subtitle: 'Later is fine', className: `${styles.canWait} ${styles.zoneBlue}`, icon: TimerReset },
     { id: 'waiting' as const, title: 'WAITING', subtitle: 'On others', className: `${styles.waiting} ${styles.zonePeach}`, icon: Hourglass },
-    { id: 'blocked' as const, title: 'BLOCKED', subtitle: "Can't proceed yet", className: `${styles.blocked} ${styles.zoneRed}`, icon: Ban },
+    { id: 'blocked' as const, title: 'BLOCKED', subtitle: 'Cannot proceed yet', className: `${styles.blocked} ${styles.zoneRed}`, icon: Ban },
   ];
 
   return (
@@ -263,7 +270,7 @@ export function PlanTasksRoom({ initialTasks }: { initialTasks: PlanTaskItem[] }
         </div>
 
         <div className={styles.progressCard}>
-          <div className={styles.controlTitle}>TODAY'S PROGRESS</div>
+          <div className={styles.controlTitle}>TODAY’S PROGRESS</div>
           <div className={styles.progressBody}>
             <div className={styles.progressRing} style={{ '--progress': `${progress}%` } as CSSProperties}><strong>{completed.length}/{progressTotal}</strong></div>
             <span className={styles.progressText}><strong>tasks completed</strong><small>Keep going — progress compounds.</small></span>
