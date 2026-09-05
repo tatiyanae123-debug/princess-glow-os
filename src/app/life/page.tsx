@@ -25,7 +25,7 @@ import { getTasksByUser } from '@/lib/data/tasks';
 import { getProjectsByUser } from '@/lib/data/user-scope';
 import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
 import { LifeHistoryControls } from './life-history-controls';
-import styles from './life-personal-house.module.css';
+import styles from './life-personal-house-v2.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -155,7 +155,6 @@ export default async function LifePage({ searchParams }: LifePageProps) {
   const hour = Number(new Intl.DateTimeFormat('en-US', { timeZone: NEW_YORK_TZ, hour: '2-digit', hourCycle: 'h23' }).format(now));
   const greeting = greetingForHour(hour);
   const dateText = new Intl.DateTimeFormat('en-US', { timeZone: NEW_YORK_TZ, weekday: 'short', month: 'short', day: 'numeric' }).format(now);
-  const fullDateText = new Intl.DateTimeFormat('en-US', { timeZone: NEW_YORK_TZ, weekday: 'long', month: 'long', day: 'numeric' }).format(now);
   const todayKey = dateKey(now);
   const todayEvents = [...events]
     .filter((event) => dateKey(event.startAt) === todayKey)
