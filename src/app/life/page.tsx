@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import {
   CalendarDays,
   Compass,
-  JournalText,
+  NotebookText,
   Search,
   Settings,
   Sparkles,
@@ -145,7 +145,7 @@ export default async function LifePage() {
 
         <aside className={styles.leftRail} aria-label="Life instruments">
           <Link href="/life" className={styles.lifeActive}><span className={styles.navPearl} /><strong>Life</strong></Link>
-          <Link href="/notes"><JournalText /><span>Journal</span></Link>
+          <Link href="/notes"><NotebookText /><span>Journal</span></Link>
           <Link href="/calendar"><CalendarDays /><span>Calendar</span></Link>
           <Link href="/world"><Users /><span>People</span></Link>
           <Link href="/world"><Compass /><span>Explore</span></Link>
@@ -215,7 +215,7 @@ export default async function LifePage() {
             <span className={styles.eyebrow}>Recent moves</span>
             {recentNotes.length ? recentNotes.map((note) => (
               <Link href="/notes" key={note.id}>
-                <JournalText size={13} />
+                <NotebookText size={13} />
                 <span><strong>{note.title}</strong><small>Updated {note.updatedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</small></span>
                 <span aria-hidden="true">›</span>
               </Link>
