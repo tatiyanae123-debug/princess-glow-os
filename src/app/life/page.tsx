@@ -26,34 +26,23 @@ import styles from './life-personal-house.module.css';
 export const dynamic = 'force-dynamic';
 
 type ChamberId = 'body' | 'beauty' | 'closet' | 'food' | 'home' | 'money' | 'work' | 'relationships' | 'travel';
-
-type Chamber = {
-  id: ChamberId;
-  title: string;
-  descriptor: string;
-  href: string;
-  keywords: string[];
-};
+type Chamber = { id: ChamberId; title: string; descriptor: string; href: string; keywords: string[] };
 
 const CHAMBERS: Chamber[] = [
   { id: 'body', title: 'Body', descriptor: 'Energy · Sleep · Movement', href: '/wellness', keywords: ['body', 'fitness', 'workout', 'sleep', 'movement', 'wellness', 'health', 'energy', 'gym'] },
   { id: 'beauty', title: 'Beauty', descriptor: 'Skin · Hair · Glow', href: '/beauty', keywords: ['beauty', 'skin', 'skincare', 'hair', 'makeup', 'gua sha', 'face', 'glow'] },
   { id: 'closet', title: 'Closet', descriptor: 'Style · Wardrobe · Expression', href: '/closet', keywords: ['closet', 'style', 'wardrobe', 'outfit', 'fashion', 'clothes'] },
   { id: 'food', title: 'Food', descriptor: 'Nourish · Recipes · Balance', href: '/food', keywords: ['food', 'meal', 'nutrition', 'grocery', 'recipe', 'protein', 'breakfast', 'lunch', 'dinner'] },
-  { id: 'home', title: 'Home', descriptor: 'Spaces · Objects · Atmosphere', href: '/home', keywords: ['home', 'room', 'bedroom', 'clean', 'organize', 'storage', 'space', 'laundry'] },
+  { id: 'home', title: 'Home', descriptor: 'Spaces · Objects · Atmosphere', href: '/tasks', keywords: ['home', 'room', 'bedroom', 'clean', 'organize', 'storage', 'space', 'laundry'] },
   { id: 'money', title: 'Money', descriptor: 'Wealth · Budget · Freedom', href: '/finance', keywords: ['money', 'finance', 'budget', 'saving', 'debt', 'credit', 'invest', 'pay', 'bill'] },
   { id: 'work', title: 'Work', descriptor: 'Focus · Projects · Impact', href: '/work', keywords: ['work', 'job', 'career', 'interview', 'project', 'client', 'design', 'shift'] },
-  { id: 'relationships', title: 'Relationships', descriptor: 'People · Connection · Boundaries', href: '/world', keywords: ['relationship', 'friend', 'family', 'people', 'boundary', 'birthday', 'social'] },
-  { id: 'travel', title: 'Travel', descriptor: 'Places · Plans · Experiences', href: '/calendar', keywords: ['travel', 'trip', 'flight', 'hotel', 'vacation', 'airport', 'visit'] },
+  { id: 'relationships', title: 'Relationships', descriptor: 'People · Connection · Boundaries', href: '/today?room=people', keywords: ['relationship', 'friend', 'family', 'people', 'boundary', 'birthday', 'social'] },
+  { id: 'travel', title: 'Travel', descriptor: 'Places · Plans · Experiences', href: '/today?room=places', keywords: ['travel', 'trip', 'flight', 'hotel', 'vacation', 'airport', 'visit'] },
 ];
 
 async function safe<T>(load: () => Promise<T>, fallback: T): Promise<T> {
-  try {
-    return await load();
-  } catch (error) {
-    console.error('[Glow OS] Life source unavailable', error);
-    return fallback;
-  }
+  try { return await load(); }
+  catch (error) { console.error('[Glow OS] Life source unavailable', error); return fallback; }
 }
 
 function countMatches(items: unknown[], keywords: string[]) {
@@ -66,10 +55,7 @@ function countMatches(items: unknown[], keywords: string[]) {
 function upcomingWithin24Hours(events: Array<{ startAt: Date }>) {
   const now = Date.now();
   const end = now + 24 * 60 * 60 * 1000;
-  return events.filter((event) => {
-    const start = event.startAt.getTime();
-    return start >= now && start <= end;
-  }).length;
+  return events.filter((event) => event.startAt.getTime() >= now && event.startAt.getTime() <= end).length;
 }
 
 function formatEnergy(value: string | null | undefined) {
@@ -96,10 +82,9 @@ export default async function LifePage() {
     safe(() => getConnectionsOverview(userId), null),
   ]);
 
+  const shared = [tasks, habits, goals, routines, notes, events].flat() as unknown[];
   const counts = Object.fromEntries(CHAMBERS.map((chamber) => {
-    let count = 0;
-    const shared = [tasks, habits, goals, routines, notes, events].flat() as unknown[];
-    count += countMatches(shared, chamber.keywords);
+    let count = countMatches(shared, chamber.keywords);
     if (chamber.id === 'body') count += wellness.length;
     if (chamber.id === 'beauty') count += beauty.length;
     if (chamber.id === 'money') count += finance.length;
@@ -108,13 +93,14 @@ export default async function LifePage() {
     return [chamber.id, count];
   })) as Record<ChamberId, number>;
 
-  const totalConnected = Object.values(counts).reduce((sum, count) => sum + count, 0);
+  const now = new Date();
   const firstName = session.user.name?.trim().split(/\s+/)[0] ?? 'you';
+  const dateText = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'long', month: 'long', day: 'numeric' }).format(now);
+  const timeText = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' }).format(now);
+  const totalConnected = Object.values(counts).reduce((sum, count) => sum + count, 0);
   const latestWellness = wellness[0] ?? null;
   const todayCount = upcomingWithin24Hours(events);
-  const recentNotes = [...notes]
-    .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
-    .slice(0, 3);
+  const recentNotes = [...notes].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()).slice(0, 3);
   const calendarConnected = connections?.calendarState === 'connected';
   const statusLabel = calendarConnected && totalConnected > 0 ? 'Connected' : totalConnected > 0 ? 'Partial' : 'Ready';
 
@@ -126,9 +112,9 @@ export default async function LifePage() {
       <section className={styles.frame} aria-label="Life · The Personal House">
         <header className={styles.header}>
           <nav className={styles.homeNav} aria-label="Glow navigation">
-            <Link href="/today">Glow OS</Link>
+            <Link href="/home">Glow OS</Link>
             <span>·</span>
-            <Link href="/today">Today</Link>
+            <Link href="/today?room=what-now">Today</Link>
           </nav>
 
           <div className={styles.identity}>
@@ -147,14 +133,15 @@ export default async function LifePage() {
           <Link href="/life" className={styles.lifeActive}><span className={styles.navPearl} /><strong>Life</strong></Link>
           <Link href="/notes"><NotebookText /><span>Journal</span></Link>
           <Link href="/calendar"><CalendarDays /><span>Calendar</span></Link>
-          <Link href="/world"><Users /><span>People</span></Link>
-          <Link href="/world"><Compass /><span>Explore</span></Link>
+          <Link href="/today?room=people"><Users /><span>People</span></Link>
+          <Link href="/today?room=places"><Compass /><span>Explore</span></Link>
           <Link href="/settings"><Settings /><span>Settings</span></Link>
 
           <div className={styles.profileCard}>
             <span className={styles.profilePearl}><span>{firstName.slice(0, 1).toUpperCase()}</span></span>
-            <small>Good to see you,</small>
+            <small>Welcome,</small>
             <strong>{firstName}</strong>
+            <div><span>{dateText}</span><b>{timeText}</b></div>
             <div><span>Next 24 hours</span><b>{todayCount} event{todayCount === 1 ? '' : 's'}</b></div>
             <div><span>Energy</span><b>{formatEnergy(latestWellness?.energy)}</b></div>
           </div>
