@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowLeft, Search, Sparkles } from 'lucide-react';
+import { LifeReferenceRoom, isReferenceLifeRoom } from './life-reference-room';
 import styles from './life-wing.module.css';
 
 export type LifeRoomId =
@@ -132,6 +133,10 @@ export function isLifeRoomId(value: string | undefined): value is LifeRoomId {
 }
 
 export function LifeWing({ room, connectedCount }: { room: LifeRoomId; connectedCount: number }) {
+  if (isReferenceLifeRoom(room)) {
+    return <LifeReferenceRoom room={room} connectedCount={connectedCount} />;
+  }
+
   const wing = LIFE_WINGS[room];
 
   return (
