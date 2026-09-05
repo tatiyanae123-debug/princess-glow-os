@@ -99,8 +99,8 @@ function TaskCard({ task }: { task: PersonalTask }) {
 
 function RoomShell({ eyebrow, title, description, children }: { eyebrow: string; title: string; description: string; children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 z-[10050] overflow-y-auto bg-[radial-gradient(circle_at_78%_8%,rgba(255,235,210,.50),transparent_27%),radial-gradient(circle_at_12%_90%,rgba(219,222,255,.32),transparent_30%),linear-gradient(145deg,#f5eee7,#eee7e2_54%,#faf6f0)] px-3 pb-16 pt-[94px] text-neutral-900 sm:px-6">
-      <main className="mx-auto min-h-[calc(100svh-110px)] w-full max-w-[1450px] rounded-[34px] border border-white/85 bg-white/20 p-5 shadow-[0_28px_90px_rgba(104,87,81,.10),inset_0_1px_0_white] backdrop-blur-3xl sm:p-8">
+    <div className="fixed inset-0 z-[10050] overflow-y-auto bg-[radial-gradient(circle_at_78%_8%,rgba(255,235,210,.50),transparent_27%),radial-gradient(circle_at_12%_90%,rgba(219,222,255,.32),transparent_30%),linear-gradient(145deg,#f5eee7,#eee7e2_54%,#faf6f0)] px-3 pb-16 pt-[72px] text-neutral-900 sm:px-6">
+      <main className="mx-auto min-h-[calc(100svh-88px)] w-full max-w-[1450px] rounded-[34px] border border-white/85 bg-white/20 p-5 shadow-[0_28px_90px_rgba(104,87,81,.10),inset_0_1px_0_white] backdrop-blur-3xl sm:p-8">
         <header className="max-w-3xl">
           <span className="text-[11px] uppercase tracking-[.16em] text-neutral-500">{eyebrow}</span>
           <h1 className="mt-2 font-serif text-[clamp(3.2rem,7vw,7rem)] font-medium leading-[.86] tracking-[-.06em]">{title}</h1>
@@ -128,11 +128,14 @@ export function TodayLiveRooms() {
   const derived = useMemo(() => {
     if (!data) return null;
     const now = Date.now();
-    const futureToday = data.todayEvents.filter((event) => new Date(event.startAt).getTime() >= now);
+    const futureToday = data.todayEvents.filter((event) => {
+      const endOrStart = event.endAt ? new Date(event.endAt).getTime() : new Date(event.startAt).getTime();
+      return endOrStart >= now;
+    });
     const nextEvent = futureToday[0] ?? data.events.find((event) => new Date(event.startAt).getTime() >= now) ?? null;
     const later = futureToday.filter((event) => new Date(event.startAt).getHours() >= 12 && new Date(event.startAt).getHours() < 17);
     const tonight = futureToday.filter((event) => new Date(event.startAt).getHours() >= 17);
-    return { nextEvent, later, tonight };
+    return { nextEvent, later, tonight, remainingToday: futureToday };
   }, [data]);
 
   if (!room) return null;
@@ -216,25 +219,28 @@ export function TodayLiveRooms() {
     );
   }
 
-  const upcoming = data.events.slice(0, 8);
+  const todaySchedule = (derived?.remainingToday ?? []).slice(0, 8);
   const openTasks = data.tasks.slice(0, 8);
+  const calendarConnected = data.sourceStatus.googleCalendar === 'connected';
+
   return (
-    <RoomShell eyebrow="Replan with real constraints" title="Replan my day" description="Glow surfaces the real commitments and open tasks that can be reorganized. It does not pretend to have changed an external calendar until a real write integration exists.">
+    <RoomShell eyebrow="Replan with real constraints" title="Replan my day" description="Glow uses today’s real connected commitments and your open Glow tasks. Missing data stays visibly missing instead of becoming a sample schedule.">
       <div className="grid gap-5 lg:grid-cols-2">
         <section>
-          <div className="mb-3 flex items-center gap-2 text-[12px] font-semibold text-neutral-700"><Clock3 size={15} /> Upcoming commitments</div>
-          <div className="grid gap-3">{upcoming.map((event) => <EventCard key={`${event.source}-${event.id}`} event={event} />)}</div>
-          {upcoming.length === 0 ? <EmptyState title="No scheduled constraints" detail="There are no upcoming connected calendar items to move around." /> : null}
+          <div className="mb-3 flex items-center gap-2 text-[12px] font-semibold text-neutral-700"><Clock3 size={15} /> Today’s commitments</div>
+          <div className="grid gap-3">{todaySchedule.map((event) => <EventCard key={`${event.source}-${event.id}`} event={event} />)}</div>
+          {todaySchedule.length === 0 && calendarConnected ? <EmptyState title="No remaining calendar commitments" detail="Your connected calendar is clear for the rest of today." /> : null}
+          {todaySchedule.length === 0 && !calendarConnected ? <EmptyState title="Calendar not connected" detail="Connect your Google Calendar to bring today’s real schedule into Replan. Glow will not substitute a sample schedule." /> : null}
         </section>
         <section>
-          <div className="mb-3 flex items-center gap-2 text-[12px] font-semibold text-neutral-700"><FileText size={15} /> Open work</div>
+          <div className="mb-3 flex items-center gap-2 text-[12px] font-semibold text-neutral-700"><FileText size={15} /> Your open work</div>
           <div className="grid gap-3">{openTasks.map((task) => <TaskCard key={task.id} task={task} />)}</div>
           {openTasks.length === 0 ? <EmptyState title="No open tasks" detail="There are no active Glow tasks to replan right now." /> : null}
         </section>
       </div>
       <div className="mt-5 rounded-[28px] border border-white/80 bg-white/35 p-5 text-[12px] leading-5 text-neutral-600 shadow-[inset_0_1px_0_white] backdrop-blur-2xl">
         <span className="inline-flex items-center gap-2 font-semibold text-neutral-800"><Sparkles size={14} /> Real-action boundary</span>
-        <p className="mt-2">This page can help you see what should change. It will not claim a Google Calendar event was moved until Glow has a real authorized calendar-write action for that event.</p>
+        <p className="mt-2">Replan shows what is actually on your account today. It will not claim a Google Calendar event was moved until Glow has a real authorized calendar-write action for that event.</p>
       </div>
     </RoomShell>
   );
