@@ -86,7 +86,7 @@ export function GlowCurrentHomeWorld() {
 
     const routes: Record<Exclude<Region, 'Today'>, string> = {
       Plan: '/planning',
-      Life: '/routines',
+      Life: '/life',
       Brain: '/notes',
       Create: '/notes',
     };
