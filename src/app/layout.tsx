@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { GlowCurrent } from '@/components/glow/glow-current';
 import { GlowPresence } from '@/components/glow/glow-presence';
 import { SpatialRouteTransition } from '@/components/glow/spatial-route-transition';
@@ -18,6 +19,7 @@ import './sidebar-precision.css';
 import './plan-time-observatory.css';
 import './glow-living-presence.css';
 import './glow-canonical-integration.css';
+import './glow-shell.css';
 
 export const metadata: Metadata = {
   title: 'Glow OS',
@@ -29,7 +31,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         {children}
-        <GlowCurrent />
+        <Suspense fallback={null}>
+          <GlowCurrent />
+        </Suspense>
         <SpatialRouteTransition />
         <GlowPresence />
       </body>
