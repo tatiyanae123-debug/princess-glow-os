@@ -12,6 +12,22 @@ export type PersonalContextState =
 const SESSION_KEY = 'glow:personal-context:v1';
 const REQUEST_TIMEOUT_MS = 2200;
 
+const EMPTY_CONTEXT: PersonalContextData = {
+  ok: true,
+  user: { name: null, email: null },
+  tasks: [],
+  activeTask: null,
+  events: [],
+  todayEvents: [],
+  tomorrowEvents: [],
+  routines: [],
+  habits: [],
+  notes: [],
+  goals: [],
+  wellness: null,
+  sourceStatus: { googleCalendar: 'error' },
+};
+
 let sharedRequest: Promise<PersonalContextState> | null = null;
 let memoryData: PersonalContextData | null = null;
 
@@ -64,15 +80,15 @@ async function requestPersonalContext(): Promise<PersonalContextState> {
         return { status: 'signed-out', data: null } as const;
       }
 
-      const cached = readCachedData();
-      return cached
-        ? ({ status: 'ready', data: cached } as const)
-        : ({ status: 'error', data: null } as const);
+      return {
+        status: 'ready',
+        data: readCachedData() ?? EMPTY_CONTEXT,
+      } as const;
     } catch {
-      const cached = readCachedData();
-      return cached
-        ? ({ status: 'ready', data: cached } as const)
-        : ({ status: 'error', data: null } as const);
+      return {
+        status: 'ready',
+        data: readCachedData() ?? EMPTY_CONTEXT,
+      } as const;
     } finally {
       window.clearTimeout(timeout);
       sharedRequest = null;
@@ -83,8 +99,13 @@ async function requestPersonalContext(): Promise<PersonalContextState> {
 }
 
 function initialState(): PersonalContextState {
-  const cached = readCachedData();
-  return cached ? { status: 'ready', data: cached } : { status: 'loading', data: null };
+  // Never cover the Today world with a blocking loader. Render the architecture
+  // immediately from the latest session snapshot, or from a truthful empty state,
+  // and hydrate real connected data in the background.
+  return {
+    status: 'ready',
+    data: readCachedData() ?? EMPTY_CONTEXT,
+  };
 }
 
 export function usePersonalContext(): PersonalContextState {
