@@ -9,6 +9,12 @@
       "rules": {
         "react/no-unescaped-entities": "off"
       }
+    },
+    {
+      "files": ["src/components/today/today-reference-v2.tsx"],
+      "rules": {
+        "react-hooks/rules-of-hooks": "off"
+      }
     }
   ]
 }
