@@ -21,6 +21,9 @@ const experience = (
 ): RoomExperience => ({ room, world, climate, physics, intelligence, primaryQuestion, completion });
 
 export function roomExperienceFor(pathname: string): RoomExperience {
+  if (pathname === '/home') return experience('threshold', 'today', 'crystal-sunrise-pavilion', 'threshold-and-portals', 'whole-system-orchestration', 'Where am I now, and where do I want to go?', 'horizon-opens');
+  if (pathname.startsWith('/search')) return experience('universal-search', 'brain', 'clear-prismatic-lens', 'focus-and-resolve', 'cross-world-retrieval', 'Where is the thing I am looking for?', 'result-focuses');
+
   if (pathname.startsWith('/beauty/facial-massage')) return experience('gua-sha-studio', 'life', 'mint-water-pearl', 'guided-glide', 'saved-routine-and-tool-context', 'What facial movement am I doing now?', 'soft-release');
   if (pathname.startsWith('/beauty/lab')) return experience('makeup-studio', 'life', 'reflective-blush-pearl', 'mirror-refraction', 'placement-and-sequencing', 'How do I create the look I need?', 'look-settles-into-memory');
   if (pathname.startsWith('/beauty')) return experience('beauty-command', 'life', 'warm-pearl-reflection', 'orchestrated-layers', 'ready-state-orchestration', 'How do I get completely ready?', 'final-look-warm-light');
@@ -29,14 +32,15 @@ export function roomExperienceFor(pathname: string): RoomExperience {
   if (pathname.startsWith('/fitness')) return experience('fitness', 'life', 'grounded-silver-pearl', 'rhythmic-momentum', 'guided-execution', 'What movement am I doing now?', 'residual-strength-light');
   if (pathname.startsWith('/food')) return experience('food', 'life', 'warm-ivory-kitchen', 'practical-flow', 'use-and-preparation', 'What do I need to eat, make, or use?', 'dish-becomes-memory');
   if (pathname.startsWith('/closet')) return experience('closet', 'life', 'textile-pearl', 'rail-and-layer', 'outfit-context', 'What should I wear?', 'outfit-composes');
-  if (pathname.startsWith('/home')) return experience('home', 'life', 'stone-and-daylight', 'place-navigation', 'spatial-organization', 'What does this place need?', 'space-settles');
   if (pathname.startsWith('/life') || pathname.startsWith('/world') || pathname.startsWith('/life-world')) return experience('life', 'life', 'lived-daylight', 'thresholds-and-rooms', 'domain-orchestration', 'Which part of life needs me?', 'room-glows-quietly');
   if (pathname.startsWith('/finance')) return experience('money', 'life', 'cool-mint-ivory', 'still-ledger', 'exact-and-restrained', 'What is true about my money?', 'number-resolves');
 
   if (pathname.startsWith('/calendar')) return experience('time-observatory', 'plan', 'lavender-time-haze', 'orbital-time', 'conflict-and-preparation', 'Where does this belong in time?', 'time-slot-seals');
   if (pathname.startsWith('/planning') || pathname.startsWith('/tomorrow')) return experience('plan', 'plan', 'champagne-lavender-horizon', 'spatial-time', 'simulation-before-approval', 'What should the future look like?', 'approved-path-illuminates');
   if (pathname.startsWith('/tasks') || pathname.startsWith('/reminders')) return experience('readiness', 'plan', 'ivory-rose', 'readiness-gravity', 'next-action', 'What is ready to move?', 'object-travels-to-done');
-  if (pathname.startsWith('/routines') || pathname.startsWith('/habits')) return experience('rhythm', 'plan', 'soft-sage-pearl', 'cyclical-rhythm', 'adaptive-routine', 'What rhythm supports today?', 'cycle-closes-softly');
+  if (pathname.startsWith('/habits/daily')) return experience('habits-daily', 'plan', 'sunlit-pearl-conservatory', 'cyclical-rhythm', 'daily-habit-execution', 'What habits need attention today?', 'cycle-closes-softly');
+  if (pathname.startsWith('/habits')) return experience('habits-overview', 'plan', 'sunlit-pearl-conservatory', 'pattern-and-rhythm', 'habit-pattern-intelligence', 'What patterns am I building?', 'pattern-settles');
+  if (pathname.startsWith('/routines')) return experience('rhythm', 'plan', 'soft-sage-pearl', 'cyclical-rhythm', 'adaptive-routine', 'What rhythm supports today?', 'cycle-closes-softly');
   if (pathname.startsWith('/goals') || pathname.startsWith('/projects')) return experience('horizon', 'plan', 'distant-champagne', 'landmark-horizon', 'progress-and-preparation', 'What am I moving toward?', 'horizon-clarifies');
 
   if (pathname.startsWith('/memory')) return experience('memory', 'brain', 'cinematic-amber-pearl', 'depth-and-resurfacing', 'contextual-recall', 'What do I want to remember?', 'memory-recedes-gently');

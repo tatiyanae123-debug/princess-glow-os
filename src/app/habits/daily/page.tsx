@@ -10,7 +10,7 @@ function dateKey(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 
-export default async function HabitsPage() {
+export default async function HabitsDailyPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
 
@@ -22,5 +22,5 @@ export default async function HabitsPage() {
     getHabitLogsForUser(session.user.id, dateKey(start), dateKey(now)),
   ]);
 
-  return <AppShell><HabitsReference initialHabits={habits} initialLogs={logs} mode="overview" /></AppShell>;
+  return <AppShell><HabitsReference initialHabits={habits} initialLogs={logs} mode="daily" /></AppShell>;
 }

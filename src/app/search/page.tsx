@@ -16,56 +16,46 @@ import { beautyRoutines } from '@/db/schema/beauty-routines';
 import { medications, supplements } from '@/db/schema/health-intelligence';
 import { routines, routineSteps } from '@/db/schema/routines';
 import { projects, lifeMemories } from '@/db/schema/intelligence-expansion';
-import {
-  beautyProducts,
-  closetItems,
-  financeGoals,
-  fitnessSessions,
-  hairLogs,
-  intelligentObservations,
-  lifeTimelineEvents,
-  planningPeriods,
-} from '@/db/schema/completion-v1';
-import { Search, Sparkles } from 'lucide-react';
+import { beautyProducts, closetItems, financeGoals, fitnessSessions, hairLogs, intelligentObservations, lifeTimelineEvents, planningPeriods } from '@/db/schema/completion-v1';
+import { ArrowRight, CalendarDays, FileText, Globe2, MessageCircle, Search, UserRound } from 'lucide-react';
+import styles from './search-reference.module.css';
 
 export const dynamic = 'force-dynamic';
 type Result = { id:string; type:string; title:string; subtitle?:string|null; href:string };
+type WorldFilter = 'Today'|'Plan'|'Life'|'Brain'|'Create';
 
-export default async function SearchPage({searchParams}:{searchParams:Promise<{q?:string}>}){
+function worldForType(type:string):WorldFilter{
+  if(['Task','Calendar','Appointment'].includes(type)) return 'Today';
+  if(['Habit','Routine','Routine Step','Goal','Planning','Project'].includes(type)) return 'Plan';
+  if(['Beauty Product','Beauty Routine','Hair','Fitness','Closet','Finance','Finance Goal','Medication','Supplement'].includes(type)) return 'Life';
+  if(['Note','Memory','Timeline','Glow Notice','Link'].includes(type)) return 'Brain';
+  return 'Create';
+}
+function scopeForType(type:string){
+  if(['Calendar','Appointment'].includes(type)) return 'calendar';
+  if(type==='Note') return 'notes';
+  return 'all';
+}
+function queryHref(q:string, extra:Record<string,string|undefined>){
+  const params=new URLSearchParams();
+  if(q) params.set('q',q);
+  Object.entries(extra).forEach(([key,value])=>{if(value)params.set(key,value)});
+  return `/search${params.toString()?`?${params.toString()}`:''}`;
+}
+
+export default async function SearchPage({searchParams}:{searchParams:Promise<{q?:string;scope?:string;world?:string}>}){
   const session=await auth();
   if(!session?.user?.id) redirect('/sign-in');
-  const {q=''}=await searchParams;
-  const term=q.trim();
+  const params=await searchParams;
+  const term=(params.q??'').trim();
+  const selectedScope=params.scope??'all';
+  const selectedWorld=(['Today','Plan','Life','Brain','Create'].includes(params.world??'')?params.world:undefined) as WorldFilter|undefined;
   let results:Result[]=[];
 
   if(term){
     const like=`%${term}%`;
     const userId=session.user.id;
-    const [
-      taskRows,
-      noteRows,
-      goalRows,
-      projectRows,
-      memoryRows,
-      productRows,
-      linkRows,
-      calendarRows,
-      habitRows,
-      financeRows,
-      planningRows,
-      hairRows,
-      fitnessRows,
-      closetRows,
-      financeGoalRows,
-      timelineRows,
-      observationRows,
-      routineRows,
-      routineStepRows,
-      appointmentRows,
-      beautyRoutineRows,
-      medicationRows,
-      supplementRows,
-    ]=await Promise.all([
+    const [taskRows,noteRows,goalRows,projectRows,memoryRows,productRows,linkRows,calendarRows,habitRows,financeRows,planningRows,hairRows,fitnessRows,closetRows,financeGoalRows,timelineRows,observationRows,routineRows,routineStepRows,appointmentRows,beautyRoutineRows,medicationRows,supplementRows]=await Promise.all([
       db.select().from(tasks).where(and(eq(tasks.userId,userId),or(ilike(tasks.title,like),ilike(tasks.description,like)))).limit(8),
       db.select().from(notes).where(and(eq(notes.userId,userId),or(ilike(notes.title,like),ilike(notes.content,like)))).limit(8),
       db.select().from(goals).where(and(eq(goals.userId,userId),or(ilike(goals.title,like),ilike(goals.description,like)))).limit(8),
@@ -90,7 +80,6 @@ export default async function SearchPage({searchParams}:{searchParams:Promise<{q
       db.select().from(medications).where(and(eq(medications.userId,userId),or(ilike(medications.name,like),ilike(medications.dosage,like),ilike(medications.instructions,like),ilike(medications.prescriber,like),ilike(medications.notes,like)))).limit(8),
       db.select().from(supplements).where(and(eq(supplements.userId,userId),or(ilike(supplements.name,like),ilike(supplements.dosage,like),ilike(supplements.instructions,like),ilike(supplements.notes,like)))).limit(8),
     ]);
-
     results=[
       ...taskRows.map(x=>({id:x.id,type:'Task',title:x.title,subtitle:x.description,href:'/tasks'})),
       ...calendarRows.map(x=>({id:x.id,type:'Calendar',title:x.title,subtitle:x.location??x.description,href:'/calendar'})),
@@ -118,5 +107,38 @@ export default async function SearchPage({searchParams}:{searchParams:Promise<{q
     ];
   }
 
-  return <AppShell><div className="mx-auto max-w-5xl space-y-5"><header className="rounded-[22px] border border-[#e5d8d0] bg-[linear-gradient(120deg,#f8ece8,#fffaf6_55%,#eee6d8)] p-6"><div className="flex items-center gap-2 text-[#9f6670]"><Sparkles size={17}/><p className="text-[9px] font-bold uppercase tracking-[.2em]">Universal Search</p></div><h1 className="glow-display mt-2 text-4xl tracking-[-.04em] text-[#382d29]">Find anything in your world.</h1><p className="mt-2 text-[10px] text-[#806d66]">Search tasks, calendar events, appointments, habits, routines, notes, goals, projects, memories, notices, beauty, hair, fitness, closet, finances, planning, medications, supplements and saved resources from one place.</p></header><form action="/search" className="flex gap-2 rounded-[18px] border border-[#e5d8d0] bg-[#fffaf6]/80 p-3 shadow-sm"><Search className="ml-2 mt-2.5 text-[#a58f86]" size={18}/><input name="q" defaultValue={term} autoFocus placeholder="Search a task, appointment, routine, product, project, memory, outfit…" className="min-w-0 flex-1 bg-transparent px-2 py-2 text-sm outline-none"/><button className="rounded-[10px] bg-[#352925] px-5 py-2 text-xs text-white">Search</button></form>{term?<section className="overflow-hidden rounded-[20px] border border-[#e5d8d0] bg-[#fffaf6]/75"><div className="border-b border-[#eadfd6] px-5 py-4 text-[9px] font-bold uppercase tracking-[.18em] text-[#8b766f]">{results.length} result{results.length===1?'':'s'} for “{term}”</div><div className="divide-y divide-[#eee4dd]">{results.length?results.map(result=><Link key={`${result.type}-${result.id}`} href={result.href} className="grid gap-2 px-5 py-4 transition hover:bg-[#faeeee] md:grid-cols-[100px_1fr_140px]"><span className="text-[8px] font-bold uppercase tracking-[.12em] text-[#aa6873]">{result.type}</span><div><p className="text-sm font-medium text-[#3e322e]">{result.title}</p>{result.subtitle?<p className="mt-1 line-clamp-1 text-[10px] text-[#89756e]">{result.subtitle}</p>:null}</div><span className="text-[10px] text-[#a18b83] md:text-right">Open system →</span></Link>):<div className="p-10 text-center"><p className="text-sm text-[#89756e]">Nothing matched yet.</p><Link href="/brain" className="mt-3 inline-flex rounded-lg border border-[#e4d5cc] px-3 py-2 text-[10px] text-[#8f5f67]">Ask Glow Brain for a broader interpretation →</Link></div>}</div></section>:null}</div></AppShell>;
+  const filtered=results.filter((result)=>(!selectedWorld||worldForType(result.type)===selectedWorld)&&(selectedScope==='all'||scopeForType(result.type)===selectedScope));
+  const worlds:[WorldFilter,string,string][]=[['Today',"What's happening now?",'/today'],['Plan','Turn intentions into action.','/planning'],['Life','People, places, wellbeing.','/life'],['Brain','Ideas, knowledge, insights.','/brain'],['Create','Make, design, express.','/inbox']];
+  const suggestions=['skincare','this week','workout','planning','home','beauty'];
+
+  return <AppShell><main className={styles.world} aria-label="Universal Search">
+    <div className={styles.ambientBlob} aria-hidden="true"/><div className={styles.ambientPearls} aria-hidden="true"><i/><i/><i/><i/><i/></div>
+    <header className={styles.hero}><p className={styles.eyebrow}>UNIVERSAL SEARCH</p><h1>Find what moves you forward.</h1><p>Everything in one place — your work, life, ideas, and beyond.</p></header>
+    <p className={styles.mantra}>A MORE<br/>HUMAN<br/>TOMORROW.</p>
+
+    <section className={styles.searchLens}>
+      <form action="/search" className={styles.searchForm}>
+        <Search size={28} strokeWidth={1.35}/><input name="q" defaultValue={term} autoFocus placeholder="Search anything…" aria-label="Search Glow OS"/>
+        {selectedScope!=='all'?<input type="hidden" name="scope" value={selectedScope}/>:null}{selectedWorld?<input type="hidden" name="world" value={selectedWorld}/>:null}
+        <button type="submit">Search</button>
+      </form>
+    </section>
+
+    <nav className={styles.scopeRow} aria-label="Search scopes">
+      <Link href={queryHref(term,{world:selectedWorld})} data-active={selectedScope==='all'}><Search size={14}/>Everything</Link>
+      <span aria-disabled="true" title="Message indexing is not connected to Universal Search yet"><MessageCircle size={14}/>Messages</span>
+      <span aria-disabled="true" title="File indexing is not connected to Universal Search yet"><FileText size={14}/>Files</span>
+      <span aria-disabled="true" title="People indexing is not connected to Universal Search yet"><UserRound size={14}/>People</span>
+      <Link href={queryHref(term,{scope:'calendar',world:selectedWorld})} data-active={selectedScope==='calendar'}><CalendarDays size={14}/>Calendar</Link>
+      <Link href={queryHref(term,{scope:'notes',world:selectedWorld})} data-active={selectedScope==='notes'}><FileText size={14}/>Notes</Link>
+      <span aria-disabled="true" title="Live web search remains available through Ask Glow, not this private-data index"><Globe2 size={14}/>Web</span>
+    </nav>
+
+    <section className={styles.worldCards} aria-label="Filter search by Glow world">{worlds.map(([world,description,path])=><Link key={world} href={queryHref(term,{scope:selectedScope==='all'?undefined:selectedScope,world:selectedWorld===world?undefined:world})} className={styles.worldCard} data-active={selectedWorld===world}><span className={styles.worldPearl}/><strong>{world}</strong><p>{description}</p><ArrowRight size={15}/></Link>)}</section>
+
+    <section className={styles.suggestions}><div className={styles.suggestionsHead}><h2>Try searching for…</h2>{selectedWorld||selectedScope!=='all'?<Link href={queryHref(term,{})}>Clear filters</Link>:null}</div><div className={styles.suggestionRow}>{suggestions.map((suggestion)=><Link key={suggestion} href={queryHref(suggestion,{scope:selectedScope==='all'?undefined:selectedScope,world:selectedWorld})}><Search size={13}/>{suggestion}</Link>)}</div><p className={styles.hint}>Searches your connected Glow records. Ask Glow remains the broader conversational and web-aware intelligence layer.</p></section>
+
+    {term?<section className={styles.results}><div className={styles.resultHeader}>{filtered.length} result{filtered.length===1?'':'s'} for “{term}”{selectedWorld?` in ${selectedWorld}`:''}</div><div className={styles.resultList}>{filtered.length?filtered.map((result)=><Link key={`${result.type}-${result.id}`} href={result.href} className={styles.result}><span className={styles.resultType}>{result.type}</span><div><strong>{result.title}</strong>{result.subtitle?<p>{result.subtitle}</p>:null}</div><ArrowRight size={15}/></Link>):<div className={styles.empty}>Nothing in the selected Glow space matches yet. Change the lens or ask Glow for a broader interpretation.</div>}</div></section>:null}
+    <p className={styles.sameCuriosity}>SAME CURIOSITY. A BRIGHTER YOU.</p>
+  </main></AppShell>;
 }
