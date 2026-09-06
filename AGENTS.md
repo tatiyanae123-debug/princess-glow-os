@@ -2,6 +2,7 @@
 
 Before changing any UI, read `docs/glow-os-3-design-rulebook.md`.
 Before changing, adding, or rebuilding any navigation, room, page, responsive composition, or route transition, read `docs/GLOW_CURRENT_GLOBAL_NAVIGATION_LOCK_2026-09-05.md`. This lock supersedes older permanent-sidebar, bottom-rail, fixed-rail, five-world-button, breadcrumb, and other conventional primary-navigation instructions.
+Before changing the app frame, top band, Return Anchor, Glow Current Rail, Shakti placement, bottom action layer, enclosure state, page depth, or any page-local navigation, also read `docs/GLOW_UNIVERSAL_SHELL_LOCK_2026-09-06.md`. This is the latest shell-specific authority and extends the Glow Current lock.
 Before changing, adding, or rebuilding any room, page, voice surface, Ask Glow/Shakti interaction, or intelligence behavior, read `docs/GLOW_GLOBAL_INTELLIGENCE_INHERITANCE_LOCK_2026-09-04.md`.
 Before changing Ask Glow, Shakti conversation surfaces, uploads, media understanding, image generation, creation workflows, or any multimodal input/output behavior, read `docs/GLOW_ASK_MULTIMODAL_CREATION_LOCK_2026-09-05.md`.
 
@@ -40,5 +41,6 @@ These rules are mandatory for all future Glow OS work:
 31. Never claim unlimited processing where platform or model limits exist. Remove artificially tiny product limits, process/persist large inputs in chunks where infrastructure supports it, and truthfully disclose what has and has not been read.
 32. Explicit image-generation requests must use the verified centralized image renderer when available and show the generated image inline. Never queue an image request merely because an older UI did not expose rendering.
 33. Glow Current itself is persistent infrastructure. Page-specific code may contribute a Navigation Identity or contextual destinations, but it must never remount, fork, or reset the global navigation runtime.
+34. The universal shell geometry is app-root infrastructure. `AppShell` and room components are content/atmosphere hosts only. They must not add their own permanent Sidebar, GlobalHeader, TodayNavigationAuthority-style runtime, duplicate Shakti trigger, fixed world row, breadcrumb bar, or competing bottom navigation. Every room inherits the root top band, contextual Return Anchor, depth signal, Glow Current Rail, World Fold, Glow Thread and universal bottom action host defined by `GLOW_UNIVERSAL_SHELL_LOCK_2026-09-06.md`.
 
 Before finishing any UI task, verify responsive behavior on iPhone, iPad and desktop, keyboard/focus behavior, reduced-motion compatibility, that all visible actions have a functional path, that Glow Current still follows the user across every tested room, and that the global intelligence behavior remains available without requiring page-specific command syntax.

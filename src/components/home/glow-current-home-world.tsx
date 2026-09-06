@@ -9,15 +9,13 @@ function GlowMatter() {
   return <span className={styles.glowMatter} aria-hidden="true"><i /><b /></span>;
 }
 
-function moveToday(room = 'what-now') {
-  const url = new URL(window.location.href);
-  url.pathname = '/today';
-  url.searchParams.set('room', room);
-  window.location.assign(url.toString());
+function travel(path: string) {
+  document.dispatchEvent(new CustomEvent('glow:navigate', { detail: { path } }));
 }
 
-const regions = ['Today', 'Plan', 'Life', 'Brain', 'Create', 'Beauty'] as const;
-type Region = (typeof regions)[number];
+function moveToday(room = 'what-now') {
+  travel(`/today?room=${encodeURIComponent(room)}`);
+}
 
 function formatEventTime(value: string) {
   return new Date(value).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
@@ -27,8 +25,6 @@ export function GlowCurrentHomeWorld() {
   const personal = usePersonalContext();
   const [dateText, setDateText] = useState('');
   const [timeText, setTimeText] = useState('');
-  const [glowOpen, setGlowOpen] = useState(false);
-  const [glowPrompt, setGlowPrompt] = useState('');
 
   useEffect(() => {
     const update = () => {
@@ -73,25 +69,8 @@ export function GlowCurrentHomeWorld() {
     };
   }, [personal]);
 
-  function openGlow(prompt = '') {
-    setGlowPrompt(prompt);
-    setGlowOpen(true);
-  }
-
-  function openRegion(region: Region) {
-    if (region === 'Today') {
-      moveToday('what-now');
-      return;
-    }
-
-    const routes: Record<Exclude<Region, 'Today'>, string> = {
-      Plan: '/planning',
-      Life: '/life',
-      Brain: '/notes',
-      Create: '/notes',
-      Beauty: '/beauty',
-    };
-    window.location.assign(routes[region]);
+  function openGlow() {
+    document.dispatchEvent(new CustomEvent('glow:open'));
   }
 
   return (
@@ -101,16 +80,6 @@ export function GlowCurrentHomeWorld() {
       <div className={styles.causticB} aria-hidden="true" />
 
       <section className={styles.frame} aria-label="Glow OS Home">
-        <header className={styles.topbar}>
-          <strong className={styles.wordmark}>Glow OS</strong>
-          <span className={styles.homeLabel}>HOME</span>
-          <button type="button" className={styles.askGlow} onClick={() => openGlow()} aria-expanded={glowOpen}>
-            <span className={styles.miniMatter} aria-hidden="true" />
-            <span>Ask Glow</span>
-            <small>⌘ K</small>
-          </button>
-        </header>
-
         <section className={styles.intro}>
           <span>{dateText} · {timeText}</span>
           <h1>What matters now?</h1>
@@ -124,7 +93,7 @@ export function GlowCurrentHomeWorld() {
             <span className={styles.choiceEyebrow}>What matters now?</span>
             <strong>{homeContext.nowTitle}</strong>
             <span>{homeContext.nowDetail}</span>
-            <small>Open your current-day center</small>
+            <small>Move into your current-day center</small>
             <ArrowRight />
           </button>
 
@@ -136,38 +105,15 @@ export function GlowCurrentHomeWorld() {
             <ArrowRight />
           </button>
 
-          <button type="button" className={`${styles.choice} ${styles.askChoice}`} onClick={() => openGlow()}>
+          <button type="button" className={`${styles.choice} ${styles.askChoice}`} onClick={openGlow}>
             <span className={styles.choiceEyebrow}>What do I want to do?</span>
             <strong>Ask Glow</strong>
-            <span>Say it naturally. Glow finds the right place.</span>
+            <span>Say it naturally. Shakti finds the right path.</span>
             <small>No category knowledge required</small>
             <Sparkles />
           </button>
         </section>
-
-        <nav className={styles.regionStrip} aria-label="Glow regions">
-          {regions.map((region) => (
-            <button key={region} type="button" onClick={() => openRegion(region)} className={region === 'Today' ? styles.regionActive : ''}>
-              {region}
-            </button>
-          ))}
-        </nav>
       </section>
-
-      {glowOpen ? (
-        <aside className={styles.glowPanel} role="dialog" aria-label="Ask Glow">
-          <div className={styles.panelHead}>
-            <span className={styles.miniMatter} />
-            <div><strong>Glow</strong><small>Your connected context stays attached.</small></div>
-            <button onClick={() => setGlowOpen(false)} aria-label="Close">×</button>
-          </div>
-          {glowPrompt ? <div className={styles.promptPreview}>{glowPrompt}</div> : null}
-          <p>Glow will not substitute sample people, appointments, tasks, or plans for missing data.</p>
-          <button type="button" onClick={() => moveToday('what-now')}>What should I do now?</button>
-          <button type="button" onClick={() => moveToday('tomorrow')}>Show me tomorrow</button>
-          <button type="button" onClick={() => moveToday('replan')}>Help me replan</button>
-        </aside>
-      ) : null}
     </main>
   );
 }
