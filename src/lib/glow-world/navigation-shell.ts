@@ -73,6 +73,7 @@ const RAIL_TARGETS: Record<GlowWorld, ShellTarget[]> = {
     { label: 'Calendar', path: '/calendar', cue: 'Time' },
     { label: 'Tasks', path: '/tasks', cue: 'Readiness' },
     { label: 'Routines', path: '/routines', cue: 'Rhythm' },
+    { label: 'Habits', path: '/habits', cue: 'Patterns' },
     { label: 'Goals', path: '/goals', cue: 'Horizon' },
   ],
   life: [
@@ -82,11 +83,12 @@ const RAIL_TARGETS: Record<GlowWorld, ShellTarget[]> = {
     { label: 'Fitness', path: '/fitness', cue: 'Movement' },
     { label: 'Food', path: '/food', cue: 'Nourishment' },
     { label: 'Closet', path: '/closet', cue: 'Wardrobe' },
-    { label: 'Home', path: '/home', cue: 'Place' },
+    { label: 'Home', path: '/life?room=home', cue: 'Place' },
     { label: 'Money', path: '/finance', cue: 'Money' },
   ],
   brain: [
     { label: 'Brain', path: '/brain', cue: 'Knowledge' },
+    { label: 'Search', path: '/search', cue: 'Universal lens' },
     { label: 'Notes', path: '/notes', cue: 'Thinking' },
     { label: 'Memory', path: '/memory', cue: 'Recall' },
     { label: 'Timeline', path: '/timeline', cue: 'History' },
@@ -138,6 +140,10 @@ export function roomLabelForPath(path: string, world?: GlowWorld) {
     if (room) return TODAY_ROOM_LABEL[room] ?? friendly(room);
     return 'Today';
   }
+  if (pathname === '/home') return 'Glow Home';
+  if (pathname === '/search') return 'Universal Search';
+  if (pathname === '/habits') return 'Habits';
+  if (pathname === '/habits/daily') return 'Daily Habits';
 
   const segments = pathname.split('/').filter(Boolean);
   if (!segments.length) return world ? WORLD_LABEL[world] : 'Today';
@@ -146,6 +152,8 @@ export function roomLabelForPath(path: string, world?: GlowWorld) {
 
 export function depthLabelsForPath(path: string, world: GlowWorld) {
   const { pathname, search } = cleanPath(path);
+  if (pathname === '/home') return ['Glow Home'];
+  if (pathname === '/search') return ['Universal', 'Search'];
   const labels: string[] = [WORLD_LABEL[world]];
 
   if (pathname === '/today') {
@@ -167,6 +175,7 @@ export function depthLabelsForPath(path: string, world: GlowWorld) {
 export function returnTargetForPath(path: string, world: GlowWorld): ShellReturnTarget | null {
   const { pathname, search } = cleanPath(path);
   const params = new URLSearchParams(search);
+  if (pathname === '/home') return null;
 
   if (pathname === '/today') {
     const room = params.get('room');
@@ -195,6 +204,7 @@ export function enclosureForPath(path: string): GlowEnclosure {
   const params = new URLSearchParams(search);
   const room = params.get('room');
 
+  if (pathname === '/home' || pathname === '/search') return 'open';
   if (params.get('focus') === '1' || (pathname === '/today' && (room === 'focus' || room === 'replan'))) return 'protected';
 
   if (pathname === '/today') {
