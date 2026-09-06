@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import styles from './beauty-personal-atelier.module.css';
 
 type EventContext = {
@@ -49,9 +49,18 @@ function readSaved(): { focus?: string; mode?: Mode } {
   }
 }
 
+function localGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning,';
+  if (hour < 18) return 'Good afternoon,';
+  return 'Good evening,';
+}
+
 export function BeautyAtelierBehavior({ nextEvent, inventory, energy, travelContext }: Props) {
   const [mode, setMode] = useState<Mode>('normal');
   const [focus, setFocus] = useState('');
+  const modeRef = useRef<Mode>('normal');
+  const focusRef = useRef('');
 
   const prep = useMemo(() => {
     if (!nextEvent) return [];
@@ -70,12 +79,19 @@ export function BeautyAtelierBehavior({ nextEvent, inventory, energy, travelCont
   useEffect(() => {
     const root = document.querySelector<HTMLElement>('[data-beauty-atelier]');
     if (!root) return;
+
+    const greeting = root.querySelector<HTMLElement>('[data-local-greeting]');
+    if (greeting) greeting.textContent = localGreeting();
+
     const saved = readSaved();
     const initialMode: Mode = saved.mode ?? ((energy === 'Low' || energy === 'Exhausted') ? 'essentials' : 'normal');
+    const initialFocus = saved.focus ?? '';
+    modeRef.current = initialMode;
+    focusRef.current = initialFocus;
     setMode(initialMode);
-    setFocus(saved.focus ?? '');
+    setFocus(initialFocus);
     root.dataset.beautyMode = initialMode;
-    if (saved.focus) root.dataset.beautyFocus = saved.focus;
+    if (initialFocus) root.dataset.beautyFocus = initialFocus;
 
     const persist = (nextFocus: string, nextMode: Mode) => {
       try { window.sessionStorage.setItem(STATE_KEY, JSON.stringify({ focus: nextFocus, mode: nextMode })); } catch {}
@@ -96,9 +112,10 @@ export function BeautyAtelierBehavior({ nextEvent, inventory, energy, travelCont
       if (modeTarget) {
         event.preventDefault();
         const nextMode = (modeTarget.dataset.beautyMode || 'normal') as Mode;
+        modeRef.current = nextMode;
         setMode(nextMode);
         root.dataset.beautyMode = nextMode;
-        persist(focus, nextMode);
+        persist(focusRef.current, nextMode);
         return;
       }
 
@@ -108,10 +125,11 @@ export function BeautyAtelierBehavior({ nextEvent, inventory, energy, travelCont
       const systemName = system.dataset.beautySystem || '';
       if (!href || !systemName) return;
       event.preventDefault();
+      focusRef.current = systemName;
       setFocus(systemName);
       root.dataset.beautyFocus = systemName;
       root.dataset.beautyMoving = 'true';
-      persist(systemName, mode);
+      persist(systemName, modeRef.current);
       window.setTimeout(() => {
         document.dispatchEvent(new CustomEvent('glow:navigate', { detail: { path: href } }));
       }, 460);
@@ -119,6 +137,8 @@ export function BeautyAtelierBehavior({ nextEvent, inventory, energy, travelCont
 
     const key = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
+      focusRef.current = '';
+      modeRef.current = 'normal';
       setFocus('');
       setMode('normal');
       delete root.dataset.beautyFocus;
@@ -133,13 +153,14 @@ export function BeautyAtelierBehavior({ nextEvent, inventory, energy, travelCont
       document.removeEventListener('click', click);
       document.removeEventListener('keydown', key);
     };
-  }, [energy, focus, mode]);
+  }, [energy]);
 
   const closeMode = () => {
+    modeRef.current = 'normal';
     setMode('normal');
     const root = document.querySelector<HTMLElement>('[data-beauty-atelier]');
     if (root) root.dataset.beautyMode = 'normal';
-    try { window.sessionStorage.setItem(STATE_KEY, JSON.stringify({ focus, mode: 'normal' })); } catch {}
+    try { window.sessionStorage.setItem(STATE_KEY, JSON.stringify({ focus: focusRef.current, mode: 'normal' })); } catch {}
   };
 
   if (mode === 'normal') return null;
