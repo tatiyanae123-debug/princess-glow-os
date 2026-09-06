@@ -1,0 +1,764 @@
+/* Glow OS Universal Shell — Sept. 6, 2026
+   One app-level frame, one top geometry, one Glow Current rail, one contextual
+   Return Anchor, one World Fold, one Shakti position and one bottom action host.
+   Rooms may change their internal architecture, never the operating system around them. */
+
+:root {
+  --glow-shell-edge: max(12px, env(safe-area-inset-left));
+  --glow-shell-edge-right: max(12px, env(safe-area-inset-right));
+  --glow-shell-top: max(10px, env(safe-area-inset-top));
+  --glow-shell-bottom: max(10px, env(safe-area-inset-bottom));
+  --glow-shell-top-height: 58px;
+  --glow-shell-dock-height: 52px;
+  --glow-shell-ink: rgba(31, 29, 28, .92);
+  --glow-shell-muted: rgba(63, 59, 56, .52);
+  --glow-shell-glass: rgba(255, 255, 255, .24);
+  --glow-shell-edge-light: rgba(255, 255, 255, .76);
+  --glow-shell-shadow: rgba(69, 61, 56, .075);
+}
+
+/* One stable outer Glow OS boundary. It never changes per room. */
+.glow-current__world-boundary {
+  position: fixed;
+  z-index: 0;
+  inset: max(5px, env(safe-area-inset-top)) max(5px, env(safe-area-inset-right)) max(5px, env(safe-area-inset-bottom)) max(5px, env(safe-area-inset-left));
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, .55);
+  border-radius: clamp(22px, 2.2vw, 34px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .58),
+    inset 0 -1px 0 rgba(97, 89, 84, .035),
+    0 1px 0 rgba(110, 100, 94, .025);
+  opacity: .78;
+}
+
+/* Permanent top baseline: identity / world + depth / Shakti. */
+.glow-current__top-band {
+  position: fixed;
+  z-index: 30;
+  top: var(--glow-shell-top);
+  left: calc(var(--glow-shell-edge) + 3px);
+  right: calc(var(--glow-shell-edge-right) + 3px);
+  min-height: var(--glow-shell-top-height);
+  display: grid;
+  grid-template-columns: minmax(170px, 1fr) auto minmax(170px, 1fr);
+  align-items: start;
+  gap: 12px;
+  pointer-events: none;
+  color: var(--glow-shell-ink);
+}
+
+.glow-current__top-left,
+.glow-current__orientation,
+.glow-current__shakti {
+  pointer-events: auto;
+}
+
+.glow-current__top-left {
+  justify-self: start;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 42px;
+}
+
+.glow-current__brand {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: -.025em;
+  white-space: nowrap;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .8);
+}
+
+.glow-current__return-slot {
+  display: inline-flex;
+  width: 118px;
+  min-height: 40px;
+  align-items: center;
+}
+
+.glow-current__return-anchor {
+  position: relative !important;
+  left: auto !important;
+  bottom: auto !important;
+  width: auto !important;
+  min-width: 40px;
+  height: 40px !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 11px 0 8px;
+  border-radius: 18px !important;
+  background: linear-gradient(145deg, rgba(255,255,255,.36), rgba(255,255,255,.10)) !important;
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,.88), inset -1px -1px 0 rgba(99,91,86,.04), 0 8px 20px rgba(69,61,56,.055) !important;
+  backdrop-filter: blur(12px) saturate(112%);
+  -webkit-backdrop-filter: blur(12px) saturate(112%);
+  transform: none !important;
+}
+
+.glow-current__return-anchor:hover,
+.glow-current__return-anchor:focus-visible {
+  transform: translateY(-1px) !important;
+}
+
+.glow-current__return-light {
+  position: relative !important;
+  left: auto !important;
+  top: auto !important;
+  flex: 0 0 auto;
+  width: 14px !important;
+  height: 17px !important;
+  transform: rotate(7deg) !important;
+}
+
+.glow-current__return-copy {
+  max-width: 74px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 620;
+  color: rgba(42, 39, 37, .74);
+}
+
+.glow-current__return-placeholder {
+  display: block;
+  width: 40px;
+  height: 40px;
+  opacity: 0;
+}
+
+.glow-current__orientation {
+  justify-self: center;
+  min-width: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.glow-current__world-identity {
+  min-height: 31px;
+  padding: 3px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .12);
+  color: var(--glow-shell-ink);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .04em;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.glow-current__depth-signal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  max-width: min(520px, 48vw);
+  min-height: 17px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.glow-current__depth-node {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  font-size: 9px;
+  color: rgba(58, 54, 51, .34);
+  transition: color 180ms ease, opacity 180ms ease;
+}
+
+.glow-current__depth-node + .glow-current__depth-node::before {
+  content: '';
+  width: 11px;
+  height: 1px;
+  margin-right: 1px;
+  background: linear-gradient(90deg, rgba(207,219,238,.10), rgba(255,255,255,.82), rgba(229,213,242,.10));
+}
+
+.glow-current__depth-node i {
+  width: 5px;
+  height: 5px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff 0 25%, rgba(232,239,250,.78) 45%, rgba(226,214,240,.34) 70%, transparent 100%);
+  box-shadow: 0 0 7px rgba(255,255,255,.65);
+}
+
+.glow-current__depth-node[data-active='true'] {
+  color: rgba(44, 41, 39, .76);
+  font-weight: 620;
+}
+
+.glow-current__depth-node[data-active='true'] i {
+  width: 7px;
+  height: 7px;
+}
+
+.glow-current__shakti {
+  justify-self: end;
+  min-width: 116px;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 5px 8px 5px 10px;
+  border: 0;
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(255,255,255,.30), rgba(255,255,255,.085));
+  color: var(--glow-shell-ink);
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,.84), 0 8px 22px rgba(69,61,56,.055);
+  backdrop-filter: blur(12px) saturate(112%);
+  -webkit-backdrop-filter: blur(12px) saturate(112%);
+  cursor: pointer;
+}
+
+.glow-current__shakti-light {
+  position: relative;
+  width: 28px;
+  height: 24px;
+  flex: 0 0 auto;
+  border-radius: 58% 42% 64% 36% / 44% 61% 39% 56%;
+  background:
+    linear-gradient(105deg, transparent 10%, rgba(212,229,251,.24) 26%, rgba(255,255,255,.96) 49%, rgba(230,210,247,.22) 65%, rgba(255,221,201,.12) 76%, transparent 88%),
+    radial-gradient(ellipse at 50% 52%, rgba(255,255,255,.92), rgba(255,255,255,.18) 58%, transparent 76%);
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,.92), 0 0 15px rgba(220,230,247,.24);
+  transform: rotate(-8deg);
+}
+
+.glow-current__shakti-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.05;
+}
+
+.glow-current__shakti-copy strong {
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.glow-current__shakti-copy small {
+  margin-top: 3px;
+  font-size: 9px;
+  color: var(--glow-shell-muted);
+}
+
+/* One contextual Glow Current rail. Same position and physics in every room. */
+.glow-current__rail {
+  position: fixed;
+  z-index: 24;
+  top: 50%;
+  left: calc(var(--glow-shell-edge) + 4px);
+  width: 42px;
+  max-height: min(68vh, 570px);
+  transform: translateY(-50%);
+  padding: 6px;
+  overflow: hidden;
+  pointer-events: auto;
+  border: 1px solid rgba(255,255,255,.42);
+  border-radius: 22px;
+  background: linear-gradient(155deg, rgba(255,255,255,.20), rgba(255,255,255,.055));
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,.72), 0 14px 34px rgba(70,62,57,.045);
+  backdrop-filter: blur(11px) saturate(108%);
+  -webkit-backdrop-filter: blur(11px) saturate(108%);
+  transition: width 280ms cubic-bezier(.2,.72,.2,1), opacity 220ms ease, background 220ms ease;
+}
+
+.glow-current__rail[data-expanded='true'],
+.glow-current__rail:hover,
+.glow-current__rail:focus-within {
+  width: 174px;
+  background: linear-gradient(155deg, rgba(255,255,255,.38), rgba(255,255,255,.12));
+}
+
+.glow-current__rail-current,
+.glow-current__rail-destination {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 4px 2px;
+  border: 0;
+  border-radius: 15px;
+  background: transparent;
+  color: var(--glow-shell-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.glow-current__rail-current:hover,
+.glow-current__rail-current:focus-visible,
+.glow-current__rail-destination:hover,
+.glow-current__rail-destination:focus-visible {
+  background: rgba(255,255,255,.24);
+}
+
+.glow-current__rail-current-node,
+.glow-current__rail-node {
+  justify-self: center;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff 0 25%, rgba(231,239,250,.82) 44%, rgba(226,211,240,.32) 68%, transparent 100%);
+  box-shadow: 0 0 9px rgba(255,255,255,.68);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.glow-current__rail-current-node {
+  width: 13px;
+  height: 17px;
+  border-radius: 55% 45% 61% 39% / 46% 57% 43% 54%;
+}
+
+.glow-current__rail-destination[data-active='true'] .glow-current__rail-node {
+  transform: scale(1.42);
+  box-shadow: 0 0 11px rgba(255,255,255,.92), 0 0 18px rgba(208,224,248,.20);
+}
+
+.glow-current__rail-current-copy,
+.glow-current__rail-label {
+  min-width: 0;
+  opacity: 0;
+  transform: translateX(-4px);
+  pointer-events: none;
+  transition: opacity 180ms ease 30ms, transform 220ms ease;
+}
+
+.glow-current__rail[data-expanded='true'] .glow-current__rail-current-copy,
+.glow-current__rail[data-expanded='true'] .glow-current__rail-label,
+.glow-current__rail:hover .glow-current__rail-current-copy,
+.glow-current__rail:hover .glow-current__rail-label,
+.glow-current__rail:focus-within .glow-current__rail-current-copy,
+.glow-current__rail:focus-within .glow-current__rail-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.glow-current__rail-current-copy,
+.glow-current__rail-label {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.glow-current__rail-current-copy strong,
+.glow-current__rail-label strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.glow-current__rail-current-copy small,
+.glow-current__rail-label small {
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 8px;
+  color: rgba(67,62,59,.43);
+}
+
+.glow-current__rail-paths {
+  position: relative;
+  margin-top: 3px;
+  padding-top: 4px;
+}
+
+.glow-current__rail-paths::before {
+  content: '';
+  position: absolute;
+  left: 19px;
+  top: 0;
+  bottom: 5px;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(214,225,241,.12) 45%, rgba(230,215,242,.10), rgba(255,255,255,.56));
+  pointer-events: none;
+}
+
+/* One universal three-zone bottom action host. Pages may register real actions. */
+.glow-current__dock {
+  position: fixed;
+  z-index: 26;
+  left: 50%;
+  bottom: calc(var(--glow-shell-bottom) + 3px);
+  width: min(760px, calc(100vw - 112px));
+  min-height: var(--glow-shell-dock-height);
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 5px 7px;
+  pointer-events: none;
+  border: 1px solid rgba(255,255,255,.40);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.065));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.72), 0 12px 32px rgba(70,61,56,.045);
+  backdrop-filter: blur(11px) saturate(108%);
+  -webkit-backdrop-filter: blur(11px) saturate(108%);
+}
+
+.glow-current__dock > *,
+.glow-current__dock button {
+  pointer-events: auto;
+}
+
+.glow-current__dock-zone {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.glow-current__dock-zone--left { justify-content: flex-start; }
+.glow-current__dock-zone--right { justify-content: flex-end; }
+
+.glow-current__seam {
+  position: relative !important;
+  left: auto !important;
+  bottom: auto !important;
+  width: 116px !important;
+  height: 40px !important;
+  transform: none !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 15px;
+  overflow: hidden;
+  border-radius: 18px !important;
+}
+
+.glow-current__seam:hover,
+.glow-current__seam:focus-visible,
+.glow-current__seam[aria-expanded='true'] {
+  width: 124px !important;
+  transform: translateY(-1px) !important;
+}
+
+.glow-current__seam-core {
+  width: 58px !important;
+  top: 15px !important;
+}
+
+.glow-current__seam-wave {
+  width: 68px !important;
+  height: 15px !important;
+  top: 15px !important;
+}
+
+.glow-current__seam-label {
+  position: relative;
+  z-index: 2;
+  margin-top: 12px;
+  font-size: 8px;
+  font-weight: 620;
+  color: rgba(58,54,51,.52);
+  letter-spacing: .04em;
+}
+
+.glow-current__reverse {
+  position: relative !important;
+  left: auto !important;
+  bottom: auto !important;
+  width: auto !important;
+  height: 40px !important;
+  max-width: 190px;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 0 10px !important;
+  border-radius: 17px !important;
+  background: rgba(255,255,255,.14) !important;
+  transform: none !important;
+  opacity: .78 !important;
+}
+
+.glow-current__reverse:hover,
+.glow-current__reverse:focus-visible {
+  transform: translateX(-1px) !important;
+  opacity: 1 !important;
+}
+
+.glow-current__reverse-mark {
+  font-size: 21px;
+  line-height: 1;
+}
+
+.glow-current__reverse-copy {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 9px;
+  color: rgba(58,54,51,.55);
+}
+
+.glow-current__dock-state,
+.glow-current__dock-quiet {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  padding: 0 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 9px;
+  color: rgba(58,54,51,.42);
+}
+
+.glow-current__dock-action {
+  min-height: 40px;
+  max-width: 220px;
+  padding: 0 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 1px solid rgba(255,255,255,.52);
+  border-radius: 17px;
+  background: rgba(255,255,255,.20);
+  color: rgba(38,35,33,.78);
+  font-size: 10px;
+  font-weight: 620;
+  cursor: pointer;
+}
+
+.glow-current__dock-action--primary {
+  min-width: 116px;
+  background: rgba(35,33,31,.88);
+  color: #fff;
+  border-color: rgba(35,33,31,.4);
+}
+
+/* One intelligence placement. The root conversation stays the same; the legacy
+   floating trigger disappears so Shakti cannot jump between positions. */
+.glow-presence-trigger {
+  display: none !important;
+}
+
+/* Legacy global navigation may not compete with the app-root shell. */
+.glow-world-nav-wrap,
+[data-glow-navigation-authority='true'] {
+  display: none !important;
+}
+
+/* AppShell becomes a content/atmosphere host, not another navigation frame. */
+.glow-world-frame {
+  width: 100%;
+}
+
+.glow-room-body {
+  width: 100%;
+  min-width: 0;
+}
+
+.glow-world-shell .glow-room-stage {
+  min-height: 100dvh;
+  padding-top: calc(var(--glow-shell-top) + var(--glow-shell-top-height) + 20px) !important;
+  padding-bottom: calc(var(--glow-shell-bottom) + var(--glow-shell-dock-height) + 32px) !important;
+}
+
+/* Focus/Protected Chamber narrows attention without changing shell geometry. */
+html[data-glow-enclosure='protected'] .glow-current__rail {
+  opacity: .42;
+}
+
+html[data-glow-enclosure='protected'] .glow-current__rail:hover,
+html[data-glow-enclosure='protected'] .glow-current__rail:focus-within,
+html[data-glow-enclosure='protected'] .glow-current__rail[data-expanded='true'] {
+  opacity: 1;
+}
+
+html[data-glow-enclosure='protected'] .glow-current__world-boundary {
+  box-shadow: inset 0 0 80px rgba(72,65,61,.035), inset 0 1px 0 rgba(255,255,255,.58);
+}
+
+html[data-glow-enclosure='protected'] .glow-world-atmosphere,
+html[data-glow-enclosure='protected'] .glow-world-caustic {
+  opacity: .48;
+}
+
+/* Exit Focus is a room action, not a new top navigation system. */
+.glow-focus-exit {
+  top: auto !important;
+  right: calc(var(--glow-shell-edge-right) + 5px) !important;
+  bottom: calc(var(--glow-shell-bottom) + var(--glow-shell-dock-height) + 16px) !important;
+  z-index: 2147481300 !important;
+}
+
+/* Keyboard and assistive clarity. */
+.glow-current button:focus-visible {
+  outline: 2px solid rgba(91, 100, 118, .30);
+  outline-offset: 2px;
+}
+
+/* iPad: same navigation meaning, thinner edge current and larger spatial field. */
+@media (max-width: 1180px) {
+  .glow-current__top-band {
+    grid-template-columns: minmax(145px, 1fr) auto minmax(145px, 1fr);
+  }
+
+  .glow-current__return-slot { width: 96px; }
+  .glow-current__return-copy { max-width: 56px; }
+
+  .glow-current__rail {
+    width: 38px;
+    left: calc(var(--glow-shell-edge) + 2px);
+  }
+
+  .glow-current__rail[data-expanded='true'],
+  .glow-current__rail:hover,
+  .glow-current__rail:focus-within { width: 162px; }
+
+  .glow-current__dock { width: min(690px, calc(100vw - 86px)); }
+}
+
+/* iPhone: edge-held Current, one-handed World Fold, same Return/Shakti/depth laws. */
+@media (max-width: 700px) {
+  :root {
+    --glow-shell-top-height: 54px;
+    --glow-shell-dock-height: 50px;
+  }
+
+  .glow-current__world-boundary {
+    inset: max(3px, env(safe-area-inset-top)) max(3px, env(safe-area-inset-right)) max(3px, env(safe-area-inset-bottom)) max(3px, env(safe-area-inset-left));
+    border-radius: 24px;
+  }
+
+  .glow-current__top-band {
+    left: calc(var(--glow-shell-edge) + 1px);
+    right: calc(var(--glow-shell-edge-right) + 1px);
+    grid-template-columns: 1fr auto 1fr;
+    gap: 5px;
+  }
+
+  .glow-current__brand {
+    min-height: 36px;
+    padding: 0 5px;
+    font-size: 10px;
+  }
+
+  .glow-current__top-left { gap: 3px; min-width: 0; }
+  .glow-current__return-slot { width: 42px; min-height: 36px; }
+  .glow-current__return-anchor { width: 36px !important; min-width: 36px; height: 36px !important; padding: 0 !important; justify-content: center; }
+  .glow-current__return-copy { display: none; }
+
+  .glow-current__orientation { min-width: 102px; gap: 1px; }
+  .glow-current__world-identity { min-height: 29px; padding: 2px 8px; font-size: 10px; }
+  .glow-current__depth-signal { max-width: 126px; }
+  .glow-current__depth-node:not([data-active='true']) span { display: none; }
+  .glow-current__depth-node + .glow-current__depth-node::before { width: 7px; }
+  .glow-current__depth-node { font-size: 8px; }
+
+  .glow-current__shakti {
+    min-width: 38px;
+    width: 42px;
+    min-height: 38px;
+    padding: 4px;
+    justify-content: center;
+  }
+  .glow-current__shakti-light { width: 26px; height: 22px; }
+  .glow-current__shakti-copy { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); }
+
+  .glow-current__rail {
+    left: max(4px, env(safe-area-inset-left));
+    width: 31px;
+    padding: 4px 2px;
+    border-radius: 17px;
+    max-height: 62vh;
+  }
+
+  .glow-current__rail-current,
+  .glow-current__rail-destination {
+    grid-template-columns: 25px minmax(0,1fr);
+    min-height: 42px;
+    gap: 6px;
+  }
+
+  .glow-current__rail[data-expanded='true'],
+  .glow-current__rail:focus-within { width: min(166px, 44vw); }
+
+  .glow-current__rail:hover:not([data-expanded='true']):not(:focus-within) { width: 31px; }
+
+  .glow-current__dock {
+    width: calc(100vw - 20px);
+    min-height: 50px;
+    grid-template-columns: 44px 1fr 44px;
+    gap: 4px;
+    padding: 4px 5px;
+    border-radius: 22px;
+  }
+
+  .glow-current__seam,
+  .glow-current__seam:hover,
+  .glow-current__seam:focus-visible,
+  .glow-current__seam[aria-expanded='true'] {
+    width: min(132px, 42vw) !important;
+  }
+
+  .glow-current__reverse {
+    width: 38px !important;
+    padding: 0 !important;
+    justify-content: center;
+  }
+  .glow-current__reverse-copy,
+  .glow-current__dock-state,
+  .glow-current__dock-quiet { display: none; }
+
+  .glow-current__dock-zone--right::after {
+    content: '';
+    display: block;
+    width: 7px;
+    height: 7px;
+    margin-right: 10px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff 0 30%, rgba(225,235,249,.62) 48%, transparent 75%);
+    box-shadow: 0 0 8px rgba(255,255,255,.72);
+  }
+
+  .glow-current__dock-action {
+    max-width: 44vw;
+    min-height: 40px;
+    padding: 0 10px;
+  }
+
+  .glow-world-shell .glow-room-stage {
+    padding-top: calc(var(--glow-shell-top) + var(--glow-shell-top-height) + 14px) !important;
+    padding-bottom: calc(var(--glow-shell-bottom) + var(--glow-shell-dock-height) + 24px) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-current__rail,
+  .glow-current__rail-current-copy,
+  .glow-current__rail-label,
+  .glow-current__return-anchor,
+  .glow-current__shakti,
+  .glow-current__seam,
+  .glow-current__reverse,
+  .glow-current__depth-node,
+  .glow-current__rail-node {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .glow-current__return-anchor:hover,
+  .glow-current__seam:hover,
+  .glow-current__reverse:hover {
+    transform: none !important;
+  }
+}
