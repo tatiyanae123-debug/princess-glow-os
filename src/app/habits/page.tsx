@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { HabitsReference } from '@/components/habits/habits-reference';
+import { RhythmGarden } from '@/components/habits/rhythm-garden';
 import { getHabitLogsForUser, getHabitsByUser } from '@/lib/data/habits';
 
 export const dynamic = 'force-dynamic';
@@ -22,5 +22,5 @@ export default async function HabitsPage() {
     getHabitLogsForUser(session.user.id, dateKey(start), dateKey(now)),
   ]);
 
-  return <AppShell><HabitsReference initialHabits={habits} initialLogs={logs} mode="overview" /></AppShell>;
+  return <AppShell><RhythmGarden initialHabits={habits} initialLogs={logs} /></AppShell>;
 }
