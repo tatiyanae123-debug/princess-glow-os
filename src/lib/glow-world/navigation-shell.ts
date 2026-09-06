@@ -18,25 +18,28 @@ export type ShellReturnTarget = {
 };
 
 export const WORLD_TARGETS: ShellWorldTarget[] = [
-  { world: 'today', label: 'Today', path: '/today', cue: 'the immediate present' },
+  { world: 'today', label: 'Today', path: '/today?room=what-now', cue: 'the immediate present' },
   { world: 'plan', label: 'Plan', path: '/planning', cue: 'time extending forward' },
-  { world: 'life', label: 'Life', path: '/world', cue: 'your inhabited systems' },
+  { world: 'life', label: 'Life', path: '/life', cue: 'your inhabited systems' },
+  { world: 'beauty', label: 'Beauty', path: '/beauty', cue: 'care and appearance preparation' },
   { world: 'brain', label: 'Brain', path: '/brain', cue: 'memory and connection depth' },
-  { world: 'create', label: 'Create', path: '/inbox', cue: 'unfinished possibility' },
+  { world: 'create', label: 'Create', path: '/create', cue: 'unfinished possibility' },
 ];
 
 const WORLD_ROOT: Record<GlowWorld, string> = {
-  today: '/today',
+  today: '/today?room=what-now',
   plan: '/planning',
-  life: '/world',
+  life: '/life',
+  beauty: '/beauty',
   brain: '/brain',
-  create: '/inbox',
+  create: '/create',
 };
 
 const WORLD_LABEL: Record<GlowWorld, string> = {
   today: 'Today',
   plan: 'Plan',
   life: 'Life',
+  beauty: 'Beauty',
   brain: 'Brain',
   create: 'Create',
 };
@@ -72,19 +75,34 @@ const RAIL_TARGETS: Record<GlowWorld, ShellTarget[]> = {
     { label: 'Plan', path: '/planning', cue: 'Future' },
     { label: 'Calendar', path: '/calendar', cue: 'Time' },
     { label: 'Tasks', path: '/tasks', cue: 'Readiness' },
+    { label: 'Reminders', path: '/reminders', cue: 'Context' },
     { label: 'Routines', path: '/routines', cue: 'Rhythm' },
     { label: 'Habits', path: '/habits', cue: 'Patterns' },
     { label: 'Goals', path: '/goals', cue: 'Horizon' },
   ],
   life: [
-    { label: 'Life', path: '/world', cue: 'World' },
-    { label: 'Beauty', path: '/beauty', cue: 'Care' },
-    { label: 'Hair', path: '/hair', cue: 'Maintenance' },
+    { label: 'Life', path: '/life', cue: 'Personal House' },
+    { label: 'Body', path: '/wellness', cue: 'Body' },
     { label: 'Fitness', path: '/fitness', cue: 'Movement' },
     { label: 'Food', path: '/food', cue: 'Nourishment' },
     { label: 'Closet', path: '/closet', cue: 'Wardrobe' },
-    { label: 'Home', path: '/life?room=home', cue: 'Place' },
+    { label: 'Home', path: '/life?focus=home', cue: 'Place' },
     { label: 'Money', path: '/finance', cue: 'Money' },
+    { label: 'Work', path: '/work', cue: 'Work' },
+  ],
+  beauty: [
+    { label: 'Beauty', path: '/beauty', cue: 'Personal Atelier' },
+    { label: 'Beauty Today', path: '/beauty/today', cue: 'Now' },
+    { label: 'Skin', path: '/beauty/skincare', cue: 'Treatment' },
+    { label: 'Hair', path: '/hair', cue: 'Hair' },
+    { label: 'Makeup', path: '/beauty/makeup', cue: 'Looks' },
+    { label: 'Body', path: '/beauty/body', cue: 'Body care' },
+    { label: 'Fragrance', path: '/beauty/fragrance', cue: 'Scent' },
+    { label: 'Facial Movement', path: '/beauty/facial-massage', cue: 'Movement' },
+    { label: 'Maintenance', path: '/beauty/maintenance', cue: 'Rhythm' },
+    { label: 'Devices', path: '/beauty/devices', cue: 'Tools' },
+    { label: 'Inventory', path: '/beauty/inventory', cue: 'Owned' },
+    { label: 'Progress', path: '/beauty/progress', cue: 'History' },
   ],
   brain: [
     { label: 'Brain', path: '/brain', cue: 'Knowledge' },
@@ -96,7 +114,7 @@ const RAIL_TARGETS: Record<GlowWorld, ShellTarget[]> = {
     { label: 'Observations', path: '/observations', cue: 'Patterns' },
   ],
   create: [
-    { label: 'Create', path: '/inbox', cue: 'Possibility' },
+    { label: 'Create', path: '/create', cue: 'Possibility' },
     { label: 'Import', path: '/import', cue: 'Transform sources' },
     { label: 'Concierge', path: '/concierge', cue: 'Orchestrate' },
   ],
@@ -141,6 +159,7 @@ export function roomLabelForPath(path: string, world?: GlowWorld) {
     return 'Today';
   }
   if (pathname === '/home') return 'Glow Home';
+  if (pathname === '/beauty') return 'Personal Atelier';
   if (pathname === '/search') return 'Universal Search';
   if (pathname === '/habits') return 'Habits';
   if (pathname === '/habits/daily') return 'Daily Habits';
@@ -183,6 +202,8 @@ export function returnTargetForPath(path: string, world: GlowWorld): ShellReturn
     return { label: 'Today', path: '/today?room=what-now' };
   }
 
+  if (world === 'beauty' && pathname !== '/beauty') return { label: 'Beauty', path: '/beauty' };
+
   const segments = pathname.split('/').filter(Boolean);
   if (segments.length > 1) {
     const parentSegments = segments.slice(0, -1);
@@ -190,13 +211,13 @@ export function returnTargetForPath(path: string, world: GlowWorld): ShellReturn
     return { label: friendly(parentSegments.at(-1) ?? WORLD_LABEL[world]), path: parentPath };
   }
 
-  const worldRoot = WORLD_ROOT[world];
+  const worldRoot = WORLD_ROOT[world].split('?')[0];
   if (pathname === worldRoot) {
-    return world === 'today' ? null : { label: 'Today', path: '/today' };
+    return world === 'today' ? null : { label: 'Today', path: '/today?room=what-now' };
   }
 
-  if (world !== 'today') return { label: WORLD_LABEL[world], path: worldRoot };
-  return { label: 'Today', path: '/today' };
+  if (world !== 'today') return { label: WORLD_LABEL[world], path: WORLD_ROOT[world] };
+  return { label: 'Today', path: '/today?room=what-now' };
 }
 
 export function enclosureForPath(path: string): GlowEnclosure {
@@ -212,10 +233,13 @@ export function enclosureForPath(path: string): GlowEnclosure {
     return 'open';
   }
 
+  if (pathname === '/beauty' || pathname.startsWith('/beauty/')) return 'open';
+
   const protectedStarts = ['/focus'];
   if (protectedStarts.some((prefix) => pathname.startsWith(prefix))) return 'protected';
 
   const openStarts = [
+    '/life',
     '/world',
     '/life-world',
     '/brain',
@@ -223,6 +247,7 @@ export function enclosureForPath(path: string): GlowEnclosure {
     '/timeline',
     '/connections',
     '/observations',
+    '/create',
     '/inbox',
     '/concierge',
     '/travel',
