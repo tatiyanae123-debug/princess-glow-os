@@ -1,4 +1,4 @@
-export type GlowWorld = 'today' | 'plan' | 'life' | 'brain' | 'create';
+export type GlowWorld = 'today' | 'plan' | 'life' | 'beauty' | 'brain' | 'create';
 
 export type RoomExperience = {
   room: string;
@@ -24,10 +24,20 @@ export function roomExperienceFor(pathname: string): RoomExperience {
   if (pathname === '/home') return experience('threshold', 'today', 'crystal-sunrise-pavilion', 'threshold-and-portals', 'whole-system-orchestration', 'Where am I now, and where do I want to go?', 'horizon-opens');
   if (pathname.startsWith('/search')) return experience('universal-search', 'brain', 'clear-prismatic-lens', 'focus-and-resolve', 'cross-world-retrieval', 'Where is the thing I am looking for?', 'result-focuses');
 
-  if (pathname.startsWith('/beauty/facial-massage')) return experience('gua-sha-studio', 'life', 'mint-water-pearl', 'guided-glide', 'saved-routine-and-tool-context', 'What facial movement am I doing now?', 'soft-release');
-  if (pathname.startsWith('/beauty/lab')) return experience('makeup-studio', 'life', 'reflective-blush-pearl', 'mirror-refraction', 'placement-and-sequencing', 'How do I create the look I need?', 'look-settles-into-memory');
-  if (pathname.startsWith('/beauty')) return experience('beauty-command', 'life', 'warm-pearl-reflection', 'orchestrated-layers', 'ready-state-orchestration', 'How do I get completely ready?', 'final-look-warm-light');
-  if (pathname.startsWith('/hair')) return experience('hair-studio', 'life', 'silk-pearl', 'directional-flow', 'sequence-and-maintenance', 'What does my hair need now?', 'style-settles');
+  if (pathname.startsWith('/beauty/facial-massage')) return experience('facial-movement', 'beauty', 'mint-water-pearl', 'guided-glide', 'saved-routine-and-tool-context', 'What facial movement am I doing now?', 'soft-release');
+  if (pathname.startsWith('/beauty/skincare')) return experience('skin', 'beauty', 'peach-pearl-lens', 'focus-through-material', 'treatment-and-routine-context', 'What does my skin need now?', 'skin-state-settles');
+  if (pathname.startsWith('/beauty/makeup')) return experience('makeup', 'beauty', 'crystal-pigment-pearl', 'palette-refraction', 'look-and-preparation-context', 'What look fits this moment?', 'look-settles');
+  if (pathname.startsWith('/beauty/fragrance')) return experience('fragrance', 'beauty', 'clear-vapor-pearl', 'diffusion-and-layering', 'occasion-weather-and-wear-context', 'What scent fits this moment?', 'scent-settles');
+  if (pathname.startsWith('/beauty/devices')) return experience('devices-tools', 'beauty', 'clear-silver-pearl', 'equipment-chamber', 'tool-maintenance-and-attachment-context', 'What tool needs use or care?', 'tool-returns-to-rest');
+  if (pathname.startsWith('/beauty/inventory')) return experience('beauty-inventory', 'beauty', 'clear-stock-pearl', 'depth-and-shelf', 'ownership-vs-use-intelligence', 'What do I actually own and need?', 'inventory-resolves');
+  if (pathname.startsWith('/beauty/maintenance')) return experience('beauty-maintenance', 'beauty', 'champagne-pearl-rhythm', 'maintenance-orbit', 'recurrence-and-due-context', 'What maintenance is approaching?', 'rhythm-settles');
+  if (pathname.startsWith('/beauty/progress')) return experience('beauty-progress', 'beauty', 'soft-history-pearl', 'timeline-and-comparison', 'history-and-results', 'What has changed over time?', 'history-clarifies');
+  if (pathname.startsWith('/beauty/body')) return experience('body-care', 'beauty', 'milky-amber-pearl', 'body-zone-focus', 'body-care-and-maintenance-context', 'What does my body care need?', 'care-settles');
+  if (pathname.startsWith('/beauty/today')) return experience('beauty-today', 'beauty', 'warm-pearl-reflection', 'present-care-field', 'beauty-now-orchestration', 'What does my beauty care need today?', 'today-clears');
+  if (pathname.startsWith('/beauty/lab')) return experience('beauty-lab', 'beauty', 'reflective-blush-pearl', 'mirror-refraction', 'placement-and-sequencing', 'What beauty detail am I working on?', 'detail-settles');
+  if (pathname.startsWith('/beauty')) return experience('personal-atelier', 'beauty', 'warm-optical-pearl', 'orchestrated-layers', 'beauty-state-orchestration', 'What does my beauty care need from me right now?', 'atelier-settles');
+
+  if (pathname.startsWith('/hair')) return experience('hair-studio', 'beauty', 'silk-pearl', 'directional-flow', 'sequence-and-maintenance', 'What does my hair need now?', 'style-settles');
   if (pathname.startsWith('/wellness') || pathname.startsWith('/maintenance')) return experience('wellness', 'life', 'restorative-pearl', 'slow-breath', 'supportive-restoration', 'What would support me right now?', 'soft-release');
   if (pathname.startsWith('/fitness')) return experience('fitness', 'life', 'grounded-silver-pearl', 'rhythmic-momentum', 'guided-execution', 'What movement am I doing now?', 'residual-strength-light');
   if (pathname.startsWith('/food')) return experience('food', 'life', 'warm-ivory-kitchen', 'practical-flow', 'use-and-preparation', 'What do I need to eat, make, or use?', 'dish-becomes-memory');
@@ -50,6 +60,7 @@ export function roomExperienceFor(pathname: string): RoomExperience {
   if (pathname.startsWith('/observations')) return experience('insights', 'brain', 'observatory-pearl', 'evidence-constellation', 'evidence-thresholds', 'Is there enough evidence for a pattern?', 'insight-forms-only-when-supported');
   if (pathname.startsWith('/brain') || pathname.startsWith('/rules') || pathname.startsWith('/briefings')) return experience('brain', 'brain', 'deep-pearl-atmosphere', 'conceptual-depth', 'knowledge-and-context', 'What do I know, notice, or need to understand?', 'meaning-settles');
 
+  if (pathname.startsWith('/create')) return experience('create', 'create', 'mist-pearl', 'mist-to-structure', 'classify-after-capture', 'What is trying to become real?', 'object-finds-destination');
   if (pathname.startsWith('/import')) return experience('import', 'create', 'clear-prismatic-pearl', 'source-to-meaning', 'provenance-and-approval', 'What is this source actually saying?', 'approved-object-travels-home');
   if (pathname.startsWith('/inbox') || pathname.startsWith('/intake')) return experience('capture', 'create', 'mist-pearl', 'mist-to-structure', 'classify-after-capture', 'What is trying to become real?', 'object-finds-destination');
   if (pathname.startsWith('/concierge')) return experience('concierge', 'create', 'champagne-command-light', 'situation-orchestration', 'multi-domain-coordination', 'What situation are we orchestrating?', 'plan-remains-one-living-situation');
