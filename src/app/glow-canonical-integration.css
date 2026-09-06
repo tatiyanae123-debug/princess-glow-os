@@ -20,6 +20,21 @@
   display: none !important;
 }
 
+/* Home is an Open World inside the permanent shell, not screen -> frame -> frame. */
+section[aria-label='Glow OS Home'] {
+  inset: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+section[aria-label='Glow OS Home']::after {
+  display: none !important;
+}
+
 /* Life is its own world. Prevent stale Today state from visually carrying over. */
 [data-glow-room='life-personal-house'] {
   isolation: isolate;
