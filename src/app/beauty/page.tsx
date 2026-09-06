@@ -1,42 +1,75 @@
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
-import { BeautyRoutineManager } from '@/components/beauty/beauty-routine-manager';
-import { Card } from '@/components/ui/card';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
 import { getBeautyProducts } from '@/lib/data/completion-v1';
-import { CalendarDays, Camera, Clock3, FlaskConical, Sparkles } from 'lucide-react';
+import styles from './beauty-personal-atelier.module.css';
 
 export const dynamic = 'force-dynamic';
 
+type BeautyProduct = Awaited<ReturnType<typeof getBeautyProducts>>[number];
+type BeautyRoutine = Awaited<ReturnType<typeof getBeautyRoutinesByUser>>[number];
+type CalendarEvent = Awaited<ReturnType<typeof getCalendarEventsByUser>>[number];
+
 const beautyKeywords = [
-  'beauty', 'facial', 'skin', 'skincare', 'brow', 'brows', 'lash', 'lashes', 'nail', 'nails',
-  'manicure', 'pedicure', 'wax', 'laser', 'derm', 'dermatology', 'esthetic', 'spa', 'makeup',
+  'beauty','facial','skin','skincare','brow','brows','lash','lashes','nail','nails','manicure','pedicure','wax','laser','derm','dermatology','esthetic','spa','makeup','hair','scalp','fragrance','perfume','gua sha','massage','body care','sunscreen','spf',
 ];
 
-const BEAUTY_DESTINATIONS = [
-  { label: 'Beauty Home', detail: 'Your command center', href: '/beauty' },
-  { label: 'Makeup', detail: 'Looks · products · application', href: '/beauty/lab' },
-  { label: 'Skincare', detail: 'Treatment Lab · inventory · progress', href: '/beauty/skincare' },
-  { label: 'Wash Up', detail: 'Shower · hygiene · getting ready', href: '/routines' },
-  { label: 'Facial Massage', detail: 'Gua sha · massage · movement', href: '/beauty/lab?view=facial-massage' },
-  { label: 'Hair', detail: 'Care · wash · styling · maintenance', href: '/hair' },
-  { label: 'Body Care', detail: 'Skin · hydration · sun · sweat', href: '/beauty/skincare?view=body-skin' },
-  { label: 'Fragrance', detail: 'Scent wardrobe · layering · wear', href: '/beauty?studio=fragrance' },
-  { label: 'Closet', detail: 'Wardrobe · outfits · ownership', href: '/closet' },
-  { label: 'Fashion', detail: 'Style · expression · looks', href: '/closet?view=fashion' },
+const worlds = [
+  ['Today','/today?room=what-now'],
+  ['Plan','/planning'],
+  ['Life','/life'],
+  ['Beauty','/beauty'],
+  ['Brain','/brain'],
+  ['Create','/create'],
 ] as const;
 
-function isBeautyEvent(title: string, description: string | null) {
-  const haystack = `${title} ${description ?? ''}`.toLowerCase();
-  return beautyKeywords.some((keyword) => haystack.includes(keyword));
+const railWorlds = [
+  ['Today','⌂','/today?room=what-now'],
+  ['Plan','▣','/planning'],
+  ['Life','♡','/life'],
+  ['Beauty','✦','/beauty'],
+  ['Brain','⌘','/brain'],
+  ['Create','✧','/create'],
+] as const;
+
+function textOf(product: BeautyProduct) {
+  return `${product.name} ${product.category} ${product.ingredients ?? ''} ${product.routinePosition ?? ''} ${product.usageFrequency ?? ''}`.toLowerCase();
 }
 
-function dayLabel(date: Date) {
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(date);
+function matchesProduct(product: BeautyProduct, terms: string[]) {
+  const text = textOf(product);
+  return terms.some((term) => text.includes(term));
+}
+
+function matchesRoutine(routine: BeautyRoutine, terms: string[]) {
+  const text = `${routine.name} ${routine.notes ?? ''} ${(routine.products ?? []).join(' ')}`.toLowerCase();
+  return terms.some((term) => text.includes(term));
+}
+
+function isBeautyEvent(event: CalendarEvent) {
+  const text = `${event.title} ${event.description ?? ''}`.toLowerCase();
+  return beautyKeywords.some((keyword) => text.includes(keyword));
+}
+
+function timeLabel(date: Date) {
+  return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+function shortDate(date: Date) {
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function greeting(now: Date) {
+  const hour = now.getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function categoryCount(products: BeautyProduct[], terms: string[]) {
+  return products.filter((product) => matchesProduct(product, terms)).length;
 }
 
 export default async function BeautyPage({ searchParams }: { searchParams: Promise<{ studio?: string }> }) {
@@ -53,176 +86,155 @@ export default async function BeautyPage({ searchParams }: { searchParams: Promi
   ]);
 
   const now = new Date();
-  const upcomingAppointments = events
-    .filter((event) => event.startAt.getTime() >= now.getTime() && isBeautyEvent(event.title, event.description))
-    .sort((a, b) => a.startAt.getTime() - b.startAt.getTime())
-    .slice(0, 4);
+  const dayEnd = new Date(now); dayEnd.setHours(23, 59, 59, 999);
+  const sevenDays = now.getTime() + 7 * 86400000;
+  const fortyFiveDays = now.getTime() + 45 * 86400000;
+  const firstName = session.user.name?.trim().split(/\s+/)[0] || 'You';
 
-  const expiringProducts = products
-    .filter((product) => product.expiresAt && product.expiresAt.getTime() <= now.getTime() + 45 * 86400000)
-    .sort((a, b) => (a.expiresAt?.getTime() ?? 0) - (b.expiresAt?.getTime() ?? 0));
+  const upcomingEvents = events.filter((event) => event.startAt.getTime() >= now.getTime()).sort((a,b) => a.startAt.getTime() - b.startAt.getTime());
+  const beautyEvents = upcomingEvents.filter(isBeautyEvent);
+  const beautyEventsThisWeek = beautyEvents.filter((event) => event.startAt.getTime() <= sevenDays);
+  const nextGeneralEvent = upcomingEvents.find((event) => event.startAt.getTime() <= now.getTime() + 36 * 3600000 && !event.allDay) ?? null;
 
-  const reactionNotes = products
-    .filter((product) => Boolean(product.reaction?.trim()))
-    .slice(0, 4);
+  const morningRoutines = routines.filter((routine) => routine.timeOfDay === 'morning');
+  const eveningRoutines = routines.filter((routine) => routine.timeOfDay === 'evening' || routine.timeOfDay === 'night');
+  const hairRoutines = routines.filter((routine) => matchesRoutine(routine, ['hair','scalp','wash','protect ends']));
+  const bodyRoutines = routines.filter((routine) => matchesRoutine(routine, ['body','shower','bath','legs','foot','feet','deodorant']));
+  const facialRoutines = routines.filter((routine) => matchesRoutine(routine, ['gua sha','facial massage','jaw','neck','lymph','face massage']));
 
-  const morningCount = routines.filter((routine) => routine.timeOfDay === 'morning').length;
-  const eveningCount = routines.filter((routine) => routine.timeOfDay === 'evening' || routine.timeOfDay === 'night').length;
-  const maintenanceCount = expiringProducts.length + products.filter((product) => product.repurchase === 'yes').length;
+  const skinProducts = products.filter((product) => matchesProduct(product, ['skin','skincare','cleanser','serum','retinol','retinal','tretinoin','tazarotene','spf','sunscreen','moisturizer','acne','toner','essence']));
+  const hairProducts = products.filter((product) => matchesProduct(product, ['hair','scalp','shampoo','conditioner','wig','extension','edge control','leave-in']));
+  const makeupProducts = products.filter((product) => matchesProduct(product, ['makeup','foundation','concealer','mascara','lip','blush','eyeshadow','brow','primer','powder']));
+  const bodyProducts = products.filter((product) => matchesProduct(product, ['body','lotion','deodorant','shower','bath','hand','foot','feet','leg','scrub']));
+  const fragranceProducts = products.filter((product) => matchesProduct(product, ['fragrance','perfume','scent','eau de']));
+  const deviceProducts = products.filter((product) => matchesProduct(product, ['device','led','solawave','yeamon','roller','gua sha','nood','flawless','electrode','wand']));
+
+  const responseProducts = products.filter((product) => Boolean(product.reaction?.trim()));
+  const skinResponseProducts = skinProducts.filter((product) => Boolean(product.reaction?.trim()));
+  const activeProducts = products.filter((product) => Boolean(product.routinePosition?.trim() || product.usageFrequency?.trim()));
+  const expiringProducts = products.filter((product) => product.expiresAt && product.expiresAt.getTime() >= now.getTime() && product.expiresAt.getTime() <= fortyFiveDays).sort((a,b) => (a.expiresAt?.getTime() ?? 0) - (b.expiresAt?.getTime() ?? 0));
+  const repurchaseProducts = products.filter((product) => product.repurchase === 'yes' || product.repurchase === 'maybe');
+  const backupProducts = products.filter((product) => /\bbackup\b|back up/.test(textOf(product)));
+  const testingProducts = products.filter((product) => /\btest\b|testing|patch test/.test(textOf(product)));
+  const needsIdProducts = products.filter((product) => /needs identification|unidentified|unknown product/.test(textOf(product)));
+
+  const retinoids = products.filter((product) => matchesProduct(product, ['retinol','retinal','tretinoin','tazarotene','adapalene']));
+  const vitaminC = products.filter((product) => matchesProduct(product, ['vitamin c','ascorbic','ascorbyl']));
+  const spfProducts = products.filter((product) => matchesProduct(product, ['spf','sunscreen','sun screen']));
+
+  const beautyToday: Array<{ icon:string; title:string; detail:string }> = [];
+  if (morningRoutines.length) beautyToday.push({ icon:'☀︎', title:`Morning · ${morningRoutines[0].name}`, detail:`${morningRoutines.length} morning step${morningRoutines.length === 1 ? '' : 's'} connected` });
+  if (eveningRoutines.length) beautyToday.push({ icon:'☾', title:`Evening · ${eveningRoutines[0].name}`, detail:`${eveningRoutines.length} evening/night step${eveningRoutines.length === 1 ? '' : 's'} connected` });
+  const todayBeautyEvent = beautyEvents.find((event) => event.startAt.getTime() <= dayEnd.getTime());
+  if (todayBeautyEvent) beautyToday.push({ icon:'◌', title:todayBeautyEvent.title, detail:todayBeautyEvent.allDay ? 'Today · all day' : `Today · ${timeLabel(todayBeautyEvent.startAt)}` });
+  if (hairRoutines.length && !beautyToday.some((item) => /hair/i.test(item.title))) beautyToday.push({ icon:'≋', title:`Hair · ${hairRoutines[0].name}`, detail:'Hair care is connected in Glow' });
+  if (bodyRoutines.length && !beautyToday.some((item) => /body|shower/i.test(item.title))) beautyToday.push({ icon:'◇', title:`Body · ${bodyRoutines[0].name}`, detail:'Body care is connected in Glow' });
+
+  const comingUp: Array<{ icon:string; title:string; detail:string }> = [];
+  beautyEventsThisWeek.slice(0,3).forEach((event) => comingUp.push({ icon:'□', title:event.title, detail:event.allDay ? shortDate(event.startAt) : `${shortDate(event.startAt)} · ${timeLabel(event.startAt)}` }));
+  expiringProducts.slice(0,3).forEach((product) => comingUp.push({ icon:'△', title:`Review ${product.name}`, detail:product.expiresAt ? `Expiration watch · ${shortDate(product.expiresAt)}` : 'Expiration watch' }));
+  repurchaseProducts.slice(0,2).forEach((product) => { if (!comingUp.some((item) => item.title.includes(product.name))) comingUp.push({ icon:'◇', title:`Restock decision · ${product.name}`, detail:'Repurchase state is saved in Glow' }); });
+
+  const observations: Array<{ icon:string; title:string; detail:string }> = [];
+  if (retinoids.length) observations.push({ icon:'▥', title:`${retinoids.length} retinoid/retinal product${retinoids.length === 1 ? '' : 's'} connected`, detail:`${retinoids.filter((product) => activeProducts.includes(product)).length} linked to current use` });
+  if (vitaminC.length) observations.push({ icon:'☀︎', title:`${vitaminC.length} Vitamin C option${vitaminC.length === 1 ? '' : 's'} in inventory`, detail:'Check what is already owned before buying' });
+  if (spfProducts.length) observations.push({ icon:'✦', title:`${spfProducts.length} SPF product${spfProducts.length === 1 ? '' : 's'} connected`, detail:'Sun protection inventory is already in Glow' });
+  if (!observations.length && products.length) observations.push({ icon:'✦', title:`${products.length} beauty product${products.length === 1 ? '' : 's'} connected`, detail:'Glow is using the inventory you actually own' });
+
+  const maintenanceItems = [
+    ...beautyEventsThisWeek.map((event) => event.title),
+    ...expiringProducts.map((product) => `Review ${product.name}`),
+    ...repurchaseProducts.map((product) => `Restock ${product.name}`),
+  ].slice(0,5);
+
+  const attentionCount = comingUp.length + responseProducts.length;
+  const activePhotos = [...activeProducts, ...products].filter((product, index, array) => Boolean(product.photoUrl) && array.findIndex((item) => item.id === product.id) === index).slice(0,5);
+  const getReadyTitle = nextGeneralEvent ? `Get ready · ${timeLabel(nextGeneralEvent.startAt)}` : 'Get ready';
+  const getReadyDetail = nextGeneralEvent ? nextGeneralEvent.title : 'No timed event in the next 36 hours';
+
+  const skinStatus = eveningRoutines.find((routine) => matchesRoutine(routine, ['skin','skincare','treatment']))?.name ?? `${skinProducts.length} skin product${skinProducts.length === 1 ? '' : 's'} connected`;
+  const hairStatus = hairRoutines[0]?.name ?? (hairProducts.length ? `${hairProducts.length} hair item${hairProducts.length === 1 ? '' : 's'} connected` : 'No hair item scheduled');
+  const makeupStatus = makeupProducts.length ? `${makeupProducts.length} makeup item${makeupProducts.length === 1 ? '' : 's'} connected` : 'No makeup item scheduled';
+  const bodyStatus = bodyRoutines[0]?.name ?? (bodyProducts.length ? `${bodyProducts.length} body-care item${bodyProducts.length === 1 ? '' : 's'} connected` : 'No body-care item scheduled');
+  const fragranceStatus = fragranceProducts.length ? `${fragranceProducts.length} scent${fragranceProducts.length === 1 ? '' : 's'} connected` : 'Build fragrance wardrobe';
+  const facialStatus = facialRoutines[0]?.name ?? 'No facial-movement session scheduled';
 
   return (
-    <AppShell>
-      <SectionPage eyebrow="Beauty" title="Your personal beauty world" description="Enter Beauty directly from the main Glow Current or through Life. Both paths open this same connected system and keep the same routines, inventory, history, and Glow context.">
-        <div className="space-y-5">
-          <section aria-label="Beauty rooms" className="rounded-[28px] border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,.7),rgba(239,237,245,.46),rgba(247,238,232,.54))] p-4 shadow-[0_18px_50px_rgba(86,77,88,.08)] backdrop-blur-2xl sm:p-5">
-            <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="glow-eyebrow">Beauty · connected region</p>
-                <h2 className="glow-display mt-1 text-[22px] text-[#493733]">Choose the room that matches what you are doing</h2>
-              </div>
-              <p className="max-w-md text-[8px] leading-4 text-[#806a64]">Beauty stays reachable from both the primary world navigation and Life. These are thresholds into one shared Beauty system, not duplicated apps.</p>
-            </div>
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {BEAUTY_DESTINATIONS.map((destination) => (
-                <Link key={destination.label} href={destination.href} className="group min-w-[150px] flex-1 rounded-[20px] border border-white/80 bg-white/38 px-4 py-4 shadow-[inset_0_1px_rgba(255,255,255,.9),0_8px_24px_rgba(80,72,80,.05)] transition hover:-translate-y-0.5 hover:bg-white/55">
-                  <span className="mb-4 block h-7 w-7 rounded-full border border-white/90 bg-[radial-gradient(circle_at_32%_28%,#fff_0_12%,rgba(255,255,255,.55)_22%,rgba(218,226,255,.42)_48%,rgba(247,218,236,.25)_72%,rgba(255,255,255,.45))] shadow-[0_6px_16px_rgba(92,84,98,.12)]" />
-                  <strong className="block text-[11px] font-medium text-[#443b3b]">{destination.label}</strong>
-                  <small className="mt-1 block text-[7px] leading-3 text-[#8b7d79]">{destination.detail}</small>
-                </Link>
-              ))}
-            </div>
-          </section>
+    <main className={styles.viewport}>
+      <section className={styles.atelier} aria-label="Beauty Personal Atelier">
+        <header className={styles.topbar}>
+          <Link href="/home" className={styles.brand}><strong>Glow OS⌄</strong><small>Beauty</small></Link>
+          <nav className={styles.worldNav} aria-label="Glow regions">
+            {worlds.map(([label, href]) => <Link key={label} href={href} className={label === 'Beauty' ? styles.active : undefined}>{label}</Link>)}
+          </nav>
+          <div className={styles.askWrap}><Link href="/ask-glow" className={styles.ask}><span className={styles.askIcon}>⌕</span><span>Ask Glow...</span></Link><Link href="/ask-glow" className={styles.glowOrb} aria-label="Open Ask Glow" /></div>
+        </header>
 
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <Card className="relative overflow-hidden bg-[linear-gradient(145deg,#f6e7e4,#f2ddd6)]">
-              <Sparkles size={34} strokeWidth={0.8} className="absolute right-4 top-3 text-[#a66c75]/20" />
-              <p className="glow-eyebrow">Daily ritual</p>
-              <p className="glow-display mt-2 text-[25px] text-[#4a3835]">{routines.length}</p>
-              <p className="mt-1 text-[8px] text-[#8a716b]">{morningCount} morning · {eveningCount} evening/night steps</p>
-            </Card>
-            <Card>
-              <CalendarDays size={18} strokeWidth={1} className="text-[#9b6a73]" />
-              <p className="glow-eyebrow mt-3">Appointments</p>
-              <p className="glow-display mt-2 text-[25px] text-[#4a3835]">{upcomingAppointments.length}</p>
-              <p className="mt-1 text-[8px] text-[#8a716b]">upcoming beauty-related calendar events</p>
-            </Card>
-            <Card>
-              <Camera size={18} strokeWidth={1} className="text-[#9b6a73]" />
-              <p className="glow-eyebrow mt-3">Response journal</p>
-              <p className="glow-display mt-2 text-[25px] text-[#4a3835]">{reactionNotes.length}</p>
-              <p className="mt-1 text-[8px] text-[#8a716b]">recent product response notes to compare over time</p>
-            </Card>
-            <Card>
-              <Clock3 size={18} strokeWidth={1} className="text-[#9b6a73]" />
-              <p className="glow-eyebrow mt-3">Maintenance</p>
-              <p className="glow-display mt-2 text-[25px] text-[#4a3835]">{maintenanceCount}</p>
-              <p className="mt-1 text-[8px] text-[#8a716b]">expiring or repurchase items needing attention</p>
-            </Card>
+        <div className={styles.title}><h1>Beauty · Personal Atelier</h1><p>Your beauty care, connected and in view.</p></div>
+        <div className={styles.careLine}>Care today. A brighter you tomorrow.</div>
+
+        <aside className={styles.leftRail}>
+          <nav className={styles.railLinks} aria-label="Glow region shortcuts">
+            {railWorlds.map(([label, icon, href]) => <Link key={label} href={href} className={label === 'Beauty' ? styles.railActive : undefined}><span className={styles.railIcon}>{label === 'Beauty' ? <span className={styles.navOrb}/> : icon}</span><span>{label}</span></Link>)}
+          </nav>
+          <div className={styles.identity}>
+            {session.user.image ? <div className={styles.portrait} style={{ backgroundImage:`url(${session.user.image})`, backgroundSize:'cover', backgroundPosition:'center' }} /> : <div className={styles.portraitFallback}>{firstName.slice(0,1).toUpperCase()}</div>}
+            <small>{greeting(now)},</small><strong>{firstName}</strong>
+            <div className={styles.identityMeta}>Today<b>{beautyToday.length} beauty item{beautyToday.length === 1 ? '' : 's'}</b></div>
+            <div className={styles.identityMeta}>Inventory<b>{products.length} owned record{products.length === 1 ? '' : 's'}</b></div>
           </div>
+          <Link href="/ask-glow" className={styles.assistantState}><span className={styles.miniOrb}/><span><strong>Ask Glow</strong>Listening</span></Link>
+        </aside>
 
-          <Card className="relative overflow-hidden border-white/70 bg-[linear-gradient(145deg,rgba(255,255,255,.78),rgba(235,241,249,.58))]">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="glow-eyebrow">Skincare · Treatment Lab</p>
-                <h2 className="glow-display mt-1 text-[20px] text-[#493733]">Inventory-driven skin intelligence</h2>
-                <p className="mt-2 max-w-2xl text-[8px] leading-4 text-[#806a64]">Open the Treatment Lab where ownership, current routine, testing, compatibility, provider rules, and personal results stay separate and connected.</p>
-              </div>
-              <Link href="/beauty/skincare" className="rounded-full border border-white/80 bg-white/55 px-4 py-2.5 text-[8px] text-[#5f5550] shadow-[0_10px_25px_rgba(87,78,73,.08)]">Open Treatment Lab</Link>
-            </div>
-          </Card>
+        <section className={styles.field} aria-label="Beauty systems">
+          <Link href="/beauty/skincare" className={`${styles.chamber} ${styles.skin}`}>
+            <span className={`${styles.skinBead} ${styles.b1}`}/><span className={`${styles.skinBead} ${styles.b2}`}/><span className={`${styles.skinBead} ${styles.b3}`}/>
+            <span className={styles.chamberCopy}><strong>Skin</strong><span>Tonight · {skinStatus}</span><em>{skinResponseProducts.length ? `${skinResponseProducts.length} response note${skinResponseProducts.length === 1 ? '' : 's'} logged` : 'No skin response note logged'} · {skinProducts.length} inventory</em></span><span className={styles.enter}>›</span>
+          </Link>
 
-          <div className="grid gap-4 xl:grid-cols-[1.15fr_.85fr]">
-            <Card className="p-0 overflow-hidden">
-              <div className="flex items-center justify-between gap-3 border-b border-[#eaded8] px-5 py-4">
-                <div>
-                  <p className="glow-eyebrow">Beauty calendar</p>
-                  <h2 className="glow-display mt-1 text-[19px] text-[#493733]">Upcoming appointments</h2>
-                </div>
-                <Link href="/calendar" className="rounded-[6px] border border-[#dfd0c9] px-3 py-2 text-[8px] text-[#765e58]">Open calendar</Link>
-              </div>
-              {upcomingAppointments.length === 0 ? (
-                <div className="p-6 text-center">
-                  <p className="text-[9px] text-[#87716a]">No upcoming beauty appointments found.</p>
-                  <Link href="/calendar" className="mt-3 inline-block rounded-[6px] bg-[#4b3834] px-3 py-2 text-[8px] text-white">Schedule one</Link>
-                </div>
-              ) : (
-                <div className="divide-y divide-[#eee2dc]">
-                  {upcomingAppointments.map((event) => (
-                    <div key={event.id} className="flex items-center gap-4 px-5 py-4">
-                      <div className="min-w-12 rounded-[8px] bg-[#f4e5e2] px-3 py-2 text-center">
-                        <p className="glow-display text-[13px] text-[#6f5052]">{dayLabel(event.startAt)}</p>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="glow-display text-[14px] text-[#4b3935]">{event.title}</p>
-                        <p className="mt-1 text-[8px] text-[#8b746d]">{event.allDay ? 'All day' : event.startAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}{event.location ? ` · ${event.location}` : ''}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
+          <Link href="/hair" className={`${styles.chamber} ${styles.hair}`}>
+            <span className={styles.hairRibbon}/><span className={styles.chamberCopy}><strong>Hair</strong><span>{hairStatus}</span><em>{beautyEvents.find((event) => /hair|wash|brow/i.test(event.title)) ? `Next · ${shortDate(beautyEvents.find((event) => /hair|wash|brow/i.test(event.title))!.startAt)}` : `${hairProducts.length} inventory item${hairProducts.length === 1 ? '' : 's'}`}</em></span><span className={styles.enter}>›</span>
+          </Link>
 
-            <Card className="p-0 overflow-hidden">
-              <div className="border-b border-[#eaded8] px-5 py-4">
-                <p className="glow-eyebrow">Maintenance forecast</p>
-                <h2 className="glow-display mt-1 text-[19px] text-[#493733]">What needs attention next</h2>
-              </div>
-              <div className="space-y-3 p-5">
-                {expiringProducts.slice(0, 3).map((product) => (
-                  <div key={product.id} className="rounded-[8px] bg-[#fbf3ef] p-3">
-                    <p className="text-[8px] uppercase tracking-[.1em] text-[#9d7d78]">Expiration watch</p>
-                    <p className="glow-display mt-1 text-[14px] text-[#4c3935]">{product.name}</p>
-                    <p className="mt-1 text-[8px] text-[#806a64]">{product.expiresAt ? `Due ${dayLabel(product.expiresAt)}` : 'Review date'}</p>
-                  </div>
-                ))}
-                {products.filter((product) => product.repurchase === 'yes').slice(0, 2).map((product) => (
-                  <div key={`repurchase-${product.id}`} className="rounded-[8px] bg-[#f5ece9] p-3">
-                    <p className="text-[8px] uppercase tracking-[.1em] text-[#9d7d78]">Repurchase</p>
-                    <p className="glow-display mt-1 text-[14px] text-[#4c3935]">{product.name}</p>
-                  </div>
-                ))}
-                {maintenanceCount === 0 ? <p className="py-4 text-center text-[9px] text-[#8b746e]">Nothing urgent. Your cabinet is currently clear.</p> : null}
-                <Link href="/beauty/lab" className="inline-flex items-center gap-2 rounded-[6px] border border-[#dfd0c9] px-3 py-2 text-[8px] text-[#765e58]"><FlaskConical size={11} />Open Beauty Lab</Link>
-              </div>
-            </Card>
-          </div>
+          <Link href="/beauty/lab" className={`${styles.chamber} ${styles.makeup}`}>
+            <span className={`${styles.pigment} ${styles.p1}`}/><span className={`${styles.pigment} ${styles.p2}`}/><span className={`${styles.pigment} ${styles.p3}`}/><span className={`${styles.pigment} ${styles.p4}`}/>
+            <span className={styles.chamberCopy}><strong>Makeup</strong><span>{makeupStatus}</span><em>{makeupProducts.some((product) => product.routinePosition) ? 'Routine placement is connected' : 'No makeup routine placement saved'}</em></span><span className={styles.enter}>›</span>
+          </Link>
 
-          <Card className="p-0 overflow-hidden">
-            <div className="flex items-center justify-between gap-3 border-b border-[#eaded8] px-5 py-4">
-              <div>
-                <p className="glow-eyebrow">Progress journal</p>
-                <h2 className="glow-display mt-1 text-[19px] text-[#493733]">Compare what your skin is telling you</h2>
-              </div>
-              <Link href="/beauty/lab" className="rounded-[6px] border border-[#dfd0c9] px-3 py-2 text-[8px] text-[#765e58]">Log response</Link>
-            </div>
-            {reactionNotes.length === 0 ? (
-              <div className="p-6 text-center">
-                <p className="text-[9px] text-[#87716a]">No response notes yet. Add reactions in Beauty Lab so Glow can build a useful progress history.</p>
-              </div>
-            ) : (
-              <div className="grid gap-0 md:grid-cols-2 xl:grid-cols-4">
-                {reactionNotes.map((product) => (
-                  <div key={product.id} className="border-b border-r border-[#eee2dc] p-4">
-                    <div className="mb-3 h-20 rounded-[8px] bg-[linear-gradient(145deg,#ead3ca,#f5e9e3)] p-3">
-                      <Camera size={18} strokeWidth={0.9} className="text-[#9d7378]/70" />
-                    </div>
-                    <p className="glow-display text-[14px] text-[#4b3935]">{product.name}</p>
-                    <p className="mt-2 line-clamp-3 text-[8px] leading-4 text-[#806a64]">{product.reaction}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
+          <div className={styles.centerLens}><div className={styles.centerText}><small>YOU · BEAUTY STATE</small><span className={styles.lotus}>♢</span><strong>Beauty</strong><span>{attentionCount ? `${attentionCount} thing${attentionCount === 1 ? '' : 's'} in view` : 'Nothing urgent in Glow'}</span></div></div>
 
-          <div>
-            <div className="mb-3">
-              <p className="glow-eyebrow">Ritual editor</p>
-              <h2 className="glow-display mt-1 text-[22px] text-[#493733]">Morning + evening routine</h2>
-            </div>
-            <BeautyRoutineManager initialRoutines={routines} />
-          </div>
+          <Link href="/beauty/skincare?view=body-skin" className={`${styles.chamber} ${styles.body}`}><span className={styles.bodyContour}/><span className={styles.chamberCopy}><strong>Body</strong><span>{bodyStatus}</span><em>{bodyProducts.length} body-care inventory item{bodyProducts.length === 1 ? '' : 's'}</em></span><span className={styles.enter}>›</span></Link>
+
+          <Link href="/beauty/facial-massage" className={`${styles.chamber} ${styles.facial}`}><span className={styles.chamberCopy}><strong>Facial Movement</strong><span>{facialStatus}</span><em>{facialRoutines.length ? `${facialRoutines.length} connected routine${facialRoutines.length === 1 ? '' : 's'}` : 'Gua sha · massage · movement'}</em></span><span className={styles.enter}>›</span></Link>
+
+          <Link href="/beauty/lab" className={`${styles.chamber} ${styles.fragrance}`}><span className={styles.bottleCap}/><span className={styles.chamberCopy}><strong>Fragrance</strong><span>{fragranceStatus}</span><em>Weather · occasion · outfit can shape selection</em></span><span className={styles.enter}>›</span></Link>
+
+          <Link href="/beauty/lab?view=repurchase" className={styles.maintenance}>
+            <span className={styles.maintTitle}><strong>Maintenance</strong><span>{maintenanceItems.length ? 'Keep real maintenance in rhythm' : 'Nothing due in Glow right now'}</span></span>
+            <span className={styles.pearlRail}>{maintenanceItems.map((item) => <span className={styles.maintenanceItem} key={item}>{item.length > 18 ? `${item.slice(0,17)}…` : item}</span>)}</span>
+          </Link>
+
+          <Link href="/beauty/lab" className={styles.devices}><h3>Devices + Tools</h3><p>Track · clean · maintain · {deviceProducts.length} connected</p><span className={styles.deviceShapes}><span className={styles.d1}/><span className={styles.d2}/><span className={styles.d3}/></span><span className={styles.enter}>›</span></Link>
+
+          <Link href="/beauty/lab" className={styles.inventory}><h3>Beauty Inventory</h3><p>{products.length} owned source record{products.length === 1 ? '' : 's'}</p><span className={styles.productShelf}>{activePhotos.length ? activePhotos.map((product) => <span key={product.id} style={{ width:26, height:42, backgroundImage:`url(${product.photoUrl})`, backgroundSize:'contain', backgroundRepeat:'no-repeat', backgroundPosition:'bottom center', display:'inline-block' }}/>) : [22,30,36,27,33].map((height,index) => <span key={index} className={styles.productPlaceholder} style={{ height }}/>)}</span><span className={styles.inventoryStats}><span>Owned<b>{products.length}</b></span><span>Active<b>{activeProducts.length}</b></span><span>Testing<b>{testingProducts.length || '—'}</b></span><span>Needs ID<b>{needsIdProducts.length || '—'}</b></span></span><span className={styles.enter}>›</span></Link>
+        </section>
+
+        <aside className={styles.rightRail}>
+          <section className={styles.well}><div className={styles.wellHeader}><h2>Beauty Today</h2><span>•••</span></div>{beautyToday.length ? beautyToday.slice(0,4).map((item) => <div className={styles.intelRow} key={`${item.title}-${item.detail}`}><span className={styles.intelIcon}>{item.icon}</span><span className={styles.intelCopy}><strong>{item.title}</strong><small>{item.detail}</small></span><span className={styles.intelState}>○</span></div>) : <div className={styles.intelRow}><span className={styles.intelIcon}>✓</span><span className={styles.intelCopy}><strong>Nothing scheduled</strong><small>No beauty item is assigned for today in Glow.</small></span></div>}</section>
+
+          <section className={`${styles.well} ${styles.coming}`}><div className={styles.wellHeader}><h2>Coming Up</h2><span>•••</span></div>{comingUp.length ? comingUp.slice(0,5).map((item) => <div className={styles.intelRow} key={`${item.title}-${item.detail}`}><span className={styles.intelIcon}>{item.icon}</span><span className={styles.intelCopy}><strong>{item.title}</strong><small>{item.detail}</small></span><span className={styles.intelState}>›</span></div>) : <div className={styles.intelRow}><span className={styles.intelIcon}>○</span><span className={styles.intelCopy}><strong>Nothing upcoming</strong><small>No beauty maintenance or appointment is currently due in Glow.</small></span></div>}</section>
+
+          <section className={`${styles.well} ${styles.noticed}`}><div className={styles.wellHeader}><h2>Glow noticed</h2><span>•••</span></div>{observations.slice(0,3).map((item) => <div className={styles.intelRow} key={item.title}><span className={styles.intelIcon}>{item.icon}</span><span className={styles.intelCopy}><strong>{item.title}</strong><small>{item.detail}</small></span><span className={styles.intelState}>›</span></div>)}</section>
+
+          <Link href="/closet" className={styles.closetBridge}><span className={styles.intelIcon}>⌑</span><span><strong>Closet Bridge</strong><small>Match beauty with your look</small></span><span className={styles.intelState}>›</span></Link>
+        </aside>
+
+        <div className={styles.bottomCurrent}>
+          <Link href="/beauty" className={styles.currentSegment}><span className={styles.miniOrb}/><span><strong>Beauty Today · {beautyToday.length} item{beautyToday.length === 1 ? '' : 's'}</strong><small>{beautyToday.slice(0,3).map((item) => item.title.split(' · ')[0]).join(' · ') || 'Nothing scheduled'}</small></span><span className={styles.currentArrow}>›</span></Link>
+          <Link href="/today?room=what-now" className={styles.currentSegment}><span className={styles.miniOrb}/><span><strong>{getReadyTitle}</strong><small>{getReadyDetail}</small></span><span className={styles.currentArrow}>›</span></Link>
+          <Link href="/beauty/lab" className={styles.currentSegment}><span className={styles.miniOrb}/><span><strong>Check inventory before buying</strong><small>{backupProducts.length ? `${backupProducts.length} backup-tagged item${backupProducts.length === 1 ? '' : 's'}` : `${products.length} owned item${products.length === 1 ? '' : 's'} in Glow`}</small></span><span className={styles.currentArrow}>›</span></Link>
         </div>
-      </SectionPage>
-    </AppShell>
+      </section>
+    </main>
   );
 }
