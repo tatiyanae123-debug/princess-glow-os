@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { ArrowLeft, ChevronRight, PackageOpen, Sparkles } from 'lucide-react';
+import { ArrowLeft, ChevronRight, PackageOpen } from 'lucide-react';
 import { auth } from '@/auth';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
 import { getBeautyProducts, getHairLogs } from '@/lib/data/completion-v1';
 import { WORLD_TARGETS } from '@/lib/glow-world/navigation-shell';
+import { BeautyAskGlowButton } from './beauty-ask-glow-button';
 import styles from './beauty-depth-room.module.css';
 
 type System = 'makeup' | 'fragrance' | 'devices' | 'inventory' | 'maintenance' | 'progress' | 'body' | 'today';
@@ -66,7 +67,7 @@ export async function BeautyDepthRoom({ system }: { system: System }) {
         <header className={styles.header}>
           <Link href="/home" className={styles.brand}>Glow OS</Link>
           <nav className={styles.worlds}>{WORLD_TARGETS.map((target) => <Link key={target.world} href={target.path} className={target.world === 'beauty' ? styles.active : undefined}>{target.label}</Link>)}</nav>
-          <button type="button" className={styles.ask} onClick={undefined}><Sparkles size={14}/> Ask Glow</button>
+          <BeautyAskGlowButton className={styles.ask}/>
         </header>
         <Link href="/beauty" className={styles.back}><ArrowLeft size={14}/> Beauty</Link>
         <div className={styles.heading}><small>{config.kicker}</small><h1>{config.title}</h1><p>{config.subtitle}</p></div>
