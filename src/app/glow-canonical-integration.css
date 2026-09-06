@@ -1,6 +1,7 @@
 /* Canonical Glow integration layer.
-   Today reference rooms keep their visual architecture, but only the
-   TodayNavigationAuthority owns visible global navigation. */
+   Reference rooms keep their visual architecture, but the app-root Glow Current
+   is the only visible global navigation authority. Room-local navigation may
+   express local depth, never recreate the operating-system shell. */
 
 [data-what-now-reference='true'] header[aria-hidden='true'],
 [data-morning-reference='true'] header[aria-hidden='true'] {
@@ -13,10 +14,10 @@
   display: none !important;
 }
 
-/* The fixed authority is intentionally ambient rather than a page-blocking bar. */
+/* Any surviving TodayNavigationAuthority instance is legacy compatibility only.
+   The root shell owns Glow OS identity, orientation, Return Anchor and Shakti. */
 [data-glow-navigation-authority='true'] {
-  -webkit-backdrop-filter: blur(18px) saturate(118%);
-  backdrop-filter: blur(18px) saturate(118%);
+  display: none !important;
 }
 
 /* Life is its own world. Prevent stale Today state from visually carrying over. */
