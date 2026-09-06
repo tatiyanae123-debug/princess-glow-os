@@ -189,6 +189,11 @@ export function GlowCurrent() {
 
   if (pathname === '/sign-in' || pathname.startsWith('/api/')) return null;
 
+  // Beauty renders the same shared destination model inside its reference-specific
+  // optical slab. Keep Glow Current alive for history/events, but do not stack a
+  // second visible navigation layer over the Personal Atelier.
+  if (currentExperience.world === 'beauty') return null;
+
   return (
     <div className="glow-current" data-world={currentExperience.world} data-enclosure={enclosure}>
       <div className="glow-current__world-boundary" aria-hidden="true" />
@@ -237,12 +242,12 @@ export function GlowCurrent() {
           type="button"
           className="glow-current__shakti"
           onClick={openGlow}
-          aria-label={`Ask Glow with Shakti from ${currentRoom}`}
+          aria-label={`Ask Glow from ${currentRoom}`}
         >
           <span className="glow-current__shakti-light" aria-hidden="true" />
           <span className="glow-current__shakti-copy">
-            <strong>Shakti</strong>
-            <small>Ask Glow</small>
+            <strong>Ask Glow</strong>
+            <small>Available</small>
           </span>
         </button>
       </header>
