@@ -7,11 +7,12 @@ import { getHabitsByUser } from '@/lib/data/habits';
 import { getNotesByUser } from '@/lib/data/notes';
 import { getGoalsByUser } from '@/lib/data/goals';
 import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
-import { getUpcomingGoogleEvents } from '@/lib/google/calendar-client';
+import { getUpcomingGoogleEvents, type CalendarFetchResult } from '@/lib/google/calendar-client';
 
 export const dynamic = 'force-dynamic';
 
 const NEW_YORK_TZ = 'America/New_York';
+const GOOGLE_CONTEXT_BUDGET_MS = 1400;
 
 function dateKey(date: Date) {
   return new Intl.DateTimeFormat('en-CA', {
@@ -35,6 +36,22 @@ function priorityRank(priority: string) {
   return 1;
 }
 
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return new Promise<T>((resolve) => {
+    const timer = setTimeout(() => resolve(fallback), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      () => {
+        clearTimeout(timer);
+        resolve(fallback);
+      },
+    );
+  });
+}
+
 export async function GET() {
   try {
     const session = await auth();
@@ -44,6 +61,13 @@ export async function GET() {
       return NextResponse.json({ ok: false, reason: 'not_signed_in' }, { status: 401 });
     }
 
+    const googleFallback: CalendarFetchResult = { ok: false, reason: 'error' };
+    const googlePromise = withTimeout(
+      getUpcomingGoogleEvents(userId),
+      GOOGLE_CONTEXT_BUDGET_MS,
+      googleFallback,
+    );
+
     const [tasks, glowEvents, routines, habits, notes, goals, wellnessEntries, googleResult] = await Promise.all([
       getTasksByUser(userId),
       getCalendarEventsByUser(userId),
@@ -52,7 +76,7 @@ export async function GET() {
       getNotesByUser(userId),
       getGoalsByUser(userId),
       getWellnessEntriesByUser(userId),
-      getUpcomingGoogleEvents(userId),
+      googlePromise,
     ]);
 
     const activeTasks = tasks
