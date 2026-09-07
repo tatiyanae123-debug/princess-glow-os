@@ -83,6 +83,17 @@ export function BeautyAtelierBehavior({ nextEvent, inventory, energy, travelCont
     const greeting = root.querySelector<HTMLElement>('[data-local-greeting]');
     if (greeting) greeting.textContent = localGreeting();
 
+    // Gua Sha is a first-class Beauty room. Keep the server-rendered legacy
+    // chamber compatible while presenting and navigating to the canonical room.
+    const guaShaChamber = root.querySelector<HTMLAnchorElement>('[data-beauty-system="facial-movement"]');
+    if (guaShaChamber) {
+      guaShaChamber.setAttribute('href', '/beauty/gua-sha');
+      const title = guaShaChamber.querySelector<HTMLElement>('strong');
+      const cue = guaShaChamber.querySelector<HTMLElement>('em');
+      if (title) title.textContent = 'Gua Sha Studio';
+      if (cue) cue.textContent = 'Today · Guided · Morning · Midday · Night';
+    }
+
     const saved = readSaved();
     const initialMode: Mode = saved.mode ?? ((energy === 'Low' || energy === 'Exhausted') ? 'essentials' : 'normal');
     const initialFocus = saved.focus ?? '';
