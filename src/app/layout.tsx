@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { GlowCurrent } from '@/components/glow/glow-current';
+import { GlowKernelBridge } from '@/components/glow/glow-kernel-bridge';
 import { GlowPresence } from '@/components/glow/glow-presence';
 import { SpatialRouteTransition } from '@/components/glow/spatial-route-transition';
 import './globals.css';
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {children}
         <Suspense fallback={null}>
+          <GlowKernelBridge />
           <GlowCurrent />
         </Suspense>
         <SpatialRouteTransition />
