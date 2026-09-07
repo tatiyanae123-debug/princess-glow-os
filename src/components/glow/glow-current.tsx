@@ -15,36 +15,11 @@ import {
   worldLabelFor,
 } from '@/lib/glow-world/navigation-shell';
 
-type ThreadEntry = {
-  path: string;
-  room: string;
-  world: GlowWorld;
-  visitedAt: number;
-};
-
-type DockAction = {
-  label: string;
-  path?: string;
-  event?: string;
-  ariaLabel?: string;
-};
-
-type DockActions = {
-  left?: DockAction | null;
-  center?: DockAction | null;
-  right?: DockAction | null;
-};
-
+type ThreadEntry = { path: string; room: string; world: GlowWorld; visitedAt: number };
+type DockAction = { label: string; path?: string; event?: string; ariaLabel?: string };
+type DockActions = { left?: DockAction | null; center?: DockAction | null; right?: DockAction | null };
 type FoldWorld = 'home' | GlowWorld;
-
-type FoldTarget = {
-  key: FoldWorld;
-  label: string;
-  path: string;
-  cue: string;
-  symbol: string;
-};
-
+type FoldTarget = { key: FoldWorld; label: string; path: string; cue: string; symbol: string };
 type WorldStateAnchor = {
   path: string;
   room: string;
@@ -53,9 +28,7 @@ type WorldStateAnchor = {
   state?: Record<string, unknown> | null;
   stateLabel?: string | null;
 };
-
 type WorldAnchorMap = Partial<Record<FoldWorld, WorldStateAnchor>>;
-
 type PendingWorldRestore = WorldStateAnchor & { world: FoldWorld };
 
 const THREAD_KEY = 'glow.current.thread.v2';
@@ -100,9 +73,7 @@ function readJson<T>(key: string): T | null {
 }
 
 function writeJson(key: string, value: unknown) {
-  try {
-    window.sessionStorage.setItem(key, JSON.stringify(value));
-  } catch {}
+  try { window.sessionStorage.setItem(key, JSON.stringify(value)); } catch {}
 }
 
 export function GlowCurrent() {
@@ -124,6 +95,7 @@ export function GlowCurrent() {
   const [thread, setThread] = useState<ThreadEntry[]>([]);
   const [dockActions, setDockActions] = useState<DockActions>({});
   const [worldAnchors, setWorldAnchors] = useState<WorldAnchorMap>({});
+  const worldAnchorsRef = useRef<WorldAnchorMap>({});
   const previousPathRef = useRef(currentPath);
   const suppressNextHistoryRef = useRef(false);
   const foldTravelTimerRef = useRef<number | null>(null);
@@ -136,18 +108,20 @@ export function GlowCurrent() {
   }, []);
 
   const persistAnchor = useCallback((world: FoldWorld, anchor: WorldStateAnchor) => {
-    setWorldAnchors((previous) => {
-      const next = { ...previous, [world]: anchor };
-      writeJson(WORLD_ANCHOR_KEY, next);
-      return next;
-    });
+    const next = { ...worldAnchorsRef.current, [world]: anchor };
+    worldAnchorsRef.current = next;
+    setWorldAnchors(next);
+    writeJson(WORLD_ANCHOR_KEY, next);
   }, []);
 
   useEffect(() => {
     const savedThread = readJson<ThreadEntry[]>(THREAD_KEY);
     const savedAnchors = readJson<WorldAnchorMap>(WORLD_ANCHOR_KEY);
     if (savedThread) setThread(savedThread);
-    if (savedAnchors) setWorldAnchors(savedAnchors);
+    if (savedAnchors) {
+      worldAnchorsRef.current = savedAnchors;
+      setWorldAnchors(savedAnchors);
+    }
   }, []);
 
   useEffect(() => {
@@ -168,7 +142,6 @@ export function GlowCurrent() {
   useEffect(() => {
     const pending = readJson<PendingWorldRestore>(WORLD_RESTORE_KEY);
     if (!pending || pending.path !== currentPath) return;
-
     try { window.sessionStorage.removeItem(WORLD_RESTORE_KEY); } catch {}
     const frame = window.requestAnimationFrame(() => {
       window.scrollTo({ top: Math.max(0, pending.scrollY || 0), behavior: 'auto' });
@@ -181,7 +154,7 @@ export function GlowCurrent() {
 
   useEffect(() => {
     const capture = () => {
-      const existing = worldAnchors[currentFoldWorld];
+      const existing = worldAnchorsRef.current[currentFoldWorld];
       persistAnchor(currentFoldWorld, {
         path: currentPath,
         room: currentRoom,
@@ -191,7 +164,6 @@ export function GlowCurrent() {
         stateLabel: existing?.stateLabel ?? null,
       });
     };
-
     const initial = window.setTimeout(capture, 260);
     const onScroll = () => {
       if (scrollTimerRef.current) window.clearTimeout(scrollTimerRef.current);
@@ -203,12 +175,12 @@ export function GlowCurrent() {
       if (scrollTimerRef.current) window.clearTimeout(scrollTimerRef.current);
       window.removeEventListener('scroll', onScroll);
     };
-  }, [currentFoldWorld, currentPath, currentRoom, persistAnchor, worldAnchors]);
+  }, [currentFoldWorld, currentPath, currentRoom, persistAnchor]);
 
   useEffect(() => {
     const registerState = (event: Event) => {
       const detail = (event as CustomEvent<{ state?: Record<string, unknown> | null; label?: string | null }>).detail;
-      const existing = worldAnchors[currentFoldWorld];
+      const existing = worldAnchorsRef.current[currentFoldWorld];
       persistAnchor(currentFoldWorld, {
         path: currentPath,
         room: currentRoom,
@@ -220,7 +192,7 @@ export function GlowCurrent() {
     };
     document.addEventListener('glow:world-state', registerState as EventListener);
     return () => document.removeEventListener('glow:world-state', registerState as EventListener);
-  }, [currentFoldWorld, currentPath, currentRoom, persistAnchor, worldAnchors]);
+  }, [currentFoldWorld, currentPath, currentRoom, persistAnchor]);
 
   useEffect(() => {
     const previous = previousPathRef.current;
@@ -271,24 +243,17 @@ export function GlowCurrent() {
     dispatchMove(destination.path);
   }, [persistThread, thread]);
 
-  const openGlow = useCallback(() => {
-    document.dispatchEvent(new CustomEvent('glow:open'));
-  }, []);
+  const openGlow = useCallback(() => document.dispatchEvent(new CustomEvent('glow:open')), []);
 
   const runDockAction = useCallback((action?: DockAction | null) => {
     if (!action) return;
-    if (action.path) {
-      travel(action.path);
-      return;
-    }
+    if (action.path) return travel(action.path);
     if (action.event) document.dispatchEvent(new CustomEvent(action.event));
   }, [travel]);
 
   const previewFor = useCallback((target: FoldTarget) => {
     const anchor = worldAnchors[target.key];
-    if (target.key === currentFoldWorld) {
-      return anchor?.stateLabel || (currentRoom !== target.label ? currentRoom : target.cue);
-    }
+    if (target.key === currentFoldWorld) return anchor?.stateLabel || (currentRoom !== target.label ? currentRoom : target.cue);
     if (anchor?.stateLabel) return anchor.stateLabel;
     if (anchor?.room && anchor.room !== target.label && anchor.room !== 'Glow Home') return `Return to ${anchor.room}`;
     return target.cue;
@@ -301,7 +266,7 @@ export function GlowCurrent() {
       return;
     }
 
-    const anchor = worldAnchors[target.key];
+    const anchor = worldAnchorsRef.current[target.key];
     const destination = anchor?.path || target.path;
     const before = new CustomEvent('glow:before-world-travel', {
       cancelable: true,
@@ -309,7 +274,7 @@ export function GlowCurrent() {
     });
     if (!document.dispatchEvent(before)) return;
 
-    const restore: PendingWorldRestore = {
+    writeJson(WORLD_RESTORE_KEY, {
       world: target.key,
       path: destination,
       room: anchor?.room || target.label,
@@ -317,22 +282,18 @@ export function GlowCurrent() {
       updatedAt: anchor?.updatedAt || Date.now(),
       state: anchor?.state ?? null,
       stateLabel: anchor?.stateLabel ?? null,
-    };
-    writeJson(WORLD_RESTORE_KEY, restore);
-    setSelectedFoldWorld(target.key);
+    } satisfies PendingWorldRestore);
 
+    setSelectedFoldWorld(target.key);
     if (foldTravelTimerRef.current) window.clearTimeout(foldTravelTimerRef.current);
     foldTravelTimerRef.current = window.setTimeout(() => travel(destination), 180);
-  }, [currentFoldWorld, currentPath, travel, worldAnchors]);
+  }, [currentFoldWorld, currentPath, travel]);
 
   useEffect(() => {
     const openCurrent = () => setWorldFoldOpen(true);
     const reverse = () => reverseCurrent();
     const toggleRail = () => setRailOpen((open) => !open);
-    const registerDock = (event: Event) => {
-      const detail = (event as CustomEvent<DockActions>).detail;
-      setDockActions(detail ?? {});
-    };
+    const registerDock = (event: Event) => setDockActions((event as CustomEvent<DockActions>).detail ?? {});
     const clearDock = () => setDockActions({});
     const key = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -349,7 +310,6 @@ export function GlowCurrent() {
         setWorldFoldOpen((open) => !open);
       }
     };
-
     document.addEventListener('glow:current-open', openCurrent);
     document.addEventListener('glow:world-fold', openCurrent);
     document.addEventListener('glow:reverse-current', reverse);
@@ -371,12 +331,7 @@ export function GlowCurrent() {
   if (pathname === '/sign-in' || pathname.startsWith('/api/')) return null;
 
   return (
-    <div
-      className="glow-current"
-      data-world={currentExperience.world}
-      data-enclosure={enclosure}
-      data-fold-open={worldFoldOpen ? 'true' : 'false'}
-    >
+    <div className="glow-current" data-world={currentExperience.world} data-enclosure={enclosure} data-fold-open={worldFoldOpen ? 'true' : 'false'}>
       <div className="glow-current__world-boundary" aria-hidden="true" />
 
       <header className="glow-current__top-band" aria-label="Glow OS orientation">
@@ -385,124 +340,49 @@ export function GlowCurrent() {
             <span className="glow-current__brand-pearl" aria-hidden="true" />
             <span className="glow-current__brand-copy"><strong>Glow OS</strong><small>Your life, in harmony</small></span>
           </button>
-          <button
-            type="button"
-            className="glow-current__fold-seam-trigger"
-            onClick={() => setWorldFoldOpen((open) => !open)}
-            aria-label={worldFoldOpen ? 'Close World Fold' : 'Open worlds'}
-            aria-expanded={worldFoldOpen}
-            title="Open worlds · Command/Control-Shift-G"
-          ><span aria-hidden="true" /></button>
+          <button type="button" className="glow-current__fold-seam-trigger" onClick={() => setWorldFoldOpen((open) => !open)} aria-label={worldFoldOpen ? 'Close World Fold' : 'Open worlds'} aria-expanded={worldFoldOpen} title="Open worlds · Command/Control-Shift-G"><span aria-hidden="true" /></button>
           {returnTarget ? (
-            <button
-              type="button"
-              className="glow-current__return-anchor"
-              onClick={() => travel(returnTarget.path)}
-              aria-label={`Return to ${returnTarget.label}`}
-              title={`Return to ${returnTarget.label}`}
-            >
-              <span className="glow-current__return-light" aria-hidden="true" />
-              <span className="glow-current__return-copy">{returnTarget.label}</span>
+            <button type="button" className="glow-current__return-anchor" onClick={() => travel(returnTarget.path)} aria-label={`Return to ${returnTarget.label}`} title={`Return to ${returnTarget.label}`}>
+              <span className="glow-current__return-light" aria-hidden="true" /><span className="glow-current__return-copy">{returnTarget.label}</span>
             </button>
           ) : null}
         </div>
 
         <div className="glow-current__orientation" aria-live="polite">
-          {worldFoldOpen ? (
-            <span className="glow-current__fold-title"><strong>World Fold</strong><small>One life. Many worlds. Always you.</small></span>
-          ) : (
-            <span className="glow-current__sr-only">{worldLabelFor(currentExperience.world)}. {depth.join(', ')}.</span>
-          )}
+          {worldFoldOpen ? <span className="glow-current__fold-title"><strong>World Fold</strong><small>One life. Many worlds. Always you.</small></span> : <span className="glow-current__sr-only">{worldLabelFor(currentExperience.world)}. {depth.join(', ')}.</span>}
         </div>
 
         <div className="glow-current__top-right">
-          <button
-            type="button"
-            className="glow-current__today-shortcut"
-            onClick={() => travel('/today?room=what-now')}
-            aria-label="Go to Today"
-          >
-            <span className="glow-current__today-sun" aria-hidden="true">☼</span>
-            <span><strong>Today</strong><small>{currentFoldWorld === 'today' ? currentRoom : 'The immediate present'}</small></span>
+          <button type="button" className="glow-current__today-shortcut" onClick={() => travel('/today?room=what-now')} aria-label="Go to Today">
+            <span className="glow-current__today-sun" aria-hidden="true">☼</span><span><strong>Today</strong><small>{currentFoldWorld === 'today' ? currentRoom : 'The immediate present'}</small></span>
           </button>
-          <button
-            type="button"
-            className="glow-current__shakti"
-            onClick={openGlow}
-            aria-label={`Ask Glow from ${currentRoom}`}
-          >
-            <span className="glow-current__shakti-light" aria-hidden="true" />
-            <span className="glow-current__shakti-copy"><strong>Ask Glow</strong><small>Always here</small></span>
+          <button type="button" className="glow-current__shakti" onClick={openGlow} aria-label={`Ask Glow from ${currentRoom}`}>
+            <span className="glow-current__shakti-light" aria-hidden="true" /><span className="glow-current__shakti-copy"><strong>Ask Glow</strong><small>Always here</small></span>
           </button>
         </div>
       </header>
 
-      <nav
-        className="glow-current__rail"
-        data-expanded={railOpen ? 'true' : 'false'}
-        aria-label={`${worldLabelFor(currentExperience.world)} Glow Current`}
-        onPointerEnter={() => setRailOpen(true)}
-        onPointerLeave={() => setRailOpen(false)}
-        onFocusCapture={() => setRailOpen(true)}
-        onBlurCapture={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setRailOpen(false);
-        }}
-      >
-        <button
-          type="button"
-          className="glow-current__rail-current"
-          onClick={() => setRailOpen((open) => !open)}
-          aria-label={`${currentRoom}. ${railOpen ? 'Hide' : 'Reveal'} nearby destinations`}
-          aria-expanded={railOpen}
-        >
-          <span className="glow-current__rail-current-node" aria-hidden="true" />
-          <span className="glow-current__rail-current-copy"><small>{worldLabelFor(currentExperience.world)}</small><strong>{currentRoom}</strong></span>
+      <nav className="glow-current__rail" data-expanded={railOpen ? 'true' : 'false'} aria-label={`${worldLabelFor(currentExperience.world)} Glow Current`} onPointerEnter={() => setRailOpen(true)} onPointerLeave={() => setRailOpen(false)} onFocusCapture={() => setRailOpen(true)} onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setRailOpen(false); }}>
+        <button type="button" className="glow-current__rail-current" onClick={() => setRailOpen((open) => !open)} aria-label={`${currentRoom}. ${railOpen ? 'Hide' : 'Reveal'} nearby destinations`} aria-expanded={railOpen}>
+          <span className="glow-current__rail-current-node" aria-hidden="true" /><span className="glow-current__rail-current-copy"><small>{worldLabelFor(currentExperience.world)}</small><strong>{currentRoom}</strong></span>
         </button>
-
         <div className="glow-current__rail-paths">
           {railTargets.map((target) => {
             const active = railTargetIsActive(currentPath, target.path);
-            return (
-              <button
-                key={target.path}
-                type="button"
-                className="glow-current__rail-destination"
-                data-active={active ? 'true' : 'false'}
-                onClick={() => travel(target.path)}
-                aria-label={`Travel to ${target.label}. ${target.cue}`}
-                aria-current={active ? 'page' : undefined}
-              >
-                <span className="glow-current__rail-node" aria-hidden="true" />
-                <span className="glow-current__rail-label"><strong>{target.label}</strong><small>{target.cue}</small></span>
-              </button>
-            );
+            return <button key={target.path} type="button" className="glow-current__rail-destination" data-active={active ? 'true' : 'false'} onClick={() => travel(target.path)} aria-label={`Travel to ${target.label}. ${target.cue}`} aria-current={active ? 'page' : undefined}>
+              <span className="glow-current__rail-node" aria-hidden="true" /><span className="glow-current__rail-label"><strong>{target.label}</strong><small>{target.cue}</small></span>
+            </button>;
           })}
         </div>
       </nav>
 
       <div className="glow-current__dock" aria-label="Glow OS universal action layer">
         <div className="glow-current__dock-zone glow-current__dock-zone--left">
-          {dockActions.left ? (
-            <button type="button" className="glow-current__dock-action" onClick={() => runDockAction(dockActions.left)} aria-label={dockActions.left.ariaLabel ?? dockActions.left.label}>{dockActions.left.label}</button>
-          ) : thread.length ? (
-            <button type="button" className="glow-current__reverse" onClick={reverseCurrent} aria-label={`Reverse the Current to ${thread.at(-1)?.room ?? 'previous space'}`} title="Reverse the Current · Alt-Left Arrow">
-              <span className="glow-current__reverse-mark" aria-hidden="true">‹</span><span className="glow-current__reverse-copy">{thread.at(-1)?.room}</span>
-            </button>
-          ) : <span className="glow-current__dock-quiet" aria-hidden="true">Current</span>}
+          {dockActions.left ? <button type="button" className="glow-current__dock-action" onClick={() => runDockAction(dockActions.left)} aria-label={dockActions.left.ariaLabel ?? dockActions.left.label}>{dockActions.left.label}</button> : thread.length ? <button type="button" className="glow-current__reverse" onClick={reverseCurrent} aria-label={`Reverse the Current to ${thread.at(-1)?.room ?? 'previous space'}`} title="Reverse the Current · Alt-Left Arrow"><span className="glow-current__reverse-mark" aria-hidden="true">‹</span><span className="glow-current__reverse-copy">{thread.at(-1)?.room}</span></button> : <span className="glow-current__dock-quiet" aria-hidden="true">Current</span>}
         </div>
-
-        {dockActions.center ? (
-          <button type="button" className="glow-current__dock-action glow-current__dock-action--primary" onClick={() => runDockAction(dockActions.center)} aria-label={dockActions.center.ariaLabel ?? dockActions.center.label}>{dockActions.center.label}</button>
-        ) : (
-          <button type="button" className="glow-current__seam" onClick={() => setWorldFoldOpen((open) => !open)} aria-label="Open World Fold" aria-expanded={worldFoldOpen} title="World Fold · Command/Control-Shift-G">
-            <span className="glow-current__seam-core" aria-hidden="true" /><span className="glow-current__seam-wave" aria-hidden="true" /><span className="glow-current__seam-label">World Fold</span>
-          </button>
-        )}
-
+        {dockActions.center ? <button type="button" className="glow-current__dock-action glow-current__dock-action--primary" onClick={() => runDockAction(dockActions.center)} aria-label={dockActions.center.ariaLabel ?? dockActions.center.label}>{dockActions.center.label}</button> : <button type="button" className="glow-current__seam" onClick={() => setWorldFoldOpen((open) => !open)} aria-label="Open World Fold" aria-expanded={worldFoldOpen} title="World Fold · Command/Control-Shift-G"><span className="glow-current__seam-core" aria-hidden="true" /><span className="glow-current__seam-wave" aria-hidden="true" /><span className="glow-current__seam-label">World Fold</span></button>}
         <div className="glow-current__dock-zone glow-current__dock-zone--right">
-          {dockActions.right ? (
-            <button type="button" className="glow-current__dock-action" onClick={() => runDockAction(dockActions.right)} aria-label={dockActions.right.ariaLabel ?? dockActions.right.label}>{dockActions.right.label}</button>
-          ) : <span className="glow-current__dock-state" aria-live="polite">{currentRoom}</span>}
+          {dockActions.right ? <button type="button" className="glow-current__dock-action" onClick={() => runDockAction(dockActions.right)} aria-label={dockActions.right.ariaLabel ?? dockActions.right.label}>{dockActions.right.label}</button> : <span className="glow-current__dock-state" aria-live="polite">{currentRoom}</span>}
         </div>
       </div>
 
@@ -510,47 +390,21 @@ export function GlowCurrent() {
         <section className="glow-current__fold living-fold" aria-label="World Fold">
           <button type="button" className="glow-current__fold-dismiss" onClick={() => { setWorldFoldOpen(false); setSelectedFoldWorld(null); }} aria-label="Close World Fold" />
           <div className="living-fold__atmosphere" aria-hidden="true"><i/><i/><i/><i/></div>
-
-          <div className="living-fold__intro" aria-hidden="true">
-            <strong>World Fold 2.0</strong><span>The Living Fold</span>
-            <p>Not a menu.<br/>A reveal.<br/>One life. Many lenses.</p>
-          </div>
-
+          <div className="living-fold__intro" aria-hidden="true"><strong>World Fold 2.0</strong><span>The Living Fold</span><p>Not a menu.<br/>A reveal.<br/>One life. Many lenses.</p></div>
           <div className="living-fold__scene" role="dialog" aria-modal="true" aria-label="Glow OS worlds">
             <div className="living-fold__fan" data-active-world={currentFoldWorld}>
               {FOLD_TARGETS.map((target) => {
                 const preview = previewFor(target);
                 return (
-                  <button
-                    key={target.key}
-                    type="button"
-                    className="living-fold__lens"
-                    data-world={target.key}
-                    data-current={currentFoldWorld === target.key ? 'true' : 'false'}
-                    data-selecting={selectedFoldWorld === target.key ? 'true' : 'false'}
-                    onClick={() => selectFoldTarget(target)}
-                    aria-label={`${target.label}. ${preview}. ${currentFoldWorld === target.key ? 'Current world.' : 'Press to move here.'}`}
-                  >
-                    <span className="living-fold__lens-shadow" aria-hidden="true" />
-                    <span className="living-fold__lens-rear" aria-hidden="true" />
-                    <span className="living-fold__lens-body" aria-hidden="true">
-                      <span className="living-fold__micro-scene"><i/><i/><i/><i/></span>
-                    </span>
-                    <span className="living-fold__lens-copy">
-                      <span className="living-fold__symbol" aria-hidden="true">{target.symbol}</span>
-                      <strong>{target.label}</strong>
-                      <small>{preview}</small>
-                    </span>
+                  <button key={target.key} type="button" className="living-fold__lens" data-world={target.key} data-current={currentFoldWorld === target.key ? 'true' : 'false'} data-selecting={selectedFoldWorld === target.key ? 'true' : 'false'} onClick={() => selectFoldTarget(target)} aria-label={`${target.label}. ${preview}. ${currentFoldWorld === target.key ? 'Current world.' : 'Press to move here.'}`}>
+                    <span className="living-fold__lens-shadow" aria-hidden="true" /><span className="living-fold__lens-rear" aria-hidden="true" /><span className="living-fold__lens-body" aria-hidden="true"><span className="living-fold__micro-scene"><i/><i/><i/><i/></span></span>
+                    <span className="living-fold__lens-copy"><span className="living-fold__symbol" aria-hidden="true">{target.symbol}</span><strong>{target.label}</strong><small>{preview}</small></span>
                   </button>
                 );
               })}
-
-              <div className="living-fold__context-thread" aria-hidden="true">
-                <i/><span>{currentRoom}</span><b/>
-              </div>
+              <div className="living-fold__context-thread" aria-hidden="true"><i/><span>{currentRoom}</span><b/></div>
             </div>
           </div>
-
           <div className="living-fold__side-note living-fold__side-note--left" aria-hidden="true">Your current world<br/>remains alive behind you.</div>
           <div className="living-fold__side-note living-fold__side-note--right" aria-hidden="true">See a world.<br/>Press it.<br/>Glow transforms toward it.</div>
           <div className="living-fold__mantra" aria-hidden="true">SAME YOU. · MORE YOU.</div>
