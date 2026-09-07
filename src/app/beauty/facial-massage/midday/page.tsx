@@ -1,7 +1,7 @@
-import { GuaShaStudioPage } from '@/components/beauty/gua-sha-studio-page';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default function MiddayMiniResetPage() {
-  return <GuaShaStudioPage view="midday" />;
+  redirect('/beauty/gua-sha/midday');
 }
