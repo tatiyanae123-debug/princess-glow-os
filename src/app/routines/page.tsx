@@ -1,7 +1,8 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { PlanRoutinesRoom, type PlanRoutineItem } from '@/components/plan/plan-reference-rooms';
+import { PlanRoutinesV2, type PlanRoutineV2, type PlanSettingSnapshot } from '@/components/plan/plan-reference-v2';
 import { getRoutinesByUser, getStepsByRoutine } from '@/lib/data/routines';
+import { getPlanObjectSettingsByPrefix } from '@/lib/plan/object-settings';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,9 +10,12 @@ export default async function RoutinesPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
   const userId = session.user.id;
-  const routines = await getRoutinesByUser(userId);
+  const [routines, settingsMap] = await Promise.all([
+    getRoutinesByUser(userId),
+    getPlanObjectSettingsByPrefix(userId, 'plan:routine:'),
+  ]);
   const stepsByRoutine = await Promise.all(routines.map((routine) => getStepsByRoutine(routine.id, userId)));
-  const items: PlanRoutineItem[] = routines.map((routine, index) => ({
+  const items: PlanRoutineV2[] = routines.map((routine, index) => ({
     id: routine.id,
     name: routine.name,
     description: routine.description,
@@ -24,5 +28,6 @@ export default async function RoutinesPage() {
       order: step.order,
     })),
   }));
-  return <PlanRoutinesRoom routines={items} />;
+  const settings: PlanSettingSnapshot = Object.fromEntries(Array.from(settingsMap.entries()).map(([key, row]) => [key, row.preferences]));
+  return <PlanRoutinesV2 routines={items} settings={settings} />;
 }
