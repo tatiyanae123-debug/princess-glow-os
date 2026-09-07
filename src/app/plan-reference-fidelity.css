@@ -1,0 +1,365 @@
+/* Plan reference fidelity layer — locked 4:3 optical instrument family.
+   This layer intentionally keeps Glow Current mounted for history/events while
+   preventing a second visible navigation system from stacking over Plan. */
+
+body:has(.planInstrumentRoot) .glow-current,
+body:has(.planInstrumentRoot) .glow-presence-trigger,
+body:has(.planInstrumentRoot) .glow-unfolded-surface,
+body:has(.pto-root) .glow-current,
+body:has(.pto-root) .glow-presence-trigger,
+body:has(.pto-root) .glow-unfolded-surface {
+  display: none !important;
+}
+
+.planInstrumentRoot {
+  --plan-ink: rgba(38, 35, 38, .92);
+  --plan-muted: rgba(55, 49, 54, .52);
+  --plan-violet: rgba(132, 111, 224, .74);
+  --plan-blue: rgba(133, 183, 230, .64);
+  --plan-peach: rgba(239, 185, 157, .46);
+  --plan-mint: rgba(154, 213, 191, .46);
+  display: grid !important;
+  place-items: center !important;
+  min-height: 100svh !important;
+  padding: 10px !important;
+  overflow: auto !important;
+  background:
+    radial-gradient(64% 38% at 50% -2%, rgba(255,255,255,.99), transparent 72%),
+    radial-gradient(22% 28% at 76% 19%, rgba(213,219,255,.20), transparent 72%),
+    radial-gradient(18% 22% at 66% 84%, rgba(255,215,194,.19), transparent 72%),
+    linear-gradient(145deg, #e8e3de 0%, #f6f2ee 47%, #e7e1dc 100%) !important;
+}
+
+.planInstrumentRoot > [data-plan-role="instrument-shell"] {
+  position: relative !important;
+  width: min(1448px, calc(100vw - 20px), calc((100svh - 20px) * 1.3333333)) !important;
+  min-width: 0 !important;
+  max-width: 1448px !important;
+  height: auto !important;
+  aspect-ratio: 4 / 3 !important;
+  margin: auto !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  container-type: inline-size;
+  border: 1px solid rgba(255,255,255,.98) !important;
+  border-radius: 2.15cqw 2.45cqw 2.25cqw 2.05cqw / 2.2cqw 2.05cqw 2.45cqw 2.3cqw !important;
+  background:
+    radial-gradient(74% 58% at 47% 33%, rgba(255,255,255,.68), rgba(255,255,255,.18) 56%, transparent 76%),
+    radial-gradient(23% 28% at 86% 78%, rgba(221,217,255,.12), transparent 74%),
+    radial-gradient(22% 24% at 59% 92%, rgba(255,220,201,.11), transparent 74%),
+    linear-gradient(142deg, rgba(255,255,255,.66), rgba(247,243,239,.29) 52%, rgba(255,255,255,.42)) !important;
+  box-shadow:
+    0 2.6cqw 7cqw rgba(69,58,67,.12),
+    inset .09cqw .1cqw 0 rgba(255,255,255,1),
+    inset -.08cqw -.1cqw 0 rgba(151,139,149,.18),
+    inset 0 0 0 .55cqw rgba(255,255,255,.085),
+    inset 0 -1.5cqw 4cqw rgba(218,208,216,.07) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(128%) !important;
+  backdrop-filter: blur(30px) saturate(128%) !important;
+  isolation: isolate;
+}
+
+.planInstrumentRoot > [data-plan-role="instrument-shell"]::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: .55cqw !important;
+  z-index: 1 !important;
+  pointer-events: none !important;
+  border-radius: 1.75cqw 2.05cqw 1.85cqw 1.65cqw / 1.8cqw 1.7cqw 2.05cqw 1.9cqw !important;
+  border: 1px solid rgba(255,255,255,.58) !important;
+  background:
+    linear-gradient(114deg, rgba(255,255,255,.22), transparent 13%, transparent 78%, rgba(218,208,246,.08)),
+    radial-gradient(15% 9% at 28% 3%, rgba(255,255,255,.62), transparent 78%);
+  box-shadow:
+    inset 0 .08cqw .12cqw rgba(255,255,255,.85),
+    inset 0 -.08cqw .12cqw rgba(120,111,122,.05),
+    0 0 2.8cqw rgba(255,255,255,.10) !important;
+}
+
+.planInstrumentRoot > [data-plan-role="instrument-shell"]::after {
+  content: '' !important;
+  position: absolute !important;
+  inset: -8% !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  border-radius: 50% !important;
+  background:
+    radial-gradient(20% 10% at 20% 28%, rgba(255,255,255,.50), transparent 72%),
+    radial-gradient(16% 10% at 78% 36%, rgba(214,226,255,.16), transparent 74%),
+    radial-gradient(18% 8% at 69% 73%, rgba(240,216,255,.12), transparent 74%),
+    radial-gradient(15% 8% at 48% 90%, rgba(255,210,190,.10), transparent 74%);
+  filter: blur(.65cqw);
+  mix-blend-mode: screen;
+}
+
+.planInstrumentRoot [data-plan-role="header"] {
+  inset: 2.25% 2.7% auto 3.3% !important;
+  height: 8.4% !important;
+  z-index: 80 !important;
+}
+
+.planInstrumentRoot [data-plan-role="header"] > div:first-child {
+  width: 30% !important;
+}
+
+.planInstrumentRoot [data-plan-role="header"] > div:first-child > div:first-child {
+  font-size: clamp(8px, .64cqw, 10px) !important;
+  letter-spacing: .18em !important;
+}
+
+.planInstrumentRoot [data-plan-role="header"] h1 {
+  margin-top: 1.2cqw !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Avenir Next", "Segoe UI", sans-serif !important;
+  font-size: clamp(20px, 1.72cqw, 26px) !important;
+  line-height: 1 !important;
+  font-weight: 420 !important;
+  letter-spacing: .075em !important;
+}
+
+.planInstrumentRoot [data-plan-role="header"] p {
+  margin-top: .72cqw !important;
+  font-size: clamp(8px, .72cqw, 11px) !important;
+  line-height: 1.45 !important;
+  color: var(--plan-muted) !important;
+}
+
+.planInstrumentRoot [data-plan-role="mode-switch"] {
+  left: 50% !important;
+  top: -.55cqw !important;
+  width: 28.6% !important;
+  height: 4.55cqw !important;
+  min-height: 44px !important;
+  padding: .32cqw !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,.95) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,.09)) !important;
+  box-shadow: inset 0 .08cqw .1cqw rgba(255,255,255,.95), 0 .5cqw 1.45cqw rgba(76,66,77,.05) !important;
+  -webkit-backdrop-filter: blur(19px) saturate(130%) !important;
+  backdrop-filter: blur(19px) saturate(130%) !important;
+}
+
+.planInstrumentRoot [data-plan-role="mode-switch"] button {
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: rgba(43,39,43,.49) !important;
+  font-size: clamp(7px, .61cqw, 9px) !important;
+  letter-spacing: .09em !important;
+  cursor: pointer;
+}
+
+.planInstrumentRoot [data-plan-role="mode-switch"] button:first-child {
+  color: #302b2f !important;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255,255,255,.99), rgba(249,231,237,.66) 48%, rgba(225,216,248,.28) 77%, rgba(255,255,255,.17)) !important;
+  border: 1px solid rgba(255,255,255,.97) !important;
+  box-shadow: inset 0 .12cqw .25cqw #fff, 0 .22cqw .7cqw rgba(104,84,114,.10), 0 0 .75cqw rgba(231,217,250,.24) !important;
+}
+
+.planInstrumentRoot [data-plan-role="ask-glow"] {
+  position: absolute !important;
+  right: 0 !important;
+  top: -.55cqw !important;
+  width: 9.15cqw !important;
+  min-width: 112px !important;
+  height: 4.05cqw !important;
+  min-height: 40px !important;
+  padding: 0 1.15cqw .02cqw .58cqw !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: .72cqw !important;
+  border: 1px solid rgba(255,255,255,.94) !important;
+  border-radius: 999px !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,.09)) !important;
+  box-shadow: inset 0 .08cqw .1cqw rgba(255,255,255,.96), 0 .45cqw 1.35cqw rgba(76,65,75,.055) !important;
+  color: rgba(43,38,42,.74) !important;
+  font-size: clamp(8px, .67cqw, 10px) !important;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(18px) saturate(128%) !important;
+  backdrop-filter: blur(18px) saturate(128%) !important;
+}
+
+.planInstrumentRoot [data-plan-role="ask-glow"] > span:first-child {
+  width: 2.35cqw !important;
+  min-width: 28px !important;
+  height: 2.35cqw !important;
+  min-height: 28px !important;
+  border-radius: 50% !important;
+  border: 1px solid rgba(255,255,255,.98) !important;
+  background:
+    radial-gradient(circle at 28% 20%, #fff 0 10%, rgba(217,242,255,.92) 23%, rgba(212,206,255,.76) 45%, rgba(255,207,187,.62) 65%, rgba(197,235,230,.55) 80%, rgba(255,255,255,.15)) !important;
+  box-shadow: inset .28cqw .28cqw .55cqw #fff, inset -.28cqw -.28cqw .6cqw rgba(128,132,190,.13), 0 .32cqw .75cqw rgba(84,71,99,.15), 0 0 .7cqw rgba(225,217,255,.34) !important;
+}
+
+.planInstrumentRoot [data-plan-role="instrument-rail"] {
+  left: 3.15% !important;
+  top: 16.35% !important;
+  bottom: 22.15% !important;
+  width: 7.35% !important;
+  padding: .72cqw .55cqw !important;
+  border-radius: 1.75cqw !important;
+  border: 1px solid rgba(255,255,255,.78) !important;
+  background: linear-gradient(112deg, rgba(255,255,255,.26), rgba(255,255,255,.065) 56%, rgba(235,230,236,.07)) !important;
+  box-shadow: inset .08cqw 0 .08cqw rgba(255,255,255,.9), inset -.08cqw 0 .08cqw rgba(120,111,121,.04), 0 1cqw 2.2cqw rgba(76,65,74,.045) !important;
+}
+
+.planInstrumentRoot [data-plan-role="instrument-rail"] a {
+  min-height: 12.8% !important;
+  gap: .38cqw !important;
+  border-radius: 1.35cqw !important;
+  font-size: clamp(7px, .59cqw, 9px) !important;
+}
+
+.planInstrumentRoot [data-plan-role="instrument-rail"] a > span:first-child {
+  width: 3.05cqw !important;
+  min-width: 34px !important;
+  height: 3.05cqw !important;
+  min-height: 34px !important;
+}
+
+.planInstrumentRoot [data-plan-role="instrument-rail"] a[aria-current="page"] {
+  background: radial-gradient(ellipse at 48% 46%, rgba(255,255,255,.49), rgba(236,228,255,.19) 58%, transparent 81%) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.34), 0 0 1.3cqw rgba(210,195,249,.13) !important;
+}
+
+.planInstrumentRoot [data-plan-role="footer"] {
+  left: 3.2% !important;
+  right: 3.05% !important;
+  bottom: 2.1% !important;
+  height: 4.2% !important;
+  min-height: 38px !important;
+  grid-template-columns: 29.5% 1fr 27.5% !important;
+  gap: 1.25cqw !important;
+}
+
+.planInstrumentRoot [data-plan-role="horizon-switch"] {
+  height: 3.45cqw !important;
+  min-height: 34px !important;
+  padding: .26cqw !important;
+}
+
+.planInstrumentRoot [data-plan-role="horizon-switch"] button {
+  font-size: clamp(7px, .56cqw, 8.5px) !important;
+}
+
+.planInstrumentRoot [data-plan-role="date-control"] {
+  height: 3.25cqw !important;
+  min-height: 32px !important;
+  padding: 0 1.25cqw !important;
+  gap: .85cqw !important;
+  font-size: clamp(7px, .59cqw, 9px) !important;
+}
+
+.planInstrumentRoot [data-plan-role="history-controls"] {
+  gap: .45cqw !important;
+}
+
+.planInstrumentRoot [data-plan-role="history-controls"] button,
+.planInstrumentRoot [data-plan-role="history-controls"] > span {
+  height: 3.15cqw !important;
+  min-height: 31px !important;
+  padding: 0 1cqw !important;
+  font-size: clamp(6.5px, .55cqw, 8px) !important;
+}
+
+.planInstrumentRoot [data-plan-role="history-controls"] button:disabled {
+  opacity: .34 !important;
+  cursor: default !important;
+}
+
+/* Normalize the internal reference stage to the 1448×1086 composition. */
+.planInstrumentRoot [aria-label="Task readiness field"],
+.planInstrumentRoot [aria-label="Reminder context field"],
+.planInstrumentRoot [aria-label="Plan calendar week"],
+.planInstrumentRoot [aria-label="Habits rhythm constellation"],
+.planInstrumentRoot [aria-label="Routine conductor"],
+.planInstrumentRoot [aria-label="Goal horizons"],
+.planInstrumentRoot [aria-label="Project world"],
+.planInstrumentRoot [aria-label="Planning Studio"] {
+  left: 11% !important;
+  right: 2.7% !important;
+  top: 10.9% !important;
+  color: var(--plan-ink) !important;
+}
+
+/* Avoid tiny text that is only legible at screenshot scale. */
+.planInstrumentRoot button,
+.planInstrumentRoot select,
+.planInstrumentRoot input,
+.planInstrumentRoot textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.planInstrumentRoot :where(p, span, small, label, button, select) {
+  text-rendering: geometricPrecision;
+}
+
+.planInstrumentRoot :where(button, a):focus-visible {
+  outline: 2px solid rgba(110, 100, 195, .38) !important;
+  outline-offset: 2px !important;
+}
+
+/* Physical depth and local caustics for repeated instrument surfaces. */
+.planInstrumentRoot :where(article, aside, section, div)[data-glow-material="glass"] {
+  border: 1px solid rgba(255,255,255,.83);
+  background: linear-gradient(145deg, rgba(255,255,255,.36), rgba(255,255,255,.09));
+  box-shadow: inset .08cqw .08cqw .12cqw rgba(255,255,255,.96), 0 .65cqw 1.65cqw rgba(72,62,75,.05);
+  -webkit-backdrop-filter: blur(18px) saturate(124%);
+  backdrop-filter: blur(18px) saturate(124%);
+}
+
+.planInstrumentRoot [data-glow-material="pearl"] {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 30% 19%, #fff 0 9%, rgba(219,242,255,.91) 21%, rgba(222,211,255,.78) 43%, rgba(255,211,192,.60) 63%, rgba(202,239,231,.52) 79%, rgba(255,255,255,.18)) !important;
+  box-shadow:
+    inset .5cqw .55cqw 1cqw rgba(255,255,255,.98),
+    inset -.55cqw -.7cqw 1.15cqw rgba(118,121,174,.12),
+    0 .85cqw 1.75cqw rgba(82,71,98,.11),
+    0 0 1.3cqw rgba(220,216,255,.26) !important;
+}
+
+.planInstrumentRoot [data-glow-material="pearl"]::after {
+  content: '';
+  position: absolute;
+  left: 10%; right: 10%; bottom: 1%; height: 28%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(107,204,232,.18), rgba(183,142,244,.26), rgba(255,153,181,.20), rgba(255,200,145,.14), transparent);
+  filter: blur(.45cqw);
+  mix-blend-mode: screen;
+}
+
+@media (max-width: 1100px) and (min-aspect-ratio: 1/1) {
+  .planInstrumentRoot { padding: 6px !important; }
+  .planInstrumentRoot > [data-plan-role="instrument-shell"] {
+    width: min(calc(100vw - 12px), calc((100svh - 12px) * 1.3333333)) !important;
+  }
+}
+
+@media (max-width: 700px), (max-aspect-ratio: 3/4) {
+  .planInstrumentRoot {
+    place-items: start center !important;
+    overflow-x: auto !important;
+    padding: 8px !important;
+  }
+  .planInstrumentRoot > [data-plan-role="instrument-shell"] {
+    width: 940px !important;
+    min-width: 940px !important;
+    max-width: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .planInstrumentRoot *,
+  .pto-root * {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .001ms !important;
+  }
+}
