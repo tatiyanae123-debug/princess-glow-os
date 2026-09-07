@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { getGuaShaStudioData } from '@/lib/beauty/gua-sha-studio-data';
-import { GuaShaReferenceStudioV2, type GuaShaStudioView } from './gua-sha-reference-studio-v2';
+import { GuaShaReferenceStudioV3, type GuaShaStudioView } from './gua-sha-reference-studio-v3';
 
 export async function GuaShaStudioPage({ view }: { view: GuaShaStudioView }) {
   const session = await auth();
@@ -10,7 +10,7 @@ export async function GuaShaStudioPage({ view }: { view: GuaShaStudioView }) {
   const data = await getGuaShaStudioData(session.user.id);
 
   return (
-    <GuaShaReferenceStudioV2
+    <GuaShaReferenceStudioV3
       view={view}
       savedRoutineSteps={data.savedRoutineSteps}
       ownedTools={data.ownedTools}
