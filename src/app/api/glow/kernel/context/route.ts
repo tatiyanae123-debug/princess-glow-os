@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { getLivingKernelContext, type KernelSelectedContext } from '@/lib/intelligence/living-kernel';
+import { ensureLivingKernelMutationTriggers } from '@/lib/intelligence/living-kernel-triggers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -17,6 +18,7 @@ export async function POST(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) return NextResponse.json({ ok: false, message: 'Sign in to load the Glow Life Model.' }, { status: 401 });
+    await ensureLivingKernelMutationTriggers();
     const body = await request.json().catch(() => ({})) as Body;
     const context = await getLivingKernelContext({
       userId: session.user.id,
