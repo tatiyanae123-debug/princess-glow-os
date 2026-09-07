@@ -13,6 +13,7 @@ import {
 import styles from './plan-instruments.module.css';
 
 export type PlanHorizon = 'today' | 'week' | 'two-weeks' | 'month' | 'three-months';
+export type PlanInstrument = 'Calendar' | 'Tasks' | 'Reminders' | 'Goals' | 'Projects' | 'Routines' | 'Habits';
 
 const HORIZONS: { id: PlanHorizon; label: string }[] = [
   { id: 'today', label: 'TODAY' },
@@ -22,7 +23,7 @@ const HORIZONS: { id: PlanHorizon; label: string }[] = [
   { id: 'three-months', label: '3 MONTHS' },
 ];
 
-const RAIL = [
+const RAIL: { label: PlanInstrument; href: string; icon: typeof CalendarDays }[] = [
   { label: 'Calendar', href: '/calendar', icon: CalendarDays },
   { label: 'Tasks', href: '/tasks', icon: CheckCircle2 },
   { label: 'Reminders', href: '/reminders', icon: Bell },
@@ -30,12 +31,12 @@ const RAIL = [
   { label: 'Projects', href: '/projects', icon: FolderKanban },
   { label: 'Routines', href: '/routines', icon: RotateCcw },
   { label: 'Habits', href: '/habits', icon: Orbit },
-] as const;
+];
 
 type Props = {
   title: string;
   subtitle: string;
-  activeInstrument: 'Tasks' | 'Reminders';
+  activeInstrument: PlanInstrument;
   horizon: PlanHorizon;
   onHorizonChange: (value: PlanHorizon) => void;
   centerLabel: string;
@@ -78,16 +79,16 @@ export function PlanInstrumentChrome({
           </div>
         </header>
 
-        <aside className={styles.planRail} aria-label="Plan instruments">
+        <aside className={styles.planRail} aria-label="Nearby Plan instruments">
           {RAIL.map(({ label, href, icon: Icon }) => (
-            <Link key={label} href={href} className={label === activeInstrument ? styles.active : undefined}>
+            <Link key={label} href={href} className={label === activeInstrument ? styles.active : undefined} aria-current={label === activeInstrument ? 'page' : undefined}>
               <span className={styles.railIcon}><Icon /></span>
               <span>{label}</span>
             </Link>
           ))}
         </aside>
 
-        {children}
+        <div className={remindersLayout ? styles.remindersStageHost : undefined}>{children}</div>
 
         <footer className={styles.footer}>
           <div className={styles.horizonSwitch} aria-label="Plan horizon">
