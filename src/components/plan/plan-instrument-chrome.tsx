@@ -70,7 +70,7 @@ export function PlanInstrumentChrome({
             <Link href="/planning" className={styles.active}>PLAN</Link>
             <Link href="/today?room=focus">FOCUS</Link>
             <Link href="/projects">BUILD</Link>
-            <Link href="/planning?mode=reflect">REFLECT</Link>
+            <Link href="/planning/studio?mode=reflect">REFLECT</Link>
           </nav>
 
           <div className={styles.askWrap}>
