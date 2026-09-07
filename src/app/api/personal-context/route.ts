@@ -1,203 +1,98 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { getTasksByUser } from '@/lib/data/tasks';
-import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
-import { getRoutinesByUser } from '@/lib/data/routines';
-import { getHabitsByUser } from '@/lib/data/habits';
-import { getNotesByUser } from '@/lib/data/notes';
-import { getGoalsByUser } from '@/lib/data/goals';
-import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
-import { getUpcomingGoogleEvents, type CalendarFetchResult } from '@/lib/google/calendar-client';
+import { getLivingKernelContext } from '@/lib/intelligence/living-kernel';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+export const maxDuration = 60;
 
-const NEW_YORK_TZ = 'America/New_York';
-const GOOGLE_CONTEXT_BUDGET_MS = 1400;
-
-function dateKey(date: Date) {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: NEW_YORK_TZ,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(date);
+function toIso(value: unknown) {
+  if (!value) return null;
+  const date = new Date(String(value));
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
-function tomorrowKey() {
-  const now = new Date();
-  const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-  return dateKey(tomorrow);
-}
-
-function priorityRank(priority: string) {
-  if (priority === 'urgent') return 4;
-  if (priority === 'high') return 3;
-  if (priority === 'medium') return 2;
-  return 1;
-}
-
-function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
-  return new Promise<T>((resolve) => {
-    const timer = setTimeout(() => resolve(fallback), ms);
-    promise.then(
-      (value) => {
-        clearTimeout(timer);
-        resolve(value);
-      },
-      () => {
-        clearTimeout(timer);
-        resolve(fallback);
-      },
-    );
-  });
+function dateKey(value: Date) {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, '0');
+  const day = String(value.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 export async function GET() {
   try {
     const session = await auth();
-    const userId = session?.user?.id;
+    if (!session?.user?.id) return NextResponse.json({ ok: false, reason: 'not_signed_in' }, { status: 401 });
 
-    if (!userId) {
-      return NextResponse.json({ ok: false, reason: 'not_signed_in' }, { status: 401 });
-    }
+    const kernel = await getLivingKernelContext({ userId: session.user.id, route: '/today', maxObjects: 160 });
+    const objects = kernel.objects;
+    const tasks = objects
+      .filter((item) => item.domain === 'task' && !['done', 'cancelled', 'archived'].includes(item.state))
+      .map((item) => ({
+        id: item.id.replace(/^task:/, ''), title: item.title, description: item.summary,
+        status: item.state === 'in_progress' ? 'in_progress' : 'pending',
+        priority: ['low', 'medium', 'high', 'urgent'].includes(String(item.metadata.priority)) ? item.metadata.priority : 'medium',
+        dueDate: toIso(item.timing.dueAt),
+      }));
 
-    const googleFallback: CalendarFetchResult = { ok: false, reason: 'error' };
-    const googlePromise = withTimeout(
-      getUpcomingGoogleEvents(userId),
-      GOOGLE_CONTEXT_BUDGET_MS,
-      googleFallback,
-    );
+    const events = objects
+      .filter((item) => item.domain === 'calendar-event' && item.state !== 'archived')
+      .map((item) => ({
+        id: item.id.replace(/^calendar-event:/, ''),
+        source: item.provenance.sourceSystem === 'google' ? 'google' : 'glow',
+        title: item.title,
+        startAt: toIso(item.timing.startAt),
+        endAt: toIso(item.timing.endAt),
+        allDay: item.timing.allDay === true,
+        location: typeof item.metadata.location === 'string' ? item.metadata.location : null,
+        htmlLink: typeof item.metadata.htmlLink === 'string' ? item.metadata.htmlLink : null,
+      }))
+      .filter((item): item is typeof item & { startAt: string } => Boolean(item.startAt))
+      .sort((a, b) => a.startAt.localeCompare(b.startAt));
 
-    const [tasks, glowEvents, routines, habits, notes, goals, wellnessEntries, googleResult] = await Promise.all([
-      getTasksByUser(userId),
-      getCalendarEventsByUser(userId),
-      getRoutinesByUser(userId),
-      getHabitsByUser(userId),
-      getNotesByUser(userId),
-      getGoalsByUser(userId),
-      getWellnessEntriesByUser(userId),
-      googlePromise,
-    ]);
-
-    const activeTasks = tasks
-      .filter((task) => task.status === 'pending' || task.status === 'in_progress')
-      .sort((a, b) => {
-        if (a.status !== b.status) return a.status === 'in_progress' ? -1 : 1;
-        const priorityDiff = priorityRank(b.priority) - priorityRank(a.priority);
-        if (priorityDiff !== 0) return priorityDiff;
-        const aDue = a.dueDate?.getTime() ?? Number.POSITIVE_INFINITY;
-        const bDue = b.dueDate?.getTime() ?? Number.POSITIVE_INFINITY;
-        return aDue - bDue;
-      });
-
-    const normalizedGlowEvents = glowEvents.map((event) => ({
-      id: event.id,
-      source: 'glow' as const,
-      title: event.title,
-      startAt: event.startAt,
-      endAt: event.endAt,
-      allDay: event.allDay,
-      location: event.location,
-      htmlLink: null as string | null,
-    }));
-
-    const normalizedGoogleEvents = googleResult.ok ? googleResult.events : [];
-    const mergedEvents = [...normalizedGoogleEvents, ...normalizedGlowEvents]
-      .filter((event) => event.startAt.getTime() >= Date.now() - 6 * 60 * 60 * 1000)
-      .sort((a, b) => a.startAt.getTime() - b.startAt.getTime())
-      .filter((event, index, all) => {
-        const key = `${event.title.trim().toLowerCase()}|${event.startAt.toISOString().slice(0, 16)}`;
-        return all.findIndex((candidate) => `${candidate.title.trim().toLowerCase()}|${candidate.startAt.toISOString().slice(0, 16)}` === key) === index;
-      });
-
-    const today = dateKey(new Date());
-    const tomorrow = tomorrowKey();
-    const wellness = wellnessEntries.find((entry) => entry.entryDate === today) ?? wellnessEntries[0] ?? null;
-
-    const serializeEvent = (event: (typeof mergedEvents)[number]) => ({
-      id: event.id,
-      source: event.source,
-      title: event.title,
-      startAt: event.startAt.toISOString(),
-      endAt: event.endAt ? event.endAt.toISOString() : null,
-      allDay: event.allDay,
-      location: event.location,
-      htmlLink: event.htmlLink,
-    });
-
-    const sourceStatus = googleResult.ok ? 'connected' : googleResult.reason;
+    const now = new Date();
+    const today = dateKey(now);
+    const tomorrowDate = new Date(now); tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+    const tomorrow = dateKey(tomorrowDate);
+    const wellnessObject = objects.filter((item) => item.domain === 'wellness-signal').sort((a, b) => String(b.timing.occurredAt ?? '').localeCompare(String(a.timing.occurredAt ?? '')))[0];
+    const googleConnected = objects.some((item) => item.domain === 'calendar-event' && item.provenance.sourceSystem === 'google');
 
     return NextResponse.json({
       ok: true,
-      user: {
-        name: session.user?.name ?? null,
-        email: session.user?.email ?? null,
-      },
-      tasks: activeTasks.map((task) => ({
-        id: task.id,
-        title: task.title,
-        description: task.description,
-        status: task.status,
-        priority: task.priority,
-        dueDate: task.dueDate ? task.dueDate.toISOString() : null,
+      currentRealityId: kernel.currentRealityId,
+      user: { name: session.user.name ?? null, email: session.user.email ?? null },
+      tasks,
+      activeTask: tasks.find((task) => task.status === 'in_progress') ?? tasks[0] ?? null,
+      events,
+      todayEvents: events.filter((event) => event.startAt.slice(0, 10) === today),
+      tomorrowEvents: events.filter((event) => event.startAt.slice(0, 10) === tomorrow),
+      routines: objects.filter((item) => item.domain === 'routine' && item.state !== 'archived').map((item) => ({
+        id: item.id.replace(/^routine:/, ''), name: item.title, description: item.summary,
+        timeOfDay: ['morning', 'afternoon', 'evening', 'night', 'anytime'].includes(String(item.timing.timeOfDay)) ? item.timing.timeOfDay : 'anytime',
       })),
-      activeTask: activeTasks[0]
-        ? {
-            id: activeTasks[0].id,
-            title: activeTasks[0].title,
-            description: activeTasks[0].description,
-            status: activeTasks[0].status,
-            priority: activeTasks[0].priority,
-            dueDate: activeTasks[0].dueDate ? activeTasks[0].dueDate.toISOString() : null,
-          }
-        : null,
-      events: mergedEvents.map(serializeEvent),
-      todayEvents: mergedEvents.filter((event) => dateKey(event.startAt) === today).map(serializeEvent),
-      tomorrowEvents: mergedEvents.filter((event) => dateKey(event.startAt) === tomorrow).map(serializeEvent),
-      routines: routines.map((routine) => ({
-        id: routine.id,
-        name: routine.name,
-        description: routine.description,
-        timeOfDay: routine.timeOfDay,
+      habits: objects.filter((item) => item.domain === 'habit' && item.state !== 'archived').map((item) => ({
+        id: item.id.replace(/^habit:/, ''), name: item.title, description: item.summary,
+        frequency: ['daily', 'weekdays', 'weekends', 'weekly', 'custom'].includes(String(item.metadata.frequency)) ? item.metadata.frequency : 'daily',
       })),
-      habits: habits.map((habit) => ({
-        id: habit.id,
-        name: habit.name,
-        description: habit.description,
-        frequency: habit.frequency,
+      notes: objects.filter((item) => item.domain === 'note' && item.state !== 'archived').slice(0, 12).map((item) => ({
+        id: item.id.replace(/^note:/, ''), title: item.title, content: item.summary, pinned: item.metadata.pinned === true, updatedAt: kernel.generatedAt,
       })),
-      notes: notes.slice(0, 12).map((note) => ({
-        id: note.id,
-        title: note.title,
-        content: note.content,
-        pinned: note.pinned,
-        updatedAt: note.updatedAt.toISOString(),
+      goals: objects.filter((item) => item.domain === 'goal' && item.state !== 'archived').slice(0, 12).map((item) => ({
+        id: item.id.replace(/^goal:/, ''), title: item.title, description: item.summary,
+        category: String(item.metadata.category ?? 'other'), status: item.state, progress: Number(item.metadata.progress ?? 0), targetDate: toIso(item.timing.targetDate),
       })),
-      goals: goals.slice(0, 12).map((goal) => ({
-        id: goal.id,
-        title: goal.title,
-        description: goal.description,
-        category: goal.category,
-        status: goal.status,
-        progress: goal.progress,
-        targetDate: goal.targetDate ? goal.targetDate.toISOString() : null,
-      })),
-      wellness: wellness
-        ? {
-            entryDate: wellness.entryDate,
-            mood: wellness.mood,
-            energy: wellness.energy,
-            sleepHours: wellness.sleepHours,
-            waterGlasses: wellness.waterGlasses,
-            notes: wellness.notes,
-          }
-        : null,
-      sourceStatus: {
-        googleCalendar: sourceStatus,
-      },
+      wellness: wellnessObject ? {
+        entryDate: String(wellnessObject.timing.occurredAt ?? '').slice(0, 10),
+        mood: typeof wellnessObject.metadata.mood === 'string' ? wellnessObject.metadata.mood : null,
+        energy: typeof wellnessObject.metadata.energy === 'string' ? wellnessObject.metadata.energy : null,
+        sleepHours: wellnessObject.metadata.sleepHours == null ? null : Number(wellnessObject.metadata.sleepHours),
+        waterGlasses: wellnessObject.metadata.waterGlasses == null ? null : Number(wellnessObject.metadata.waterGlasses),
+        notes: wellnessObject.summary,
+      } : null,
+      sourceStatus: { googleCalendar: googleConnected ? 'connected' : 'not_connected' },
     });
   } catch (error) {
-    console.error('personal-context failed', error);
+    console.error('personal-context kernel compatibility failed', error);
     return NextResponse.json({ ok: false, reason: 'error' }, { status: 500 });
   }
 }
