@@ -1,7 +1,7 @@
-import { GuaShaStudioPage } from '@/components/beauty/gua-sha-studio-page';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default function MorningLightGuaShaPage() {
-  return <GuaShaStudioPage view="morning" />;
+  redirect('/beauty/gua-sha/morning');
 }
