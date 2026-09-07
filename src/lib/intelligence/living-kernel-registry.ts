@@ -263,8 +263,20 @@ export async function createKernelScenario(input: {
   changes?: Array<{ objectId?: string; actionType: string; patch?: Record<string, unknown>; rationale: string; expectedEffects?: string[] }>;
 }) {
   const state = await getOrCreateKernelState(input.userId);
-  const id = randomUUID();
   const now = new Date();
+
+  if (input.sourceText) {
+    const [recentDraft] = await db.select().from(glowScenarios).where(and(
+      eq(glowScenarios.userId, input.userId),
+      eq(glowScenarios.status, 'draft'),
+      eq(glowScenarios.sourceText, input.sourceText),
+    )).orderBy(desc(glowScenarios.createdAt)).limit(1);
+    if (recentDraft && now.getTime() - recentDraft.createdAt.getTime() <= 30 * 60 * 1000) {
+      return recentDraft.id;
+    }
+  }
+
+  const id = randomUUID();
   await db.insert(glowScenarios).values({
     id, userId: input.userId, kind: input.kind ?? 'proposed-reality', title: input.title,
     summary: input.summary ?? null, basedOnRealityId: state.currentRealityId,
