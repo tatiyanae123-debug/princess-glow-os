@@ -20,6 +20,10 @@ import './plan-time-observatory.css';
 import './glow-living-presence.css';
 import './glow-canonical-integration.css';
 import './glow-shell.css';
+import './plan-reference-fidelity.css';
+import './plan-time-observatory-fidelity.css';
+import './plan-calendar-fidelity.css';
+import './plan-tasks-fidelity.css';
 
 export const metadata: Metadata = {
   title: 'Glow OS',

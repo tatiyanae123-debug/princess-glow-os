@@ -1,0 +1,66 @@
+/* Tasks reference fidelity: orbital readiness chambers, explicit metadata and real today progress. */
+
+.planInstrumentRoot [aria-label="Task readiness field"] [data-task-zone] {
+  overflow:visible;
+  border-radius:2cqw !important;
+  box-shadow:inset .08cqw .08cqw .12cqw rgba(255,255,255,.97),inset 0 -.8cqw 1.6cqw rgba(167,154,190,.05),0 .9cqw 2cqw rgba(75,62,76,.07) !important;
+}
+.planInstrumentRoot [aria-label="Task readiness field"] [data-task-zone]::after {
+  content:'';
+  position:absolute;
+  z-index:-2;
+  left:-13%;right:-13%;top:-12%;bottom:-17%;
+  border-radius:50%;
+  border:1px solid rgba(143,150,201,.13);
+  box-shadow:0 0 0 .65cqw rgba(255,255,255,.045),0 0 1.2cqw rgba(171,154,226,.08);
+  pointer-events:none;
+}
+.planInstrumentRoot [aria-label="Task readiness field"] [data-task-zone="deep"]::after { border-color:rgba(137,120,225,.24);box-shadow:0 0 1.4cqw rgba(137,120,225,.14); }
+.planInstrumentRoot [aria-label="Task readiness field"] [data-task-zone="ready"]::after { border-color:rgba(118,197,164,.23);box-shadow:0 0 1.4cqw rgba(118,197,164,.13); }
+.planInstrumentRoot [aria-label="Task readiness field"] [data-task-zone="quick"]::after { border-color:rgba(232,144,183,.22);box-shadow:0 0 1.4cqw rgba(232,144,183,.12); }
+.planInstrumentRoot [aria-label="Task readiness field"] [data-task-zone="prep"]::after { border-color:rgba(164,126,226,.22);box-shadow:0 0 1.4cqw rgba(164,126,226,.11); }
+.planInstrumentRoot [aria-label="Task readiness field"] [data-task-zone="later"]::after { border-color:rgba(121,158,223,.21);box-shadow:0 0 1.4cqw rgba(121,158,223,.11); }
+.planInstrumentRoot [aria-label="Task readiness field"] [data-task-zone="waiting"]::after { border-color:rgba(217,163,105,.20);box-shadow:0 0 1.4cqw rgba(217,163,105,.10); }
+.planInstrumentRoot [aria-label="Task readiness field"] [data-task-zone="blocked"]::after { border-color:rgba(222,118,123,.20);box-shadow:0 0 1.4cqw rgba(222,118,123,.09); }
+
+.plan-task-titleline { display:flex;align-items:center;gap:.32cqw;min-width:0; }
+.plan-task-titleline svg { width:.95cqw;min-width:11px;height:.95cqw;min-height:11px;stroke-width:1.35;color:rgba(85,80,119,.63); }
+.plan-task-titleline strong { min-width:0; }
+.plan-task-priority {
+  min-width:auto !important;
+  padding:.22cqw .4cqw;
+  border:1px solid rgba(255,255,255,.62);
+  border-radius:999px;
+  background:rgba(255,255,255,.16);
+  color:rgba(69,62,70,.48) !important;
+  font-size:clamp(5.8px,.45cqw,7px) !important;
+  letter-spacing:0 !important;
+}
+.plan-task-priority[data-priority="urgent"] { color:rgba(177,73,78,.75) !important;background:rgba(255,214,214,.21); }
+.plan-task-priority[data-priority="high"] { color:rgba(145,89,62,.72) !important;background:rgba(255,229,208,.19); }
+.plan-task-more { border:0;background:transparent;cursor:pointer;text-decoration:none; }
+
+.plan-task-completed-object { min-height:3.1cqw;padding-left:3.4cqw !important;display:grid;align-content:center; }
+.plan-task-completed-object > i {
+  position:absolute;
+  left:0;
+  top:50%;
+  transform:translateY(-50%);
+  width:2.7cqw;
+  height:2.2cqw;
+  min-width:30px;
+  min-height:24px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.92);
+}
+
+.planInstrumentRoot [aria-label="Task controls"] [class*="controlCard"] { overflow:visible; }
+.planInstrumentRoot [aria-label="Task controls"] [class*="controlsRow"] { gap:.55cqw !important; }
+.planInstrumentRoot [aria-label="Task controls"] [class*="controlPill"] { min-width:8.15cqw !important;padding:0 .72cqw !important; }
+.planInstrumentRoot [aria-label="Task controls"] [class*="controlPill"] label small { font-size:clamp(5.6px,.43cqw,6.8px) !important; }
+.planInstrumentRoot [aria-label="Task controls"] [class*="controlPill"] select { font-size:clamp(6px,.48cqw,7.5px) !important; }
+
+@media (max-width:1100px) and (min-aspect-ratio:1/1) {
+  .planInstrumentRoot [aria-label="Task controls"] [class*="controlsRow"] { gap:5px !important; }
+  .planInstrumentRoot [aria-label="Task controls"] [class*="controlPill"] { min-width:108px !important;padding:0 8px !important; }
+}
