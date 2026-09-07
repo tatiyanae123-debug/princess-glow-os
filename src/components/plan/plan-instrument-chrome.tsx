@@ -15,6 +15,7 @@ import styles from './plan-instruments.module.css';
 
 export type PlanHorizon = 'today' | 'week' | 'two-weeks' | 'month' | 'three-months';
 export type PlanInstrument = 'Calendar' | 'Tasks' | 'Reminders' | 'Goals' | 'Projects' | 'Routines' | 'Habits';
+export type PlanMode = 'plan' | 'focus' | 'build' | 'reflect';
 
 const HORIZONS: { id: PlanHorizon; label: string }[] = [
   { id: 'today', label: 'TODAY' },
@@ -23,6 +24,8 @@ const HORIZONS: { id: PlanHorizon; label: string }[] = [
   { id: 'month', label: 'MONTH' },
   { id: 'three-months', label: '3 MONTHS' },
 ];
+
+const MODES: PlanMode[] = ['plan', 'focus', 'build', 'reflect'];
 
 const RAIL: { label: PlanInstrument; href: string; icon: typeof CalendarDays }[] = [
   { label: 'Calendar', href: '/calendar', icon: CalendarDays },
@@ -51,12 +54,13 @@ type Props = {
   remindersLayout?: boolean;
   footerActionLabel?: string;
   onFooterAction?: () => void;
+  initialMode?: PlanMode;
+  onModeChange?: (mode: PlanMode) => void;
+  onPreviousPeriod?: () => void;
+  onNextPeriod?: () => void;
+  onCenterPeriod?: () => void;
   children: React.ReactNode;
 };
-
-function travel(path: string) {
-  document.dispatchEvent(new CustomEvent('glow:navigate', { detail: { path } }));
-}
 
 function openGlow(context: Record<string, string> = {}) {
   document.dispatchEvent(new CustomEvent('glow:open', { detail: { context } }));
@@ -73,9 +77,15 @@ export function PlanInstrumentChrome({
   remindersLayout = false,
   footerActionLabel,
   onFooterAction,
+  initialMode = 'plan',
+  onModeChange,
+  onPreviousPeriod,
+  onNextPeriod,
+  onCenterPeriod,
   children,
 }: Props) {
   const [historyState, setHistoryState] = useState<PlanHistoryState>({ canUndo: false, canRedo: false });
+  const [mode, setMode] = useState<PlanMode>(initialMode);
 
   useEffect(() => {
     const receive = (event: Event) => {
@@ -93,9 +103,17 @@ export function PlanInstrumentChrome({
 
   const receipt = historyState.receipt ?? rightReceipt;
 
+  function changeMode(nextMode: PlanMode) {
+    setMode(nextMode);
+    onModeChange?.(nextMode);
+    document.dispatchEvent(new CustomEvent('glow:plan-mode-change', {
+      detail: { mode: nextMode, instrument: activeInstrument, room: title },
+    }));
+  }
+
   return (
-    <main className={`${styles.planInstrumentRoot} planInstrumentRoot`} data-plan-instrument={activeInstrument.toLowerCase()}>
-      <section className={styles.shell} data-plan-role="instrument-shell">
+    <main className={`${styles.planInstrumentRoot} planInstrumentRoot`} data-plan-instrument={activeInstrument.toLowerCase()} data-plan-mode={mode}>
+      <section className={styles.shell} data-plan-role="instrument-shell" data-plan-mode={mode}>
         <header className={styles.header} data-plan-role="header">
           <div className={styles.titleBlock}>
             <div className={styles.kicker}>GLOW OS <span>·</span> PLAN</div>
@@ -104,16 +122,23 @@ export function PlanInstrumentChrome({
           </div>
 
           <nav className={styles.modeSwitch} aria-label="Plan modes" data-plan-role="mode-switch">
-            <button type="button" className={styles.active} onClick={() => travel('/planning')}>PLAN</button>
-            <button type="button" onClick={() => travel('/today?room=focus')}>FOCUS</button>
-            <button type="button" onClick={() => travel('/projects')}>BUILD</button>
-            <button type="button" onClick={() => travel('/planning/studio?mode=reflect')}>REFLECT</button>
+            {MODES.map((item) => (
+              <button
+                key={item}
+                type="button"
+                className={mode === item ? styles.active : undefined}
+                aria-pressed={mode === item}
+                onClick={() => changeMode(item)}
+              >
+                {item.toUpperCase()}
+              </button>
+            ))}
           </nav>
 
           <button
             type="button"
             className={styles.askButton}
-            onClick={() => openGlow({ room: title, world: 'Plan' })}
+            onClick={() => openGlow({ room: title, world: 'Plan', mode })}
             aria-label={`Ask Glow from ${title}`}
             data-plan-role="ask-glow"
           >
@@ -143,9 +168,9 @@ export function PlanInstrumentChrome({
           </div>
 
           <div className={styles.footerCenter} data-plan-role="date-control">
-            <span aria-hidden="true">‹</span>
-            <strong>{centerLabel}</strong>
-            <span aria-hidden="true">›</span>
+            <button type="button" onClick={onPreviousPeriod} disabled={!onPreviousPeriod} aria-label="Previous period">‹</button>
+            <button type="button" onClick={onCenterPeriod} disabled={!onCenterPeriod}><strong>{centerLabel}</strong></button>
+            <button type="button" onClick={onNextPeriod} disabled={!onNextPeriod} aria-label="Next period">›</button>
             <span aria-hidden="true">▣</span>
           </div>
 
