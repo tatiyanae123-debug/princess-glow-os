@@ -1,0 +1,21 @@
+/* World Fold 2.0 migration guards: the root shell owns world movement. */
+nav[aria-label='Glow regions'],
+a[aria-label='Exit Ask Glow and return Home'] {
+  display: none !important;
+}
+
+/* When the Living Fold is open, no room-local navigation may visually compete. */
+html[data-glow-world-fold='open'] [aria-label='Life instruments'],
+html[data-glow-world-fold='open'] [aria-label='Hair workspace views'],
+html[data-glow-world-fold='open'] [aria-label='Plan modes'],
+html[data-glow-world-fold='open'] [aria-label='Time scale'] {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 120ms ease;
+}
+
+/* A world change is a lens change, not another fixed app chrome layer. */
+html[data-glow-world-fold='open'] .glow-focus-exit {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
