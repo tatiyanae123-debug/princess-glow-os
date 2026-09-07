@@ -98,7 +98,7 @@ const RAIL_TARGETS: Record<GlowWorld, ShellTarget[]> = {
     { label: 'Makeup', path: '/beauty/makeup', cue: 'Looks' },
     { label: 'Body', path: '/beauty/body', cue: 'Body care' },
     { label: 'Fragrance', path: '/beauty/fragrance', cue: 'Scent' },
-    { label: 'Facial Movement', path: '/beauty/facial-massage', cue: 'Movement' },
+    { label: 'Gua Sha Studio', path: '/beauty/gua-sha', cue: 'Guided facial movement' },
     { label: 'Maintenance', path: '/beauty/maintenance', cue: 'Rhythm' },
     { label: 'Devices', path: '/beauty/devices', cue: 'Tools' },
     { label: 'Inventory', path: '/beauty/inventory', cue: 'Owned' },
@@ -160,6 +160,11 @@ export function roomLabelForPath(path: string, world?: GlowWorld) {
   }
   if (pathname === '/home') return 'Glow Home';
   if (pathname === '/beauty') return 'Personal Atelier';
+  if (pathname === '/beauty/gua-sha' || pathname === '/beauty/facial-massage') return 'Gua Sha Studio';
+  if (pathname === '/beauty/gua-sha/guided') return 'Guided Facial Movement';
+  if (pathname === '/beauty/gua-sha/morning') return 'Morning Light Gua Sha';
+  if (pathname === '/beauty/gua-sha/midday') return 'Midday Mini Reset';
+  if (pathname === '/beauty/gua-sha/night') return 'Night Full Sculpt';
   if (pathname === '/search') return 'Universal Search';
   if (pathname === '/habits') return 'Habits';
   if (pathname === '/habits/daily') return 'Daily Habits';
@@ -173,6 +178,14 @@ export function depthLabelsForPath(path: string, world: GlowWorld) {
   const { pathname, search } = cleanPath(path);
   if (pathname === '/home') return ['Glow Home'];
   if (pathname === '/search') return ['Universal', 'Search'];
+  if (pathname.startsWith('/beauty/gua-sha')) {
+    const labels = ['Beauty', 'Gua Sha Studio'];
+    if (pathname.endsWith('/guided')) labels.push('Guided Facial Movement');
+    if (pathname.endsWith('/morning')) labels.push('Morning Light');
+    if (pathname.endsWith('/midday')) labels.push('Midday Reset');
+    if (pathname.endsWith('/night')) labels.push('Night Full Sculpt');
+    return labels;
+  }
   const labels: string[] = [WORLD_LABEL[world]];
 
   if (pathname === '/today') {
@@ -202,6 +215,7 @@ export function returnTargetForPath(path: string, world: GlowWorld): ShellReturn
     return { label: 'Today', path: '/today?room=what-now' };
   }
 
+  if (pathname.startsWith('/beauty/gua-sha/') && pathname !== '/beauty/gua-sha') return { label: 'Gua Sha Studio', path: '/beauty/gua-sha' };
   if (world === 'beauty' && pathname !== '/beauty') return { label: 'Beauty', path: '/beauty' };
 
   const segments = pathname.split('/').filter(Boolean);
