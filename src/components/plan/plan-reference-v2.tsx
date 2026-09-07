@@ -406,7 +406,7 @@ export function PlanRoutinesV2({ routines, settings }: { routines: PlanRoutineV2
               })}
             </div>
             <div className={styles.brighterPearl}><span/><p>A brighter you<br/>— step by step</p></div>
-            {!variantConfigured && variant !== 'full' ? <button className={styles.configureVariant} type="button" onClick={() => routine && openGlow({ room: 'Plan · Routines', routine: routine.name, intent: `Configure my ${variant} version` })}>Configure this version</button> : null}
+            {!variantConfigured ? <button className={styles.configureVariant} type="button" onClick={() => routine && openGlow({ room: 'Plan · Routines', routine: routine.name, intent: `Configure my ${variant} version` })}>Configure this version</button> : null}
           </div>
 
           <div className={styles.routinePanels}>
@@ -568,7 +568,9 @@ export function PlanProjectsV2({ projects, tasks, memories, settings }: { projec
         <div className={styles.projectsWorld}>
           <div className={styles.projectViewSwitch}>{(['list', 'board', 'timeline', 'gallery'] as ProjectView[]).map((item) => <button key={item} type="button" aria-pressed={view === item} onClick={() => setView(item)}>{item === 'list' ? <List/> : item === 'board' ? <FolderOpen/> : item === 'timeline' ? <TimerReset/> : <ImageIcon/>}{item[0].toUpperCase() + item.slice(1)}</button>)}<MoreHorizontal/></div>
           <div className={styles.projectHero}>
-            <span className={styles.projectBadge}><FolderOpen/></span><div className={styles.projectHeroCopy}><small>PROJECT</small><h2>{selected?.title ?? 'No project selected'}</h2><p>{asString(meta.description) || selected?.notes || 'No project description recorded.'}</p><div><span>● {selected?.area ?? '—'}</span><span><CalendarDays/> {shortDate(asString(meta.startDate) || null)} → {shortDate(selected?.deadline)}</span><span className={styles.onTrack}>{asString(meta.healthState) || 'Health not assessed'}</span></div></div><blockquote>{asString(meta.poeticNote) || 'See the arc.\nShape the day.\nAlign the becoming.'}</blockquote><MoreHorizontal/>
+            <span className={styles.projectBadge}><FolderOpen/></span><div className={styles.projectHeroCopy}><small>PROJECT</small><h2>{selected?.title ?? 'No project selected'}</h2><p>{asString(meta.description) || selected?.notes || 'No project description recorded.'}</p><div><span>● {selected?.area ?? '—'}</span><span><CalendarDays/> {shortDate(asString(meta.startDate) || null)} → {shortDate(selected?.deadline)}</span><span className={styles.onTrack}>{asString(meta.healthState) || 'Health not assessed'}</span></div></div><blockquote>{asString(meta.poeticNote) || 'See the arc.\
+Shape the day.\
+Align the becoming.'}</blockquote><MoreHorizontal/>
             <div className={styles.projectStages}>{PROJECT_STAGES.map((stage, index) => { const state = asString(stageStates[stage]) || (stage === currentStage ? 'in_progress' : 'not_set'); return <button key={stage} type="button" data-state={state} onClick={() => selected && savePlanObjectSettingAction({ key: `plan:project:${selected.id}`, patch: { currentStage: stage, stageStates: { ...stageStates, [stage]: 'in_progress' } }, label: selected.title })}><i>{index + 1}</i><span><b>{stage}</b><small>{state.replace(/_/g, ' ')}</small></span></button>; })}</div>
           </div>
 
