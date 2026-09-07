@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 import {
   PlanGoalsV2,
   type PlanGoalHabit,
-  type PlanGoalItem as NeverUsed,
   type PlanGoalProject,
   type PlanGoalRoutine,
   type PlanGoalV2,
