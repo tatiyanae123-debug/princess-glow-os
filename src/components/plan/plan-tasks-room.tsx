@@ -1,16 +1,22 @@
 'use client';
 
 import type { CSSProperties } from 'react';
-import { useMemo, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Ban,
+  BarChart3,
   Circle,
   Clock3,
+  FileText,
   Hourglass,
   ListTree,
+  Mail,
+  Phone,
+  Send,
   Sparkles,
   TimerReset,
+  Users,
   Wrench,
   Zap,
 } from 'lucide-react';
@@ -33,6 +39,7 @@ export type PlanTaskItem = {
 
 type ZoneId = 'deep' | 'ready' | 'quick' | 'prep' | 'later' | 'waiting' | 'blocked' | 'unplaced';
 type ViewBy = 'readiness' | 'priority' | 'due';
+type TaskHistoryRecord = { id:string; title:string; beforeStatus:PlanTaskItem['status']; beforeCompletedAt:string|null; afterStatus:PlanTaskItem['status']; afterCompletedAt:string|null };
 
 const DAY = 86_400_000;
 
@@ -40,88 +47,61 @@ function taskText(task: PlanTaskItem) {
   return `${task.title} ${task.description ?? ''}`.toLowerCase();
 }
 
-function estimateMinutes(task: PlanTaskItem) {
-  const text = taskText(task);
+function explicitMinutes(task: PlanTaskItem) {
+  const text = `${task.title} ${task.description ?? ''}`;
   const hours = text.match(/(?:^|\s)(\d+(?:\.\d+)?)\s*(?:h|hr|hrs|hour|hours)(?:\s|$)/i);
-  if (hours) return Math.max(5, Math.min(360, Math.round(Number(hours[1]) * 60)));
+  if (hours) return Math.max(5, Math.min(720, Math.round(Number(hours[1]) * 60)));
   const minutes = text.match(/(?:^|\s)(\d{1,3})\s*(?:m|min|mins|minute|minutes)(?:\s|$)/i);
-  if (minutes) return Math.max(5, Math.min(360, Number(minutes[1])));
-  if (/email|reply|respond|confirm|book|order|send|text|call|tidy|quick/.test(text)) return 10;
-  if (/clean|reset|workout|plan|review|prep|grocery|errand/.test(text)) return 30;
-  if (/design|write|research|study|build|project|portfolio|proposal|strategy|deep|synthesis/.test(text)) return 60;
-  return 25;
+  if (minutes) return Math.max(5, Math.min(720, Number(minutes[1])));
+  return null;
 }
 
 function explicitLocation(task: PlanTaskItem) {
   const text = taskText(task);
   if (/\bhome\b|bedroom|kitchen|bathroom|laundry/.test(text)) return 'Home';
   if (/\bwork\b|office|shift|client/.test(text)) return 'Work';
-  if (/gym|pilates|studio/.test(text)) return 'Fitness';
+  if (/gym|pilates|fitness studio/.test(text)) return 'Fitness';
   if (/store|shop|grocery|pharmacy|mall|pickup|pick up/.test(text)) return 'Errand';
-  if (/online|website|email|zoom|meet/.test(text)) return 'Online';
+  if (/online|website|email|zoom|google meet|teams call/.test(text)) return 'Online';
   return 'Unspecified';
 }
 
 function classifyTask(task: PlanTaskItem, now: Date): ZoneId {
   const text = taskText(task);
-  const estimate = estimateMinutes(task);
+  const duration = explicitMinutes(task);
   const due = task.dueDate ? new Date(task.dueDate) : null;
   const msUntilDue = due ? due.getTime() - now.getTime() : null;
 
   if (/\bblocked\b|\bstuck\b|cannot proceed|can't proceed|can’t proceed|cannot start|can't start|can’t start/.test(text)) return 'blocked';
   if (/waiting on|awaiting|pending feedback|pending reply|pending approval|need response|waiting for/.test(text)) return 'waiting';
   if (/prepare|preparation|prep\b|gather|materials|research first|set up|setup|before i can|before starting/.test(text)) return 'prep';
-  if (task.status === 'in_progress' || (estimate >= 45 && (task.priority === 'urgent' || task.priority === 'high')) || (/deep focus|design|write|research|study|build|strategy|synthesis/.test(text) && estimate >= 45)) return 'deep';
-  if (estimate <= 15) return 'quick';
+  if (task.status === 'in_progress' || /deep focus/.test(text) || (duration !== null && duration >= 45 && /design|write|research|study|build|strategy|synthesis/.test(text))) return 'deep';
+  if (duration !== null && duration <= 15) return 'quick';
   if (task.priority === 'urgent' || task.priority === 'high' || (msUntilDue !== null && msUntilDue <= DAY * 2)) return 'ready';
   if (task.priority === 'low' || (msUntilDue !== null && msUntilDue > DAY * 7)) return 'later';
   return 'unplaced';
 }
 
 function horizonEnd(horizon: PlanHorizon, now: Date) {
-  if (horizon === 'today') {
-    const end = new Date(now);
-    end.setHours(23, 59, 59, 999);
-    return end;
-  }
+  if (horizon === 'today') { const end = new Date(now); end.setHours(23,59,59,999); return end; }
   if (horizon === 'week') return new Date(now.getTime() + DAY * 7);
   if (horizon === 'two-weeks') return new Date(now.getTime() + DAY * 14);
   if (horizon === 'month') return new Date(now.getFullYear(), now.getMonth() + 1, 1);
   return new Date(now.getTime() + DAY * 90);
 }
+function horizonLabel(horizon: PlanHorizon) { return horizon==='today'?'TODAY':horizon==='week'?'THIS WEEK':horizon==='two-weeks'?'NEXT 2 WEEKS':horizon==='month'?'THIS MONTH':'NEXT 3 MONTHS'; }
+function dueLabel(value: string | null) { if(!value)return'No due date';const date=new Date(value);const today=new Date();if(date.toDateString()===today.toDateString())return`Today · ${date.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`;return date.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+function priorityRank(priority: PlanTaskItem['priority']) { return {urgent:4,high:3,medium:2,low:1}[priority]; }
+function priorityLabel(priority:PlanTaskItem['priority']) { return priority==='urgent'?'Urgent':priority==='high'?'High':priority==='medium'?'Medium':'Low'; }
+function sameLocalDay(value:string|null,date:Date){ if(!value)return false;return new Date(value).toDateString()===date.toDateString(); }
 
-function horizonLabel(horizon: PlanHorizon) {
-  if (horizon === 'today') return 'TODAY';
-  if (horizon === 'week') return 'THIS WEEK';
-  if (horizon === 'two-weeks') return 'NEXT 2 WEEKS';
-  if (horizon === 'month') return 'THIS MONTH';
-  return 'NEXT 3 MONTHS';
+function subtaskState(task:PlanTaskItem){
+  if(!task.description)return{total:0,completed:0};
+  const lines=task.description.split(/\n+/).map((line)=>line.trim()).filter((line)=>/^[-*]?\s*\[[ xX]\]\s+/.test(line));
+  return{total:lines.length,completed:lines.filter((line)=>/^[-*]?\s*\[[xX]\]/.test(line)).length};
 }
 
-function dueLabel(value: string | null) {
-  if (!value) return 'No due date';
-  const date = new Date(value);
-  const today = new Date();
-  if (date.toDateString() === today.toDateString()) return `Today · ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function energyMarks(priority: PlanTaskItem['priority']) {
-  return priority === 'urgent' ? '⚡⚡⚡' : priority === 'high' ? '⚡⚡' : priority === 'medium' ? '⚡' : '';
-}
-
-function subtaskLines(task: PlanTaskItem) {
-  if (!task.description) return [];
-  return task.description
-    .split(/\n+/)
-    .map((line) => line.trim())
-    .filter((line) => /^[-*]?\s*\[[ xX]\]\s+/.test(line))
-    .map((line) => line.replace(/^[-*]?\s*\[[ xX]\]\s+/, ''));
-}
-
-function priorityRank(priority: PlanTaskItem['priority']) {
-  return { urgent: 4, high: 3, medium: 2, low: 1 }[priority];
-}
+function taskIcon(task:PlanTaskItem){const text=taskText(task);if(/call|phone/.test(text))return Phone;if(/email|inbox|reply/.test(text))return Mail;if(/send|submit|proposal/.test(text))return Send;if(/team|people|meeting|client/.test(text))return Users;if(/report|analytics|numbers|budget/.test(text))return BarChart3;return FileText;}
 
 export function PlanTasksRoom({ initialTasks }: { initialTasks: PlanTaskItem[] }) {
   const router = useRouter();
@@ -133,8 +113,12 @@ export function PlanTasksRoom({ initialTasks }: { initialTasks: PlanTaskItem[] }
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [durationFilter, setDurationFilter] = useState('all');
   const [showSubtasks, setShowSubtasks] = useState(true);
+  const [expandedZones,setExpandedZones]=useState<Record<string,boolean>>({});
+  const [history,setHistory]=useState<TaskHistoryRecord[]>([]);
+  const [historyIndex,setHistoryIndex]=useState(-1);
   const [isPending, startTransition] = useTransition();
 
+  useEffect(()=>setTasks(initialTasks),[initialTasks]);
   const now = useMemo(() => new Date(), []);
   const end = useMemo(() => horizonEnd(horizon, now), [horizon, now]);
   const sources = useMemo(() => Array.from(new Set(tasks.map((task) => task.source ?? 'Glow'))).sort(), [tasks]);
@@ -142,141 +126,70 @@ export function PlanTasksRoom({ initialTasks }: { initialTasks: PlanTaskItem[] }
 
   const filteredOpen = useMemo(() => {
     let values = tasks.filter((task) => task.status !== 'done' && task.status !== 'cancelled');
-    values = values.filter((task) => {
-      if (!task.dueDate) return true;
-      const due = new Date(task.dueDate);
-      return due <= end || due < now;
-    });
+    values = values.filter((task) => !task.dueDate || new Date(task.dueDate) <= end || new Date(task.dueDate) < now);
     if (contextFilter !== 'all') values = values.filter((task) => (task.source ?? 'Glow') === contextFilter);
     if (locationFilter !== 'all') values = values.filter((task) => explicitLocation(task) === locationFilter);
     if (priorityFilter !== 'all') values = values.filter((task) => task.priority === priorityFilter);
-    if (durationFilter !== 'all') {
-      values = values.filter((task) => {
-        const minutes = estimateMinutes(task);
-        if (durationFilter === 'quick') return minutes <= 15;
-        if (durationFilter === 'medium') return minutes > 15 && minutes <= 45;
-        return minutes > 45;
-      });
-    }
-    return values.sort((a, b) => {
-      if (viewBy === 'priority') return priorityRank(b.priority) - priorityRank(a.priority);
-      if (viewBy === 'due') return (a.dueDate ? new Date(a.dueDate).getTime() : Number.MAX_SAFE_INTEGER) - (b.dueDate ? new Date(b.dueDate).getTime() : Number.MAX_SAFE_INTEGER);
-      const zoneOrder: Record<ZoneId, number> = { blocked: 0, waiting: 1, ready: 2, deep: 3, prep: 4, quick: 5, later: 6, unplaced: 7 };
-      return zoneOrder[classifyTask(a, now)] - zoneOrder[classifyTask(b, now)];
-    });
-  }, [tasks, end, now, contextFilter, locationFilter, priorityFilter, durationFilter, viewBy]);
+    if (durationFilter !== 'all') values = values.filter((task) => { const value=explicitMinutes(task);if(durationFilter==='unknown')return value===null;if(value===null)return false;if(durationFilter==='quick')return value<=15;if(durationFilter==='medium')return value>15&&value<=45;return value>45; });
+    return values.sort((a,b)=>{if(viewBy==='priority')return priorityRank(b.priority)-priorityRank(a.priority);if(viewBy==='due')return(a.dueDate?new Date(a.dueDate).getTime():Number.MAX_SAFE_INTEGER)-(b.dueDate?new Date(b.dueDate).getTime():Number.MAX_SAFE_INTEGER);const order:Record<ZoneId,number>={blocked:0,waiting:1,ready:2,deep:3,prep:4,quick:5,later:6,unplaced:7};return order[classifyTask(a,now)]-order[classifyTask(b,now)];});
+  }, [tasks,end,now,contextFilter,locationFilter,priorityFilter,durationFilter,viewBy]);
 
-  const zones = useMemo(() => {
-    const grouped: Record<ZoneId, PlanTaskItem[]> = { deep: [], ready: [], quick: [], prep: [], later: [], waiting: [], blocked: [], unplaced: [] };
-    filteredOpen.forEach((task) => grouped[classifyTask(task, now)].push(task));
-    return grouped;
-  }, [filteredOpen, now]);
+  const zones = useMemo(() => { const grouped:Record<ZoneId,PlanTaskItem[]>={deep:[],ready:[],quick:[],prep:[],later:[],waiting:[],blocked:[],unplaced:[]};filteredOpen.forEach((task)=>grouped[classifyTask(task,now)].push(task));return grouped; }, [filteredOpen,now]);
+  const completed=tasks.filter((task)=>task.status==='done');
+  const todayRelevant=tasks.filter((task)=>task.status!=='cancelled'&&(sameLocalDay(task.dueDate,now)||sameLocalDay(task.completedAt,now)));
+  const todayCompleted=todayRelevant.filter((task)=>task.status==='done'&&sameLocalDay(task.completedAt,now));
+  const todayProgress=todayRelevant.length?Math.round(todayCompleted.length/todayRelevant.length*100):0;
 
-  const completed = tasks.filter((task) => task.status === 'done');
-  const progressTotal = tasks.filter((task) => task.status !== 'cancelled').length;
-  const progress = progressTotal ? Math.round((completed.length / progressTotal) * 100) : 0;
-  const nonEmptyZones = (['deep', 'ready', 'quick', 'prep', 'later', 'waiting', 'blocked'] as ZoneId[]).filter((zone) => zones[zone].length).length;
+  const persistTask=useCallback((id:string,status:PlanTaskItem['status'],completedAt:string|null,rollback?:{status:PlanTaskItem['status'];completedAt:string|null})=>{
+    startTransition(async()=>{const result=await updateTaskAction(id,status==='done'?{status:'done',completedAt:completedAt?new Date(completedAt):new Date()}:{status,completedAt:null});if(!result?.data&&rollback)setTasks((current)=>current.map((task)=>task.id===id?{...task,...rollback}:task));else router.refresh();});
+  },[router]);
+
+  const applyHistory=useCallback((record:TaskHistoryRecord,direction:'undo'|'redo')=>{const status=direction==='undo'?record.beforeStatus:record.afterStatus;const completedAt=direction==='undo'?record.beforeCompletedAt:record.afterCompletedAt;const rollback=direction==='undo'?{status:record.afterStatus,completedAt:record.afterCompletedAt}:{status:record.beforeStatus,completedAt:record.beforeCompletedAt};setTasks((current)=>current.map((task)=>task.id===record.id?{...task,status,completedAt}:task));persistTask(record.id,status,completedAt,rollback);},[persistTask]);
+
+  useEffect(()=>{document.dispatchEvent(new CustomEvent('glow:plan-history-state',{detail:{canUndo:historyIndex>=0,canRedo:historyIndex<history.length-1,receipt:isPending?'Saving…':historyIndex>=0?'Task change saved':'Live tasks'}}));},[historyIndex,history.length,isPending]);
+  useEffect(()=>{const undo=()=>{if(historyIndex<0)return;applyHistory(history[historyIndex],'undo');setHistoryIndex((value)=>value-1);};const redo=()=>{if(historyIndex>=history.length-1)return;applyHistory(history[historyIndex+1],'redo');setHistoryIndex((value)=>value+1);};document.addEventListener('glow:plan-undo',undo);document.addEventListener('glow:plan-redo',redo);return()=>{document.removeEventListener('glow:plan-undo',undo);document.removeEventListener('glow:plan-redo',redo);};},[history,historyIndex,applyHistory]);
 
   function toggleTask(task: PlanTaskItem) {
-    const nextStatus = task.status === 'done' ? 'pending' : 'done';
-    const before = tasks;
-    setTasks((current) => current.map((item) => item.id === task.id ? { ...item, status: nextStatus, completedAt: nextStatus === 'done' ? new Date().toISOString() : null } : item));
-    startTransition(async () => {
-      const result = await updateTaskAction(task.id, nextStatus === 'done' ? { status: 'done', completedAt: new Date() } : { status: 'pending' });
-      if (!result?.data) setTasks(before);
-      else router.refresh();
-    });
+    const afterStatus:PlanTaskItem['status']=task.status==='done'?'pending':'done';
+    const afterCompletedAt=afterStatus==='done'?new Date().toISOString():null;
+    const record:TaskHistoryRecord={id:task.id,title:task.title,beforeStatus:task.status,beforeCompletedAt:task.completedAt,afterStatus,afterCompletedAt};
+    const nextHistory=history.slice(0,historyIndex+1).concat(record);setHistory(nextHistory);setHistoryIndex(nextHistory.length-1);
+    setTasks((current)=>current.map((item)=>item.id===task.id?{...item,status:afterStatus,completedAt:afterCompletedAt}:item));
+    persistTask(task.id,afterStatus,afterCompletedAt,{status:task.status,completedAt:task.completedAt});
   }
 
   const zoneConfig = [
-    { id: 'deep' as const, title: 'DEEP FOCUS', subtitle: 'Uninterrupted time', className: `${styles.deepFocus} ${styles.zoneViolet}`, icon: Sparkles },
-    { id: 'ready' as const, title: 'READY NOW', subtitle: 'Do it now', className: `${styles.readyNow} ${styles.zoneMint}`, icon: Zap },
-    { id: 'quick' as const, title: 'QUICK RELIEF', subtitle: 'Small wins, big momentum', className: `${styles.quickRelief} ${styles.zonePink}`, icon: Sparkles },
-    { id: 'prep' as const, title: 'NEEDS PREPARATION', subtitle: 'Set things up', className: `${styles.needsPrep} ${styles.zoneViolet}`, icon: Wrench },
-    { id: 'later' as const, title: 'CAN WAIT', subtitle: 'Later is fine', className: `${styles.canWait} ${styles.zoneBlue}`, icon: TimerReset },
-    { id: 'waiting' as const, title: 'WAITING', subtitle: 'On others', className: `${styles.waiting} ${styles.zonePeach}`, icon: Hourglass },
-    { id: 'blocked' as const, title: 'BLOCKED', subtitle: 'Cannot proceed yet', className: `${styles.blocked} ${styles.zoneRed}`, icon: Ban },
+    { id:'deep' as const,title:'DEEP FOCUS',subtitle:'Uninterrupted time',className:`${styles.deepFocus} ${styles.zoneViolet}`,icon:Sparkles },
+    { id:'ready' as const,title:'READY NOW',subtitle:'Clear enough to begin',className:`${styles.readyNow} ${styles.zoneMint}`,icon:Zap },
+    { id:'quick' as const,title:'QUICK RELIEF',subtitle:'Explicitly short',className:`${styles.quickRelief} ${styles.zonePink}`,icon:Sparkles },
+    { id:'prep' as const,title:'NEEDS PREPARATION',subtitle:'Setup cue detected',className:`${styles.needsPrep} ${styles.zoneViolet}`,icon:Wrench },
+    { id:'later' as const,title:'CAN WAIT',subtitle:'Low pressure',className:`${styles.canWait} ${styles.zoneBlue}`,icon:TimerReset },
+    { id:'waiting' as const,title:'WAITING',subtitle:'Dependent on others',className:`${styles.waiting} ${styles.zonePeach}`,icon:Hourglass },
+    { id:'blocked' as const,title:'BLOCKED',subtitle:'Cannot proceed yet',className:`${styles.blocked} ${styles.zoneRed}`,icon:Ban },
   ];
 
-  return (
-    <PlanInstrumentChrome
-      title="PLAN · TASKS"
-      subtitle="Turn intention into movement. Tasks find their place."
-      activeInstrument="Tasks"
-      horizon={horizon}
-      onHorizonChange={setHorizon}
-      centerLabel={horizonLabel(horizon)}
-      rightReceipt={isPending ? 'Saving…' : 'Saved just now'}
-    >
-      <div className={styles.viewBy}>
-        <span>VIEW BY</span>
-        <select value={viewBy} onChange={(event) => setViewBy(event.target.value as ViewBy)} aria-label="View tasks by">
-          <option value="readiness">Readiness</option>
-          <option value="priority">Priority</option>
-          <option value="due">Due date</option>
-        </select>
-      </div>
+  return <PlanInstrumentChrome title="PLAN · TASKS" subtitle="Turn intention into movement. Tasks find their place." activeInstrument="Tasks" horizon={horizon} onHorizonChange={setHorizon} centerLabel={horizonLabel(horizon)} rightReceipt={isPending?'Saving…':'Live tasks'}>
+    <div className={styles.viewBy}><span>VIEW BY</span><select value={viewBy} onChange={(event)=>setViewBy(event.target.value as ViewBy)} aria-label="View tasks by"><option value="readiness">Readiness</option><option value="priority">Priority</option><option value="due">Due date</option></select></div>
 
-      <section className={styles.stage} aria-label="Task readiness field">
-        <PlanOrbitField dense />
-        {zoneConfig.map(({ id, title, subtitle, className, icon: Icon }) => (
-          <article key={id} className={`${styles.zone} ${className}`}>
-            <header className={styles.zoneHead}>
-              <span className={styles.zoneGlyph}><Icon /></span>
-              <span className={styles.zoneHeadText}><strong>{title}</strong><small>{subtitle}</small></span>
-              <span className={styles.zoneCount}>{zones[id].length}</span>
-            </header>
-            <div className={styles.zoneTasks}>
-              {zones[id].length ? zones[id].slice(0, id === 'ready' ? 3 : 2).map((task) => {
-                const subtasks = showSubtasks ? subtaskLines(task) : [];
-                return (
-                  <div className={styles.taskRow} key={task.id}>
-                    <button type="button" className={styles.taskCheck} onClick={() => toggleTask(task)} disabled={isPending} aria-label={`Complete ${task.title}`}><Circle /></button>
-                    <span className={styles.taskInfo}>
-                      <strong>{task.title}</strong>
-                      <small>{dueLabel(task.dueDate)} · ~{estimateMinutes(task)}m</small>
-                      {subtasks.length ? <em>{subtasks.length} recognized subtask{subtasks.length === 1 ? '' : 's'}</em> : null}
-                    </span>
-                    <span className={styles.taskEnergy}>{energyMarks(task.priority)}</span>
-                  </div>
-                );
-              }) : <p className={styles.emptyZone}>Nothing confidently belongs here yet.</p>}
-              {zones[id].length > (id === 'ready' ? 3 : 2) ? <span className={styles.moreCount}>+{zones[id].length - (id === 'ready' ? 3 : 2)} more</span> : null}
-            </div>
-          </article>
-        ))}
+    <section className={styles.stage} aria-label="Task readiness field">
+      <PlanOrbitField dense />
+      {zoneConfig.map(({id,title,subtitle,className,icon:Icon})=>{const limit=expandedZones[id]?zones[id].length:id==='ready'?3:2;return <article key={id} className={`${styles.zone} ${className}`} data-task-zone={id}>
+        <header className={styles.zoneHead}><span className={styles.zoneGlyph}><Icon/></span><span className={styles.zoneHeadText}><strong>{title}</strong><small>{subtitle}</small></span><span className={styles.zoneCount}>{zones[id].length}</span></header>
+        <div className={styles.zoneTasks}>{zones[id].length?zones[id].slice(0,limit).map((task)=>{const subtask=showSubtasks?subtaskState(task):{total:0,completed:0};const duration=explicitMinutes(task);const KindIcon=taskIcon(task);return <div className={styles.taskRow} key={task.id}><button type="button" className={styles.taskCheck} onClick={()=>toggleTask(task)} disabled={isPending} aria-label={`Complete ${task.title}`}><Circle/></button><span className={styles.taskInfo}><span className="plan-task-titleline"><KindIcon/><strong>{task.title}</strong></span><small>{dueLabel(task.dueDate)}{duration!==null?` · ${duration}m`:' · duration unknown'}</small><em>{task.source??'Glow'}{subtask.total?` · ${subtask.completed}/${subtask.total} subtasks`:''}</em></span><span className={`${styles.taskEnergy} plan-task-priority`} data-priority={task.priority}>{priorityLabel(task.priority)}</span></div>}):<p className={styles.emptyZone}>Nothing confidently belongs here yet.</p>}{zones[id].length>limit?<button type="button" className={`${styles.moreCount} plan-task-more`} onClick={()=>setExpandedZones((current)=>({...current,[id]:true}))}>See all {zones[id].length}</button>:expandedZones[id]&&zones[id].length>(id==='ready'?3:2)?<button type="button" className={`${styles.moreCount} plan-task-more`} onClick={()=>setExpandedZones((current)=>({...current,[id]:false}))}>Collapse</button>:null}</div>
+      </article>})}
 
-        <div className={styles.centerLens}>
-          <span className={styles.centerSpectral} />
-          <strong>TASKS</strong>
-          <span>{nonEmptyZones} active zone{nonEmptyZones === 1 ? '' : 's'} · {filteredOpen.length} task{filteredOpen.length === 1 ? '' : 's'}</span>
-          <small>Find your next move.</small>
-        </div>
+      <div className={styles.centerLens} data-glow-material="pearl"><span className={styles.centerSpectral}/><strong>TASKS</strong><span>7 zones · {filteredOpen.length} task{filteredOpen.length===1?'':'s'}</span><small>Find your next move.</small></div>
+      {zones.unplaced.length?<div className={styles.unplaced}>{zones.unplaced.length} task{zones.unplaced.length===1?'':'s'} remain unplaced because readiness context is not explicit enough.</div>:null}
+      <div className={`${styles.completedLabel} plan-task-completed-object`}><i data-glow-material="pearl"/><strong>COMPLETED</strong><span>{completed.length?`${completed.length} finished task${completed.length===1?'':'s'}`:'Small steps, a brighter you.'}</span></div>
+    </section>
 
-        {zones.unplaced.length ? <div className={styles.unplaced}>{zones.unplaced.length} task{zones.unplaced.length === 1 ? '' : 's'} remain unclassified until Glow has enough readiness context.</div> : null}
-        <div className={styles.completedLabel}><strong>COMPLETED</strong><span>{completed.length ? `${completed.length} finished task${completed.length === 1 ? '' : 's'}` : 'Small steps, a brighter you.'}</span></div>
-      </section>
-
-      <section className={styles.controlBand} aria-label="Task controls">
-        <div className={styles.controlCard}>
-          <div className={styles.controlTitle}>TASK CONTROLS</div>
-          <div className={styles.controlsRow}>
-            <div className={styles.controlPill}><ListTree size={14}/><label><small>Context</small><select value={contextFilter} onChange={(event) => setContextFilter(event.target.value)}><option value="all">All</option>{sources.map((source) => <option key={source} value={source}>{source}</option>)}</select></label></div>
-            <div className={styles.controlPill}><span>⌖</span><label><small>Location</small><select value={locationFilter} onChange={(event) => setLocationFilter(event.target.value)}><option value="all">All</option>{locations.map((location) => <option key={location} value={location}>{location}</option>)}</select></label></div>
-            <div className={styles.controlPill}><span>⚑</span><label><small>Priority</small><select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value)}><option value="all">All</option><option value="urgent">Urgent</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></label></div>
-            <button type="button" className={`${styles.controlPill} ${styles.togglePill}`} onClick={() => setShowSubtasks((value) => !value)}><span className={`${styles.toggleTrack} ${showSubtasks ? styles.on : ''}`} /><label><small>Subtasks</small><span>{showSubtasks ? 'Shown' : 'Hidden'}</span></label></button>
-            <div className={styles.controlPill}><Clock3 size={14}/><label><small>Est. duration</small><select value={durationFilter} onChange={(event) => setDurationFilter(event.target.value)}><option value="all">Any</option><option value="quick">≤15m</option><option value="medium">15–45m</option><option value="long">45m+</option></select></label></div>
-          </div>
-        </div>
-
-        <div className={styles.progressCard}>
-          <div className={styles.controlTitle}>TODAY’S PROGRESS</div>
-          <div className={styles.progressBody}>
-            <div className={styles.progressRing} style={{ '--progress': `${progress}%` } as CSSProperties}><strong>{completed.length}/{progressTotal}</strong></div>
-            <span className={styles.progressText}><strong>tasks completed</strong><small>Keep going — progress compounds.</small></span>
-          </div>
-        </div>
-      </section>
-    </PlanInstrumentChrome>
-  );
+    <section className={styles.controlBand} aria-label="Task controls"><div className={styles.controlCard}><div className={styles.controlTitle}>TASK CONTROLS</div><div className={styles.controlsRow}>
+      <div className={styles.controlPill}><ListTree size={14}/><label><small>Sort</small><select value={viewBy} onChange={(event)=>setViewBy(event.target.value as ViewBy)}><option value="readiness">Readiness</option><option value="priority">Priority</option><option value="due">Due date</option></select></label></div>
+      <div className={styles.controlPill}><ListTree size={14}/><label><small>Context</small><select value={contextFilter} onChange={(event)=>setContextFilter(event.target.value)}><option value="all">All</option>{sources.map((source)=><option key={source} value={source}>{source}</option>)}</select></label></div>
+      <div className={styles.controlPill}><span>⌖</span><label><small>Location cue</small><select value={locationFilter} onChange={(event)=>setLocationFilter(event.target.value)}><option value="all">All</option>{locations.map((location)=><option key={location} value={location}>{location}</option>)}</select></label></div>
+      <div className={styles.controlPill}><span>⚑</span><label><small>Priority</small><select value={priorityFilter} onChange={(event)=>setPriorityFilter(event.target.value)}><option value="all">All</option><option value="urgent">Urgent</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></label></div>
+      <button type="button" className={`${styles.controlPill} ${styles.togglePill}`} onClick={()=>setShowSubtasks((value)=>!value)}><span className={`${styles.toggleTrack} ${showSubtasks?styles.on:''}`}/><label><small>Subtasks</small><span>{showSubtasks?'Shown':'Hidden'}</span></label></button>
+      <div className={styles.controlPill}><Clock3 size={14}/><label><small>Est. duration</small><select value={durationFilter} onChange={(event)=>setDurationFilter(event.target.value)}><option value="all">Any</option><option value="quick">≤15m</option><option value="medium">15–45m</option><option value="long">45m+</option><option value="unknown">Unknown</option></select></label></div>
+    </div></div><div className={styles.progressCard}><div className={styles.controlTitle}>TODAY’S PROGRESS</div><div className={styles.progressBody}><div className={styles.progressRing} style={{'--progress':`${todayProgress}%`} as CSSProperties}><strong>{todayCompleted.length}/{todayRelevant.length}</strong></div><span className={styles.progressText}><strong>today-linked tasks completed</strong><small>{todayRelevant.length?'Only tasks due or completed today are counted.':'No tasks are explicitly linked to today yet.'}</small></span></div></div></section>
+  </PlanInstrumentChrome>;
 }
