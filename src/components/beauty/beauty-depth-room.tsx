@@ -63,7 +63,7 @@ export async function BeautyDepthRoom({ system }: { system: System }) {
 
   return (
     <main className={styles.viewport}>
-      <section className={styles.room} data-material={config.material}>
+      <section className={styles.room} data-material={config.material} data-beauty-depth-room>
         <header className={styles.header}>
           <Link href="/home" className={styles.brand}>Glow OS</Link>
           <nav className={styles.worlds}>{WORLD_TARGETS.map((target) => <Link key={target.world} href={target.path} className={target.world === 'beauty' ? styles.active : undefined}>{target.label}</Link>)}</nav>
