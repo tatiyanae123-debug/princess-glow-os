@@ -1,0 +1,157 @@
+/* Calendar-specific reference fidelity and physical interaction layer. */
+
+.planInstrumentRoot [aria-label="Plan calendar week"] .plan-calendar-icon-control {
+  width:3.3cqw;
+  height:3.3cqw;
+  min-width:34px;
+  min-height:34px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(255,255,255,.78);
+  border-radius:1cqw;
+  background:linear-gradient(145deg,rgba(255,255,255,.32),rgba(255,255,255,.09));
+  box-shadow:inset 0 .08cqw .1cqw #fff,0 .4cqw 1cqw rgba(72,62,75,.05);
+  color:rgba(89,81,123,.72);
+}
+
+.planInstrumentRoot [aria-label="Plan calendar week"] [class*="gridHeader"] > button {
+  border:0;
+  border-right:1px solid rgba(119,116,136,.08);
+  background:transparent;
+  display:grid;
+  place-items:center;
+  font-size:clamp(7px,.54cqw,8.5px);
+  color:rgba(47,42,48,.5);
+  position:relative;
+}
+.planInstrumentRoot [aria-label="Plan calendar week"] [class*="gridHeader"] > button span { display:block; }
+.planInstrumentRoot [aria-label="Plan calendar week"] [class*="gridHeader"] > button b { display:block; color:#39343a; font-size:clamp(7.5px,.6cqw,9px); }
+.planInstrumentRoot [aria-label="Plan calendar week"] .plan-calendar-day-selected::before {
+  content:'';
+  position:absolute;
+  inset:.25cqw .35cqw;
+  z-index:-1;
+  border:1px solid rgba(255,255,255,.9);
+  border-radius:.9cqw;
+  background:radial-gradient(circle at 52% 18%,rgba(255,255,255,.98),rgba(226,225,255,.58) 54%,rgba(255,255,255,.14));
+  box-shadow:inset 0 .08cqw .12cqw #fff,0 .35cqw .9cqw rgba(105,90,146,.08),0 0 .9cqw rgba(219,208,255,.21);
+}
+
+.plan-calendar-event {
+  display:grid !important;
+  grid-template-columns:1.15cqw minmax(0,1fr) !important;
+  gap:.35cqw !important;
+  align-content:start !important;
+  align-items:start !important;
+  padding:.38cqw .42cqw !important;
+  border-radius:.72cqw !important;
+  background:
+    radial-gradient(circle at 15% 0%,color-mix(in srgb,var(--event-accent) 24%,transparent),transparent 58%),
+    linear-gradient(145deg,rgba(255,255,255,.58),color-mix(in srgb,var(--event-accent) 12%,rgba(255,255,255,.18))) !important;
+  box-shadow:inset .06cqw .08cqw .1cqw rgba(255,255,255,.97),inset 0 -.4cqw .8cqw rgba(137,127,151,.04),0 .3cqw .78cqw rgba(71,65,88,.055) !important;
+  cursor:grab;
+}
+.plan-calendar-event[data-source="google_calendar"] { cursor:pointer; }
+.plan-calendar-event:active { cursor:grabbing; }
+.plan-calendar-event-icon { margin-top:.04cqw; width:1.05cqw; min-width:11px; height:1.05cqw; min-height:11px; stroke-width:1.35; color:color-mix(in srgb,var(--event-accent) 74%,#5f5a6b); }
+.plan-calendar-event-copy { min-width:0; display:block; }
+.plan-calendar-event-copy b { font-size:clamp(7px,.57cqw,8.7px) !important; }
+.plan-calendar-event-copy small { font-size:clamp(6px,.49cqw,7.4px) !important; }
+
+.plan-calendar-free-window {
+  overflow:hidden;
+  grid-template-rows:auto auto;
+  color:rgba(71,68,86,.64) !important;
+  background:
+    radial-gradient(70% 28% at 58% 91%,rgba(159,180,244,.23),transparent 73%),
+    linear-gradient(180deg,rgba(255,255,255,.16),rgba(214,225,250,.18)) !important;
+  box-shadow:inset 0 .08cqw .1cqw rgba(255,255,255,.84),0 .35cqw 1cqw rgba(90,93,136,.045) !important;
+}
+.plan-calendar-free-window::after {
+  content:'';
+  position:absolute;
+  left:-15%;right:-15%;bottom:-8%;height:30%;
+  border-radius:50%;
+  background:linear-gradient(110deg,transparent,rgba(150,178,241,.32),rgba(216,204,255,.18),transparent);
+  transform:rotate(-4deg);
+  filter:blur(.22cqw);
+}
+.plan-calendar-free-window small { position:relative;z-index:2;font-size:clamp(6px,.48cqw,7.5px); }
+
+.plan-calendar-dependencies {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:2;
+  pointer-events:none;
+  overflow:visible;
+}
+.plan-calendar-dependencies path {
+  fill:none;
+  stroke:rgba(126,132,210,.26);
+  stroke-width:1.2;
+  vector-effect:non-scaling-stroke;
+  filter:drop-shadow(0 0 2px rgba(255,255,255,.9));
+}
+
+.plan-calendar-month-field {
+  padding:1.35cqw 1.35cqw .9cqw 4.6cqw !important;
+  display:grid !important;
+  grid-template-columns:repeat(7,1fr) !important;
+  grid-template-rows:repeat(6,1fr) !important;
+  gap:.42cqw !important;
+}
+.plan-calendar-month-field > button {
+  border:1px solid rgba(255,255,255,.58);
+  border-radius:.9cqw;
+  background:linear-gradient(145deg,rgba(255,255,255,.23),rgba(255,255,255,.07));
+  color:#39343a;
+  display:grid;
+  place-items:center;
+  align-content:center;
+  gap:.2cqw;
+  font-size:clamp(8px,.63cqw,10px);
+}
+.plan-calendar-month-field > button[data-outside="true"] { opacity:.34; }
+.plan-calendar-month-field > button[data-active="true"] {
+  background:radial-gradient(circle at 50% 23%,#fff,rgba(217,210,255,.57) 58%,rgba(255,255,255,.13));
+  box-shadow:0 0 1cqw rgba(144,123,215,.13);
+}
+.plan-calendar-month-field small { font-size:clamp(6px,.45cqw,7px);color:rgba(78,70,88,.48); }
+
+.planInstrumentRoot [aria-label="Plan calendar week"] [class*="monthHeader"] span { display:flex; gap:.25cqw; }
+.planInstrumentRoot [aria-label="Plan calendar week"] [class*="monthHeader"] button {
+  width:1.7cqw;height:1.7cqw;min-width:20px;min-height:20px;border:0;border-radius:50%;background:rgba(255,255,255,.12);color:rgba(53,48,54,.52);
+}
+.planInstrumentRoot [aria-label="Plan calendar week"] [class*="legend"] { grid-template-columns:repeat(2,1fr) !important; }
+.planInstrumentRoot [aria-label="Plan calendar week"] [class*="legend"] span:first-child i { background:#8fa1d8 !important; }
+.planInstrumentRoot [aria-label="Plan calendar week"] [class*="legend"] span:nth-child(2) i { background:#8f93e5 !important; }
+.planInstrumentRoot [aria-label="Plan calendar week"] [class*="legend"] span:nth-child(3) i { background:#e6a9bf !important; }
+.planInstrumentRoot [aria-label="Plan calendar week"] [class*="legend"] span:nth-child(4) i { background:#b9b7b9 !important; }
+.planInstrumentRoot [aria-label="Plan calendar week"] [class*="legend"] span:nth-child(5) i { background:#c8b8e9 !important; }
+
+.plan-calendar-prep-active {
+  box-shadow:inset 0 0 0 1px rgba(188,166,240,.24),inset 0 .08cqw .12cqw #fff,0 .6cqw 1.4cqw rgba(97,78,137,.06) !important;
+}
+.plan-calendar-insight-method { display:block;margin-top:.25cqw;color:rgba(47,42,48,.39);font-size:clamp(5.8px,.45cqw,7px);line-height:1.3; }
+.plan-calendar-open-time { position:relative; overflow:hidden !important; }
+.plan-calendar-open-time > * { position:relative; z-index:3; }
+.plan-calendar-open-landscape {
+  position:absolute !important;
+  z-index:1 !important;
+  left:14%;right:-4%;bottom:-7%;height:54%;
+  pointer-events:none;
+  background:
+    radial-gradient(36% 46% at 25% 48%,rgba(255,255,255,.9),transparent 68%),
+    linear-gradient(163deg,transparent 22%,rgba(156,182,241,.18) 24% 28%,transparent 30%),
+    linear-gradient(171deg,transparent 42%,rgba(192,174,241,.15) 44% 49%,transparent 51%),
+    linear-gradient(177deg,transparent 58%,rgba(124,163,231,.21) 60% 65%,transparent 67%);
+  filter:blur(.08cqw);
+  transform:skewX(-8deg);
+}
+
+@media (max-width:1100px) and (min-aspect-ratio:1/1) {
+  .plan-calendar-event { grid-template-columns:12px minmax(0,1fr) !important; }
+  .plan-calendar-event-icon { width:11px;height:11px; }
+}
