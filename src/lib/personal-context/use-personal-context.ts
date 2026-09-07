@@ -114,7 +114,7 @@ function projectKernelContext(kernel: KernelContext): PersonalContextData {
     .filter((item) => item.domain === 'calendar-event' && item.state !== 'archived')
     .map((item) => ({
       id: item.id.replace(/^calendar-event:/, ''),
-      source: item.provenance.sourceSystem === 'google' ? 'google' : 'glow',
+      source: (item.provenance.sourceSystem === 'google' ? 'google' : 'glow') as PersonalEvent['source'],
       title: item.title,
       startAt: toIso(item.timing.startAt) ?? new Date(0).toISOString(),
       endAt: toIso(item.timing.endAt),
