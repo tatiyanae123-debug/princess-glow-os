@@ -1,186 +1,65 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { and, asc, eq, gte } from 'drizzle-orm';
 import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
-import { Card } from '@/components/ui/card';
-import {
-  createConciergeProposalAction,
-  decideConciergeProposalAction,
-  reverseConciergeProposalAction,
-} from '@/app/actions/concierge';
-import { getAiProposals, getAuditEvents } from '@/lib/data/completion-v1';
-import { Check, RotateCcw, ShieldCheck, Sparkles, X } from 'lucide-react';
+import { UtilityFrame, styles as shell } from '@/components/system-reference/utility-frame';
+import { db } from '@/db';
+import { calendarEvents } from '@/db/schema/calendar-events';
+import { tasks } from '@/db/schema/tasks';
+import { appleReminders } from '@/db/schema/intelligence-expansion';
+import { aiProposals } from '@/db/schema/completion-v1';
+import { Bell, CalendarDays, CheckCircle2, FileText, Luggage, MapPin, Plane, Settings, Sparkles, Ticket, UsersRound } from 'lucide-react';
+import styles from './concierge-journey.module.css';
 
-export const dynamic = 'force-dynamic';
-const fieldClass = 'w-full border px-4 py-3 text-[10px]';
+export const dynamic='force-dynamic';
+const TRAVEL=/\b(travel|trip|journey|flight|airport|hotel|airbnb|train|depart|arrival|vacation|packing|luggage|boarding|reservation|itinerary|tour|museum|day trip)\b/i;
+const PACK=/\b(pack|packing|luggage|suitcase|toiletr|carry.?on)\b/i;
+const BOOK=/\b(book|booking|confirm|flight|hotel|airbnb|train|reservation|ticket)\b/i;
+const EXPERIENCE=/\b(tour|museum|dinner|restaurant|experience|day trip|wellness|shopping|culture|explore)\b/i;
+function eventText(item:{title:string;description:string|null;location:string|null}){return `${item.title} ${item.description??''} ${item.location??''}`}
+function taskText(item:{title:string;description:string|null}){return `${item.title} ${item.description??''}`}
+function dateShort(date:Date){return date.toLocaleDateString('en-US',{month:'short',day:'numeric'})}
+function dateRange(items:{startAt:Date}[]){if(!items.length)return'No dates linked';const first=items[0].startAt;const last=items.at(-1)?.startAt??first;return first.toDateString()===last.toDateString()?dateShort(first):`${dateShort(first)} – ${dateShort(last)}`}
 
-type ProposalPayload = Record<string, unknown> & {
-  actionType?: string;
-  task?: { title?: string; priority?: string; dueDate?: string | null };
-  execution?: { entityType?: string; entityId?: string; executedAt?: string; reversedAt?: string };
-};
-
-function payloadOf(value: unknown): ProposalPayload {
-  return value && typeof value === 'object' ? (value as ProposalPayload) : {};
-}
-
-function actionLabel(payload: ProposalPayload) {
-  return payload.actionType === 'create_task' ? 'Create task' : 'Advisory only';
-}
-
-export default async function ConciergePage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/sign-in');
-  const [proposals, audit] = await Promise.all([
-    getAiProposals(session.user.id),
-    getAuditEvents(session.user.id),
+export default async function ConciergePage(){
+  const session=await auth();if(!session?.user?.id)redirect('/sign-in');const userId=session.user.id;const now=new Date();
+  const [eventRows,taskRows,reminderRows,proposalRows]=await Promise.all([
+    db.select().from(calendarEvents).where(and(eq(calendarEvents.userId,userId),eq(calendarEvents.archived,false),gte(calendarEvents.startAt,now))).orderBy(asc(calendarEvents.startAt)).limit(80),
+    db.select().from(tasks).where(eq(tasks.userId,userId)).limit(100),
+    db.select().from(appleReminders).where(eq(appleReminders.userId,userId)).orderBy(asc(appleReminders.dueAt)).limit(80),
+    db.select().from(aiProposals).where(eq(aiProposals.userId,userId)).limit(40),
   ]);
-  const pending = proposals.filter((proposal) => proposal.status === 'pending').length;
-  const executed = proposals.filter((proposal) => {
-    const payload = payloadOf(proposal.payload);
-    return proposal.status === 'approved' && payload.execution?.entityId && !payload.execution.reversedAt;
-  }).length;
-
-  return (
-    <AppShell>
-      <SectionPage
-        eyebrow="AI Concierge"
-        title="Ask, propose, approve"
-        description="Glow can reason immediately. Any real change is previewed first, executed only after approval, recorded in the audit trail, and reversible when the action supports a safe undo."
-      >
-        <div className="space-y-4">
-          <Card className="relative overflow-hidden bg-[linear-gradient(145deg,#eee6ef,#f6efeb)] p-5">
-            <ShieldCheck size={52} strokeWidth={0.8} className="absolute right-5 top-3 text-[#7e6b83]/16" />
-            <p className="glow-eyebrow">Approval desk</p>
-            <p className="glow-display mt-2 text-[24px] text-[#4d414d]">Glow can suggest. You stay in control.</p>
-            <p className="mt-2 text-[9px] leading-4 text-[#796d78]">
-              {pending} proposal{pending === 1 ? '' : 's'} waiting · {executed} reversible action{executed === 1 ? '' : 's'} currently applied.
-            </p>
-          </Card>
-
-          <div className="grid gap-5 xl:grid-cols-[.75fr_1.25fr]">
-            <Card className="paper-card">
-              <form action={createConciergeProposalAction} className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Sparkles size={14} className="text-[#806b85]" />
-                  <h2 className="glow-display text-[20px] text-[#4d414d]">Create a proposal</h2>
-                </div>
-                <select name="actionType" defaultValue="advisory" className={fieldClass}>
-                  <option value="advisory">Advisory only — no data change</option>
-                  <option value="create_task">Create a task after approval</option>
-                </select>
-                <input name="intent" required placeholder="Intent, e.g. Make today lighter" className={fieldClass} />
-                <textarea name="summary" required rows={3} placeholder="What should change?" className={fieldClass} />
-                <textarea name="reason" required rows={4} placeholder="Why is this recommended?" className={fieldClass} />
-                <div className="rounded-[8px] border border-[#e4dce3] bg-white/55 p-3">
-                  <p className="glow-eyebrow">Optional executable task</p>
-                  <p className="mb-3 mt-1 text-[8px] leading-4 text-[#847984]">
-                    Fill these fields when “Create a task” is selected. Nothing is written until you approve the proposal.
-                  </p>
-                  <div className="space-y-2">
-                    <input name="taskTitle" placeholder="Task title" className={fieldClass} />
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      <select name="taskPriority" defaultValue="medium" className={fieldClass}>
-                        <option value="low">Low priority</option>
-                        <option value="medium">Medium priority</option>
-                        <option value="high">High priority</option>
-                        <option value="urgent">Urgent priority</option>
-                      </select>
-                      <input name="taskDueDate" type="datetime-local" className={fieldClass} />
-                    </div>
-                  </div>
-                </div>
-                <button className="rounded-[6px] bg-[#443a44] px-4 py-2 text-[9px] text-white">Create proposal</button>
-              </form>
-            </Card>
-
-            <Card className="overflow-hidden p-0">
-              <div className="border-b border-[#e4dae4] px-5 py-4">
-                <p className="glow-eyebrow">Approval queue</p>
-                <h2 className="glow-display mt-1 text-[19px] text-[#4d414d]">Proposal queue</h2>
-              </div>
-              {proposals.length === 0 ? (
-                <div className="p-8 text-center">
-                  <p className="text-[10px] text-[#776b76]">No proposals yet.</p>
-                  <p className="mt-2 text-[8px] leading-4 text-[#978b96]">Create an advisory proposal or stage a task above. The approval queue will show exactly what Glow intends to do before anything changes.</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-[#ebe3ea]">
-                  {proposals.map((proposal, index) => {
-                    const payload = payloadOf(proposal.payload);
-                    const canReverse = proposal.status === 'approved' && proposal.reversible && payload.execution?.entityType === 'task' && payload.execution.entityId && !payload.execution.reversedAt;
-                    return (
-                      <div key={proposal.id} className={`p-4 ${index === 0 && proposal.status === 'pending' ? 'bg-[#f0e5ef]/55' : ''}`}>
-                        <div className="flex justify-between gap-3">
-                          <div>
-                            <p className="glow-display text-[14px] text-[#4c404c]">{proposal.summary}</p>
-                            <p className="mt-1 text-[8px] leading-4 text-[#7c707b]">{proposal.reason}</p>
-                          </div>
-                          <span className="h-fit rounded-full bg-white/50 px-2 py-1 text-[7px] uppercase text-[#847784]">{proposal.status}</span>
-                        </div>
-                        <div className="mt-2 flex flex-wrap gap-2 text-[7px] text-[#998d98]">
-                          <span>{actionLabel(payload)}</span>
-                          <span>· Confidence {Math.round(proposal.confidence * 100)}%</span>
-                          <span>· {proposal.reversible ? 'Safe undo supported' : 'No data write'}</span>
-                        </div>
-                        {payload.actionType === 'create_task' && payload.task?.title ? (
-                          <div className="mt-3 rounded-[7px] border border-[#e8dfe7] bg-white/55 px-3 py-2 text-[8px] leading-4 text-[#756a74]">
-                            <strong className="font-medium text-[#564b55]">Planned task:</strong> {payload.task.title}
-                            {payload.task.priority ? ` · ${payload.task.priority} priority` : ''}
-                            {payload.task.dueDate ? ` · due ${new Date(payload.task.dueDate).toLocaleString()}` : ''}
-                          </div>
-                        ) : null}
-                        {payload.execution?.entityId ? (
-                          <p className="mt-2 text-[7px] text-[#897e88]">
-                            {payload.execution.reversedAt ? 'Undo completed. The Concierge-created task was removed.' : `Applied to Tasks · ${payload.execution.entityId.slice(0, 8)}…`}
-                          </p>
-                        ) : null}
-                        {proposal.status === 'pending' ? (
-                          <div className="mt-3 flex gap-2">
-                            <form action={decideConciergeProposalAction.bind(null, proposal.id, 'approved')}>
-                              <button className="inline-flex items-center gap-1 rounded-[6px] bg-[#485047] px-3 py-2 text-[8px] text-white"><Check size={9} />Approve</button>
-                            </form>
-                            <form action={decideConciergeProposalAction.bind(null, proposal.id, 'rejected')}>
-                              <button className="inline-flex items-center gap-1 rounded-[6px] border border-[#ded3dd] px-3 py-2 text-[8px] text-[#6e626d]"><X size={9} />Reject</button>
-                            </form>
-                          </div>
-                        ) : null}
-                        {canReverse ? (
-                          <form action={reverseConciergeProposalAction.bind(null, proposal.id)} className="mt-3">
-                            <button className="inline-flex items-center gap-1 rounded-[6px] border border-[#d7cbd5] bg-white/70 px-3 py-2 text-[8px] text-[#655a64]"><RotateCcw size={9} />Undo applied task</button>
-                          </form>
-                        ) : null}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </Card>
-          </div>
-
-          <Card className="overflow-hidden p-0">
-            <div className="border-b border-[#e4dae4] px-5 py-4">
-              <p className="glow-eyebrow">Audit ribbon</p>
-              <h2 className="glow-display mt-1 text-[17px] text-[#4d414d]">Decision + execution history</h2>
-            </div>
-            <div className="divide-y divide-[#ece5eb]">
-              {audit.length === 0 ? (
-                <div className="p-6">
-                  <p className="text-[9px] text-[#897d88]">No approved, rejected, or reversed actions yet.</p>
-                  <p className="mt-1 text-[8px] text-[#a0949f]">Every decision and safe undo will appear here automatically.</p>
-                </div>
-              ) : (
-                audit.slice(0, 12).map((event) => (
-                  <div key={event.id} className="flex justify-between gap-3 px-5 py-3 text-[8px]">
-                    <span className="text-[#685d67]">{event.action.replaceAll('_', ' ')}</span>
-                    <span className="text-[#998d98]">{event.createdAt.toLocaleString()}</span>
-                  </div>
-                ))
-              )}
-            </div>
-          </Card>
-        </div>
-      </SectionPage>
-    </AppShell>
-  );
+  const travelEvents=eventRows.filter(item=>TRAVEL.test(eventText(item))).slice(0,18);
+  const activeTasks=taskRows.filter(item=>!item.archived&&item.status!=='done'&&item.status!=='cancelled');
+  const travelTasks=activeTasks.filter(item=>TRAVEL.test(taskText(item)));
+  const travelReminders=reminderRows.filter(item=>!item.completed&&TRAVEL.test(`${item.title} ${item.notes??''}`));
+  const first=travelEvents[0];
+  const cluster=first?travelEvents.filter(item=>Math.abs(item.startAt.getTime()-first.startAt.getTime())<=21*86400000):[];
+  const journeyTitle=first?.title??'No journey in view';
+  const prepare=travelTasks.filter(item=>!PACK.test(taskText(item))&&!BOOK.test(taskText(item)));
+  const pack=travelTasks.filter(item=>PACK.test(taskText(item)));
+  const booking=[...travelTasks.filter(item=>BOOK.test(taskText(item))),...travelEvents.filter(item=>BOOK.test(eventText(item)))];
+  const experiences=travelEvents.filter(item=>EXPERIENCE.test(eventText(item)));
+  const pendingProposals=proposalRows.filter(item=>item.status==='pending').length;
+  const modules=[
+    {title:'Prepare',note:'Documents, details, and travel tasks',status:`${prepare.length} linked`,href:'/tasks',icon:<FileText size={18}/>},
+    {title:'Pack',note:'Packing and luggage actions',status:`${pack.length} linked`,href:'/tasks',icon:<Luggage size={18}/>},
+    {title:'Book & Confirm',note:'Flights, stays, trains, and confirmations',status:`${booking.length} linked`,href:'/calendar',icon:<Ticket size={18}/>},
+    {title:'Schedule',note:'Upcoming travel-linked calendar moments',status:`${travelEvents.length} linked`,href:'/calendar',icon:<CalendarDays size={18}/>},
+    {title:'Experiences',note:'Culture, dining, wellness, and exploration',status:`${experiences.length} linked`,href:'/calendar',icon:<MapPin size={18}/>},
+    {title:'Reminders',note:'Travel reminders imported into Glow',status:`${travelReminders.length} linked`,href:'/reminders',icon:<Bell size={18}/>},
+  ];
+  const rail=[
+    {label:'Journey',href:'/concierge',active:true,icon:<span className={shell.railDot}><Plane size={15}/></span>},
+    {label:'Approvals',href:'/concierge/approvals',icon:<span className={shell.railDot}><CheckCircle2 size={15}/></span>},
+    {label:'Calendar',href:'/calendar',icon:<span className={shell.railDot}><CalendarDays size={15}/></span>},
+    {label:'People',href:'/today?room=people',icon:<span className={shell.railDot}><UsersRound size={15}/></span>},
+    {label:'Settings',href:'/settings',icon:<span className={shell.railDot}><Settings size={15}/></span>},
+  ];
+  return <AppShell><UtilityFrame title="Concierge · Journey" rail={rail}>
+    <header className={styles.header}><div><span className={styles.kicker}>Concierge</span><h1>{journeyTitle}</h1><p>{first?'A living journey assembled from your real calendar, tasks, and reminders.':'When travel appears in your connected life, Glow will gather it here without inventing a trip.'}</p><div className={styles.chips}><span className={shell.capsule}><CalendarDays size={12}/>{dateRange(cluster)}</span><span className={shell.capsule}><UsersRound size={12}/>Travelers not modeled</span><span className={shell.capsule}><MapPin size={12}/>{first?.location??'Route not linked'}</span></div></div><div className={styles.headerActions}><Link href="/concierge/approvals" className={shell.btn}>Approvals {pendingProposals?`· ${pendingProposals}`:''}</Link><Link href="/ask-glow" className={`${shell.btn} ${shell.btnPrimary}`}><Sparkles size={13}/>Ask Glow</Link></div></header>
+    <section className={styles.scene}><div className={styles.orbit}/><div className={styles.orbit2}/><div className={styles.orbit3}/>{modules.map(module=><Link key={module.title} href={module.href} className={`${shell.well} ${styles.module}`}><span className={styles.moduleIcon}>{module.icon}</span><div><strong>{module.title}</strong><p>{module.note}</p></div><span className={styles.moduleStatus}>{module.status} ›</span></Link>)}<div className={styles.center}><div className={styles.centerCopy}><span className={shell.pearlSm} style={{margin:'0 auto 12px'}}/><h2>{journeyTitle}</h2><p>{dateRange(cluster)}</p><p>{first?.location?'Place context is linked from Calendar.':'No trip image, route, or destination is being fabricated.'}</p></div></div><aside className={`${shell.well} ${styles.glowNote}`}><span className={shell.pearl}/><div><strong>Glow</strong><p className={shell.sectionNote}>I can help coordinate what is already connected. Price or availability monitoring runs only when you explicitly schedule it.</p></div></aside></section>
+    <section className={`${shell.glass} ${styles.timeline}`}><div className={styles.timelineHead}><div><span className={styles.kicker}>Journey timeline</span><p className={shell.sectionNote}>Real upcoming travel signals, ordered in time.</p></div><Link href="/calendar" className={shell.btn}>View full calendar →</Link></div>{travelEvents.length?<div className={styles.timelineFlow}>{travelEvents.slice(0,6).map((item,index)=><article key={item.id} className={styles.stop} style={{'--stop':['#8ab9ea','#e9bd73','#ad86e6','#82c9a3','#ecab78','#77aee0'][index%6]} as React.CSSProperties}><strong>{dateShort(item.startAt)} · {item.title}</strong><p>{item.location??item.description??'Calendar travel signal'}</p></article>)}</div>:<div className={styles.emptyTimeline}>No upcoming calendar events currently provide enough evidence to form a journey timeline.</div>}</section>
+  </UtilityFrame></AppShell>;
 }
