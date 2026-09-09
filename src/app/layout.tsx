@@ -22,6 +22,7 @@ import './glow-canonical-integration.css';
 import './glow-shell.css';
 import './world-fold-2.css';
 import './world-fold-2-fixes.css';
+import './appearance-runtime.css';
 
 export const metadata: Metadata = {
   title: 'Glow OS',
