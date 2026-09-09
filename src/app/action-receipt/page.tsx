@@ -29,7 +29,7 @@ export default async function ActionReceiptPage({searchParams}:{searchParams:Pro
   const d=event?details(event.details):{};
   const executed=d.executedEntity&&typeof d.executedEntity==='object'?d.executedEntity as {entityType?:string;entityId?:string}:undefined;
   const reversible=event?.action==='ai_proposal_approved'&&event.entityId&&executed?.entityId;
-  const changes:event extends never?never[]:{title:string;note:string}[]=[];
+  const changes:{title:string;note:string}[]=[];
   if(event){
     changes.push({title:friendly(event.action),note:summaryFor(event.action,d)});
     if(executed?.entityType)changes.push({title:`${friendly(executed.entityType)} affected`,note:executed.entityId?`Object ${executed.entityId.slice(0,8)}…`:'Recorded in Glow'});
