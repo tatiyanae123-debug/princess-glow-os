@@ -23,6 +23,11 @@ const experience = (
 export function roomExperienceFor(pathname: string): RoomExperience {
   if (pathname === '/home') return experience('threshold', 'today', 'crystal-sunrise-pavilion', 'threshold-and-portals', 'whole-system-orchestration', 'Where am I now, and where do I want to go?', 'horizon-opens');
   if (pathname.startsWith('/search')) return experience('universal-search', 'brain', 'clear-prismatic-lens', 'focus-and-resolve', 'cross-world-retrieval', 'Where is the thing I am looking for?', 'result-focuses');
+  if (pathname.startsWith('/history')) return experience('history', 'brain', 'warm-history-ribbon', 'temporal-ledger-and-restore', 'history-provenance-and-reversal', 'What changed, and can I return?', 'history-remains-traceable');
+  if (pathname.startsWith('/action-receipt')) return experience('action-receipt', 'today', 'quiet-prismatic-confirmation', 'result-and-explanation', 'receipt-provenance-and-undo', 'What just changed?', 'receipt-joins-history');
+  if (pathname.startsWith('/attention')) return experience('attention-center', 'today', 'clear-focus-ribbon', 'triage-by-evidence', 'attention-and-priority-orchestration', 'What actually deserves my attention?', 'noise-recedes');
+  if (pathname.startsWith('/ask-glow/presence')) return experience('glow-presence', 'today', 'luminous-ambient-pearl', 'context-around-intelligence', 'intent-context-and-specialists', 'What context is Glow working with?', 'presence-remains-available');
+  if (pathname.startsWith('/ask-glow')) return experience('ask-glow', 'today', 'luminous-ambient-pearl', 'conversation-and-creation', 'multimodal-intent-and-execution', 'What do I want Glow to help with?', 'conversation-persists');
 
   if (pathname.startsWith('/beauty/gua-sha') || pathname.startsWith('/beauty/facial-massage')) return experience('gua-sha-studio', 'beauty', 'mint-water-pearl', 'guided-glide', 'shared-session-routine-and-tool-context', 'What does my face need, and what movement am I doing now?', 'soft-release');
   if (pathname.startsWith('/beauty/skincare')) return experience('skin', 'beauty', 'peach-pearl-lens', 'focus-through-material', 'treatment-and-routine-context', 'What does my skin need now?', 'skin-state-settles');
@@ -44,6 +49,7 @@ export function roomExperienceFor(pathname: string): RoomExperience {
   if (pathname.startsWith('/closet')) return experience('closet', 'life', 'textile-pearl', 'rail-and-layer', 'outfit-context', 'What should I wear?', 'outfit-composes');
   if (pathname.startsWith('/life') || pathname.startsWith('/world') || pathname.startsWith('/life-world')) return experience('life', 'life', 'lived-daylight', 'thresholds-and-rooms', 'domain-orchestration', 'Which part of life needs me?', 'room-glows-quietly');
   if (pathname.startsWith('/finance')) return experience('money', 'life', 'cool-mint-ivory', 'still-ledger', 'exact-and-restrained', 'What is true about my money?', 'number-resolves');
+  if (pathname === '/concierge' || pathname.startsWith('/concierge/journey')) return experience('journey-concierge', 'life', 'champagne-travel-pearl', 'journey-orbits', 'cross-domain-travel-orchestration', 'What journey are we preparing for?', 'journey-stays-connected');
 
   if (pathname.startsWith('/calendar')) return experience('time-observatory', 'plan', 'lavender-time-haze', 'orbital-time', 'conflict-and-preparation', 'Where does this belong in time?', 'time-slot-seals');
   if (pathname.startsWith('/planning') || pathname.startsWith('/tomorrow')) return experience('plan', 'plan', 'champagne-lavender-horizon', 'spatial-time', 'simulation-before-approval', 'What should the future look like?', 'approved-path-illuminates');
@@ -63,7 +69,7 @@ export function roomExperienceFor(pathname: string): RoomExperience {
   if (pathname.startsWith('/create')) return experience('create', 'create', 'mist-pearl', 'mist-to-structure', 'classify-after-capture', 'What is trying to become real?', 'object-finds-destination');
   if (pathname.startsWith('/import')) return experience('import', 'create', 'clear-prismatic-pearl', 'source-to-meaning', 'provenance-and-approval', 'What is this source actually saying?', 'approved-object-travels-home');
   if (pathname.startsWith('/inbox') || pathname.startsWith('/intake')) return experience('capture', 'create', 'mist-pearl', 'mist-to-structure', 'classify-after-capture', 'What is trying to become real?', 'object-finds-destination');
-  if (pathname.startsWith('/concierge')) return experience('concierge', 'create', 'champagne-command-light', 'situation-orchestration', 'multi-domain-coordination', 'What situation are we orchestrating?', 'plan-remains-one-living-situation');
+  if (pathname.startsWith('/concierge/approvals')) return experience('concierge-approvals', 'create', 'champagne-command-light', 'proposal-and-approval', 'approval-execution-and-reversal', 'What is Glow proposing to change?', 'decision-joins-history');
 
   if (pathname.startsWith('/settings')) return experience('settings', 'today', 'neutral-pearl', 'minimal-motion', 'explicit-control', 'How should Glow behave?', 'setting-confirms-with-receipt');
   if (pathname.startsWith('/gmail')) return experience('communications', 'life', 'quiet-ivory', 'thread-flow', 'contextual-follow-up', 'What needs a response?', 'thread-releases');
