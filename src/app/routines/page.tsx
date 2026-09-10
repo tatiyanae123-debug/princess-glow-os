@@ -1,7 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/app-shell';
-import { RoutineWorldV3 } from '@/components/routines/routine-world-v3';
+import { RoutineReferenceWorld } from '@/components/routines/routine-reference-world';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,9 +15,5 @@ export default async function RoutinesPage({ searchParams }: { searchParams: Sea
     redirect('/routines/daily-life/morning');
   }
 
-  return (
-    <AppShell>
-      <RoutineWorldV3 />
-    </AppShell>
-  );
+  return <RoutineReferenceWorld />;
 }
