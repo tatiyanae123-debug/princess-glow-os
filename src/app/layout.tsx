@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { GlowCurrent } from '@/components/glow/glow-current';
 import { GlowPresence } from '@/components/glow/glow-presence';
+import { DeepRoomAtmosphere } from '@/components/glow/deep-room-atmosphere';
 import { SpatialRouteTransition } from '@/components/glow/spatial-route-transition';
 import './globals.css';
 import './continuous-world.css';
@@ -22,6 +23,7 @@ import './glow-canonical-integration.css';
 import './glow-shell.css';
 import './world-fold-2.css';
 import './world-fold-2-fixes.css';
+import './domain-native-rooms.css';
 
 export const metadata: Metadata = {
   title: 'Glow OS',
@@ -34,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {children}
         <Suspense fallback={null}>
+          <DeepRoomAtmosphere />
           <GlowCurrent />
         </Suspense>
         <SpatialRouteTransition />
