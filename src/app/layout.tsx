@@ -25,6 +25,7 @@ import './world-fold-2.css';
 import './world-fold-2-fixes.css';
 import './domain-native-rooms.css';
 import './reference-fidelity-v4.css';
+import './reference-fidelity-v4-interactions.css';
 
 export const metadata: Metadata = {
   title: 'Glow OS',
