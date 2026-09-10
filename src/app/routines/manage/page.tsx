@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { RoutineWorldV2 } from '@/components/routines/routine-world-v2';
+import { RoutineWorldV3 } from '@/components/routines/routine-world-v3';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +11,7 @@ export default async function RoutineManagementPage() {
 
   return (
     <AppShell>
-      <RoutineWorldV2 />
+      <RoutineWorldV3 />
     </AppShell>
   );
 }
