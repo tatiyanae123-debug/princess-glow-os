@@ -17,13 +17,25 @@ const TODAY_QUERY_IDENTITIES: Record<string, Pick<DeepRoomIdentity,'id'|'domain'
   'day-view':{id:'today-day-view',domain:'today',material:'temporal-editorial',enclosure:'structured',purpose:'See now, next, later, tonight and tomorrow as regions of one continuous day.'},
 };
 
+const SKINCARE_IDENTITY: DeepRoomIdentity = {
+  id:'skincare-treatment-lab',
+  match:'/beauty/skincare',
+  world:'life',
+  domain:'skincare',
+  material:'treatment-cabinet',
+  enclosure:'structured',
+  purpose:'Move through today, routines, treatments, concerns, actives, devices, progress, history and knowledge as lenses into shared Skincare objects.',
+};
+
 export function DeepRoomAtmosphere() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const roomQuery = searchParams.get('room') ?? '';
 
   useEffect(() => {
-    let room = getDeepRoomIdentity(pathname);
+    let room = pathname === '/beauty/skincare' || pathname.startsWith('/beauty/skincare/')
+      ? SKINCARE_IDENTITY
+      : getDeepRoomIdentity(pathname);
     if (pathname === '/today' && TODAY_QUERY_IDENTITIES[roomQuery]) {
       room = { ...TODAY_QUERY_IDENTITIES[roomQuery], match:'/today', world:'today' };
     }
