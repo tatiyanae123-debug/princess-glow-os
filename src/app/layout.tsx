@@ -28,6 +28,7 @@ import './reference-fidelity-v4.css';
 import './reference-fidelity-v4-interactions.css';
 import './reference-fidelity-v4-rooms.css';
 import './reference-fidelity-v4-goals.css';
+import './reference-fidelity-v4-studio.css';
 
 export const metadata: Metadata = {
   title: 'Glow OS',
