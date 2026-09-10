@@ -59,6 +59,8 @@ export function PlanInstrumentChrome({
   return (
     <main className={`${styles.planInstrumentRoot} planInstrumentRoot`} data-plan-instrument={activeInstrument.toLowerCase()}>
       <section className={styles.shell}>
+        <span className={`${styles.shellPearl} ${styles.shellPearlA}`} aria-hidden="true" />
+        <span className={`${styles.shellPearl} ${styles.shellPearlB}`} aria-hidden="true" />
         <header className={styles.header}>
           <div className={styles.titleBlock}>
             <div className={styles.kicker}>GLOW OS BATCH 1 <span>·</span> WORLD 2</div>
@@ -67,15 +69,17 @@ export function PlanInstrumentChrome({
           </div>
 
           <nav className={styles.modeSwitch} aria-label="Plan modes">
-            <Link href="/planning" className={styles.active}>PLAN</Link>
+            <Link href="/planning" className={styles.active} aria-current="page">PLAN</Link>
             <Link href="/today?room=focus">FOCUS</Link>
             <Link href="/projects">BUILD</Link>
             <Link href="/planning/studio?mode=reflect">REFLECT</Link>
           </nav>
 
           <div className={styles.askWrap}>
-            <Link href="/ask-glow" className={styles.askButton}>Ask Glow</Link>
-            <Link href="/ask-glow" className={styles.askPearl} aria-label="Ask Glow" />
+            <Link href="/ask-glow" className={styles.askButton} aria-label="Ask Glow">
+              <span className={styles.askPearl} aria-hidden="true" />
+              <span>Ask Glow</span>
+            </Link>
           </div>
         </header>
 
