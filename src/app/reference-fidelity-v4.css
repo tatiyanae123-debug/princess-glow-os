@@ -1,0 +1,211 @@
+/* Reference fidelity pass: Plan + Today worlds */
+
+:root {
+  --glow-ref-ink: #302b31;
+  --glow-ref-muted: rgba(48,43,49,.52);
+  --glow-ref-line: rgba(255,255,255,.82);
+  --glow-ref-glass: linear-gradient(145deg, rgba(255,255,255,.42), rgba(255,255,255,.12));
+  --glow-ref-pearl: radial-gradient(circle at 29% 20%, #fff 0 10%, rgba(221,243,255,.94) 22%, rgba(224,215,255,.83) 43%, rgba(255,216,198,.70) 63%, rgba(207,239,232,.58) 79%, rgba(255,255,255,.17) 100%);
+}
+
+/* Make the Plan family read like one manufactured optical object. */
+.planInstrumentRoot {
+  background:
+    radial-gradient(ellipse at 12% 0%, rgba(255,255,255,.99), rgba(249,245,241,.78) 24%, transparent 47%),
+    radial-gradient(ellipse at 89% 5%, rgba(215,226,255,.30), transparent 31%),
+    radial-gradient(ellipse at 70% 95%, rgba(255,218,197,.27), transparent 30%),
+    radial-gradient(ellipse at 39% 75%, rgba(228,217,255,.19), transparent 37%),
+    linear-gradient(142deg, #e9e4df 0%, #f5f1ed 46%, #e7e1dc 100%) !important;
+}
+
+.planInstrumentRoot > section {
+  border-color: rgba(255,255,255,.98) !important;
+  box-shadow:
+    0 34px 110px rgba(67,57,67,.13),
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -1px 0 rgba(180,174,185,.27),
+    inset 0 0 0 8px rgba(255,255,255,.11),
+    0 0 0 1px rgba(226,221,224,.16) !important;
+}
+
+.planInstrumentRoot > section::before {
+  box-shadow: inset 0 0 60px rgba(255,255,255,.30), 0 1px 0 rgba(121,106,116,.06) !important;
+}
+
+.planInstrumentRoot [class*="modeSwitch"] {
+  height: 50px !important;
+  padding: 5px !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.47), rgba(255,255,255,.12)) !important;
+  box-shadow: inset 0 1px 0 #fff, inset 0 -12px 26px rgba(181,174,200,.06), 0 8px 24px rgba(73,63,73,.055) !important;
+}
+
+.planInstrumentRoot [class*="modeSwitch"] a[aria-current="page"],
+.planInstrumentRoot [class*="modeSwitch"] a[class*="active"] {
+  background:
+    radial-gradient(circle at 50% 19%, rgba(255,255,255,1), rgba(250,232,237,.72) 44%, rgba(228,218,251,.32) 76%, rgba(255,255,255,.17)) !important;
+  box-shadow:
+    inset 0 2px 5px rgba(255,255,255,1),
+    inset 0 -7px 18px rgba(224,204,244,.12),
+    0 5px 15px rgba(111,91,118,.10),
+    0 0 18px rgba(233,219,249,.28) !important;
+}
+
+.planInstrumentRoot [class*="planRail"] {
+  background: linear-gradient(145deg, rgba(255,255,255,.33), rgba(255,255,255,.08)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.96), 0 15px 36px rgba(79,66,76,.045) !important;
+  border-color: rgba(255,255,255,.79) !important;
+}
+
+.planInstrumentRoot [class*="railIcon"] {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.96), 0 7px 16px rgba(80,68,76,.055) !important;
+}
+
+.planInstrumentRoot [class*="planRail"] a[class*="active"] [class*="railIcon"] {
+  background: var(--glow-ref-pearl) !important;
+  box-shadow: inset 4px 4px 9px #fff, inset -4px -5px 10px rgba(121,124,182,.12), 0 6px 17px rgba(104,86,143,.17), 0 0 18px rgba(211,196,255,.30) !important;
+}
+
+.planInstrumentRoot [class*="glass"] {
+  border-color: rgba(255,255,255,.87) !important;
+  background: var(--glow-ref-glass) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.99),
+    inset 0 -1px 0 rgba(184,175,192,.08),
+    0 11px 30px rgba(70,61,76,.055),
+    0 0 0 1px rgba(255,255,255,.12) !important;
+  backdrop-filter: blur(22px) saturate(135%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(135%) !important;
+}
+
+.planInstrumentRoot [class*="pearl"],
+.planInstrumentRoot [class*="Pearl"] {
+  background: var(--glow-ref-pearl) !important;
+  box-shadow:
+    inset 7px 8px 15px rgba(255,255,255,.98),
+    inset -8px -10px 18px rgba(118,120,172,.13),
+    0 13px 26px rgba(87,75,99,.12),
+    0 0 25px rgba(221,217,255,.29) !important;
+}
+
+.planInstrumentRoot [class*="orbitLine"],
+.planInstrumentRoot [class*="routinePath"]::before {
+  border-color: rgba(133,148,190,.19) !important;
+  box-shadow: 0 0 5px rgba(255,255,255,.75), 0 0 10px rgba(176,164,220,.11) !important;
+}
+
+.planInstrumentRoot [class*="variant"][class*="active"] {
+  box-shadow:
+    inset 0 0 0 2px rgba(187,164,240,.48),
+    inset 0 1px 0 #fff,
+    inset 0 -10px 30px rgba(220,205,247,.10),
+    0 9px 30px rgba(102,82,150,.10),
+    0 0 24px rgba(219,202,255,.21) !important;
+}
+
+.planInstrumentRoot [class*="step"][class*="active"] [class*="stepOrb"] {
+  box-shadow:
+    inset 7px 7px 13px #fff,
+    inset -5px -6px 12px rgba(152,130,193,.12),
+    0 0 0 8px rgba(255,230,207,.20),
+    0 0 25px rgba(230,173,137,.47),
+    0 14px 25px rgba(111,93,116,.10) !important;
+}
+
+.planInstrumentRoot [class*="horizonScene"] {
+  background:
+    radial-gradient(ellipse at 25% 39%, rgba(255,244,224,.48), transparent 26%),
+    radial-gradient(ellipse at 63% 25%, rgba(215,230,255,.32), transparent 33%),
+    linear-gradient(180deg, rgba(238,243,251,.34), rgba(255,255,255,.08) 48%, rgba(221,233,244,.24)) !important;
+}
+
+.planInstrumentRoot [class*="goalMountain"] {
+  filter: drop-shadow(0 20px 20px rgba(107,115,146,.10)) drop-shadow(0 0 16px rgba(218,212,255,.20)) !important;
+}
+
+.planInstrumentRoot [class*="weekBoard"] {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -1px 0 rgba(152,160,192,.09),
+    0 22px 52px rgba(80,72,94,.08),
+    0 0 32px rgba(208,222,255,.12) !important;
+}
+
+.planInstrumentRoot [class*="eventBlock"] {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 7px 16px rgba(88,74,102,.08) !important;
+}
+
+/* Today reference family: preserve the same optical manufacturing language. */
+[data-today-reference-room] {
+  background:
+    radial-gradient(ellipse at 7% 4%, rgba(255,255,255,.96), rgba(250,246,242,.73) 30%, transparent 52%),
+    radial-gradient(ellipse at 90% 6%, rgba(217,229,255,.27), transparent 32%),
+    radial-gradient(ellipse at 73% 92%, rgba(255,222,202,.22), transparent 31%),
+    linear-gradient(145deg, rgba(235,230,225,.98), rgba(246,242,238,.97) 47%, rgba(232,226,222,.98)) !important;
+}
+
+[data-today-reference-room] [class*="stage"] {
+  border-color: rgba(255,255,255,.98) !important;
+  box-shadow:
+    0 32px 100px rgba(68,58,68,.12),
+    inset 0 1px 0 #fff,
+    inset 0 0 0 7px rgba(255,255,255,.08) !important;
+}
+
+[data-today-reference-room] [class*="glass"] {
+  border-color: rgba(255,255,255,.88) !important;
+  background: linear-gradient(145deg, rgba(255,255,255,.44), rgba(255,255,255,.11)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -1px 0 rgba(180,174,185,.07),
+    0 12px 32px rgba(70,61,76,.055) !important;
+  backdrop-filter: blur(22px) saturate(136%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(136%) !important;
+}
+
+[data-today-reference-room] [class*="pearl"],
+[data-today-reference-room] [class*="Pearl"] {
+  background: var(--glow-ref-pearl) !important;
+  box-shadow: inset 7px 8px 15px #fff, inset -8px -10px 18px rgba(118,120,172,.13), 0 13px 26px rgba(87,75,99,.12), 0 0 25px rgba(221,217,255,.29) !important;
+}
+
+[data-today-reference-room] [class*="matter"] {
+  filter: drop-shadow(0 18px 32px rgba(108,96,126,.09)) drop-shadow(0 0 22px rgba(224,213,255,.16));
+}
+
+[data-today-reference-room] [class*="eventLine"],
+[data-today-reference-room] [class*="majorBlock"],
+[data-today-reference-room] [class*="transitionBlock"] {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.94), 0 9px 24px rgba(75,64,79,.05) !important;
+}
+
+[data-today-reference-room="replan"] [class*="eventLine"],
+[data-today-reference-room="replan"] [class*="proposal"],
+[data-today-reference-room="replan"] [class*="suggest"] {
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+
+[data-today-reference-room="replan"] button:hover,
+[data-today-reference-room="day-view"] button:hover,
+[data-today-reference-room="tomorrow"] button:hover,
+.planInstrumentRoot button:hover,
+.planInstrumentRoot a:hover {
+  filter: brightness(1.015);
+}
+
+/* Dense desktop reference frame. Scale as a canvas on narrower screens rather than reflowing it into a generic dashboard. */
+@media (min-width: 1100px) {
+  .planInstrumentRoot { padding: 9px !important; }
+  .planInstrumentRoot > section { width: min(1490px, calc(100vw - 18px)) !important; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .planInstrumentRoot [class*="pearl"],
+  [data-today-reference-room] [class*="pearl"] {
+    animation: glowPearlDrift 8s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes glowPearlDrift {
+  from { transform: translateZ(0) translateY(0); }
+  to { transform: translateZ(0) translateY(-1.5px); }
+}
