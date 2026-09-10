@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { RitualLibraryExperience } from '@/components/routines/ritual-library-experience';
+import { RoutineWorldV2 } from '@/components/routines/routine-world-v2';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +11,7 @@ export default async function RoutinesPage() {
 
   return (
     <AppShell>
-      <RitualLibraryExperience />
+      <RoutineWorldV2 />
     </AppShell>
   );
 }
