@@ -1,15 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { GlowProvider } from '@/lib/context/glow-provider';
 import { roomExperienceFor } from '@/lib/glow-world/room-experience';
+import { pageContractViolations, pageManifestChainFor, pageManifestFor } from '@/lib/glow-world/page-manifest';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const experience = roomExperienceFor(pathname);
+  const manifest = useMemo(() => pageManifestFor(pathname), [pathname]);
+  const manifestChain = useMemo(() => pageManifestChainFor(pathname), [pathname]);
+  const violations = useMemo(() => pageContractViolations(pathname), [pathname]);
   const [focus, setFocus] = useState(false);
 
   useEffect(() => {
@@ -23,6 +27,35 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     };
   }, [pathname]);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.glowPageRegistered = manifest ? 'true' : 'false';
+    root.dataset.glowPageId = manifest?.id ?? 'unregistered';
+    root.dataset.glowPageLevel = manifest?.level ?? 'unknown';
+    root.dataset.glowExperienceFamily = manifest?.family ?? 'legacy-unregistered';
+    root.dataset.glowDesignFamily = manifest?.designFamily ?? 'legacy-unregistered';
+    root.dataset.glowLocationDepth = String(manifestChain.length);
+    root.dataset.glowContractState = violations.length ? 'violation' : 'valid';
+
+    document.dispatchEvent(new CustomEvent('glow:location-context', {
+      detail: {
+        pathname,
+        page: manifest,
+        ancestry: manifestChain,
+        violations,
+      },
+    }));
+
+    if (violations.length) {
+      document.dispatchEvent(new CustomEvent('glow:architecture-regression', {
+        detail: { pathname, violations },
+      }));
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('[Glow OS page contract]', pathname, violations);
+      }
+    }
+  }, [manifest, manifestChain, pathname, violations]);
+
   function exitFocus() {
     const params = new URLSearchParams(window.location.search);
     params.delete('focus');
@@ -32,11 +65,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const worldData = {
     'data-room': experience.room,
-    'data-world': experience.world,
+    'data-world': manifest?.world ?? experience.world,
     'data-climate': experience.climate,
     'data-physics': experience.physics,
     'data-intelligence': experience.intelligence,
     'data-completion-behavior': experience.completion,
+    'data-page-id': manifest?.id ?? 'unregistered',
+    'data-page-level': manifest?.level ?? 'unknown',
+    'data-experience-family': manifest?.family ?? 'legacy-unregistered',
+    'data-design-family': manifest?.designFamily ?? 'legacy-unregistered',
+    'data-page-contract': violations.length ? 'violation' : 'valid',
   } as const;
 
   return (
