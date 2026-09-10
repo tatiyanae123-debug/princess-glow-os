@@ -1,8 +1,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { MorningTemporalRoom } from '@/components/today/morning-temporal-room';
 import { TodayContextWorlds } from '@/components/today/today-context-worlds';
-import { TodayReferenceV2 } from '@/components/today/today-reference-v2';
+import { TodayExperienceFamily } from '@/components/today/today-experience-family';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,9 +18,10 @@ export default async function TodayPage({ searchParams }: TodayPageProps) {
   const params = await searchParams;
   const room = Array.isArray(params.room) ? params.room[0] : params.room;
 
-  // Glow Current remains mounted once at the app root. Today rooms contribute
-  // temporal/context identity and content without rebuilding global navigation.
-  if (room === 'morning') return <MorningTemporalRoom />;
+  // Today is one living day. Morning, What Now, Focus, Event, Next Up, Later,
+  // Tonight, Tomorrow, Replan and Day View are projections of the same shared
+  // personal context and canonical Glow object identities. Context worlds remain
+  // distinct lenses while the global Glow Current stays mounted at the app root.
   if (room && CONTEXT_ROOMS.has(room)) return <TodayContextWorlds />;
-  return <TodayReferenceV2 />;
+  return <TodayExperienceFamily />;
 }
