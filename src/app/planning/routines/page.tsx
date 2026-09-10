@@ -1,6 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { PlanRoutinesRoom, type PlanRoutineItem } from '@/components/plan/plan-reference-rooms';
+import { PlanRoutinesReferenceV4, type PlanRoutineItem } from '@/components/plan/plan-routines-reference-v4';
 import { getRoutinesByUser, getStepsByRoutine } from '@/lib/data/routines';
 
 export const dynamic = 'force-dynamic';
@@ -33,5 +33,5 @@ export default async function PlanningRoutinesPage() {
     })),
   }));
 
-  return <PlanRoutinesRoom routines={items} />;
+  return <PlanRoutinesReferenceV4 routines={items} />;
 }
