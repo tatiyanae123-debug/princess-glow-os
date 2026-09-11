@@ -4,6 +4,7 @@ import { GlowCurrent } from '@/components/glow/glow-current';
 import { GlowPresence } from '@/components/glow/glow-presence';
 import { DeepRoomAtmosphere } from '@/components/glow/deep-room-atmosphere';
 import { SpatialRouteTransition } from '@/components/glow/spatial-route-transition';
+import { WorldFoldReferenceChrome } from '@/components/glow/world-fold-reference-chrome';
 import './globals.css';
 import './continuous-world.css';
 import './reference-rooms.css';
@@ -23,6 +24,7 @@ import './glow-canonical-integration.css';
 import './glow-shell.css';
 import './world-fold-2.css';
 import './world-fold-2-fixes.css';
+import './world-fold-reference-lock.css';
 import './domain-native-rooms.css';
 import './reference-fidelity-v4.css';
 import './reference-fidelity-v4-interactions.css';
@@ -44,6 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Suspense fallback={null}>
           <DeepRoomAtmosphere />
           <GlowCurrent />
+          <WorldFoldReferenceChrome />
         </Suspense>
         <SpatialRouteTransition />
         <GlowPresence />
