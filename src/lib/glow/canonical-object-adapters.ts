@@ -9,7 +9,7 @@ export function adaptCanonicalObject<T>(source:T,adapter:ObjectAdapter<T>):Canon
 }
 
 export const TEMPLATE_OBJECT_COMPATIBILITY:Partial<Record<CanonicalObjectType,string[]>>={
- product:['T03','T04','T07','T08','T12'],routine:['T03','T04','T06','T07','T08','T09','T14'],task:['T04','T09','T10','T14'],event:['T04','T09','T10'],goal:['T04','T10','T11'],project:['T03','T04','T05','T06','T10','T11'],workout:['T03','T04','T07','T09','T11'],outfit:['T04','T05','T08','T12'],purchase:['T04','T09','T11'],note:['T03','T04','T05','T12'],trip:['T04','T09','T10','T12'],appointment:['T04','T09'],
+ product:['T03','T04','T07','T08','T12'],routine:['T03','T04','T06','T07','T08','T09','T14'],'routine-session':['T04','T07','T08','T14'],observation:['T04','T08','T09','T11','T14'],task:['T04','T09','T10','T14'],event:['T04','T09','T10'],goal:['T04','T10','T11'],project:['T03','T04','T05','T06','T10','T11'],workout:['T03','T04','T07','T09','T11'],outfit:['T04','T05','T08','T12'],purchase:['T04','T09','T11'],note:['T03','T04','T05','T12'],trip:['T04','T09','T10','T12'],appointment:['T04','T09'],
 };
 export function supportsTemplate(type:CanonicalObjectType,template:string){return TEMPLATE_OBJECT_COMPATIBILITY[type]?.includes(template)??false;}
 
