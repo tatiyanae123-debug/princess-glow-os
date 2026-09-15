@@ -11,10 +11,14 @@ function Frame({experience,children,kind}:{experience:GlowTemplateAdapterProps['
   <footer data-glow-slot="continuity" />
  </main>;
 }
-const template=(kind:string)=>({experience,children}:GlowTemplateAdapterProps)=><Frame experience={experience} kind={kind}>{children}</Frame>;
+function createTemplateAdapter(kind:string){
+ function GlowSharedTemplate({experience,children}:GlowTemplateAdapterProps){return <Frame experience={experience} kind={kind}>{children}</Frame>;}
+ GlowSharedTemplate.displayName=`GlowSharedTemplate(${kind})`;
+ return GlowSharedTemplate;
+}
 
 export const GLOW_SHARED_TEMPLATE_ADAPTERS:GlowTemplateAdapters={
- T01:template('world-home'),T02:template('room-home'),T03:template('library'),T04:template('object-detail'),T05:template('studio'),T06:template('builder'),T07:template('guided'),T08:template('intelligence'),T09:template('timeline'),T10:template('planner'),T11:template('progress'),T12:template('collection'),T13:template('learn'),T14:template('review'),T15:template('system'),
+ T01:createTemplateAdapter('world-home'),T02:createTemplateAdapter('room-home'),T03:createTemplateAdapter('library'),T04:createTemplateAdapter('object-detail'),T05:createTemplateAdapter('studio'),T06:createTemplateAdapter('builder'),T07:createTemplateAdapter('guided'),T08:createTemplateAdapter('intelligence'),T09:createTemplateAdapter('timeline'),T10:createTemplateAdapter('planner'),T11:createTemplateAdapter('progress'),T12:createTemplateAdapter('collection'),T13:createTemplateAdapter('learn'),T14:createTemplateAdapter('review'),T15:createTemplateAdapter('system'),
 };
 
 // Shared structural adapters intentionally contain no domain-owned navigation or one-off styling.
