@@ -1,4 +1,4 @@
-export type CanonicalObjectType='task'|'event'|'routine'|'routine-session'|'habit'|'goal'|'project'|'product'|'clothing-item'|'outfit'|'workout'|'workout-session'|'meal'|'appointment'|'person'|'place'|'trip'|'purchase'|'bill'|'document'|'note'|'idea'|'home-item'|'storage-location';
+export type CanonicalObjectType='task'|'event'|'routine'|'routine-session'|'habit'|'goal'|'project'|'product'|'clothing-item'|'outfit'|'workout'|'workout-session'|'meal'|'appointment'|'person'|'place'|'trip'|'purchase'|'bill'|'document'|'note'|'idea'|'home-item'|'storage-location'|'observation';
 export type MigrationDisposition='KEEP_CANONICAL'|'REFERENCE_CANONICAL'|'MERGE_DUPLICATE'|'MIGRATE_HISTORY'|'RETIRE_LOCAL_COPY'|'NEEDS_AUDIT';
 
 export type ObjectProjection={family:string;localName:string;canonicalType:CanonicalObjectType;disposition:MigrationDisposition;notes?:string};
@@ -9,6 +9,7 @@ export const CANONICAL_OBJECT_MIGRATION:ObjectProjection[]=[
  {family:'routines',localName:'routine',canonicalType:'routine',disposition:'KEEP_CANONICAL'},
  {family:'beauty',localName:'beauty routine',canonicalType:'routine',disposition:'REFERENCE_CANONICAL'},
  {family:'beauty',localName:'beauty product',canonicalType:'product',disposition:'KEEP_CANONICAL'},
+ {family:'beauty',localName:'skin observation/progress record',canonicalType:'observation',disposition:'REFERENCE_CANONICAL',notes:'Preserve source photos, timestamps, notes and provenance; UI progress projections do not own a second identity.'},
  {family:'closet',localName:'closet item',canonicalType:'clothing-item',disposition:'KEEP_CANONICAL'},
  {family:'closet',localName:'outfit',canonicalType:'outfit',disposition:'KEEP_CANONICAL'},
  {family:'fitness-wellness',localName:'workout',canonicalType:'workout',disposition:'KEEP_CANONICAL'},
