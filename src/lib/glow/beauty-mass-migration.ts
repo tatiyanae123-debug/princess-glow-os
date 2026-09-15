@@ -1,7 +1,7 @@
-import { BEAUTY_FACTORY_WAVE, BEAUTY_FACTORY_GATES } from './beauty-factory-wave';
+import { BEAUTY_FACTORY_ROOMS, BEAUTY_FACTORY_GATES } from './beauty-factory-wave';
 
 export type BeautyMigrationStatus='READY_FOR_FACTORY'|'EXCEPTION_REVIEW';
-export const BEAUTY_MASS_MIGRATION=BEAUTY_FACTORY_WAVE.map(room=>({
+export const BEAUTY_MASS_MIGRATION=BEAUTY_FACTORY_ROOMS.map(room=>({
  room:room.room,templates:room.templates,objects:room.objects,engines:room.engines,
  status:(room.exception?'EXCEPTION_REVIEW':'READY_FOR_FACTORY') as BeautyMigrationStatus,
  preserveExistingRoutes:true,preserveCanonicalData:true,retireOnlyAfterQa:true,
