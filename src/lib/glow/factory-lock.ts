@@ -1,0 +1,6 @@
+export type FactoryLockTarget='global-shell'|'templates'|'canonical-objects'|'state-machines'|'overlays'|'navigation'|'responsive-rules';
+export type FactoryLockEvidence={target:FactoryLockTarget;buildReady:boolean;automaticQaPassed:boolean;goldenApproved?:boolean;requiresGolden?:boolean;openBlockers:number};
+export type FactoryLock={target:FactoryLockTarget;status:'UNLOCKED'|'LOCKED';reason:string};
+export function evaluateFactoryLock(e:FactoryLockEvidence):FactoryLock{if(!e.buildReady)return {target:e.target,status:'UNLOCKED',reason:'Latest review deployment is not READY.'};if(!e.automaticQaPassed)return {target:e.target,status:'UNLOCKED',reason:'Automatic QA has not passed.'};if(e.openBlockers>0)return {target:e.target,status:'UNLOCKED',reason:`${e.openBlockers} blocker(s) remain.`};if(e.requiresGolden&&e.goldenApproved!==true)return {target:e.target,status:'UNLOCKED',reason:'Golden visual approval is pending.'};return {target:e.target,status:'LOCKED',reason:'All required gates passed.'};}
+export const FACTORY_LOCK_TARGETS:readonly FactoryLockTarget[]=['global-shell','templates','canonical-objects','state-machines','overlays','navigation','responsive-rules'];
+export const FACTORY_LOCK_LAW='Lock is earned by evidence. A contract or successful compile alone cannot lock a factory layer.' as const;
