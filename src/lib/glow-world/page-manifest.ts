@@ -68,6 +68,7 @@ export const GLOW_PAGE_MANIFESTS: GlowPageManifest[] = [
   manifest('beauty.devices', '/beauty/devices', 'Devices', 'beauty', 'room', '/beauty', 'beauty-devices', 'beauty-studio', 'structured', ['device','tool']),
   manifest('beauty.inventory', '/beauty/inventory', 'Inventory', 'beauty', 'room', '/beauty', 'beauty-inventory', 'inventory-room', 'structured', ['product','device','tool']),
   manifest('beauty.progress', '/beauty/progress', 'Progress', 'beauty', 'room', '/beauty', 'beauty-progress', 'history-room', 'structured', ['history','routine','product']),
+  manifest('beauty.hair', '/hair', 'Hair Studio', 'beauty', 'studio', '/beauty', 'hair', 'beauty-studio', 'open', ['product','routine','hair-state']),
 
   manifest('brain.world', '/brain', 'Brain', 'brain', 'world', null, 'brain', 'knowledge-world', 'open', ['note','memory','connection']),
   manifest('brain.search', '/search', 'Universal Search', 'brain', 'room', '/brain', 'search', 'universal-lens', 'open', ['glow-object']),
@@ -78,6 +79,8 @@ export const GLOW_PAGE_MANIFESTS: GlowPageManifest[] = [
   manifest('brain.observations', '/observations', 'Observations', 'brain', 'room', '/brain', 'observations', 'knowledge-room', 'open', ['observation']),
 
   manifest('create.world', '/create', 'Create', 'create', 'world', null, 'create', 'creation-world', 'open', ['creation']),
+  manifest('create.inbox', '/inbox', 'Inbox', 'create', 'room', '/create', 'capture', 'creation-room', 'structured', ['inbox-item','glow-object']),
+  manifest('create.projects', '/projects', 'Projects', 'create', 'room', '/create', 'projects', 'creation-room', 'structured', ['project','task']),
   manifest('create.import', '/import', 'Import', 'create', 'room', '/create', 'import', 'creation-room', 'structured', ['source','document']),
   manifest('create.concierge', '/concierge', 'Concierge', 'create', 'room', '/create', 'concierge', 'creation-room', 'open', ['glow-object']),
 ];
