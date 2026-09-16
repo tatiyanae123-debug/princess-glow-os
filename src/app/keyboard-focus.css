@@ -1,0 +1,57 @@
+/* Wave 9 Part 3 — shared keyboard and focus-visible parity.
+   This layer is imported last so page-local visual styling cannot silently remove
+   keyboard focus from interactive Glow controls. */
+
+:root {
+  --glow-focus-ring: var(--room-accent, var(--glow-accent));
+  --glow-focus-width: 2px;
+  --glow-focus-offset: 3px;
+}
+
+html {
+  scroll-padding-block-start: calc(var(--glow-safe-top, 0px) + var(--glow-shell-top-height, 58px) + 20px);
+  scroll-padding-block-end: calc(var(--glow-safe-bottom, 0px) + var(--glow-shell-dock-height, 52px) + 24px);
+}
+
+:where(
+  a[href],
+  button,
+  input,
+  textarea,
+  select,
+  summary,
+  [tabindex]:not([tabindex='-1']),
+  [contenteditable='true']
+):focus-visible {
+  outline: var(--glow-focus-width) solid var(--glow-focus-ring) !important;
+  outline-offset: var(--glow-focus-offset) !important;
+  scroll-margin-block-start: calc(var(--glow-shell-top-height, 58px) + 24px);
+  scroll-margin-block-end: calc(var(--glow-shell-dock-height, 52px) + 24px);
+}
+
+/* Preserve visible focus on semantic custom controls as well as native controls. */
+:where(
+  [role='button'][tabindex],
+  [role='switch'][tabindex],
+  [role='tab'][tabindex],
+  [role='menuitem'][tabindex],
+  [role='option'][tabindex]
+):focus-visible {
+  outline: var(--glow-focus-width) solid var(--glow-focus-ring) !important;
+  outline-offset: var(--glow-focus-offset) !important;
+}
+
+@media (forced-colors: active) {
+  :where(
+    a[href],
+    button,
+    input,
+    textarea,
+    select,
+    summary,
+    [tabindex]:not([tabindex='-1']),
+    [contenteditable='true']
+  ):focus-visible {
+    outline-color: Highlight !important;
+  }
+}
