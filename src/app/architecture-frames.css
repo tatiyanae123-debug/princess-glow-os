@@ -1,0 +1,134 @@
+/* Glow OS Page Architecture Constitution v1
+   Structural frames live inside the Global Glow Shell. They may change internal
+   composition by job, but never recreate global navigation or identity chrome. */
+
+.glow-architecture-frame {
+  container-type: inline-size;
+  width: 100%;
+  min-width: 0;
+}
+
+.glow-architecture-frame__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+  margin-bottom: 14px;
+}
+
+.glow-architecture-frame__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.glow-architecture-frame__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, .34fr);
+  grid-template-areas:
+    'primary inspector'
+    'supporting inspector';
+  gap: 14px;
+  min-width: 0;
+}
+
+.glow-architecture-frame__primary { grid-area: primary; min-width: 0; }
+.glow-architecture-frame__supporting { grid-area: supporting; min-width: 0; }
+.glow-architecture-frame__inspector { grid-area: inspector; min-width: 0; }
+.glow-architecture-frame__footer { margin-top: 14px; min-width: 0; }
+
+.glow-architecture-frame[data-architecture-layout='brief'] .glow-architecture-frame__body,
+.glow-architecture-frame[data-architecture-layout='protected'] .glow-architecture-frame__body {
+  grid-template-columns: minmax(0, 1fr) minmax(180px, .25fr);
+}
+
+.glow-architecture-frame[data-architecture-layout='command'] .glow-architecture-frame__body,
+.glow-architecture-frame[data-architecture-layout='studio'] .glow-architecture-frame__body {
+  grid-template-columns: minmax(0, 1.35fr) minmax(220px, .65fr) minmax(220px, .48fr);
+  grid-template-areas: 'primary supporting inspector';
+}
+
+.glow-architecture-frame[data-architecture-layout='map'] .glow-architecture-frame__body,
+.glow-architecture-frame[data-architecture-layout='graph'] .glow-architecture-frame__body {
+  grid-template-columns: minmax(0, 1.6fr) minmax(240px, .4fr);
+  grid-template-areas:
+    'primary inspector'
+    'supporting inspector';
+}
+
+.glow-architecture-frame[data-architecture-layout='sequence'] .glow-architecture-frame__body {
+  grid-template-columns: minmax(0, 1fr) minmax(210px, .3fr);
+  grid-template-areas:
+    'primary inspector'
+    'supporting inspector';
+}
+
+/* Tablet composition: preserve architecture meaning while reducing simultaneous rails. */
+@media (max-width: 1180px) {
+  .glow-architecture-frame[data-architecture-layout='command'] .glow-architecture-frame__body,
+  .glow-architecture-frame[data-architecture-layout='studio'] .glow-architecture-frame__body {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, .4fr);
+    grid-template-areas:
+      'primary inspector'
+      'supporting supporting';
+  }
+}
+
+/* Phone composition: inspectors become an end-of-flow sheet-like region. We do not
+   shrink the desktop canvas or add a second navigation system. */
+@media (max-width: 700px) {
+  .glow-architecture-frame__header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .glow-architecture-frame__actions {
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  .glow-architecture-frame__body,
+  .glow-architecture-frame[data-architecture-layout='brief'] .glow-architecture-frame__body,
+  .glow-architecture-frame[data-architecture-layout='protected'] .glow-architecture-frame__body,
+  .glow-architecture-frame[data-architecture-layout='command'] .glow-architecture-frame__body,
+  .glow-architecture-frame[data-architecture-layout='studio'] .glow-architecture-frame__body,
+  .glow-architecture-frame[data-architecture-layout='map'] .glow-architecture-frame__body,
+  .glow-architecture-frame[data-architecture-layout='graph'] .glow-architecture-frame__body,
+  .glow-architecture-frame[data-architecture-layout='sequence'] .glow-architecture-frame__body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'primary'
+      'supporting'
+      'inspector';
+  }
+
+  .glow-architecture-frame__inspector {
+    max-height: min(54dvh, 520px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .glow-architecture-frame[data-architecture-layout='protected'] .glow-architecture-frame__supporting {
+    order: 2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-architecture-frame *,
+  .glow-architecture-frame *::before,
+  .glow-architecture-frame *::after {
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .glow-architecture-frame__inspector,
+  .glow-architecture-frame__supporting {
+    border: 1px solid CanvasText;
+  }
+}
