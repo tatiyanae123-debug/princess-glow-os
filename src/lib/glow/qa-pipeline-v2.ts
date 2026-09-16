@@ -1,0 +1,6 @@
+export type AutomaticCheck='registry'|'typecheck'|'build'|'route-load'|'runtime-errors'|'loading-state'|'empty-state'|'error-state'|'primary-actions'|'context-retention'|'responsive-mobile'|'responsive-tablet'|'responsive-desktop'|'accessibility'|'canonical-data'|'history'|'provenance';
+export const AUTOMATIC_CHECKS:readonly AutomaticCheck[]=['registry','typecheck','build','route-load','runtime-errors','loading-state','empty-state','error-state','primary-actions','context-retention','responsive-mobile','responsive-tablet','responsive-desktop','accessibility','canonical-data','history','provenance'];
+export type CheckResult={check:AutomaticCheck;passed:boolean;details?:string};
+export type ExperienceQa={experienceId:string;results:CheckResult[];golden:boolean;goldenApproved?:boolean};
+export function evaluateExperienceQa(qa:ExperienceQa){const missing=AUTOMATIC_CHECKS.filter(c=>!qa.results.some(r=>r.check===c));const failed=qa.results.filter(r=>!r.passed);return {passed:missing.length===0&&failed.length===0&&(!qa.golden||qa.goldenApproved===true),missing,failed,goldenPending:qa.golden&&qa.goldenApproved!==true};}
+export const QA_EXECUTION_LAW='A Vercel READY build satisfies only the build/deployment gate. It never implies route, runtime, interaction, responsive, accessibility or Golden visual approval.' as const;

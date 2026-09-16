@@ -1,0 +1,64 @@
+/* Wave 9 Part 4 — shared overlay responsiveness.
+   Modal surfaces must fit compact phones, safe areas, orientation changes and
+   dynamic browser chrome without creating page-specific forks. */
+
+:root {
+  --glow-overlay-gap: 8px;
+  --glow-overlay-max-width: 32rem;
+}
+
+[data-glow-overlay-root='true'] {
+  padding-block-start: max(var(--glow-overlay-gap), var(--glow-safe-top, 0px));
+  padding-inline-end: max(var(--glow-overlay-gap), var(--glow-safe-right, 0px));
+  padding-block-end: max(var(--glow-overlay-gap), var(--glow-safe-bottom, 0px));
+  padding-inline-start: max(var(--glow-overlay-gap), var(--glow-safe-left, 0px));
+  overscroll-behavior: contain;
+}
+
+[data-glow-overlay-panel='true'] {
+  inline-size: 100%;
+  max-inline-size: min(100%, var(--glow-overlay-max-width));
+  max-block-size: calc(
+    var(--glow-viewport-height, 100dvh)
+    - max(var(--glow-overlay-gap), var(--glow-safe-top, 0px))
+    - max(var(--glow-overlay-gap), var(--glow-safe-bottom, 0px))
+  );
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+  scroll-padding-block: 16px;
+}
+
+/* Defensive behavior for modal surfaces that do not yet use the shared Dialog. */
+:where([role='dialog'][aria-modal='true']) {
+  max-inline-size: 100%;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 639px) {
+  [data-glow-overlay-root='true'] {
+    align-items: flex-end;
+  }
+
+  [data-glow-overlay-panel='true'] {
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+  }
+}
+
+@media (min-width: 640px) {
+  :root { --glow-overlay-gap: 16px; }
+  [data-glow-overlay-root='true'] { align-items: center; }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  [data-glow-overlay-root='true'] {
+    align-items: center;
+    --glow-overlay-gap: 6px;
+  }
+
+  [data-glow-overlay-panel='true'] {
+    max-inline-size: min(92vw, var(--glow-overlay-max-width));
+  }
+}

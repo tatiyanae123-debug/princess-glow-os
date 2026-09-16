@@ -19,17 +19,38 @@
   --glow-champagne: #d8c09f;
   --glow-shadow: 0 10px 30px rgba(92,65,54,.07);
   --glow-radius: 14px;
+  --glow-touch-target: 44px;
+  --glow-safe-top: env(safe-area-inset-top, 0px);
+  --glow-safe-right: env(safe-area-inset-right, 0px);
+  --glow-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --glow-safe-left: env(safe-area-inset-left, 0px);
+  --glow-viewport-height: 100vh;
+  --glow-viewport-width: 100vw;
   --glow-font-display: 'Playfair Display', Georgia, serif;
   --glow-font-body: 'Inter', system-ui, sans-serif;
   --glow-font-hand: 'Allura', 'Brush Script MT', cursive;
   color-scheme: light;
 }
 
+@supports (height: 100dvh) {
+  :root { --glow-viewport-height: 100dvh; }
+}
+
+@supports (width: 100dvw) {
+  :root { --glow-viewport-width: 100dvw; }
+}
+
 * { @apply box-border; }
-html { font-family: var(--glow-font-body); }
+html {
+  min-block-size: 100%;
+  font-family: var(--glow-font-body);
+  background-color: var(--glow-bg);
+}
 body {
   @apply min-h-screen antialiased;
+  min-block-size: var(--glow-viewport-height);
   margin: 0;
+  padding: 0;
   color: var(--glow-text);
   font-family: var(--glow-font-body);
   background:
@@ -42,6 +63,18 @@ body {
 .glow-hand { font-family: var(--glow-font-hand); }
 .glow-eyebrow { font-size: 9px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: #98746f; }
 .glow-editorial-page { position: relative; }
+.glow-touch-target { min-inline-size: var(--glow-touch-target); min-block-size: var(--glow-touch-target); }
+.glow-full-viewport { min-block-size: var(--glow-viewport-height); }
+.glow-safe-area {
+  padding-block-start: var(--glow-safe-top);
+  padding-inline-end: var(--glow-safe-right);
+  padding-block-end: var(--glow-safe-bottom);
+  padding-inline-start: var(--glow-safe-left);
+}
+.glow-safe-top { padding-block-start: var(--glow-safe-top); }
+.glow-safe-right { padding-inline-end: var(--glow-safe-right); }
+.glow-safe-bottom { padding-block-end: var(--glow-safe-bottom); }
+.glow-safe-left { padding-inline-start: var(--glow-safe-left); }
 
 .editorial-surface {
   border: 1px solid var(--glow-border);
@@ -137,6 +170,25 @@ body {
 @media (max-width:1023px) {
   .room-canvas::before { inset:0; }
 }
+
+/* Wave 9: preserve compact desktop composition while enforcing touch-safe controls. */
+@media (pointer: coarse), (any-pointer: coarse) {
+  button,
+  [role='button'],
+  input[type='button'],
+  input[type='submit'],
+  input[type='reset'],
+  [data-glow-touch-target] {
+    min-inline-size: var(--glow-touch-target);
+    min-block-size: var(--glow-touch-target);
+  }
+
+  input:not([type='checkbox']):not([type='radio']):not([type='hidden']),
+  select {
+    min-block-size: var(--glow-touch-target);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,*::before,*::after { transition-duration:.01ms !important; animation-duration:.01ms !important; }
 }

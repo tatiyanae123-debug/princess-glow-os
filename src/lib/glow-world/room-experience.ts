@@ -51,7 +51,7 @@ export function roomExperienceFor(pathname: string): RoomExperience {
   if (pathname.startsWith('/habits/daily')) return experience('habits-daily', 'plan', 'sunlit-pearl-conservatory', 'cyclical-rhythm', 'daily-habit-execution', 'What habits need attention today?', 'cycle-closes-softly');
   if (pathname.startsWith('/habits')) return experience('habits-overview', 'plan', 'sunlit-pearl-conservatory', 'pattern-and-rhythm', 'habit-pattern-intelligence', 'What patterns am I building?', 'pattern-settles');
   if (pathname.startsWith('/routines')) return experience('rhythm', 'plan', 'soft-sage-pearl', 'cyclical-rhythm', 'adaptive-routine', 'What rhythm supports today?', 'cycle-closes-softly');
-  if (pathname.startsWith('/goals') || pathname.startsWith('/projects')) return experience('horizon', 'plan', 'distant-champagne', 'landmark-horizon', 'progress-and-preparation', 'What am I moving toward?', 'horizon-clarifies');
+  if (pathname.startsWith('/goals')) return experience('horizon', 'plan', 'distant-champagne', 'landmark-horizon', 'progress-and-preparation', 'What am I moving toward?', 'horizon-clarifies');
 
   if (pathname.startsWith('/memory')) return experience('memory', 'brain', 'cinematic-amber-pearl', 'depth-and-resurfacing', 'contextual-recall', 'What do I want to remember?', 'memory-recedes-gently');
   if (pathname.startsWith('/timeline')) return experience('timeline', 'brain', 'river-pearl', 'temporal-river', 'history-vs-possibility', 'How did this unfold?', 'moment-joins-river');
@@ -61,6 +61,7 @@ export function roomExperienceFor(pathname: string): RoomExperience {
   if (pathname.startsWith('/brain') || pathname.startsWith('/rules') || pathname.startsWith('/briefings')) return experience('brain', 'brain', 'deep-pearl-atmosphere', 'conceptual-depth', 'knowledge-and-context', 'What do I know, notice, or need to understand?', 'meaning-settles');
 
   if (pathname.startsWith('/create')) return experience('create', 'create', 'mist-pearl', 'mist-to-structure', 'classify-after-capture', 'What is trying to become real?', 'object-finds-destination');
+  if (pathname.startsWith('/projects')) return experience('projects', 'create', 'mist-pearl-worktable', 'idea-to-structure', 'project-execution-context', 'What project is becoming real?', 'project-gains-shape');
   if (pathname.startsWith('/import')) return experience('import', 'create', 'clear-prismatic-pearl', 'source-to-meaning', 'provenance-and-approval', 'What is this source actually saying?', 'approved-object-travels-home');
   if (pathname.startsWith('/inbox') || pathname.startsWith('/intake')) return experience('capture', 'create', 'mist-pearl', 'mist-to-structure', 'classify-after-capture', 'What is trying to become real?', 'object-finds-destination');
   if (pathname.startsWith('/concierge')) return experience('concierge', 'create', 'champagne-command-light', 'situation-orchestration', 'multi-domain-coordination', 'What situation are we orchestrating?', 'plan-remains-one-living-situation');

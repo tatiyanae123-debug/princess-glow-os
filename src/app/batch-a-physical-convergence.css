@@ -1,0 +1,32 @@
+/* Batch A physical convergence.
+   The Global Glow Shell owns world navigation and Ask Glow. World experiences
+   keep their local identity, intelligence and room controls without rendering a
+   second app shell inside the same viewport. */
+
+/* Beauty Personal Atelier: preserve the atelier title, local identity card and
+   chambers while removing its legacy duplicate world header/navigation. */
+[data-beauty-atelier] > header,
+[data-beauty-atelier] > aside nav[aria-label='Glow regions'],
+[data-beauty-atelier] > aside button[data-open-glow] {
+  display: none !important;
+}
+
+/* Life Personal House: preserve LIFE identity and the personal profile card.
+   GlowCurrent owns Home/world switching, Ask Glow and global instruments. */
+[data-glow-room='life-personal-house'] header > :first-child,
+[data-glow-room='life-personal-house'] header > :last-child,
+[data-glow-room='life-personal-house'] aside[aria-label='Life instruments'] nav,
+[data-glow-room='life-personal-house'] aside[aria-label='Life instruments'] > a[href='/ask-glow'] {
+  display: none !important;
+}
+
+/* Local profile/context cards are information, not navigation authority. */
+[data-beauty-atelier] > aside,
+[data-glow-room='life-personal-house'] aside[aria-label='Life instruments'] {
+  pointer-events: none;
+}
+
+[data-beauty-atelier] > aside > :not(nav):not(button),
+[data-glow-room='life-personal-house'] aside[aria-label='Life instruments'] > :not(nav):not(a) {
+  pointer-events: auto;
+}
