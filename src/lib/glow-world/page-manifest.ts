@@ -35,6 +35,13 @@ export const REQUIRED_SYNC_DIMENSIONS: GlowSyncDimension[] = [
 export const GLOW_PAGE_MANIFESTS: GlowPageManifest[] = [
   manifest('today.world', '/today', 'Today', 'today', 'world', null, 'today', 'today-living', 'open', ['day','task','event','routine']),
   manifest('plan.world', '/planning', 'Plan', 'plan', 'world', null, 'planning', 'planning-studio', 'open', ['plan','task','event','goal']),
+  manifest('plan.planner', '/planning/planner', 'Planner', 'plan', 'room', '/planning', 'planner-v1', 'planning-studio', 'structured', ['planning-period','task','event']),
+  manifest('plan.planner.today', '/planning/planner/today', 'Today Planner', 'plan', 'experience', '/planning/planner', 'planner-v1', 'planning-studio', 'structured', ['planning-period','task','event']),
+  manifest('plan.planner.tomorrow', '/planning/planner/tomorrow', 'Tomorrow Planner', 'plan', 'experience', '/planning/planner', 'planner-v1', 'planning-studio', 'structured', ['planning-period','task','event']),
+  manifest('plan.planner.week', '/planning/planner/week', 'Week Ahead', 'plan', 'experience', '/planning/planner', 'planner-v1', 'planning-studio', 'structured', ['planning-period','task','event']),
+  manifest('plan.planner.month', '/planning/planner/month', 'This Month', 'plan', 'experience', '/planning/planner', 'planner-v1', 'planning-studio', 'structured', ['planning-period','task','event']),
+  manifest('plan.planner.archive', '/planning/planner/archive', 'Planning Archive', 'plan', 'experience', '/planning/planner', 'planner-v1', 'history-room', 'structured', ['planning-period','history']),
+  manifest('plan.planner.insights', '/planning/planner/insights', 'Planning Insights', 'plan', 'experience', '/planning/planner', 'planner-v1', 'history-room', 'structured', ['planning-period','history']),
   manifest('plan.calendar', '/calendar', 'Calendar', 'plan', 'room', '/planning', 'planning', 'temporal-observatory', 'structured', ['event','appointment']),
   manifest('plan.tasks', '/tasks', 'Tasks', 'plan', 'room', '/planning', 'planning', 'planning-studio', 'structured', ['task']),
   manifest('plan.reminders', '/reminders', 'Reminders', 'plan', 'room', '/planning', 'planning', 'planning-studio', 'structured', ['reminder']),
