@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { GlowCurrent } from '@/components/glow/glow-current';
 import { GlowPresence } from '@/components/glow/glow-presence';
 import { GlobalCoreBridge } from '@/components/glow/global-core-bridge';
+import { ArchitectureContextBridge } from '@/components/glow/architecture-context-bridge';
 import { DeepRoomAtmosphere } from '@/components/glow/deep-room-atmosphere';
 import { SpatialRouteTransition } from '@/components/glow/spatial-route-transition';
 import './globals.css';
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <Suspense fallback={null}>
           <GlobalCoreBridge />
+          <ArchitectureContextBridge />
           <DeepRoomAtmosphere />
           <GlowCurrent />
           <SpatialRouteTransition />
