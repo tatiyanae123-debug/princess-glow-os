@@ -36,23 +36,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     root.dataset.glowDesignFamily = manifest?.designFamily ?? 'legacy-unregistered';
     root.dataset.glowLocationDepth = String(manifestChain.length);
     root.dataset.glowContractState = violations.length ? 'violation' : 'valid';
+    root.dataset.glowVisualSystem = 'wave-7-converged';
 
     document.dispatchEvent(new CustomEvent('glow:location-context', {
-      detail: {
-        pathname,
-        page: manifest,
-        ancestry: manifestChain,
-        violations,
-      },
+      detail: { pathname, page: manifest, ancestry: manifestChain, violations },
     }));
 
     if (violations.length) {
-      document.dispatchEvent(new CustomEvent('glow:architecture-regression', {
-        detail: { pathname, violations },
-      }));
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn('[Glow OS page contract]', pathname, violations);
-      }
+      document.dispatchEvent(new CustomEvent('glow:architecture-regression', { detail: { pathname, violations } }));
+      if (process.env.NODE_ENV !== 'production') console.warn('[Glow OS page contract]', pathname, violations);
     }
   }, [manifest, manifestChain, pathname, violations]);
 
@@ -75,6 +67,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     'data-experience-family': manifest?.family ?? 'legacy-unregistered',
     'data-design-family': manifest?.designFamily ?? 'legacy-unregistered',
     'data-page-contract': violations.length ? 'violation' : 'valid',
+    'data-visual-system': 'wave-7-converged',
   } as const;
 
   return (

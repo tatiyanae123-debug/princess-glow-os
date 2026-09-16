@@ -1,0 +1,97 @@
+/* Glow OS · Batch C · Wave 7 Visual Convergence
+   Loaded last so legacy/reference rooms inherit one locked operating-system language
+   without duplicating page-local redesigns. */
+
+:root{
+  --glow-bg:#ffffff;
+  --glow-canvas:#ffffff;
+  --glow-surface:#ffffff;
+  --glow-surface-muted:#fafafa;
+  --glow-surface-glass:rgba(255,255,255,.78);
+  --glow-border:#ececec;
+  --glow-border-strong:#dedede;
+  --glow-text:#1c1c1e;
+  --glow-text-muted:#6e6e73;
+  --glow-accent:#b86f7d;
+  --glow-accent-soft:#f8eff1;
+  --glow-shadow:0 12px 36px rgba(28,28,30,.055);
+  --glow-shadow-soft:0 7px 24px rgba(28,28,30,.04);
+  --glow-radius:18px;
+  --glow-radius-small:12px;
+  --glow-touch:44px;
+  --glow-content:1500px;
+}
+
+html,body{background:var(--glow-canvas)!important;color:var(--glow-text);}
+body{font-family:var(--glow-font-body,'Inter',system-ui,sans-serif);font-size:14px;line-height:1.5;}
+
+/* One visual foundation across every registered Glow page. */
+[data-page-contract='valid'] .glow-room-stage{padding-top:24px;padding-bottom:48px;}
+[data-page-contract='valid'] .glow-room-content{max-width:var(--glow-content);}
+[data-page-contract='valid'] .glow-room-stage :where(h1,h2,h3,h4,p,span,small,label,input,textarea,select,button,a){text-rendering:optimizeLegibility;}
+[data-page-contract='valid'] .glow-room-stage :where(p,li,label,input,textarea,select,button,a){font-family:var(--glow-font-body,'Inter',system-ui,sans-serif);}
+[data-page-contract='valid'] .glow-room-stage :where(h1,.glow-display){font-family:var(--glow-font-display,'Playfair Display',Georgia,serif);}
+
+/* Readability floor. Existing micro-copy becomes metadata, never critical UI. */
+[data-page-contract='valid'] .glow-room-stage :where(.text-\[6px\],.text-\[7px\],.text-\[8px\],.text-\[9px\]){font-size:12px!important;line-height:1.45!important;}
+[data-page-contract='valid'] .glow-room-stage :where(.text-\[10px\],.text-\[11px\]){font-size:13px!important;line-height:1.5!important;}
+.glow-eyebrow{font-size:11px!important;line-height:1.4;letter-spacing:.16em;color:var(--room-accent,var(--glow-accent));}
+
+/* Shared editorial surfaces. Rooms keep their composition, not their own component language. */
+[data-page-contract='valid'] .glow-room-stage :where(.editorial-surface,.paper-card,[class*='Card'],article){border-color:var(--glow-border);}
+.editorial-surface,.paper-card{border:1px solid var(--glow-border)!important;border-radius:var(--glow-radius)!important;background:var(--glow-surface)!important;box-shadow:var(--glow-shadow-soft)!important;}
+.paper-card{background:linear-gradient(180deg,#fff,#fdfdfd)!important;}
+
+/* Calm fields and controls. */
+[data-page-contract='valid'] .glow-room-stage :where(input:not([type='checkbox']):not([type='radio']),textarea,select){min-height:44px;border:1px solid var(--glow-border-strong)!important;border-radius:12px!important;background:#fff!important;color:var(--glow-text)!important;padding:10px 12px!important;font-size:13px!important;box-shadow:none!important;outline:none;}
+[data-page-contract='valid'] .glow-room-stage :where(input,textarea,select):focus-visible{border-color:color-mix(in srgb,var(--room-accent,var(--glow-accent)) 52%,#fff)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--room-accent,var(--glow-accent)) 14%,transparent)!important;}
+[data-page-contract='valid'] .glow-room-stage :where(button,a){-webkit-tap-highlight-color:transparent;}
+[data-page-contract='valid'] .glow-room-stage button:not([aria-hidden='true']){min-height:var(--glow-touch);}
+[data-page-contract='valid'] .glow-room-stage :where(button,a):focus-visible{outline:2px solid color-mix(in srgb,var(--room-accent,var(--glow-accent)) 58%,#fff);outline-offset:3px;}
+
+/* Neutralize accidental full-screen color washes while preserving local accents. */
+[data-page-contract='valid'][data-world='plan'],
+[data-page-contract='valid'][data-world='brain'],
+[data-page-contract='valid'][data-world='create'],
+[data-page-contract='valid'][data-world='life'],
+[data-page-contract='valid'][data-world='beauty']{background-color:#fff;}
+[data-page-contract='valid'] .room-canvas::before{opacity:.36;}
+
+/* World accent vocabulary. Accent changes meaning, not the operating system. */
+[data-world='today']{--room-accent:#8c7b68;--room-accent-soft:#f4efe9;}
+[data-world='plan']{--room-accent:#9b7785;--room-accent-soft:#f8eff1;}
+[data-world='life']{--room-accent:#71806b;--room-accent-soft:#f1f5ef;}
+[data-world='beauty']{--room-accent:#ae7479;--room-accent-soft:#fbf1f2;}
+[data-world='brain']{--room-accent:#756e8e;--room-accent-soft:#f3f1f8;}
+[data-world='create']{--room-accent:#9a6f86;--room-accent-soft:#f8f0f5;}
+
+/* Universal status language. */
+[data-page-contract='valid'] [class*='warning'],
+[data-page-contract='valid'] [data-state='warning']{--state-accent:#b46a58;}
+[data-page-contract='valid'] [class*='success'],
+[data-page-contract='valid'] [data-state='success']{--state-accent:#6f8f74;}
+[data-page-contract='valid'] [class*='error'],
+[data-page-contract='valid'] [data-state='error']{--state-accent:#a85d63;}
+
+/* Empty and fallback surfaces inherit one pattern even when their copy remains room-specific. */
+[data-page-contract='valid'] :where([data-empty-state='true'],.glow-empty-state){border:1px dashed var(--glow-border-strong);border-radius:var(--glow-radius);background:var(--glow-surface-muted);padding:24px;text-align:center;color:var(--glow-text-muted);}
+
+/* Focus Mode recedes secondary material instead of inventing a new page. */
+[data-focus-mode='true'] .glow-room-stage{max-width:980px;margin-inline:auto;}
+[data-focus-mode='true'] .glow-room-stage :where([data-secondary='true'],.glow-secondary){opacity:.28;filter:saturate(.4);pointer-events:none;}
+.glow-focus-exit{right:max(20px,env(safe-area-inset-right));top:max(20px,env(safe-area-inset-top));border:1px solid var(--glow-border);border-radius:999px;background:rgba(255,255,255,.92);box-shadow:var(--glow-shadow);backdrop-filter:blur(18px);color:var(--glow-text);}
+
+/* Stable responsive rhythm. Same meaning, recomposed geometry. */
+@media(max-width:1199px){
+  [data-page-contract='valid'] .glow-room-stage{padding-inline:20px;}
+}
+@media(max-width:767px){
+  [data-page-contract='valid'] .glow-room-stage{padding:18px 16px 36px;}
+  [data-page-contract='valid'] .glow-room-stage :where(h1,.glow-display.text-\[25px\],.glow-display.text-\[29px\],.glow-display.text-\[30px\],.glow-display.text-\[31px\]){font-size:30px!important;line-height:1.08!important;}
+  [data-page-contract='valid'] .glow-room-stage :where(.grid){min-width:0;}
+  [data-page-contract='valid'] .glow-room-stage :where(button,a,input,textarea,select){max-width:100%;}
+}
+
+@media(prefers-reduced-motion:reduce){
+  [data-page-contract='valid'] *,[data-page-contract='valid'] *::before,[data-page-contract='valid'] *::after{scroll-behavior:auto!important;animation:none!important;transition-duration:.01ms!important;}
+}
