@@ -151,4 +151,4 @@ describe('Batch C · representative Golden routes', () => {
       expect(railTargetsForWorld(golden.world).length).toBeGreaterThan(0);
     });
   }
-}
+});
