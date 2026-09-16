@@ -8,14 +8,15 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "vercel-build": "npm run test:architecture && npm run test:matrix && next build",
+    "vercel-build": "npm run test:architecture && npm run test:matrix && npm run test:wave3-beauty && next build",
     "db:migrate": "node scripts/migrate.mjs",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:architecture": "vitest run src/test/architecture-constitution.test.ts",
-    "test:matrix": "vitest run src/test/batch-c-matrix.test.ts"
+    "test:matrix": "vitest run src/test/batch-c-matrix.test.ts",
+    "test:wave3-beauty": "vitest run src/test/wave-3-beauty.test.ts"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^4.0.74",
