@@ -8,12 +8,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "vercel-build": "next build",
+    "vercel-build": "npm run test:matrix && next build",
     "db:migrate": "node scripts/migrate.mjs",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:matrix": "vitest run src/test/batch-c-matrix.test.ts"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^4.0.74",
