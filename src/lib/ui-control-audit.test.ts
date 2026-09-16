@@ -3,9 +3,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
 
-// Exhaustive source-level audit: no visible control may ship without an action or destination.
+// Wave 8 source-level contract: visible controls must have actions and literal internal
+// destinations must resolve to an App Router page (or a supported special target).
 const ROOT=process.cwd();
 const SRC=path.join(ROOT,'src');
+const APP=path.join(SRC,'app');
 
 function walk(dir:string):string[]{
   return fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>{
@@ -39,10 +41,18 @@ function hasSpreadProps(opening:ts.JsxOpeningLikeElement){
 }
 
 function lineOf(source:ts.SourceFile,node:ts.Node){return source.getLineAndCharacterOfPosition(node.getStart()).line+1;}
+function normalizeHref(value:string){return value.split('#')[0].split('?')[0].replace(/\/$/,'')||'/';}
+function appPageExists(href:string){
+  const route=normalizeHref(href);
+  if(route==='/')return fs.existsSync(path.join(APP,'page.tsx'));
+  return fs.existsSync(path.join(APP,...route.slice(1).split('/'),'page.tsx'));
+}
+function internalLiteral(value:string|null){return typeof value==='string'&&value.startsWith('/')&&!value.startsWith('//');}
 
 function audit(){
   const inertButtons:Array<{file:string;line:number;text:string}>=[];
   const badLinks:Array<{file:string;line:number;text:string}>=[];
+  const missingRoutes:Array<{file:string;line:number;href:string}>=[];
   for(const file of walk(SRC)){
     const text=fs.readFileSync(file,'utf8');
     const source=ts.createSourceFile(file,text,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
@@ -63,6 +73,8 @@ function audit(){
           const hrefValue=attrLiteral(href);
           if(!href||hrefValue===''||hrefValue==='#'||(typeof hrefValue==='string'&&hrefValue.toLowerCase().startsWith('javascript:'))){
             badLinks.push({file:path.relative(ROOT,file),line:lineOf(source,node),text:node.getText(source).slice(0,180)});
+          }else if(internalLiteral(hrefValue)&&!appPageExists(hrefValue!)){
+            missingRoutes.push({file:path.relative(ROOT,file),line:lineOf(source,node),href:hrefValue!});
           }
         }
       }
@@ -70,10 +82,11 @@ function audit(){
     };
     visit(source);
   }
-  return {inertButtons,badLinks};
+  return {inertButtons,badLinks,missingRoutes};
 }
 
 describe('interactive control audit',()=>{
   it('ships no inert buttons anywhere in the app',()=>{expect(audit().inertButtons).toEqual([]);});
   it('ships no missing or placeholder link targets',()=>{expect(audit().badLinks).toEqual([]);});
+  it('ships no literal internal links to missing pages',()=>{expect(audit().missingRoutes).toEqual([]);});
 });
