@@ -38,13 +38,16 @@ const RAIL_TARGETS: Record<GlowWorld, ShellTarget[]> = {
   life: [
     { label: 'Life', path: '/life', cue: 'Personal House' }, { label: 'Body', path: '/wellness', cue: 'Body' },
     { label: 'Fitness', path: '/fitness', cue: 'Movement' }, { label: 'Food', path: '/food', cue: 'Nourishment' },
-    { label: 'Closet', path: '/closet', cue: 'Wardrobe' }, { label: 'Home', path: '/life?focus=home', cue: 'Place' },
+    { label: 'Closet', path: '/closet', cue: 'Wardrobe' }, { label: 'Home', path: '/life?room=home', cue: 'Place' },
     { label: 'Money', path: '/finance', cue: 'Money' }, { label: 'Work', path: '/work', cue: 'Work' },
+    { label: 'Relationships', path: '/life?room=relationships', cue: 'People' }, { label: 'Travel', path: '/life?room=travel', cue: 'Places' },
   ],
   beauty: [
     { label: 'Beauty', path: '/beauty', cue: 'Personal Atelier' }, { label: 'Beauty Today', path: '/beauty/today', cue: 'Now' },
     { label: 'Skin', path: '/beauty/skincare', cue: 'Treatment' }, { label: 'Hair', path: '/hair', cue: 'Hair' },
     { label: 'Makeup', path: '/beauty/makeup', cue: 'Looks' }, { label: 'Body', path: '/beauty/body', cue: 'Body care' },
+    { label: 'Nails', path: '/beauty/nails', cue: 'Nail care' }, { label: 'Brows', path: '/beauty/brows', cue: 'Brow care' },
+    { label: 'Lashes', path: '/beauty/lashes', cue: 'Lash care' }, { label: 'Oral Care', path: '/beauty/oral', cue: 'Oral care' },
     { label: 'Fragrance', path: '/beauty/fragrance', cue: 'Scent' }, { label: 'Gua Sha Studio', path: '/beauty/gua-sha', cue: 'Guided facial movement' },
     { label: 'Maintenance', path: '/beauty/maintenance', cue: 'Rhythm' }, { label: 'Devices', path: '/beauty/devices', cue: 'Tools' },
     { label: 'Inventory', path: '/beauty/inventory', cue: 'Owned' }, { label: 'Progress', path: '/beauty/progress', cue: 'History' },
@@ -56,7 +59,8 @@ const RAIL_TARGETS: Record<GlowWorld, ShellTarget[]> = {
     { label: 'Observations', path: '/observations', cue: 'Patterns' },
   ],
   create: [
-    { label: 'Create', path: '/create', cue: 'Possibility' }, { label: 'Import', path: '/import', cue: 'Transform sources' },
+    { label: 'Create', path: '/create', cue: 'Possibility' }, { label: 'Inbox', path: '/inbox', cue: 'Capture' },
+    { label: 'Projects', path: '/projects', cue: 'Build' }, { label: 'Import', path: '/import', cue: 'Transform sources' },
     { label: 'Concierge', path: '/concierge', cue: 'Orchestrate' },
   ],
 };
