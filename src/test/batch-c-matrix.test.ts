@@ -137,7 +137,7 @@ describe('Batch C · device, mode and state matrix', () => {
     expect(focus).toContain(':focus-visible');
     expect(phone).toContain('touch-action: manipulation');
     expect(phone).toContain('@media (forced-colors: active)');
-    expect(dialog).toContain('previousFocusRef');
+    expect(dialog).toContain('previousFocus');
     expect(dialog).toContain('focusable');
   });
 });
