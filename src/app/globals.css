@@ -19,6 +19,7 @@
   --glow-champagne: #d8c09f;
   --glow-shadow: 0 10px 30px rgba(92,65,54,.07);
   --glow-radius: 14px;
+  --glow-touch-target: 44px;
   --glow-font-display: 'Playfair Display', Georgia, serif;
   --glow-font-body: 'Inter', system-ui, sans-serif;
   --glow-font-hand: 'Allura', 'Brush Script MT', cursive;
@@ -42,6 +43,7 @@ body {
 .glow-hand { font-family: var(--glow-font-hand); }
 .glow-eyebrow { font-size: 9px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: #98746f; }
 .glow-editorial-page { position: relative; }
+.glow-touch-target { min-inline-size: var(--glow-touch-target); min-block-size: var(--glow-touch-target); }
 
 .editorial-surface {
   border: 1px solid var(--glow-border);
@@ -137,6 +139,25 @@ body {
 @media (max-width:1023px) {
   .room-canvas::before { inset:0; }
 }
+
+/* Wave 9: preserve compact desktop composition while enforcing touch-safe controls. */
+@media (pointer: coarse), (any-pointer: coarse) {
+  button,
+  [role='button'],
+  input[type='button'],
+  input[type='submit'],
+  input[type='reset'],
+  [data-glow-touch-target] {
+    min-inline-size: var(--glow-touch-target);
+    min-block-size: var(--glow-touch-target);
+  }
+
+  input:not([type='checkbox']):not([type='radio']):not([type='hidden']),
+  select {
+    min-block-size: var(--glow-touch-target);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,*::before,*::after { transition-duration:.01ms !important; animation-duration:.01ms !important; }
 }
