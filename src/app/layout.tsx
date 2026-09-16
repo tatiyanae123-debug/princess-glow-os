@@ -34,6 +34,7 @@ import './reference-fidelity-v4-studio.css';
 import './reference-fidelity-v4-support.css';
 import './overlay-responsiveness.css';
 import './device-composition.css';
+import './batch-a-physical-convergence.css';
 import './keyboard-focus.css';
 
 export const metadata: Metadata = {
