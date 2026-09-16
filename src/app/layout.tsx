@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Suspense } from 'react';
 import { GlowCurrent } from '@/components/glow/glow-current';
 import { GlowPresence } from '@/components/glow/glow-presence';
@@ -36,6 +36,12 @@ import './reference-fidelity-v4-support.css';
 export const metadata: Metadata = {
   title: 'Glow OS',
   description: 'A calm intelligent personal life operating system',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
