@@ -1,23 +1,40 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 export function SpatialRouteTransition() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const search = searchParams.toString();
+  const routeKey = search ? `${pathname}?${search}` : pathname;
   const router = useRouter();
   const busy = useRef(false);
   const timer = useRef<number | null>(null);
+  const fallbackTimer = useRef<number | null>(null);
 
   useEffect(() => {
     const clear = window.setTimeout(() => {
       busy.current = false;
       document.documentElement.removeAttribute('data-glow-transition');
-    }, 260);
+      document.body?.removeAttribute('aria-busy');
+      if (fallbackTimer.current) {
+        window.clearTimeout(fallbackTimer.current);
+        fallbackTimer.current = null;
+      }
+      document.dispatchEvent(new CustomEvent('glow:navigation-settled', { detail: { path: routeKey } }));
+    }, 40);
     return () => window.clearTimeout(clear);
-  }, [pathname]);
+  }, [routeKey]);
 
   useEffect(() => {
+    const finishFallback = () => {
+      busy.current = false;
+      document.documentElement.removeAttribute('data-glow-transition');
+      document.body?.removeAttribute('aria-busy');
+      fallbackTimer.current = null;
+    };
+
     const move = (destination: string) => {
       if (!destination || busy.current) return;
       const url = new URL(destination, window.location.href);
@@ -28,15 +45,18 @@ export function SpatialRouteTransition() {
       const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
       const next = `${url.pathname}${url.search}${url.hash}`;
       if (current === next) return;
+
       busy.current = true;
       document.documentElement.setAttribute('data-glow-transition', 'moving');
+      document.body?.setAttribute('aria-busy', 'true');
+      document.dispatchEvent(new CustomEvent('glow:navigation-start', { detail: { from: current, to: next } }));
+
       if (timer.current) window.clearTimeout(timer.current);
-      timer.current = window.setTimeout(() => router.push(next), 170);
-      window.setTimeout(() => {
-        if (!busy.current) return;
-        busy.current = false;
-        document.documentElement.removeAttribute('data-glow-transition');
-      }, 1100);
+      if (fallbackTimer.current) window.clearTimeout(fallbackTimer.current);
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      timer.current = window.setTimeout(() => router.push(next), reduceMotion ? 0 : 170);
+      fallbackTimer.current = window.setTimeout(finishFallback, 1100);
     };
 
     const onGlowNavigate = (event: Event) => {
@@ -63,6 +83,8 @@ export function SpatialRouteTransition() {
       document.removeEventListener('glow:navigate', onGlowNavigate as EventListener);
       document.removeEventListener('click', onClick, true);
       if (timer.current) window.clearTimeout(timer.current);
+      if (fallbackTimer.current) window.clearTimeout(fallbackTimer.current);
+      document.body?.removeAttribute('aria-busy');
     };
   }, [router]);
 

@@ -35,6 +35,7 @@ import './reference-fidelity-v4-support.css';
 import './overlay-responsiveness.css';
 import './device-composition.css';
 import './batch-a-physical-convergence.css';
+import './batch-b-whole-app-convergence.css';
 import './keyboard-focus.css';
 
 export const metadata: Metadata = {
@@ -57,8 +58,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <GlobalCoreBridge />
           <DeepRoomAtmosphere />
           <GlowCurrent />
+          <SpatialRouteTransition />
         </Suspense>
-        <SpatialRouteTransition />
         <GlowPresence />
       </body>
     </html>

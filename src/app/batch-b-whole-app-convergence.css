@@ -1,0 +1,293 @@
+/* Batch B · Whole-App Convergence
+   Shared ancestors own responsive geometry, interaction safety and shell access.
+   Page families keep their own art direction, while these rules prevent any one
+   room from becoming clipped, unreachable or physically inconsistent. */
+
+html,
+body {
+  max-inline-size: 100%;
+  overflow-x: clip;
+}
+
+:where(main, section, article, aside, nav, form) {
+  min-inline-size: 0;
+}
+
+:where(img, video, canvas) {
+  max-inline-size: 100%;
+  height: auto;
+}
+
+:where(a[href], button, summary, [role='button']) {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(button, input, textarea, select)[disabled],
+[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: .58;
+}
+
+[aria-busy='true'] {
+  cursor: progress;
+}
+
+/* The Current rail must scale with room count. Beauty and other deep worlds are
+   allowed to add destinations without making the lower rooms unreachable. */
+.glow-current__rail {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+  overflow: hidden;
+}
+
+.glow-current__rail-current {
+  flex: 0 0 auto;
+}
+
+.glow-current__rail-paths {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-padding-block: 6px;
+  scrollbar-width: none;
+}
+
+.glow-current__rail-paths::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.glow-current__rail[data-expanded='true'] .glow-current__rail-paths,
+.glow-current__rail:hover .glow-current__rail-paths,
+.glow-current__rail:focus-within .glow-current__rail-paths {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(85, 76, 70, .18) transparent;
+}
+
+.glow-current__rail[data-expanded='true'] .glow-current__rail-paths::-webkit-scrollbar,
+.glow-current__rail:hover .glow-current__rail-paths::-webkit-scrollbar,
+.glow-current__rail:focus-within .glow-current__rail-paths::-webkit-scrollbar {
+  width: 4px;
+}
+
+.glow-current__rail[data-expanded='true'] .glow-current__rail-paths::-webkit-scrollbar-thumb,
+.glow-current__rail:hover .glow-current__rail-paths::-webkit-scrollbar-thumb,
+.glow-current__rail:focus-within .glow-current__rail-paths::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(85, 76, 70, .18);
+}
+
+/* Phone composition is a different arrangement of the same shell, not a second
+   navigation system. The orientation row drops below the primary controls so it
+   never collides with Home, Return or Shakti. */
+@media (max-width: 700px) {
+  :root {
+    --glow-shell-edge: max(8px, env(safe-area-inset-left));
+    --glow-shell-edge-right: max(8px, env(safe-area-inset-right));
+    --glow-shell-top: max(7px, env(safe-area-inset-top));
+    --glow-shell-bottom: max(7px, env(safe-area-inset-bottom));
+    --glow-shell-top-height: 78px;
+    --glow-shell-dock-height: 50px;
+  }
+
+  .glow-current__top-band {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: 42px 30px;
+    grid-template-areas:
+      'left shakti'
+      'orientation orientation';
+    align-items: center;
+    gap: 2px 6px;
+  }
+
+  .glow-current__top-left {
+    grid-area: left;
+    max-inline-size: calc(100vw - var(--glow-safe-left, 0px) - var(--glow-safe-right, 0px) - 58px);
+    gap: 4px;
+    overflow: hidden;
+  }
+
+  .glow-current__brand {
+    min-inline-size: 40px;
+    min-height: 38px;
+    padding-inline: 5px;
+    font-size: 10px;
+  }
+
+  .glow-current__brand-copy small,
+  .glow-current__return-copy {
+    display: none;
+  }
+
+  .glow-current__return-anchor {
+    min-width: 36px !important;
+    width: 36px !important;
+    height: 36px !important;
+    justify-content: center;
+    gap: 0;
+    padding: 0 !important;
+  }
+
+  .glow-current__orientation {
+    grid-area: orientation;
+    min-width: 0;
+    max-width: calc(100vw - var(--glow-safe-left, 0px) - var(--glow-safe-right, 0px) - 32px);
+    flex-direction: row;
+    justify-content: center;
+    gap: 7px;
+  }
+
+  .glow-current__world-identity {
+    min-height: 27px;
+    max-width: 132px;
+    padding-inline: 9px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 10px;
+  }
+
+  .glow-current__depth-signal {
+    max-width: 52vw;
+    min-height: 14px;
+  }
+
+  .glow-current__depth-node {
+    font-size: 8px;
+  }
+
+  .glow-current__depth-node:not([data-active='true']) span {
+    display: none;
+  }
+
+  .glow-current__shakti {
+    grid-area: shakti;
+    min-width: 42px;
+    width: 42px;
+    min-height: 38px;
+    justify-content: center;
+    padding: 4px;
+  }
+
+  .glow-current__shakti-copy {
+    display: none;
+  }
+
+  .glow-current__shakti-light {
+    width: 26px;
+    height: 22px;
+  }
+
+  .glow-current__rail {
+    left: calc(var(--glow-shell-edge) + 1px);
+    max-height: calc(
+      var(--glow-viewport-height, 100dvh)
+      - var(--glow-shell-top-height)
+      - var(--glow-shell-dock-height)
+      - var(--glow-safe-top, 0px)
+      - var(--glow-safe-bottom, 0px)
+      - 48px
+    );
+  }
+
+  .glow-current__rail[data-expanded='true'],
+  .glow-current__rail:hover,
+  .glow-current__rail:focus-within {
+    width: min(168px, calc(100vw - 82px));
+  }
+
+  .glow-current__dock {
+    width: calc(var(--glow-shell-available-width, 100dvw) - 12px);
+    min-height: var(--glow-shell-dock-height);
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 4px;
+    padding: 4px;
+    border-radius: 20px;
+  }
+
+  .glow-current__reverse {
+    width: 40px !important;
+    max-width: 40px;
+    justify-content: center;
+    padding-inline: 5px !important;
+  }
+
+  .glow-current__reverse-copy,
+  .glow-current__dock-state,
+  .glow-current__dock-quiet {
+    display: none;
+  }
+
+  .glow-current__seam {
+    width: 94px !important;
+    height: 40px !important;
+    padding-inline: 10px;
+  }
+
+  .glow-current__seam:hover,
+  .glow-current__seam:focus-visible,
+  .glow-current__seam[aria-expanded='true'] {
+    width: 98px !important;
+  }
+
+  .glow-current__dock-action {
+    min-height: 40px;
+    max-width: 112px;
+    padding-inline: 9px;
+    font-size: 9px;
+  }
+
+  .glow-current__dock-action--primary {
+    min-width: 0;
+  }
+
+  .glow-world-shell .glow-room-stage {
+    padding-top: calc(var(--glow-shell-top) + var(--glow-shell-top-height) + 10px) !important;
+    padding-bottom: calc(var(--glow-shell-bottom) + var(--glow-shell-dock-height) + 20px) !important;
+    padding-inline: max(10px, var(--glow-safe-left, 0px)) max(10px, var(--glow-safe-right, 0px)) !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .glow-current__brand-copy {
+    display: none;
+  }
+
+  .glow-current__top-left {
+    gap: 2px;
+  }
+
+  .glow-current__world-identity {
+    max-width: 112px;
+  }
+
+  .glow-current__depth-signal {
+    max-width: 46vw;
+  }
+
+  .glow-current__dock-action {
+    max-width: 96px;
+    padding-inline: 7px;
+  }
+}
+
+/* Short screens keep the active destination reachable even when a world has a
+   long rail. This complements the orientation layer with scroll-safe behavior. */
+@media (max-height: 620px) {
+  .glow-current__rail {
+    max-height: calc(var(--glow-viewport-height, 100dvh) - 118px);
+  }
+}
+
+@media (forced-colors: active) {
+  .glow-current__rail,
+  .glow-current__dock,
+  [data-glow-overlay-panel='true'] {
+    border: 1px solid CanvasText;
+  }
+}
