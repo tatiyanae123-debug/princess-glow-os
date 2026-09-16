@@ -114,9 +114,9 @@ describe('Batch C · device, mode and state matrix', () => {
     const current = readSource('src/components/glow/glow-current.tsx');
 
     expect(loading).toContain('GlowSystemState');
-    expect(loading).toContain('variant="loading"');
+    expect(loading).toContain('kind="loading"');
     expect(error).toContain('GlowSystemState');
-    expect(error).toContain('variant="error"');
+    expect(error).toContain('kind="error"');
     expect(notes).toContain('filteredNotes.length === 0');
     expect(notes).toContain('filteredNotes.map');
     expect(dialog).toContain('role="dialog"');
