@@ -1,0 +1,150 @@
+/* Wave 9 Part 5 — shared tablet and orientation composition.
+   Devices may change composition, density and shell geometry, never canonical
+   object identity, route meaning or page ownership. */
+
+:root {
+  --glow-shell-available-width: calc(
+    var(--glow-viewport-width, 100dvw)
+    - var(--glow-safe-left, 0px)
+    - var(--glow-safe-right, 0px)
+  );
+}
+
+.glow-world-frame,
+.glow-room-body,
+.glow-world-shell,
+.glow-world-shell .glow-room-stage {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+}
+
+/* iPad / tablet portrait: preserve all three shell zones while reducing chrome. */
+@media (min-width: 701px) and (max-width: 1180px) and (orientation: portrait) {
+  :root {
+    --glow-shell-top-height: 56px;
+    --glow-shell-dock-height: 50px;
+  }
+
+  .glow-current__top-band {
+    grid-template-columns: minmax(118px, 1fr) minmax(170px, auto) minmax(118px, 1fr);
+    gap: 8px;
+  }
+
+  .glow-current__top-left { gap: 6px; }
+  .glow-current__brand { padding-inline: 7px; font-size: 11px; }
+  .glow-current__return-slot { width: 82px; }
+  .glow-current__return-copy { max-width: 48px; }
+  .glow-current__orientation { min-width: 160px; max-width: 42vw; }
+  .glow-current__depth-signal { max-width: min(390px, 42vw); }
+  .glow-current__shakti { min-width: 96px; }
+
+  .glow-current__rail {
+    left: calc(var(--glow-shell-edge) + 2px);
+    max-height: min(62dvh, 520px);
+  }
+
+  .glow-current__dock {
+    width: min(680px, calc(var(--glow-shell-available-width) - 48px));
+    grid-template-columns: minmax(0, .9fr) auto minmax(0, .9fr);
+  }
+
+  .glow-current__dock-action { max-width: 180px; }
+
+  .glow-world-shell .glow-room-stage {
+    padding-top: calc(var(--glow-shell-top) + var(--glow-shell-top-height) + 18px) !important;
+    padding-bottom: calc(var(--glow-shell-bottom) + var(--glow-shell-dock-height) + 28px) !important;
+  }
+}
+
+/* iPad / tablet landscape: use the added width without stretching the operating shell. */
+@media (min-width: 900px) and (max-width: 1366px) and (orientation: landscape) {
+  .glow-current__top-band {
+    grid-template-columns: minmax(150px, 1fr) minmax(210px, auto) minmax(150px, 1fr);
+    gap: 10px;
+  }
+
+  .glow-current__orientation { max-width: 46vw; }
+  .glow-current__depth-signal { max-width: min(500px, 46vw); }
+
+  .glow-current__rail {
+    max-height: min(72dvh, 560px);
+  }
+
+  .glow-current__dock {
+    width: min(760px, calc(var(--glow-shell-available-width) - 72px));
+  }
+
+  .glow-world-shell .glow-room-stage {
+    padding-inline: clamp(10px, 1.2vw, 20px);
+  }
+}
+
+/* Short landscape screens, including rotated tablets and large phones. */
+@media (orientation: landscape) and (max-height: 760px) {
+  :root {
+    --glow-shell-top-height: 48px;
+    --glow-shell-dock-height: 46px;
+  }
+
+  .glow-current__top-band {
+    align-items: center;
+    min-height: var(--glow-shell-top-height);
+  }
+
+  .glow-current__top-left,
+  .glow-current__shakti { min-height: 36px; }
+  .glow-current__brand { min-height: 34px; }
+  .glow-current__return-slot { min-height: 34px; }
+  .glow-current__return-anchor { height: 36px !important; }
+  .glow-current__world-identity { min-height: 27px; }
+  .glow-current__orientation { gap: 1px; }
+  .glow-current__depth-signal { min-height: 13px; }
+  .glow-current__depth-node { font-size: 8px; }
+  .glow-current__shakti { padding-block: 3px; }
+  .glow-current__shakti-copy small { display: none; }
+
+  .glow-current__rail {
+    max-height: min(58dvh, 360px);
+  }
+
+  .glow-current__dock {
+    min-height: var(--glow-shell-dock-height);
+    padding-block: 3px;
+  }
+  .glow-current__seam,
+  .glow-current__reverse,
+  .glow-current__dock-action { height: 36px !important; min-height: 36px; }
+
+  .glow-world-shell .glow-room-stage {
+    padding-top: calc(var(--glow-shell-top) + var(--glow-shell-top-height) + 10px) !important;
+    padding-bottom: calc(var(--glow-shell-bottom) + var(--glow-shell-dock-height) + 18px) !important;
+  }
+}
+
+/* Extremely short landscape: keep navigation available and prioritize current context. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .glow-current__depth-node:not([data-active='true']) span,
+  .glow-current__reverse-copy,
+  .glow-current__dock-state,
+  .glow-current__dock-quiet {
+    display: none;
+  }
+
+  .glow-current__rail {
+    top: calc(50% + 4px);
+    max-height: min(52dvh, 250px);
+  }
+
+  .glow-current__dock {
+    width: min(640px, calc(var(--glow-shell-available-width) - 28px));
+  }
+}
+
+/* Prevent orientation changes from leaving stale horizontal overflow behind. */
+@media (max-width: 1366px) {
+  .glow-current__top-band,
+  .glow-current__dock,
+  .glow-world-shell .glow-room-stage {
+    max-inline-size: var(--glow-shell-available-width);
+  }
+}
