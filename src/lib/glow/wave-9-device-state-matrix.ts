@@ -1,0 +1,25 @@
+export const WAVE_9=9 as const;
+export const WAVE_9_NAME='Device + State Matrix' as const;
+export type MatrixFamily='today'|'planning'|'routines'|'beauty'|'closet'|'fitness-wellness'|'home'|'food'|'money'|'travel'|'career-life'|'brain'|'create';
+export type DeviceClass='iphone-compact'|'iphone-large'|'ipad-portrait'|'ipad-landscape'|'desktop';
+export type GlowMode='low'|'normal'|'high'|'recovery';
+export type DataState='loading'|'empty'|'populated'|'error'|'offline-recovering';
+export type InteractionState='resting'|'hover'|'focus'|'pressed'|'disabled'|'overlay-open';
+export type MatrixDimension='layout'|'navigation'|'content-priority'|'controls'|'touch-targets'|'keyboard'|'scroll'|'overlays'|'safe-area'|'orientation'|'energy-mode'|'data-state'|'interaction-state'|'persistence'|'accessibility'|'runtime'|'golden';
+export type MatrixEvidence={family:MatrixFamily;device:DeviceClass;mode:GlowMode;dimension:MatrixDimension;status:'PASS'|'FAIL'|'UNVERIFIED';source:string;blocker?:string};
+export type MatrixBlocker={id:string;owner:string;families:MatrixFamily[];devices:DeviceClass[];dimensions:MatrixDimension[];severity:'blocker'|'high'|'medium';details:string;resolved:boolean};
+export const WAVE_9_ENTRY={mode:'device-state-matrix',priorFunctionalEvidenceStillRequired:true,productionShippingAllowed:false} as const;
+export const MATRIX_FAMILIES:readonly MatrixFamily[]=['today','planning','routines','beauty','closet','fitness-wellness','home','food','money','travel','career-life','brain','create'];
+export const MATRIX_DEVICES:readonly DeviceClass[]=['iphone-compact','iphone-large','ipad-portrait','ipad-landscape','desktop'];
+export const MATRIX_MODES:readonly GlowMode[]=['low','normal','high','recovery'];
+export const MATRIX_DIMENSIONS:readonly MatrixDimension[]=['layout','navigation','content-priority','controls','touch-targets','keyboard','scroll','overlays','safe-area','orientation','energy-mode','data-state','interaction-state','persistence','accessibility','runtime','golden'];
+export const MATRIX_DATA_STATES:readonly DataState[]=['loading','empty','populated','error','offline-recovering'];
+export const MATRIX_INTERACTION_STATES:readonly InteractionState[]=['resting','hover','focus','pressed','disabled','overlay-open'];
+export const WAVE_9_LAWS={sameCanonicalObjectAcrossDevices:true,sameGlowContextAcrossDevices:true,deviceChangesCompositionNotMeaning:true,modeChangesPriorityNotIdentity:true,stateDoesNotCreateDuplicatePages:true,touchTargetsRequired:true,keyboardParityWhereApplicable:true,safeAreasRequired:true,orientationSupported:true,loadingEmptyErrorRecoverable:true,persistenceAcrossRefresh:true,accessibilityAcrossMatrix:true,repairHighestSharedAncestor:true,noDeviceSpecificForksWithoutException:true} as const;
+export function matrixEvidenceStatus(items:MatrixEvidence[]){const missing:string[]=[];const failed:string[]=[];for(const family of MATRIX_FAMILIES)for(const device of MATRIX_DEVICES)for(const mode of MATRIX_MODES)for(const dimension of MATRIX_DIMENSIONS){const item=items.find(x=>x.family===family&&x.device===device&&x.mode===mode&&x.dimension===dimension);if(!item||item.status==='UNVERIFIED')missing.push(`${family}:${device}:${mode}:${dimension}`);else if(item.status==='FAIL')failed.push(item.blocker??`${family}:${device}:${mode}:${dimension}`);}return{required:MATRIX_FAMILIES.length*MATRIX_DEVICES.length*MATRIX_MODES.length*MATRIX_DIMENSIONS.length,provided:items.length,missing,failed:[...new Set(failed)],passed:missing.length===0&&failed.length===0};}
+const rank={blocker:3,high:2,medium:1} as const;
+export function rankMatrixBlockers(items:MatrixBlocker[]){return items.filter(x=>!x.resolved).map(x=>({...x,impact:x.families.length*x.devices.length*x.dimensions.length,sharedRepair:x.families.length>1||x.devices.length>1})).sort((a,b)=>rank[b.severity]-rank[a.severity]||b.impact-a.impact);}
+export function nextMatrixRepair(items:MatrixBlocker[]){return rankMatrixBlockers(items)[0]??null;}
+export function wave9Checkpoint(evidence:MatrixEvidence[],blockers:MatrixBlocker[]){const e=matrixEvidenceStatus(evidence);const open=rankMatrixBlockers(blockers);const canLock=e.passed&&open.length===0;return{wave:WAVE_9,name:WAVE_9_NAME,evidence:e,openBlockers:open,canLock,status:canLock?'LOCKABLE':'BUILDING',nextRepair:open[0]??null}as const;}
+export const WAVE_9_COMPLETION_ORDER=['shared-responsive-primitives','iphone-compact','iphone-large','ipad-portrait','ipad-landscape','desktop','energy-modes','loading-empty-error-states','interaction-states','persistence-refresh','accessibility-matrix','runtime-matrix','golden-matrix','device-state-lock'] as const;
+export const WAVE_9_RULE='Validate Glow across devices and states without fragmenting the product. The same canonical life model, objects and context must survive composition, orientation, energy mode, data state and interaction changes. Repair shared responsive/state ancestors before local exceptions and do not claim matrix completion without evidence.' as const;
