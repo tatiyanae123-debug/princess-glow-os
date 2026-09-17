@@ -3,7 +3,7 @@ import { pageManifestChainFor, pageManifestFor } from '@/lib/glow-world/page-man
 
 export type GlowEnclosure = 'open' | 'structured' | 'protected';
 export type ShellTarget = { label: string; path: string; cue: string };
-export type ShellWorldTarget = ShellTarget & { world: CanonicalGlowWorld };
+export type ShellWorldTarget = ShellTarget & { world: GlowWorld };
 export type ShellReturnTarget = { label: string; path: string };
 
 export const WORLD_TARGETS: ShellWorldTarget[] = [
