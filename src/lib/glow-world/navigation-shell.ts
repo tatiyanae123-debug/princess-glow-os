@@ -1,9 +1,9 @@
-import type { GlowWorld } from '@/lib/glow-world/room-experience';
+import type { CanonicalGlowWorld, GlowWorld } from '@/lib/glow-world/room-experience';
 import { pageManifestChainFor, pageManifestFor } from '@/lib/glow-world/page-manifest';
 
 export type GlowEnclosure = 'open' | 'structured' | 'protected';
 export type ShellTarget = { label: string; path: string; cue: string };
-export type ShellWorldTarget = ShellTarget & { world: GlowWorld };
+export type ShellWorldTarget = ShellTarget & { world: CanonicalGlowWorld };
 export type ShellReturnTarget = { label: string; path: string };
 
 export const WORLD_TARGETS: ShellWorldTarget[] = [
@@ -14,8 +14,9 @@ export const WORLD_TARGETS: ShellWorldTarget[] = [
   { world: 'create', label: 'Create', path: '/create', cue: 'unfinished possibility' },
 ];
 
-const WORLD_ROOT: Record<GlowWorld, string> = Object.fromEntries(WORLD_TARGETS.map((item) => [item.world, item.path])) as Record<GlowWorld, string>;
-const WORLD_LABEL: Record<GlowWorld, string> = Object.fromEntries(WORLD_TARGETS.map((item) => [item.world, item.label])) as Record<GlowWorld, string>;
+const WORLD_ROOT: Record<CanonicalGlowWorld, string> = Object.fromEntries(WORLD_TARGETS.map((item) => [item.world, item.path])) as Record<CanonicalGlowWorld, string>;
+const WORLD_LABEL: Record<CanonicalGlowWorld, string> = Object.fromEntries(WORLD_TARGETS.map((item) => [item.world, item.label])) as Record<CanonicalGlowWorld, string>;
+const canonicalWorld = (world: GlowWorld): CanonicalGlowWorld => world === 'beauty' ? 'life' : world;
 
 const TODAY_ROOM_LABEL: Record<string, string> = {
   morning: 'Morning Brief', 'what-now': 'What Now', focus: 'Focus Session', people: 'People', places: 'Places', resources: 'Library', library: 'Library',
@@ -23,7 +24,7 @@ const TODAY_ROOM_LABEL: Record<string, string> = {
   tomorrow: 'Tomorrow Preview', replan: 'Replan My Day', 'day-view': 'Day View',
 };
 
-const RAIL_TARGETS: Record<GlowWorld, ShellTarget[]> = {
+const RAIL_TARGETS: Record<CanonicalGlowWorld, ShellTarget[]> = {
   today: [
     { label: 'Today', path: '/today?room=what-now', cue: 'Now' },
     { label: 'Focus', path: '/today?room=focus', cue: 'Protected chamber' },
@@ -76,9 +77,9 @@ function friendly(value: string) { return decodeURIComponent(value).replace(/[-_
 function todayRoom(search: string) { return new URLSearchParams(search).get('room') ?? ''; }
 
 export function currentPathFor(pathname: string, search: string) { return search ? `${pathname}?${search}` : pathname; }
-export function worldLabelFor(world: GlowWorld) { return WORLD_LABEL[world]; }
-export function worldRootFor(world: GlowWorld) { return WORLD_ROOT[world]; }
-export function railTargetsForWorld(world: GlowWorld) { return RAIL_TARGETS[world]; }
+export function worldLabelFor(world: GlowWorld) { return WORLD_LABEL[canonicalWorld(world)]; }
+export function worldRootFor(world: GlowWorld) { return WORLD_ROOT[canonicalWorld(world)]; }
+export function railTargetsForWorld(world: GlowWorld) { return RAIL_TARGETS[canonicalWorld(world)]; }
 
 export function roomLabelForPath(path: string, world?: GlowWorld) {
   const { pathname, search } = cleanPath(path);
@@ -90,7 +91,7 @@ export function roomLabelForPath(path: string, world?: GlowWorld) {
   const manifest = pageManifestFor(pathname);
   if (manifest) return manifest.label;
   const segments = pathname.split('/').filter(Boolean);
-  return segments.length ? friendly(segments.at(-1) ?? 'Today') : (world ? WORLD_LABEL[world] : 'Today');
+  return segments.length ? friendly(segments.at(-1) ?? 'Today') : (world ? WORLD_LABEL[canonicalWorld(world)] : 'Today');
 }
 
 export function depthLabelsForPath(path: string, world: GlowWorld) {
@@ -102,12 +103,13 @@ export function depthLabelsForPath(path: string, world: GlowWorld) {
   }
   const chain = pageManifestChainFor(pathname);
   if (chain.length) return chain.map((item) => item.label).slice(-4);
-  const labels = [WORLD_LABEL[world], ...pathname.split('/').filter(Boolean).map(friendly)];
+  const labels = [WORLD_LABEL[canonicalWorld(world)], ...pathname.split('/').filter(Boolean).map(friendly)];
   return [...new Set(labels)].slice(-4);
 }
 
 export function returnTargetForPath(path: string, world: GlowWorld): ShellReturnTarget | null {
   const { pathname, search } = cleanPath(path);
+  const normalizedWorld = canonicalWorld(world);
   if (pathname === '/home') return null;
   if (pathname === '/today') {
     const room = todayRoom(search);
@@ -116,15 +118,15 @@ export function returnTargetForPath(path: string, world: GlowWorld): ShellReturn
   const manifest = pageManifestFor(pathname);
   if (manifest?.parent) {
     const parent = pageManifestFor(manifest.parent);
-    return { label: parent?.label ?? friendly(manifest.parent.split('/').filter(Boolean).at(-1) ?? WORLD_LABEL[world]), path: manifest.parent };
+    return { label: parent?.label ?? friendly(manifest.parent.split('/').filter(Boolean).at(-1) ?? WORLD_LABEL[normalizedWorld]), path: manifest.parent };
   }
-  if (manifest?.level === 'world') return world === 'today' ? null : { label: 'Today', path: '/today?room=what-now' };
+  if (manifest?.level === 'world') return normalizedWorld === 'today' ? null : { label: 'Today', path: '/today?room=what-now' };
   const segments = pathname.split('/').filter(Boolean);
   if (segments.length > 1) {
     const parentPath = `/${segments.slice(0, -1).join('/')}`;
-    return { label: pageManifestFor(parentPath)?.label ?? friendly(segments.at(-2) ?? WORLD_LABEL[world]), path: parentPath };
+    return { label: pageManifestFor(parentPath)?.label ?? friendly(segments.at(-2) ?? WORLD_LABEL[normalizedWorld]), path: parentPath };
   }
-  return world === 'today' ? null : { label: WORLD_LABEL[world], path: WORLD_ROOT[world] };
+  return normalizedWorld === 'today' ? null : { label: WORLD_LABEL[normalizedWorld], path: WORLD_ROOT[normalizedWorld] };
 }
 
 export function enclosureForPath(path: string): GlowEnclosure {
