@@ -1,8 +1,11 @@
-export type GlowWorld = 'today' | 'plan' | 'life' | 'brain' | 'create';
+export const CANONICAL_GLOW_WORLDS = ['today', 'plan', 'life', 'brain', 'create'] as const;
+export type CanonicalGlowWorld = (typeof CANONICAL_GLOW_WORLDS)[number];
+/** @deprecated Compatibility token for older components only. Runtime Beauty routes normalize to Life. */
+export type GlowWorld = CanonicalGlowWorld | 'beauty';
 
 export type RoomExperience = {
   room: string;
-  world: GlowWorld;
+  world: CanonicalGlowWorld;
   climate: string;
   physics: string;
   intelligence: string;
@@ -12,7 +15,7 @@ export type RoomExperience = {
 
 const experience = (
   room: string,
-  world: GlowWorld,
+  world: CanonicalGlowWorld,
   climate: string,
   physics: string,
   intelligence: string,
