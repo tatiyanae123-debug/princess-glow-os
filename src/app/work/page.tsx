@@ -1,41 +1,63 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
+import { CanonicalDomainRoom } from '@/components/glow/canonical-domain-room';
 import { getWorkSchedulesByUser } from '@/lib/data/work-schedules';
 
 export const dynamic = 'force-dynamic';
 
+const destinations = [
+  { label: 'Job Search', href: '/work/job-search', cue: 'Opportunities in motion' },
+  { label: 'Interviews', href: '/work/interviews', cue: 'Prepare the next conversation' },
+  { label: 'Skills', href: '/work/skills', cue: 'Evidence of growth' },
+  { label: 'Portfolio', href: '/work/portfolio', cue: 'Show the work' },
+];
+
 export default async function WorkPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
-
   const schedules = await getWorkSchedulesByUser(session.user.id);
 
   return (
     <AppShell>
-      <div className="space-y-6">
-        <section className="rounded-[28px] border border-slate-200/70 bg-white/80 p-6 shadow-sm">
-          <p className="text-sm uppercase tracking-[0.3em] text-rose-500">Work</p>
-          <h2 className="mt-2 text-3xl font-semibold text-slate-900">Make your workday feel structured and light.</h2>
-          <p className="mt-3 text-slate-600">Create momentum with clarity, structure, and enough softness to sustain it.</p>
+      <CanonicalDomainRoom
+        eyebrow="Life · Career + Work"
+        title="Career + Work"
+        question="What is building my future, and what needs my attention at work now?"
+        climate="work"
+        destinations={destinations}
+      >
+        <section aria-label="Work rhythm">
+          <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-[12px] uppercase tracking-[.18em] text-stone-500">Current rhythm</p>
+              <h2 className="mt-2 font-serif text-[30px] font-medium text-stone-900">Your real work week</h2>
+            </div>
+            <span className="text-sm text-stone-500">{schedules.length} connected block{schedules.length === 1 ? '' : 's'}</span>
+          </div>
+          {schedules.length === 0 ? (
+            <div data-empty-state="true" className="glow-empty-state">
+              No work schedule is connected yet. The room stays ready without inventing a schedule.
+            </div>
+          ) : (
+            <div className="divide-y divide-stone-200/70">
+              {schedules.map((schedule) => (
+                <article key={schedule.id} className="grid gap-3 py-5 sm:grid-cols-[150px_1fr_auto] sm:items-center">
+                  <div>
+                    <span className="text-[12px] uppercase tracking-[.14em] text-stone-500">{schedule.dayOfWeek}</span>
+                    <p className="mt-1 text-sm text-stone-600">{schedule.startTime} – {schedule.endTime}</p>
+                  </div>
+                  <div>
+                    <strong className="text-base font-semibold text-stone-900">{schedule.title}</strong>
+                    {schedule.notes ? <p className="mt-1 text-sm leading-6 text-stone-600">{schedule.notes}</p> : null}
+                  </div>
+                  <span className="text-xs text-stone-400">Committed time</span>
+                </article>
+              ))}
+            </div>
+          )}
         </section>
-        {schedules.length === 0 ? (
-          <p className="py-4 text-center text-sm text-slate-400 dark:text-slate-500">No work schedules yet. Add your first block to structure the week.</p>
-        ) : (
-          <section className="grid gap-4 md:grid-cols-2">
-            {schedules.map((schedule) => (
-              <div key={schedule.id} className="rounded-[28px] border border-slate-200/70 bg-slate-50 p-5">
-                <div className="flex items-start justify-between gap-2">
-                  <p className="font-semibold text-slate-900">{schedule.title}</p>
-                  <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs text-rose-700 capitalize">{schedule.dayOfWeek}</span>
-                </div>
-                <p className="mt-2 text-sm text-slate-600">{schedule.startTime} – {schedule.endTime}</p>
-                {schedule.notes && <p className="mt-1 text-sm text-slate-500">{schedule.notes}</p>}
-              </div>
-            ))}
-          </section>
-        )}
-      </div>
+      </CanonicalDomainRoom>
     </AppShell>
   );
 }
