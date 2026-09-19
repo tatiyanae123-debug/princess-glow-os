@@ -41,6 +41,7 @@ type ThreadEntry = { path: string; label: string; visitedAt: number };
 const THREAD_KEY = 'glow.navigation.thread.v3';
 const SCROLL_KEY = 'glow.navigation.scroll.v1';
 const FAVORITES_KEY = 'glow.navigation.favorites.v1';
+const WORLD_MEMORY_KEY = 'glow.navigation.world-memory.v1';
 const MAX_THREAD = 12;
 
 function dispatchMove(path: string) {
@@ -175,6 +176,25 @@ export function GlowCurrent() {
     writeJson(SCROLL_KEY, map);
   }, [currentPath]);
 
+  useEffect(() => {
+    const isGlobalUtility =
+      pathname.startsWith('/search') ||
+      pathname.startsWith('/ask-glow') ||
+      pathname.startsWith('/attention') ||
+      pathname.startsWith('/notifications') ||
+      pathname.startsWith('/settings') ||
+      pathname.startsWith('/concierge');
+    if (isGlobalUtility || pathname.startsWith('/sign-') || pathname.startsWith('/api/')) return;
+    const map = readLocalJson<Partial<Record<VisibleWorldKey, string>>>(WORLD_MEMORY_KEY) ?? {};
+    map[visibleWorld] = currentPath;
+    writeLocalJson(WORLD_MEMORY_KEY, map);
+  }, [currentPath, pathname, visibleWorld]);
+
+  const rememberedWorldPath = useCallback((world: VisibleWorldKey, fallback: string) => {
+    const map = readLocalJson<Partial<Record<VisibleWorldKey, string>>>(WORLD_MEMORY_KEY) ?? {};
+    return map[world] || fallback;
+  }, []);
+
   const travel = useCallback((path: string) => {
     if (!path) return;
     saveScroll();
@@ -293,7 +313,7 @@ export function GlowCurrent() {
               {group.items.map((item) => {
                 const active = navigationDestinationIsActive(pathname, item);
                 return (
-                  <button key={item.key} type="button" className="glow-nav__destination" data-active={active ? 'true' : 'false'} onClick={() => travel(item.path)} aria-current={active ? 'page' : undefined} title={item.cue}>
+                  <button key={item.key} type="button" className="glow-nav__destination" data-active={active ? 'true' : 'false'} onClick={() => travel(rememberedWorldPath(item.key, item.path))} aria-current={active ? 'page' : undefined} title={item.cue}>
                     <span className="glow-nav__destination-icon"><WorldIcon world={item.key}/></span>
                     <span className="glow-nav__destination-copy"><strong>{item.label}</strong><small>{item.cue}</small></span>
                   </button>
@@ -354,7 +374,7 @@ export function GlowCurrent() {
       <nav className="glow-nav__mobile-bottom" aria-label="Glow OS mobile navigation">
         {GLOBAL_NAVIGATION.filter((item) => item.key === 'home' || item.key === 'today' || item.key === 'plan').map((item) => {
           const active = navigationDestinationIsActive(pathname, item);
-          return <button key={item.key} type="button" data-active={active ? 'true' : 'false'} onClick={() => travel(item.path)}><WorldIcon world={item.key} size={17}/><span>{item.label}</span></button>;
+          return <button key={item.key} type="button" data-active={active ? 'true' : 'false'} onClick={() => travel(rememberedWorldPath(item.key, item.path))}><WorldIcon world={item.key} size={17}/><span>{item.label}</span></button>;
         })}
         <button type="button" data-active={['life','beauty','closet','fitness','wellness','brain','create'].includes(visibleWorld) ? 'true' : 'false'} onClick={() => setWorldsOpen(true)}><Globe2 size={17}/><span>Worlds</span></button>
         <button type="button" onClick={() => document.dispatchEvent(new CustomEvent('glow:open'))}><Sparkles size={17}/><span>Glow</span></button>
@@ -407,7 +427,7 @@ export function GlowCurrent() {
                 <section className="glow-nav__command-section">
                   <p>FAVORITES</p>
                   <div className="glow-nav__command-list">
-                    {favoriteTargets.map((item) => item ? <button key={item.key} type="button" onClick={() => travel(item.path)}><WorldIcon world={item.key}/><span><strong>{item.label}</strong><small>{item.cue}</small></span></button> : null)}
+                    {favoriteTargets.map((item) => item ? <button key={item.key} type="button" onClick={() => travel(rememberedWorldPath(item.key, item.path))}><WorldIcon world={item.key}/><span><strong>{item.label}</strong><small>{item.cue}</small></span></button> : null)}
                   </div>
                 </section>
               ) : null}
@@ -417,7 +437,7 @@ export function GlowCurrent() {
                 <div className="glow-nav__command-list">
                   {commandDestinations.map((item) => (
                     <div key={item.key} className="glow-nav__command-row">
-                      <button type="button" className="glow-nav__command-main" onClick={() => travel(item.path)}><WorldIcon world={item.key}/><span><strong>{item.label}</strong><small>{item.cue}</small></span></button>
+                      <button type="button" className="glow-nav__command-main" onClick={() => travel(rememberedWorldPath(item.key, item.path))}><WorldIcon world={item.key}/><span><strong>{item.label}</strong><small>{item.cue}</small></span></button>
                       <button type="button" className="glow-nav__favorite-toggle" data-active={favorites.includes(item.path) ? 'true' : 'false'} onClick={() => toggleFavorite(item.path)} aria-label={favorites.includes(item.path) ? `Remove ${item.label} from favorites` : `Add ${item.label} to favorites`}><Star size={14}/></button>
                     </div>
                   ))}
