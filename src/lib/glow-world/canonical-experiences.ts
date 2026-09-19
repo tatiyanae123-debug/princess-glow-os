@@ -225,7 +225,50 @@ export const CANONICAL_EXPERIENCE_SPECS: CanonicalExperienceSpec[] = [
 
 const INDEX = new Map(CANONICAL_EXPERIENCE_SPECS.map((spec)=>[spec.path,spec]));
 
+function dynamicDetailSpec(normalized:string):CanonicalExperienceSpec|null{
+  const patterns:Array<{re:RegExp; build:(m:RegExpMatchArray)=>CanonicalExperienceSpec}> = [
+    { re:/^\/tasks\/([^/]+)$/, build:(m)=>e(normalized,'Task Detail','Plan · Tasks','What is true about this task, what is it connected to, and what happens next?','plan','/tasks','Tasks',['Identity + status','Duration + load','Schedule + deadline','Project + goal','Subtasks + history']) },
+    { re:/^\/goals\/([^/]+)$/, build:(m)=>e(normalized,'Goal Detail','Plan · Goals','Why does this goal exist and what evidence shows movement?','plan','/goals','Goals',['Why + target','Horizon','Milestones','Projects + routines','Evidence + review']) },
+    { re:/^\/projects\/([^/]+)$/, build:(m)=>e(normalized,'Project Detail','Plan · Projects','What is this project, what is next, and what is blocking it?','plan','/projects','Projects',['Overview','Milestones','Task queue','Notes + files','Decisions + history']) },
+    { re:/^\/habits\/([^/]+)$/, build:(m)=>e(normalized,'Habit Detail','Plan · Habits','What cue, cadence, and evidence define this habit?','plan','/habits','Habits',['Behavior','Cue','Cadence','History','Goal / routine relationship']) },
+    { re:/^\/routines\/([^/]+)$/, build:(m)=>e(normalized,'Routine Detail','Plan · Routines','What is this living routine and how should it adapt?','plan','/routines','Routines',['Purpose + trigger','Cadence + duration','Ordered steps','Variants','Tools + history']) },
+    { re:/^\/routines\/([^/]+)\/player$/, build:(m)=>e(normalized,'Routine Player','Plan · Routines','What step am I doing now?','plan',`/routines/${m[1]}`,'Routine Detail',['Current step','Timer','Instruction','Required object','Pause / skip / complete'],'protected') },
+    { re:/^\/routines\/([^/]+)\/player\/step$/, build:(m)=>e(normalized,'Active Step','Plan · Routines','What is the one instruction that matters right now?','plan',`/routines/${m[1]}/player`,'Routine Player',['Instruction','Visual guidance','Timer / repetitions','Product / tool','Done / skip'],'protected') },
+    { re:/^\/calendar\/event\/([^/]+)$/, build:(m)=>e(normalized,'Event Detail','Plan · Calendar','What does this event require before, during, and after?','plan','/calendar','Calendar',['Time','People','Place / link','Preparation','Related objects + history']) },
+    { re:/^\/fitness\/exercises\/([^/]+)$/, build:(m)=>e(normalized,'Exercise Detail','Life · Fitness','How should this movement be set up, performed, and progressed?','fitness','/fitness/exercises','Exercise Library',['Setup','Execution','Cues + mistakes','Muscles','Regression + progression + history']) },
+    { re:/^\/beauty\/skincare\/products\/([^/]+)$/, build:(m)=>e(normalized,'Skincare Product Detail','Life · Beauty · Skincare','Where does this owned product belong and what should be known about it?','beauty','/beauty/skincare/products','Product Shelf',['Identity + category','Ingredients','Routine placement','Compatibility','Open date + usage + source']) },
+    { re:/^\/beauty\/hair\/products\/([^/]+)$/, build:(m)=>e(normalized,'Hair Product Detail','Life · Beauty · Hair','What is this product for, where does it fit, and what is its state?','beauty','/beauty/hair/products','Hair Product Shelf',['Purpose','Routine placement','Inventory','History','Notes + relationships']) },
+    { re:/^\/beauty\/hair\/styles\/([^/]+)$/, build:(m)=>e(normalized,'Style Detail','Life · Beauty · Hair','How is this hairstyle prepared, maintained, and taken down?','beauty','/beauty/hair/styles','Styles',['Reference','Preparation + sections','Tools + steps','Maintenance + longevity','Takedown']) },
+    { re:/^\/beauty\/makeup\/looks\/([^/]+)$/, build:(m)=>e(normalized,'Look Detail','Life · Beauty · Makeup','What is the exact makeup recipe for this look?','beauty','/beauty/makeup/looks','Looks',['Reference','Prep + complexion','Brows + eyes','Cheeks + lips','Products + timing']) },
+    { re:/^\/beauty\/makeup\/techniques\/([^/]+)$/, build:(m)=>e(normalized,'Technique Detail','Life · Beauty · Makeup','How is this technique performed and adapted?','beauty','/beauty/makeup/techniques','Technique Library',['Close-up diagram','Numbered steps','Adaptations','Mistakes','Linked looks']) },
+    { re:/^\/beauty\/makeup\/inventory\/([^/]+)$/, build:(m)=>e(normalized,'Makeup Product Detail','Life · Beauty · Makeup','How does this owned product perform and where is it used?','beauty','/beauty/makeup/inventory','Makeup Inventory',['Product + shade','Category','Look relationships','Wear observations','Stock + history']) },
+    { re:/^\/beauty\/fragrance\/wardrobe\/([^/]+)$/, build:(m)=>e(normalized,'Fragrance Detail','Life · Beauty · Fragrance','What defines this fragrance and when does it work best?','beauty','/beauty/fragrance/wardrobe','Fragrance Wardrobe',['Bottle + notes','Family','Season + occasions','Longevity','Layering + wear history']) },
+    { re:/^\/beauty\/devices\/inventory\/([^/]+)$/, build:(m)=>e(normalized,'Device Detail','Life · Beauty · Tools + Devices','How is this device used, cleaned, charged, and scheduled?','beauty','/beauty/devices','Tools + Devices',['Device','Instructions','Cadence','Charging + cleaning','Contraindications + history']) },
+    { re:/^\/beauty\/experiments\/([^/]+)$/, build:(m)=>e(normalized,'Experiment Detail','Life · Beauty · Experiments','What changed, what stayed controlled, and what did the evidence show?','beauty','/beauty/experiments','Beauty Experiments',['Hypothesis','Variable','Baseline','Timeline + observations','Conclusion + keep / revert']) },
+    { re:/^\/closet\/wardrobe\/([^/]+)$/, build:(m)=>e(normalized,'Item Detail','Life · Closet','What is true about this owned wardrobe item?','closet','/closet/wardrobe','Digital Wardrobe',['Garment image','Brand + fit + size','Condition','Wear history + care','Outfits + repair + source']) },
+    { re:/^\/closet\/outfits\/([^/]+)$/, build:(m)=>e(normalized,'Outfit Detail','Life · Closet','What makes this complete outfit work and where has it been worn?','closet','/closet/outfits','Outfit Library',['Complete look','Pieces','Styling notes','Beauty + occasion + weather','Wear history']) },
+    { re:/^\/food\/recipes\/([^/]+)$/, build:(m)=>e(normalized,'Recipe Detail','Life · Food','What do I need, how long will it take, and what can substitute?','food','/food/recipes','Recipes',['Recipe identity','Ingredients','Directions','Timing','Substitutions']) },
+    { re:/^\/home\/rooms\/([^/]+)$/, build:(m)=>e(normalized,'Room Detail','Life · Home','What is the state of this physical room and what belongs here?','home','/home/rooms','Rooms',['Room state','Cleaning','Storage','Projects','Inventory + notes']) },
+    { re:/^\/work\/job-search\/([^/]+)$/, build:(m)=>e(normalized,'Job Detail','Life · Career + Work','What is true about this opportunity and what is the next action?','work','/work/job-search','Job Search',['Job + company','Compensation + schedule','Location + fit','Documents + contact','Interview prep + history']) },
+    { re:/^\/travel\/trips\/([^/]+)$/, build:(m)=>e(normalized,'Trip Detail','Life · Travel','What is the complete state of this trip?','travel','/travel','Travel',['Destination + dates','People','Itinerary','Bookings + packing','Budget + notes']) },
+    { re:/^\/relationships\/person\/([^/]+)$/, build:(m)=>e(normalized,'Person Detail','Life · Relationships','What context belongs to this person and relationship?','relationships','/relationships','Relationships',['Identity','Important dates','Interactions','Shared plans','Gifts + linked objects']) },
+    { re:/^\/notes\/([^/]+)$/, build:(m)=>e(normalized,'Note Detail','Brain · Notes','What is this note saying and what is it connected to?','brain','/notes','Notes',['Title + body','Relationships','Files','Backlinks + provenance','Edit history']) },
+    { re:/^\/memory\/([^/]+)$/, build:(m)=>e(normalized,'Memory Detail','Brain · Memory','What happened, when, and how confident is Glow in this memory?','brain','/memory','Memory',['Memory','When','Source','Related objects','Confidence + correction history']) },
+    { re:/^\/brain\/ideas\/([^/]+)$/, build:(m)=>e(normalized,'Idea Detail','Brain · Ideas','What problem or opportunity does this idea address, and what is the next experiment?','brain','/brain/ideas','Ideas',['Problem / opportunity','Concept','Supporting notes','References','Project link + next experiment']) },
+    { re:/^\/brain\/insights\/([^/]+)$/, build:(m)=>e(normalized,'Insight Detail','Brain · Insights','What evidence supports this insight and what remains uncertain?','brain','/brain/insights','Insights',['Insight','Supporting evidence','Fact','Inference','Uncertainty']) },
+    { re:/^\/brain\/decisions\/([^/]+)$/, build:(m)=>e(normalized,'Decision Detail','Brain · Decisions','What was decided, why, and what happened later?','brain','/brain/decisions','Decision Archive',['Decision','Options','Evidence + reasons','Outcome','Review + receipts']) },
+    { re:/^\/create\/projects\/([^/]+)$/, build:(m)=>e(normalized,'Creative Project Detail','Create · Projects','What is this creative project becoming?','create','/create/projects','Creative Projects',['Brief','Concept + references','Drafts + assets','Tasks + versions','Feedback + output']) },
+    { re:/^\/concierge\/request\/([^/]+)$/, build:(m)=>e(normalized,'Request Detail','Global · Concierge','What situation is being coordinated and what needs approval?','global','/concierge','Concierge',['Goal','Dependencies','Steps','Status','Proposal + receipt'],'protected') },
+    { re:/^\/attention\/item\/([^/]+)$/, build:(m)=>e(normalized,'Attention Item Detail','Global Utility','Why does this need review and what can resolve it?','global','/attention','Attention Center',['Reason','Evidence','Affected objects','Possible resolutions','Action']) },
+  ];
+  for(const pattern of patterns){
+    const match=normalized.match(pattern.re);
+    if(match) return pattern.build(match);
+  }
+  return null;
+}
+
 export function canonicalExperienceFor(path:string){
   const normalized=(path.split('?')[0]||'/').replace(/\/$/,'')||'/';
-  return INDEX.get(normalized) ?? null;
+  return INDEX.get(normalized) ?? dynamicDetailSpec(normalized);
 }
