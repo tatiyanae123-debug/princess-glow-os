@@ -2,62 +2,46 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { roomExperienceFor, type GlowWorld } from '@/lib/glow-world/room-experience';
 import {
-  WORLD_TARGETS,
-  currentPathFor,
-  depthLabelsForPath,
-  enclosureForPath,
-  railTargetIsActive,
-  railTargetsForWorld,
-  returnTargetForPath,
-  roomLabelForPath,
-  worldLabelFor,
-} from '@/lib/glow-world/navigation-shell';
+  Activity,
+  BellRing,
+  BrainCircuit,
+  CalendarDays,
+  ChevronLeft,
+  Globe2,
+  HeartPulse,
+  Home as HomeIcon,
+  Menu,
+  Plus,
+  Search,
+  Settings as SettingsIcon,
+  Sparkles,
+  Star,
+  X,
+} from 'lucide-react';
+import { roomExperienceFor } from '@/lib/glow-world/room-experience';
+import { returnTargetForPath, roomLabelForPath } from '@/lib/glow-world/navigation-shell';
+import {
+  CREATE_DESTINATIONS,
+  GLOBAL_NAVIGATION,
+  GLOBAL_NAVIGATION_GROUPS,
+  GLOBAL_UTILITIES,
+  breadcrumbsForPath,
+  localTabIsActive,
+  localTabsForPath,
+  navigationDestinationIsActive,
+  utilityIsActive,
+  visibleWorldForPath,
+  type NavigationUtility,
+  type VisibleWorldKey,
+} from '@/lib/navigation-system';
 
-type ThreadEntry = { path: string; room: string; world: GlowWorld; visitedAt: number };
-type DockAction = { label: string; path?: string; event?: string; ariaLabel?: string };
-type DockActions = { left?: DockAction | null; center?: DockAction | null; right?: DockAction | null };
-type FoldWorld = 'home' | GlowWorld;
-type FoldTarget = { key: FoldWorld; label: string; path: string; cue: string; symbol: string };
-type WorldStateAnchor = {
-  path: string;
-  room: string;
-  scrollY: number;
-  updatedAt: number;
-  state?: Record<string, unknown> | null;
-  stateLabel?: string | null;
-};
-type WorldAnchorMap = Partial<Record<FoldWorld, WorldStateAnchor>>;
-type PendingWorldRestore = WorldStateAnchor & { world: FoldWorld };
+type ThreadEntry = { path: string; label: string; visitedAt: number };
 
-const THREAD_KEY = 'glow.current.thread.v2';
-const WORLD_ANCHOR_KEY = 'glow.world.state-anchors.v2';
-const WORLD_RESTORE_KEY = 'glow.world.pending-restore.v2';
-const MAX_THREAD = 10;
-
-const FOLD_TARGETS: FoldTarget[] = [
-  { key: 'home', label: 'Home', path: '/home', cue: 'Your life, in one view', symbol: '●' },
-  ...WORLD_TARGETS.map((target) => ({
-    key: target.world,
-    label: target.label,
-    path: target.path,
-    cue:
-      target.world === 'today' ? 'The immediate present' :
-      target.world === 'plan' ? 'Time becoming you' :
-      target.world === 'life' ? 'Your inhabited world' :
-      target.world === 'beauty' ? 'Care · confidence · you' :
-      target.world === 'brain' ? 'Knowledge in motion' :
-      'Ideas into reality',
-    symbol:
-      target.world === 'today' ? '☼' :
-      target.world === 'plan' ? '◎' :
-      target.world === 'life' ? '◇' :
-      target.world === 'beauty' ? '✦' :
-      target.world === 'brain' ? '⌘' :
-      '✧',
-  })),
-];
+const THREAD_KEY = 'glow.navigation.thread.v3';
+const SCROLL_KEY = 'glow.navigation.scroll.v1';
+const FAVORITES_KEY = 'glow.navigation.favorites.v1';
+const MAX_THREAD = 12;
 
 function dispatchMove(path: string) {
   document.dispatchEvent(new CustomEvent('glow:navigate', { detail: { path } }));
@@ -76,30 +60,66 @@ function writeJson(key: string, value: unknown) {
   try { window.sessionStorage.setItem(key, JSON.stringify(value)); } catch {}
 }
 
+function readLocalJson<T>(key: string): T | null {
+  try {
+    const value = window.localStorage.getItem(key);
+    return value ? JSON.parse(value) as T : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeLocalJson(key: string, value: unknown) {
+  try { window.localStorage.setItem(key, JSON.stringify(value)); } catch {}
+}
+
+function WorldIcon({ world, size = 16 }: { world: VisibleWorldKey; size?: number }) {
+  if (world === 'home') return <HomeIcon size={size}/>;
+  if (world === 'today') return <Sparkles size={size}/>;
+  if (world === 'plan') return <CalendarDays size={size}/>;
+  if (world === 'life') return <Globe2 size={size}/>;
+  if (world === 'fitness') return <Activity size={size}/>;
+  if (world === 'wellness') return <HeartPulse size={size}/>;
+  if (world === 'brain') return <BrainCircuit size={size}/>;
+  return <Sparkles size={size}/>;
+}
+
+function UtilityIcon({ utility, size = 15 }: { utility: NavigationUtility['key']; size?: number }) {
+  if (utility === 'search') return <Search size={size}/>;
+  if (utility === 'attention') return <BellRing size={size}/>;
+  if (utility === 'settings') return <SettingsIcon size={size}/>;
+  if (utility === 'concierge') return <Sparkles size={size}/>;
+  return <BrainCircuit size={size}/>;
+}
+
+function pathLabel(path: string) {
+  const clean = path.split('?')[0] || '/';
+  const target = GLOBAL_NAVIGATION.find((item) => item.path.split('?')[0] === clean);
+  if (target) return target.label;
+  return clean.split('/').filter(Boolean).at(-1)?.replace(/[-_]+/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()) || 'Glow';
+}
+
 export function GlowCurrent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const search = searchParams.toString();
-  const currentPath = useMemo(() => currentPathFor(pathname, search), [pathname, search]);
+  const currentPath = search ? `${pathname}?${search}` : pathname;
   const currentExperience = useMemo(() => roomExperienceFor(pathname), [pathname]);
   const currentRoom = useMemo(() => roomLabelForPath(currentPath, currentExperience.world), [currentExperience.world, currentPath]);
-  const depth = useMemo(() => depthLabelsForPath(currentPath, currentExperience.world), [currentExperience.world, currentPath]);
   const returnTarget = useMemo(() => returnTargetForPath(currentPath, currentExperience.world), [currentExperience.world, currentPath]);
-  const railTargets = useMemo(() => railTargetsForWorld(currentExperience.world), [currentExperience.world]);
-  const enclosure = useMemo(() => enclosureForPath(currentPath), [currentPath]);
-  const currentFoldWorld: FoldWorld = pathname === '/home' ? 'home' : currentExperience.world;
+  const visibleWorld = useMemo(() => visibleWorldForPath(pathname), [pathname]);
+  const breadcrumbs = useMemo(() => breadcrumbsForPath(pathname, search), [pathname, search]);
+  const localTabs = useMemo(() => localTabsForPath(pathname), [pathname]);
 
-  const [worldFoldOpen, setWorldFoldOpen] = useState(false);
-  const [selectedFoldWorld, setSelectedFoldWorld] = useState<FoldWorld | null>(null);
-  const [railOpen, setRailOpen] = useState(false);
+  const [tabletExpanded, setTabletExpanded] = useState(false);
+  const [worldsOpen, setWorldsOpen] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [commandQuery, setCommandQuery] = useState('');
   const [thread, setThread] = useState<ThreadEntry[]>([]);
-  const [dockActions, setDockActions] = useState<DockActions>({});
-  const [worldAnchors, setWorldAnchors] = useState<WorldAnchorMap>({});
-  const worldAnchorsRef = useRef<WorldAnchorMap>({});
+  const [favorites, setFavorites] = useState<string[]>([]);
   const previousPathRef = useRef(currentPath);
-  const suppressNextHistoryRef = useRef(false);
-  const foldTravelTimerRef = useRef<number | null>(null);
-  const scrollTimerRef = useRef<number | null>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const persistThread = useCallback((next: ThreadEntry[]) => {
     const trimmed = next.slice(-MAX_THREAD);
@@ -107,309 +127,308 @@ export function GlowCurrent() {
     writeJson(THREAD_KEY, trimmed);
   }, []);
 
-  const persistAnchor = useCallback((world: FoldWorld, anchor: WorldStateAnchor) => {
-    const next = { ...worldAnchorsRef.current, [world]: anchor };
-    worldAnchorsRef.current = next;
-    setWorldAnchors(next);
-    writeJson(WORLD_ANCHOR_KEY, next);
+  useEffect(() => {
+    setThread(readJson<ThreadEntry[]>(THREAD_KEY) ?? []);
+    setFavorites(readLocalJson<string[]>(FAVORITES_KEY) ?? []);
   }, []);
-
-  useEffect(() => {
-    const savedThread = readJson<ThreadEntry[]>(THREAD_KEY);
-    const savedAnchors = readJson<WorldAnchorMap>(WORLD_ANCHOR_KEY);
-    if (savedThread) setThread(savedThread);
-    if (savedAnchors) {
-      worldAnchorsRef.current = savedAnchors;
-      setWorldAnchors(savedAnchors);
-    }
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.dataset.glowShellWorld = currentExperience.world;
-    document.documentElement.dataset.glowShellRoom = currentRoom;
-    document.documentElement.dataset.glowEnclosure = enclosure;
-    document.documentElement.dataset.glowWorldFold = worldFoldOpen ? 'open' : 'closed';
-    document.documentElement.dataset.glowFoldWorld = currentFoldWorld;
-    return () => {
-      delete document.documentElement.dataset.glowShellWorld;
-      delete document.documentElement.dataset.glowShellRoom;
-      delete document.documentElement.dataset.glowEnclosure;
-      delete document.documentElement.dataset.glowWorldFold;
-      delete document.documentElement.dataset.glowFoldWorld;
-    };
-  }, [currentExperience.world, currentFoldWorld, currentRoom, enclosure, worldFoldOpen]);
-
-  useEffect(() => {
-    const pending = readJson<PendingWorldRestore>(WORLD_RESTORE_KEY);
-    if (!pending || pending.path !== currentPath) return;
-    try { window.sessionStorage.removeItem(WORLD_RESTORE_KEY); } catch {}
-    const frame = window.requestAnimationFrame(() => {
-      window.scrollTo({ top: Math.max(0, pending.scrollY || 0), behavior: 'auto' });
-      document.dispatchEvent(new CustomEvent('glow:world-state-restore', {
-        detail: { world: pending.world, state: pending.state ?? null, room: pending.room },
-      }));
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [currentPath]);
-
-  useEffect(() => {
-    const capture = () => {
-      const existing = worldAnchorsRef.current[currentFoldWorld];
-      persistAnchor(currentFoldWorld, {
-        path: currentPath,
-        room: currentRoom,
-        scrollY: window.scrollY,
-        updatedAt: Date.now(),
-        state: existing?.state ?? null,
-        stateLabel: existing?.stateLabel ?? null,
-      });
-    };
-    const initial = window.setTimeout(capture, 260);
-    const onScroll = () => {
-      if (scrollTimerRef.current) window.clearTimeout(scrollTimerRef.current);
-      scrollTimerRef.current = window.setTimeout(capture, 180);
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      window.clearTimeout(initial);
-      if (scrollTimerRef.current) window.clearTimeout(scrollTimerRef.current);
-      window.removeEventListener('scroll', onScroll);
-    };
-  }, [currentFoldWorld, currentPath, currentRoom, persistAnchor]);
-
-  useEffect(() => {
-    const registerState = (event: Event) => {
-      const detail = (event as CustomEvent<{ state?: Record<string, unknown> | null; label?: string | null }>).detail;
-      const existing = worldAnchorsRef.current[currentFoldWorld];
-      persistAnchor(currentFoldWorld, {
-        path: currentPath,
-        room: currentRoom,
-        scrollY: window.scrollY,
-        updatedAt: Date.now(),
-        state: detail?.state ?? existing?.state ?? null,
-        stateLabel: detail?.label ?? existing?.stateLabel ?? null,
-      });
-    };
-    document.addEventListener('glow:world-state', registerState as EventListener);
-    return () => document.removeEventListener('glow:world-state', registerState as EventListener);
-  }, [currentFoldWorld, currentPath, currentRoom, persistAnchor]);
 
   useEffect(() => {
     const previous = previousPathRef.current;
-    if (previous && previous !== currentPath) {
-      if (suppressNextHistoryRef.current) {
-        suppressNextHistoryRef.current = false;
-      } else if (previous !== '/sign-in' && !previous.startsWith('/api/')) {
-        const previousPathname = previous.split('?')[0] || '/today';
-        const experience = roomExperienceFor(previousPathname);
-        const entry: ThreadEntry = {
-          path: previous,
-          room: roomLabelForPath(previous, experience.world),
-          world: experience.world,
-          visitedAt: Date.now(),
-        };
-        const next = [...thread.filter((item, index) => item.path !== previous || index !== thread.length - 1), entry];
-        persistThread(next);
-      }
+    if (previous && previous !== currentPath && !previous.startsWith('/sign-') && !previous.startsWith('/api/')) {
+      const next = [...thread.filter((item) => item.path !== previous), {
+        path: previous,
+        label: pathLabel(previous),
+        visitedAt: Date.now(),
+      }];
+      persistThread(next);
     }
     previousPathRef.current = currentPath;
   }, [currentPath, persistThread, thread]);
 
-  useEffect(() => () => {
-    if (foldTravelTimerRef.current) window.clearTimeout(foldTravelTimerRef.current);
-  }, []);
-
-  const travel = useCallback((path: string) => {
-    if (!path || path === currentPath) {
-      setWorldFoldOpen(false);
-      setRailOpen(false);
-      setSelectedFoldWorld(null);
-      return;
-    }
-    setWorldFoldOpen(false);
-    setRailOpen(false);
-    setDockActions({});
-    dispatchMove(path);
+  useEffect(() => {
+    const scrollMap = readJson<Record<string, number>>(SCROLL_KEY) ?? {};
+    const top = scrollMap[currentPath];
+    if (typeof top !== 'number' || top <= 0) return;
+    const frame = window.requestAnimationFrame(() => window.scrollTo({ top, behavior: 'auto' }));
+    return () => window.cancelAnimationFrame(frame);
   }, [currentPath]);
 
-  const reverseCurrent = useCallback(() => {
-    const destination = thread.at(-1);
-    if (!destination) return;
-    suppressNextHistoryRef.current = true;
-    persistThread(thread.slice(0, -1));
-    setWorldFoldOpen(false);
-    setRailOpen(false);
-    setDockActions({});
-    dispatchMove(destination.path);
-  }, [persistThread, thread]);
+  useEffect(() => {
+    document.documentElement.dataset.glowVisibleWorld = visibleWorld;
+    document.documentElement.dataset.glowNavigation = 'unified-v1';
+    return () => {
+      delete document.documentElement.dataset.glowVisibleWorld;
+      delete document.documentElement.dataset.glowNavigation;
+    };
+  }, [visibleWorld]);
 
-  const openGlow = useCallback(() => document.dispatchEvent(new CustomEvent('glow:open')), []);
+  const closeLayers = useCallback(() => {
+    setWorldsOpen(false);
+    setCommandOpen(false);
+    setCreateOpen(false);
+    setTabletExpanded(false);
+  }, []);
 
-  const runDockAction = useCallback((action?: DockAction | null) => {
-    if (!action) return;
-    if (action.path) return travel(action.path);
-    if (action.event) document.dispatchEvent(new CustomEvent(action.event));
-  }, [travel]);
+  const saveScroll = useCallback(() => {
+    const map = readJson<Record<string, number>>(SCROLL_KEY) ?? {};
+    map[currentPath] = window.scrollY;
+    writeJson(SCROLL_KEY, map);
+  }, [currentPath]);
 
-  const previewFor = useCallback((target: FoldTarget) => {
-    const anchor = worldAnchors[target.key];
-    if (target.key === currentFoldWorld) return anchor?.stateLabel || (currentRoom !== target.label ? currentRoom : target.cue);
-    if (anchor?.stateLabel) return anchor.stateLabel;
-    if (anchor?.room && anchor.room !== target.label && anchor.room !== 'Glow Home') return `Return to ${anchor.room}`;
-    return target.cue;
-  }, [currentFoldWorld, currentRoom, worldAnchors]);
+  const travel = useCallback((path: string) => {
+    if (!path) return;
+    saveScroll();
+    closeLayers();
+    if (path === currentPath) return;
+    dispatchMove(path);
+  }, [closeLayers, currentPath, saveScroll]);
 
-  const selectFoldTarget = useCallback((target: FoldTarget) => {
-    if (target.key === currentFoldWorld) {
-      setWorldFoldOpen(false);
-      setSelectedFoldWorld(null);
+  const runUtility = useCallback((utility: NavigationUtility) => {
+    if (utility.event) {
+      closeLayers();
+      document.dispatchEvent(new CustomEvent(utility.event));
       return;
     }
+    if (utility.path) travel(utility.path);
+  }, [closeLayers, travel]);
 
-    const anchor = worldAnchorsRef.current[target.key];
-    const destination = anchor?.path || target.path;
-    const before = new CustomEvent('glow:before-world-travel', {
-      cancelable: true,
-      detail: { from: currentFoldWorld, to: target.key, currentPath, destination },
+  const toggleFavorite = useCallback((path: string) => {
+    setFavorites((current) => {
+      const next = current.includes(path) ? current.filter((item) => item !== path) : [...current, path];
+      writeLocalJson(FAVORITES_KEY, next);
+      return next;
     });
-    if (!document.dispatchEvent(before)) return;
+  }, []);
 
-    writeJson(WORLD_RESTORE_KEY, {
-      world: target.key,
-      path: destination,
-      room: anchor?.room || target.label,
-      scrollY: anchor?.scrollY || 0,
-      updatedAt: anchor?.updatedAt || Date.now(),
-      state: anchor?.state ?? null,
-      stateLabel: anchor?.stateLabel ?? null,
-    } satisfies PendingWorldRestore);
-
-    setSelectedFoldWorld(target.key);
-    if (foldTravelTimerRef.current) window.clearTimeout(foldTravelTimerRef.current);
-    foldTravelTimerRef.current = window.setTimeout(() => travel(destination), 180);
-  }, [currentFoldWorld, currentPath, travel]);
+  const createItem = useCallback((type: string, path: string) => {
+    writeJson('glow.pending-create.v1', { type, from: currentPath, createdAt: Date.now() });
+    document.dispatchEvent(new CustomEvent('glow:create-intent', { detail: { type, from: currentPath } }));
+    travel(path);
+  }, [currentPath, travel]);
 
   useEffect(() => {
-    const openCurrent = () => setWorldFoldOpen(true);
-    const reverse = () => reverseCurrent();
-    const toggleRail = () => setRailOpen((open) => !open);
-    const registerDock = (event: Event) => setDockActions((event as CustomEvent<DockActions>).detail ?? {});
-    const clearDock = () => setDockActions({});
     const key = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setWorldFoldOpen(false);
-        setRailOpen(false);
-        setSelectedFoldWorld(null);
-      }
-      if (event.altKey && event.key === 'ArrowLeft') {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
-        reverseCurrent();
+        setCommandOpen(true);
+        setWorldsOpen(false);
+        setCreateOpen(false);
       }
-      if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === 'g') {
+      if (event.key === 'Escape') closeLayers();
+      if (event.altKey && event.key === 'ArrowLeft' && returnTarget) {
         event.preventDefault();
-        setWorldFoldOpen((open) => !open);
+        travel(returnTarget.path);
       }
     };
-    document.addEventListener('glow:current-open', openCurrent);
-    document.addEventListener('glow:world-fold', openCurrent);
-    document.addEventListener('glow:reverse-current', reverse);
-    document.addEventListener('glow:current-rail', toggleRail);
-    document.addEventListener('glow:shell-actions', registerDock as EventListener);
-    document.addEventListener('glow:shell-actions-clear', clearDock);
     document.addEventListener('keydown', key);
-    return () => {
-      document.removeEventListener('glow:current-open', openCurrent);
-      document.removeEventListener('glow:world-fold', openCurrent);
-      document.removeEventListener('glow:reverse-current', reverse);
-      document.removeEventListener('glow:current-rail', toggleRail);
-      document.removeEventListener('glow:shell-actions', registerDock as EventListener);
-      document.removeEventListener('glow:shell-actions-clear', clearDock);
-      document.removeEventListener('keydown', key);
-    };
-  }, [reverseCurrent]);
+    return () => document.removeEventListener('keydown', key);
+  }, [closeLayers, returnTarget, travel]);
 
-  if (pathname === '/sign-in' || pathname.startsWith('/api/')) return null;
+  useEffect(() => {
+    if (!commandOpen) return;
+    const frame = window.requestAnimationFrame(() => searchInputRef.current?.focus());
+    return () => window.cancelAnimationFrame(frame);
+  }, [commandOpen]);
+
+  const commandDestinations = useMemo(() => {
+    const query = commandQuery.trim().toLowerCase();
+    if (!query) return GLOBAL_NAVIGATION;
+    return GLOBAL_NAVIGATION.filter((item) => `${item.label} ${item.cue}`.toLowerCase().includes(query));
+  }, [commandQuery]);
+
+  const commandUtilities = useMemo(() => {
+    const query = commandQuery.trim().toLowerCase();
+    if (!query) return GLOBAL_UTILITIES;
+    return GLOBAL_UTILITIES.filter((item) => item.label.toLowerCase().includes(query));
+  }, [commandQuery]);
+
+  const favoriteTargets = useMemo(
+    () => favorites.map((path) => GLOBAL_NAVIGATION.find((item) => item.path === path)).filter(Boolean),
+    [favorites],
+  );
+
+  const prioritizedCreate = useMemo(() => {
+    const score = (type: string) => {
+      if (visibleWorld === 'beauty' && type === 'beauty-entry') return 0;
+      if (visibleWorld === 'fitness' && type === 'workout') return 0;
+      if (visibleWorld === 'create' && (type === 'project' || type === 'idea' || type === 'note')) return 0;
+      if (visibleWorld === 'plan' && (type === 'task' || type === 'event' || type === 'routine' || type === 'goal')) return 0;
+      if (visibleWorld === 'life' && (type === 'meal' || type === 'shopping-item')) return 0;
+      return 1;
+    };
+    return [...CREATE_DESTINATIONS].sort((a, b) => score(a.type) - score(b.type));
+  }, [visibleWorld]);
+
+  const submitCommandSearch = useCallback(() => {
+    const query = commandQuery.trim();
+    if (!query) return;
+    const exact = commandDestinations[0];
+    if (exact && commandDestinations.length === 1) return travel(exact.path);
+    travel(`/search?q=${encodeURIComponent(query)}`);
+  }, [commandDestinations, commandQuery, travel]);
+
+  if (pathname === '/sign-in' || pathname === '/sign-up' || pathname.startsWith('/api/')) return null;
 
   return (
-    <div className="glow-current" data-world={currentExperience.world} data-enclosure={enclosure} data-fold-open={worldFoldOpen ? 'true' : 'false'}>
-      <div className="glow-current__world-boundary" aria-hidden="true" />
-
-      <header className="glow-current__top-band" aria-label="Glow OS orientation">
-        <div className="glow-current__top-left">
-          <button type="button" className="glow-current__brand" onClick={() => travel('/home')} aria-label="Glow OS Home">
-            <span className="glow-current__brand-pearl" aria-hidden="true" />
-            <span className="glow-current__brand-copy"><strong>Glow OS</strong><small>Your life, in harmony</small></span>
+    <div className="glow-nav" data-visible-world={visibleWorld} data-tablet-expanded={tabletExpanded ? 'true' : 'false'}>
+      <aside className="glow-nav__sidebar" aria-label="Glow OS global navigation">
+        <div className="glow-nav__brand-row">
+          <button type="button" className="glow-nav__brand" onClick={() => travel('/home')} aria-label="Glow OS Home">
+            <span className="glow-nav__brand-mark" aria-hidden="true">✦</span>
+            <span className="glow-nav__brand-copy"><strong>Glow OS</strong><small>Your life, in harmony</small></span>
           </button>
-          <button type="button" className="glow-current__fold-seam-trigger" onClick={() => setWorldFoldOpen((open) => !open)} aria-label={worldFoldOpen ? 'Close World Fold' : 'Open worlds'} aria-expanded={worldFoldOpen} title="Open worlds · Command/Control-Shift-G"><span aria-hidden="true" /></button>
-          {returnTarget ? (
-            <button type="button" className="glow-current__return-anchor" onClick={() => travel(returnTarget.path)} aria-label={`Return to ${returnTarget.label}`} title={`Return to ${returnTarget.label}`}>
-              <span className="glow-current__return-light" aria-hidden="true" /><span className="glow-current__return-copy">{returnTarget.label}</span>
-            </button>
-          ) : null}
-        </div>
-
-        <div className="glow-current__orientation" aria-live="polite">
-          {worldFoldOpen ? <span className="glow-current__fold-title"><strong>World Fold</strong><small>One life. Many worlds. Always you.</small></span> : <span className="glow-current__sr-only">{worldLabelFor(currentExperience.world)}. {depth.join(', ')}.</span>}
-        </div>
-
-        <div className="glow-current__top-right">
-          <button type="button" className="glow-current__today-shortcut" onClick={() => travel('/today?room=what-now')} aria-label="Go to Today">
-            <span className="glow-current__today-sun" aria-hidden="true">☼</span><span><strong>Today</strong><small>{currentFoldWorld === 'today' ? currentRoom : 'The immediate present'}</small></span>
-          </button>
-          <button type="button" className="glow-current__shakti" onClick={openGlow} aria-label={`Ask Glow from ${currentRoom}`}>
-            <span className="glow-current__shakti-light" aria-hidden="true" /><span className="glow-current__shakti-copy"><strong>Ask Glow</strong><small>Always here</small></span>
+          <button type="button" className="glow-nav__tablet-toggle" onClick={() => setTabletExpanded((value) => !value)} aria-label={tabletExpanded ? 'Collapse navigation' : 'Expand navigation'} aria-expanded={tabletExpanded}>
+            {tabletExpanded ? <X size={16}/> : <Menu size={16}/>}
           </button>
         </div>
-      </header>
 
-      <nav className="glow-current__rail" data-expanded={railOpen ? 'true' : 'false'} aria-label={`${worldLabelFor(currentExperience.world)} Glow Current`} onPointerEnter={() => setRailOpen(true)} onPointerLeave={() => setRailOpen(false)} onFocusCapture={() => setRailOpen(true)} onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setRailOpen(false); }}>
-        <button type="button" className="glow-current__rail-current" onClick={() => setRailOpen((open) => !open)} aria-label={`${currentRoom}. ${railOpen ? 'Hide' : 'Reveal'} nearby destinations`} aria-expanded={railOpen}>
-          <span className="glow-current__rail-current-node" aria-hidden="true" /><span className="glow-current__rail-current-copy"><small>{worldLabelFor(currentExperience.world)}</small><strong>{currentRoom}</strong></span>
+        <button type="button" className="glow-nav__create" onClick={() => setCreateOpen(true)}>
+          <Plus size={15}/><span>Create</span>
         </button>
-        <div className="glow-current__rail-paths">
-          {railTargets.map((target) => {
-            const active = railTargetIsActive(currentPath, target.path);
-            return <button key={target.path} type="button" className="glow-current__rail-destination" data-active={active ? 'true' : 'false'} onClick={() => travel(target.path)} aria-label={`Travel to ${target.label}. ${target.cue}`} aria-current={active ? 'page' : undefined}>
-              <span className="glow-current__rail-node" aria-hidden="true" /><span className="glow-current__rail-label"><strong>{target.label}</strong><small>{target.cue}</small></span>
-            </button>;
-          })}
-        </div>
-      </nav>
 
-      <div className="glow-current__dock" aria-label="Glow OS universal action layer">
-        <div className="glow-current__dock-zone glow-current__dock-zone--left">
-          {dockActions.left ? <button type="button" className="glow-current__dock-action" onClick={() => runDockAction(dockActions.left)} aria-label={dockActions.left.ariaLabel ?? dockActions.left.label}>{dockActions.left.label}</button> : thread.length ? <button type="button" className="glow-current__reverse" onClick={reverseCurrent} aria-label={`Reverse the Current to ${thread.at(-1)?.room ?? 'previous space'}`} title="Reverse the Current · Alt-Left Arrow"><span className="glow-current__reverse-mark" aria-hidden="true">‹</span><span className="glow-current__reverse-copy">{thread.at(-1)?.room}</span></button> : <span className="glow-current__dock-quiet" aria-hidden="true">Current</span>}
-        </div>
-        {dockActions.center ? <button type="button" className="glow-current__dock-action glow-current__dock-action--primary" onClick={() => runDockAction(dockActions.center)} aria-label={dockActions.center.ariaLabel ?? dockActions.center.label}>{dockActions.center.label}</button> : <button type="button" className="glow-current__seam" onClick={() => setWorldFoldOpen((open) => !open)} aria-label="Open World Fold" aria-expanded={worldFoldOpen} title="World Fold · Command/Control-Shift-G"><span className="glow-current__seam-core" aria-hidden="true" /><span className="glow-current__seam-wave" aria-hidden="true" /><span className="glow-current__seam-label">World Fold</span></button>}
-        <div className="glow-current__dock-zone glow-current__dock-zone--right">
-          {dockActions.right ? <button type="button" className="glow-current__dock-action" onClick={() => runDockAction(dockActions.right)} aria-label={dockActions.right.ariaLabel ?? dockActions.right.label}>{dockActions.right.label}</button> : <span className="glow-current__dock-state" aria-live="polite">{currentRoom}</span>}
-        </div>
-      </div>
-
-      {worldFoldOpen ? (
-        <section className="glow-current__fold living-fold" aria-label="World Fold">
-          <button type="button" className="glow-current__fold-dismiss" onClick={() => { setWorldFoldOpen(false); setSelectedFoldWorld(null); }} aria-label="Close World Fold" />
-          <div className="living-fold__atmosphere" aria-hidden="true"><i/><i/><i/><i/></div>
-          <div className="living-fold__intro" aria-hidden="true"><strong>World Fold 2.0</strong><span>The Living Fold</span><p>Not a menu.<br/>A reveal.<br/>One life. Many lenses.</p></div>
-          <div className="living-fold__scene" role="dialog" aria-modal="true" aria-label="Glow OS worlds">
-            <div className="living-fold__fan" data-active-world={currentFoldWorld}>
-              {FOLD_TARGETS.map((target) => {
-                const preview = previewFor(target);
+        <div className="glow-nav__groups">
+          {GLOBAL_NAVIGATION_GROUPS.map((group) => (
+            <section key={group.label} className="glow-nav__group">
+              <p className="glow-nav__group-label">{group.label}</p>
+              {group.items.map((item) => {
+                const active = navigationDestinationIsActive(pathname, item);
                 return (
-                  <button key={target.key} type="button" className="living-fold__lens" data-world={target.key} data-current={currentFoldWorld === target.key ? 'true' : 'false'} data-selecting={selectedFoldWorld === target.key ? 'true' : 'false'} onClick={() => selectFoldTarget(target)} aria-label={`${target.label}. ${preview}. ${currentFoldWorld === target.key ? 'Current world.' : 'Press to move here.'}`}>
-                    <span className="living-fold__lens-shadow" aria-hidden="true" /><span className="living-fold__lens-rear" aria-hidden="true" /><span className="living-fold__lens-body" aria-hidden="true"><span className="living-fold__micro-scene"><i/><i/><i/><i/></span></span>
-                    <span className="living-fold__lens-copy"><span className="living-fold__symbol" aria-hidden="true">{target.symbol}</span><strong>{target.label}</strong><small>{preview}</small></span>
+                  <button key={item.key} type="button" className="glow-nav__destination" data-active={active ? 'true' : 'false'} onClick={() => travel(item.path)} aria-current={active ? 'page' : undefined} title={item.cue}>
+                    <span className="glow-nav__destination-icon"><WorldIcon world={item.key}/></span>
+                    <span className="glow-nav__destination-copy"><strong>{item.label}</strong><small>{item.cue}</small></span>
                   </button>
                 );
               })}
-              <div className="living-fold__context-thread" aria-hidden="true"><i/><span>{currentRoom}</span><b/></div>
-            </div>
+            </section>
+          ))}
+        </div>
+
+        <div className="glow-nav__utilities">
+          {GLOBAL_UTILITIES.map((utility) => {
+            const active = utilityIsActive(pathname, utility);
+            return (
+              <button key={utility.key} type="button" className="glow-nav__utility" data-active={active ? 'true' : 'false'} onClick={() => utility.key === 'search' ? setCommandOpen(true) : runUtility(utility)}>
+                <UtilityIcon utility={utility.key}/><span>{utility.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </aside>
+
+      <header className="glow-nav__header" aria-label="Page orientation">
+        <div className="glow-nav__header-left">
+          {returnTarget ? (
+            <button type="button" className="glow-nav__back" onClick={() => travel(returnTarget.path)} aria-label={`Back to ${returnTarget.label}`}>
+              <ChevronLeft size={17}/><span>{returnTarget.label}</span>
+            </button>
+          ) : <span className="glow-nav__back-spacer" />}
+          <nav className="glow-nav__breadcrumbs" aria-label="Breadcrumb">
+            {breadcrumbs.map((crumb, index) => (
+              <span key={`${crumb.path}-${index}`} className="glow-nav__crumb-wrap">
+                {index ? <span className="glow-nav__crumb-separator" aria-hidden="true">/</span> : null}
+                <button type="button" className="glow-nav__crumb" data-current={index === breadcrumbs.length - 1 ? 'true' : 'false'} onClick={() => travel(crumb.path)} aria-current={index === breadcrumbs.length - 1 ? 'page' : undefined}>{crumb.label}</button>
+              </span>
+            ))}
+          </nav>
+        </div>
+
+        <div className="glow-nav__header-actions">
+          <button type="button" className="glow-nav__header-action glow-nav__search-trigger" onClick={() => setCommandOpen(true)} aria-label="Search Glow OS"><Search size={15}/><span>Search</span><kbd>⌘K</kbd></button>
+          <button type="button" className="glow-nav__header-action" onClick={() => travel('/attention')} aria-label="Attention Center"><BellRing size={15}/><span className="glow-nav__action-label">Attention</span></button>
+          <button type="button" className="glow-nav__header-action glow-nav__header-create" onClick={() => setCreateOpen(true)} aria-label="Create"><Plus size={16}/></button>
+          <button type="button" className="glow-nav__header-action glow-nav__ask" onClick={() => document.dispatchEvent(new CustomEvent('glow:open'))} aria-label={`Ask Glow from ${currentRoom}`}><Sparkles size={15}/><span className="glow-nav__action-label">Ask Glow</span></button>
+        </div>
+      </header>
+
+      {localTabs.length ? (
+        <nav className="glow-nav__local-tabs" aria-label={`${breadcrumbs.at(-1)?.label ?? currentRoom} navigation`}>
+          <div className="glow-nav__local-tabs-scroll">
+            {localTabs.map((tab) => {
+              const active = localTabIsActive(currentPath, tab.path);
+              return <button key={tab.path} type="button" className="glow-nav__local-tab" data-active={active ? 'true' : 'false'} onClick={() => travel(tab.path)} aria-current={active ? 'page' : undefined}>{tab.label}</button>;
+            })}
           </div>
-          <div className="living-fold__side-note living-fold__side-note--left" aria-hidden="true">Your current world<br/>remains alive behind you.</div>
-          <div className="living-fold__side-note living-fold__side-note--right" aria-hidden="true">See a world.<br/>Press it.<br/>Glow transforms toward it.</div>
-          <div className="living-fold__mantra" aria-hidden="true">SAME YOU. · MORE YOU.</div>
-          <div className="living-fold__sr-status glow-current__sr-only" aria-live="polite">World Fold open. Home is the root. Today is nearest. Plan, Life, Beauty, Brain and Create are lenses into the same Glow OS.</div>
-        </section>
+        </nav>
+      ) : null}
+
+      <nav className="glow-nav__mobile-bottom" aria-label="Glow OS mobile navigation">
+        {GLOBAL_NAVIGATION.filter((item) => item.key === 'home' || item.key === 'today' || item.key === 'plan').map((item) => {
+          const active = navigationDestinationIsActive(pathname, item);
+          return <button key={item.key} type="button" data-active={active ? 'true' : 'false'} onClick={() => travel(item.path)}><WorldIcon world={item.key} size={17}/><span>{item.label}</span></button>;
+        })}
+        <button type="button" data-active={['life','beauty','closet','fitness','wellness','brain','create'].includes(visibleWorld) ? 'true' : 'false'} onClick={() => setWorldsOpen(true)}><Globe2 size={17}/><span>Worlds</span></button>
+        <button type="button" onClick={() => document.dispatchEvent(new CustomEvent('glow:open'))}><Sparkles size={17}/><span>Glow</span></button>
+      </nav>
+
+      {worldsOpen ? (
+        <div className="glow-nav__overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setWorldsOpen(false); }}>
+          <section className="glow-nav__sheet glow-nav__world-sheet" role="dialog" aria-modal="true" aria-label="Your Worlds">
+            <div className="glow-nav__sheet-header"><div><small>YOUR WORLDS</small><h2>Choose where you want to go</h2></div><button type="button" onClick={() => setWorldsOpen(false)} aria-label="Close Worlds"><X size={18}/></button></div>
+            <div className="glow-nav__world-grid">
+              {GLOBAL_NAVIGATION.filter((item) => ['life','beauty','closet','fitness','wellness','brain','create'].includes(item.key)).map((item) => (
+                <button key={item.key} type="button" className="glow-nav__world-card" data-active={visibleWorld === item.key ? 'true' : 'false'} onClick={() => travel(item.path)}>
+                  <WorldIcon world={item.key} size={19}/><span><strong>{item.label}</strong><small>{item.cue}</small></span>
+                </button>
+              ))}
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      {createOpen ? (
+        <div className="glow-nav__overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setCreateOpen(false); }}>
+          <section className="glow-nav__sheet glow-nav__create-sheet" role="dialog" aria-modal="true" aria-label="Create in Glow">
+            <div className="glow-nav__sheet-header"><div><small>CREATE</small><h2>Add something without losing your place</h2></div><button type="button" onClick={() => setCreateOpen(false)} aria-label="Close Create"><X size={18}/></button></div>
+            <div className="glow-nav__create-grid">
+              {prioritizedCreate.map((item) => <button key={item.type} type="button" onClick={() => createItem(item.type, item.path)}><Plus size={15}/><span>{item.label}</span></button>)}
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      {commandOpen ? (
+        <div className="glow-nav__overlay glow-nav__command-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setCommandOpen(false); }}>
+          <section className="glow-nav__command" role="dialog" aria-modal="true" aria-label="Search and navigate Glow OS">
+            <div className="glow-nav__command-search">
+              <Search size={17}/>
+              <input ref={searchInputRef} value={commandQuery} onChange={(event) => setCommandQuery(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); submitCommandSearch(); } }} placeholder="Search Glow or type where you want to go…" aria-label="Search Glow OS"/>
+              <button type="button" onClick={() => setCommandOpen(false)} aria-label="Close search"><X size={17}/></button>
+            </div>
+
+            <div className="glow-nav__command-body">
+              {!commandQuery.trim() && thread.length ? (
+                <section className="glow-nav__command-section">
+                  <p>CONTINUE</p>
+                  <button type="button" className="glow-nav__continue" onClick={() => travel(thread.at(-1)?.path ?? '/home')}><span><strong>{thread.at(-1)?.label}</strong><small>Return to where you were</small></span><ChevronLeft size={16}/></button>
+                </section>
+              ) : null}
+
+              {!commandQuery.trim() && favoriteTargets.length ? (
+                <section className="glow-nav__command-section">
+                  <p>FAVORITES</p>
+                  <div className="glow-nav__command-list">
+                    {favoriteTargets.map((item) => item ? <button key={item.key} type="button" onClick={() => travel(item.path)}><WorldIcon world={item.key}/><span><strong>{item.label}</strong><small>{item.cue}</small></span></button> : null)}
+                  </div>
+                </section>
+              ) : null}
+
+              <section className="glow-nav__command-section">
+                <p>{commandQuery.trim() ? 'MATCHES' : 'GO TO'}</p>
+                <div className="glow-nav__command-list">
+                  {commandDestinations.map((item) => (
+                    <div key={item.key} className="glow-nav__command-row">
+                      <button type="button" className="glow-nav__command-main" onClick={() => travel(item.path)}><WorldIcon world={item.key}/><span><strong>{item.label}</strong><small>{item.cue}</small></span></button>
+                      <button type="button" className="glow-nav__favorite-toggle" data-active={favorites.includes(item.path) ? 'true' : 'false'} onClick={() => toggleFavorite(item.path)} aria-label={favorites.includes(item.path) ? `Remove ${item.label} from favorites` : `Add ${item.label} to favorites`}><Star size={14}/></button>
+                    </div>
+                  ))}
+                  {commandUtilities.map((utility) => <button key={utility.key} type="button" onClick={() => runUtility(utility)}><UtilityIcon utility={utility.key}/><span><strong>{utility.label}</strong><small>Global utility</small></span></button>)}
+                </div>
+              </section>
+
+              {commandQuery.trim() ? <button type="button" className="glow-nav__search-all" onClick={submitCommandSearch}><Search size={15}/>Search all of Glow for “{commandQuery.trim()}”</button> : null}
+            </div>
+          </section>
+        </div>
       ) : null}
     </div>
   );
