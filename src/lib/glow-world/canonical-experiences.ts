@@ -95,8 +95,12 @@ export const CANONICAL_EXPERIENCE_SPECS: CanonicalExperienceSpec[] = [
   e('/beauty/makeup/techniques','Technique Library','Life · Beauty · Makeup','Which technique do I want to learn or repeat?','beauty','/beauty/makeup','Makeup',['Complexion','Brows','Eyes + lashes','Cheeks','Lips + finishing']),
   e('/beauty/makeup/wear-test','Wear Test','Life · Beauty · Makeup','How did this makeup combination behave over time?','beauty','/beauty/makeup','Makeup',['Application','Environment','Checkpoints','Transfer + fading','Conclusion']),
   e('/beauty/makeup/inventory','Makeup Inventory','Life · Beauty · Makeup','What makeup do I own and actually use?','beauty','/beauty/makeup','Makeup',['Complexion','Eye + brow','Cheek + lip','Lash + setting','Tools + backups']),
+  e('/beauty/nails','Nails','Life · Beauty','What nail care, maintenance, color, or tool needs attention?','beauty','/beauty','Beauty',['Nail condition','Routines','Colors + extensions','Maintenance','Tools + appointments'],'open'),
+  e('/beauty/brows-lashes','Brows + Lashes','Life · Beauty','What brow or lash care is current, due, or planned?','beauty','/beauty','Beauty',['Current state','Routines','Appointments','Products','Treatments'],'open'),
+  e('/beauty/oral-care','Oral Care','Life · Beauty','What oral-care routine or maintenance is due?','beauty','/beauty','Beauty',['Daily routines','Whitening','Tools','Maintenance','Cadence'],'open'),
+  e('/beauty/devices/inventory','Tools + Devices Inventory','Life · Beauty','What beauty tools and devices are owned and ready to use?','beauty','/beauty/devices','Tools + Devices',['LED + facial tools','Hair tools','Massage tools','Hair-removal devices','Accessories']),
   ...[
-    ['body-care','Body Beauty',['Routine Library','Routine Player','Inventory','Item Detail']],
+    ['body','Body Beauty',['Routine Library','Routine Player','Inventory','Item Detail']],
     ['nails','Nails',['Routine Library','Routine Player','Inventory','Item Detail']],
     ['brows-lashes','Brows + Lashes',['Routine Library','Routine Player','Inventory','Item Detail']],
     ['oral-care','Oral Care',['Routine Library','Routine Player','Inventory','Item Detail']],
@@ -138,11 +142,12 @@ export const CANONICAL_EXPERIENCE_SPECS: CanonicalExperienceSpec[] = [
   e('/food/meal-prep','Meal Prep','Life · Food','What preparation can happen together?','food','/food','Food',['Chop','Cook','Portion','Assemble','Store']),
 
   // HOME
-  e('/home/reset','Home Reset','Life · Home','What sequence returns the whole home to baseline?','home','/home','Home',['Collect','Dishes','Laundry','Surfaces + floors','Trash + put-away'],'protected'),
-  e('/home/rooms','Rooms','Life · Home','Which physical space needs attention?','home','/home','Home',['Room map','State','Cleaning','Storage','Projects']),
-  e('/home/cleaning','Cleaning','Life · Home','What cleaning belongs to this space and cadence?','home','/home','Home',['Daily','Weekly','Deep','Seasonal','By room']),
-  e('/home/maintenance','Maintenance','Life · Home','What needs repair, service, or replacement?','home','/home','Home',['Repairs','Service dates','Filters + batteries','Seasonal work','Warranties']),
-  e('/home/inventory','Inventory','Life · Home','What household items and supplies exist, and where?','home','/home','Home',['Category','Location','Quantity','Replacement state','Manual + receipt']),
+  e('/life/home','Home','Life · Home','Which physical space, routine, object, or maintenance need belongs here?','home','/life','Life',['Home Reset','Rooms','Cleaning','Maintenance','Inventory'],'open'),
+  e('/life/home/reset','Home Reset','Life · Home','What sequence returns the whole home to baseline?','home','/life/home','Home',['Collect','Dishes','Laundry','Surfaces + floors','Trash + put-away'],'protected'),
+  e('/life/home/rooms','Rooms','Life · Home','Which physical space needs attention?','home','/life/home','Home',['Room map','State','Cleaning','Storage','Projects']),
+  e('/life/home/cleaning','Cleaning','Life · Home','What cleaning belongs to this space and cadence?','home','/life/home','Home',['Daily','Weekly','Deep','Seasonal','By room']),
+  e('/life/home/maintenance','Maintenance','Life · Home','What needs repair, service, or replacement?','home','/life/home','Home',['Repairs','Service dates','Filters + batteries','Seasonal work','Warranties']),
+  e('/life/home/inventory','Inventory','Life · Home','What household items and supplies exist, and where?','home','/life/home','Home',['Category','Location','Quantity','Replacement state','Manual + receipt']),
 
   // MONEY
   e('/finance/baseline','Financial Baseline','Life · Money','What is the current financial baseline as of now?','money','/finance','Money',['Income','Fixed costs','Flexible costs','Balances','Debts + savings']),
@@ -248,7 +253,7 @@ function dynamicDetailSpec(normalized:string):CanonicalExperienceSpec|null{
     { re:/^\/closet\/wardrobe\/([^/]+)$/, build:(m)=>e(normalized,'Item Detail','Life · Closet','What is true about this owned wardrobe item?','closet','/closet/wardrobe','Digital Wardrobe',['Garment image','Brand + fit + size','Condition','Wear history + care','Outfits + repair + source']) },
     { re:/^\/closet\/outfits\/([^/]+)$/, build:(m)=>e(normalized,'Outfit Detail','Life · Closet','What makes this complete outfit work and where has it been worn?','closet','/closet/outfits','Outfit Library',['Complete look','Pieces','Styling notes','Beauty + occasion + weather','Wear history']) },
     { re:/^\/food\/recipes\/([^/]+)$/, build:(m)=>e(normalized,'Recipe Detail','Life · Food','What do I need, how long will it take, and what can substitute?','food','/food/recipes','Recipes',['Recipe identity','Ingredients','Directions','Timing','Substitutions']) },
-    { re:/^\/home\/rooms\/([^/]+)$/, build:(m)=>e(normalized,'Room Detail','Life · Home','What is the state of this physical room and what belongs here?','home','/home/rooms','Rooms',['Room state','Cleaning','Storage','Projects','Inventory + notes']) },
+    { re:/^\/life\/home\/rooms\/([^/]+)$/, build:(m)=>e(normalized,'Room Detail','Life · Home','What is the state of this physical room and what belongs here?','home','/life/home/rooms','Rooms',['Room state','Cleaning','Storage','Projects','Inventory + notes']) },
     { re:/^\/work\/job-search\/([^/]+)$/, build:(m)=>e(normalized,'Job Detail','Life · Career + Work','What is true about this opportunity and what is the next action?','work','/work/job-search','Job Search',['Job + company','Compensation + schedule','Location + fit','Documents + contact','Interview prep + history']) },
     { re:/^\/travel\/trips\/([^/]+)$/, build:(m)=>e(normalized,'Trip Detail','Life · Travel','What is the complete state of this trip?','travel','/travel','Travel',['Destination + dates','People','Itinerary','Bookings + packing','Budget + notes']) },
     { re:/^\/relationships\/person\/([^/]+)$/, build:(m)=>e(normalized,'Person Detail','Life · Relationships','What context belongs to this person and relationship?','relationships','/relationships','Relationships',['Identity','Important dates','Interactions','Shared plans','Gifts + linked objects']) },
