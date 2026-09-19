@@ -386,7 +386,7 @@ export function GlowCurrent() {
             <div className="glow-nav__sheet-header"><div><small>YOUR WORLDS</small><h2>Choose where you want to go</h2></div><button type="button" onClick={() => setWorldsOpen(false)} aria-label="Close Worlds"><X size={18}/></button></div>
             <div className="glow-nav__world-grid">
               {GLOBAL_NAVIGATION.filter((item) => ['life','beauty','closet','fitness','wellness','brain','create'].includes(item.key)).map((item) => (
-                <button key={item.key} type="button" className="glow-nav__world-card" data-active={visibleWorld === item.key ? 'true' : 'false'} onClick={() => travel(item.path)}>
+                <button key={item.key} type="button" className="glow-nav__world-card" data-active={visibleWorld === item.key ? 'true' : 'false'} onClick={() => travel(rememberedWorldPath(item.key, item.path))}>
                   <WorldIcon world={item.key} size={19}/><span><strong>{item.label}</strong><small>{item.cue}</small></span>
                 </button>
               ))}
