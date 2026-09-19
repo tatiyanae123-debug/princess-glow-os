@@ -304,16 +304,29 @@ export function WhatNowReference() {
                 <button type="button" className={styles.rowLabel} onClick={() => goToRoom(row.key)}>
                   <small>{row.time}</small><strong>{row.title}</strong><span>{row.line1}<br />{row.line2}</span>
                 </button>
-                {row.first ? (
-                  <button type="button" className={`${styles.rowItem} ${navStyles.rowItemButton}`} onClick={() => goToRoom(row.first!.room)} aria-label={`Open ${row.first.title}`}>
-                    <Pearl warm={index === 2} violet={index === 1} /><span><strong>{row.first.title}</strong><small>{row.first.detail} <em>{row.first.tag}</em></small></span>
+                {!row.first && !row.second ? (
+                  <button type="button" className={styles.openSpan} onClick={() => goToRoom(row.key)}>
+                    <span className={styles.openNode} aria-hidden="true" />
+                    <span>
+                      <strong>{row.key === 'tomorrow' ? 'Tomorrow is still open.' : 'This part of the day is open.'}</strong>
+                      <small>{row.key === 'tomorrow' ? 'No fixed calendar item is connected yet.' : 'Keep it open, protect rest, or fit one realistic next action.'}</small>
+                    </span>
+                    <em>OPEN</em>
                   </button>
-                ) : <div className={styles.rowItem}><Pearl /><span><strong>Nothing scheduled</strong><small>Your real data is clear here</small></span></div>}
-                {row.second ? (
-                  <button type="button" className={`${styles.rowItem} ${navStyles.rowItemButton}`} onClick={() => goToRoom(row.second!.room)} aria-label={`Open ${row.second.title}`}>
-                    <Pearl violet={index === 2} /><span><strong>{row.second.title}</strong><small>{row.second.detail} <em>{row.second.tag}</em></small></span>
-                  </button>
-                ) : <div className={styles.rowItem}><Pearl /><span><strong>No second item</strong><small>No placeholder inserted</small></span></div>}
+                ) : (
+                  <>
+                    {row.first ? (
+                      <button type="button" className={`${styles.rowItem} ${navStyles.rowItemButton}`} onClick={() => goToRoom(row.first!.room)} aria-label={`Open ${row.first.title}`}>
+                        <Pearl warm={index === 2} violet={index === 1} /><span><strong>{row.first.title}</strong><small>{row.first.detail} <em>{row.first.tag}</em></small></span>
+                      </button>
+                    ) : <div className={styles.quietSpace}><span>Open space</span></div>}
+                    {row.second ? (
+                      <button type="button" className={`${styles.rowItem} ${navStyles.rowItemButton}`} onClick={() => goToRoom(row.second!.room)} aria-label={`Open ${row.second.title}`}>
+                        <Pearl violet={index === 2} /><span><strong>{row.second.title}</strong><small>{row.second.detail} <em>{row.second.tag}</em></small></span>
+                      </button>
+                    ) : <div className={styles.quietSpace}><span>Room remains open</span></div>}
+                  </>
+                )}
                 <button type="button" className={styles.metric} onClick={() => goToRoom(row.key)}><span>{row.metric[0]}</span><strong>{row.metric[1]}</strong></button>
                 {index < rows.length - 1 ? <span className={styles.downCue}>↑</span> : null}
               </article>
