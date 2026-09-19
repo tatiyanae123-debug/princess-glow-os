@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { taskDependencies } from '@/db/schema/adaptive-os';
@@ -14,7 +15,7 @@ export async function TaskDependencyPanel({ userId, tasks }: { userId: string; t
     return (
       <section className="rounded-[18px] border border-amber-200 bg-amber-50/65 p-4">
         <p className="text-[9px] font-medium text-amber-900">Dependency Engine is ready after intelligence activation.</p>
-        <a href="/settings/intelligence" className="mt-2 inline-block text-[8px] text-amber-800">Activate intelligence →</a>
+        <Link href="/settings/intelligence" className="mt-2 inline-block text-[8px] text-amber-800">Activate intelligence →</Link>
       </section>
     );
   }
