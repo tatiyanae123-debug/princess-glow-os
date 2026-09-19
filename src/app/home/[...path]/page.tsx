@@ -1,6 +1,6 @@
-import { CanonicalCatchAllRoute } from '@/components/glow/canonical-catch-all-route';
+import { redirect } from 'next/navigation';
 
-export default async function CanonicalHomeRoute({ params }: { params: Promise<{ path: string[] }> }) {
+export default async function LegacyHomeDeepRoute({ params }: { params: Promise<{ path: string[] }> }) {
   const { path } = await params;
-  return CanonicalCatchAllRoute({ base: '/home', segments: path });
+  redirect(`/life/home/${path.join('/')}`);
 }
