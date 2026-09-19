@@ -10,7 +10,6 @@ import {
   Clock3,
   Inbox,
   Mic2,
-  MoonStar,
   Plus,
   Search,
   Sparkles,
