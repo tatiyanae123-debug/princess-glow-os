@@ -282,12 +282,12 @@ function ResourcesWorld() {
       </section>
       <section className={styles.resourceList}>
         {notes.map((note) => (
-          <a href="/notes" key={note.id} className={`${styles.glassPanel} ${styles.resourceRow}`}>
+          <Link href="/notes" key={note.id} className={`${styles.glassPanel} ${styles.resourceRow}`}>
             <span className={styles.resourceIcon}><FileText size={18} /></span><span><strong>{note.title}</strong><small>{note.pinned ? 'Pinned note' : `Updated ${new Date(note.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}</small></span><ArrowRight size={15} />
-          </a>
+          </Link>
         ))}
-        <a href="/tasks" className={`${styles.glassPanel} ${styles.resourceRow}`}><span className={styles.resourceIcon}><Check size={18} /></span><span><strong>Your tasks</strong><small>{data ? `${data.tasks.length} open` : 'Loading'}</small></span><ArrowRight size={15} /></a>
-        <a href="/calendar" className={`${styles.glassPanel} ${styles.resourceRow}`}><span className={styles.resourceIcon}><CalendarDays size={18} /></span><span><strong>Your calendar</strong><small>{data ? `${data.events.length} upcoming` : 'Loading'}</small></span><ArrowRight size={15} /></a>
+        <Link href="/tasks" className={`${styles.glassPanel} ${styles.resourceRow}`}><span className={styles.resourceIcon}><Check size={18} /></span><span><strong>Your tasks</strong><small>{data ? `${data.tasks.length} open` : 'Loading'}</small></span><ArrowRight size={15} /></Link>
+        <Link href="/calendar" className={`${styles.glassPanel} ${styles.resourceRow}`}><span className={styles.resourceIcon}><CalendarDays size={18} /></span><span><strong>Your calendar</strong><small>{data ? `${data.events.length} upcoming` : 'Loading'}</small></span><ArrowRight size={15} /></Link>
         {personal.status === 'ready' && notes.length === 0 ? <div className={styles.stateCard}>No saved notes were found. Glow has not created placeholder files.</div> : null}
       </section>
       <ContextLinks active="resources" />
