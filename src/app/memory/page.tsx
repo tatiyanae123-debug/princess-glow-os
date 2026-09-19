@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
+import { CanonicalDomainRoom } from '@/components/glow/canonical-domain-room';
 import { Card } from '@/components/ui/card';
 import {
   createLifeMemoryAction,
@@ -13,6 +13,12 @@ import { getAllLifeMemoriesByUser, getProjectsByUser } from '@/lib/data/user-sco
 import { Archive, BookMarked, Link2, LockKeyhole, Pencil, Pin, Search, ShieldCheck } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
+const destinations=[
+  {label:'Notes',href:'/notes',cue:'Written thought'},
+  {label:'Timeline',href:'/timeline',cue:'Chronological history'},
+  {label:'Decisions',href:'/brain/decisions',cue:'Reasons and outcomes'},
+  {label:'Imported Knowledge',href:'/brain/imported',cue:'Source + provenance'},
+];
 const fieldClass = 'w-full border border-[#ddd1c2] bg-white/70 px-4 py-3 text-[10px] text-[#51463b] outline-none focus:border-[#9a8670]';
 const buttonClass = 'rounded-[6px] bg-[#453a31] px-4 py-2 text-[9px] text-white';
 
@@ -49,10 +55,12 @@ export default async function MemoryPage({ searchParams }: MemoryPageProps) {
 
   return (
     <AppShell>
-      <SectionPage
-        eyebrow="Life Memory"
-        title="A searchable, correctable archive for your life"
-        description="Capture what Glow OS should remember, keep sensitive context private, connect memories to projects, and correct the record whenever life changes."
+      <CanonicalDomainRoom
+        eyebrow="Brain · Memory"
+        title="Memory"
+        question="What should Glow remember, how certain is it, where did it come from, and how can I correct it?"
+        climate="brain"
+        destinations={destinations}
       >
         <div className="space-y-4">
           <Card className="relative overflow-hidden bg-[linear-gradient(145deg,#f2eadc,#f7f0e8)] p-5">
@@ -201,7 +209,7 @@ export default async function MemoryPage({ searchParams }: MemoryPageProps) {
             </div>
           </div>
         </div>
-      </SectionPage>
+      </CanonicalDomainRoom>
     </AppShell>
   );
 }
