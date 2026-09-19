@@ -17,7 +17,8 @@ export type CanonicalDomainClimate =
   | 'beauty'
   | 'closet'
   | 'fitness'
-  | 'body';
+  | 'body'
+  | 'global';
 
 export type CanonicalDomainDestination = {
   label: string;
