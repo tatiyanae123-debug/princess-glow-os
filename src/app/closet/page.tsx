@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
+import { CanonicalDomainRoom } from '@/components/glow/canonical-domain-room';
 import { Card } from '@/components/ui/card';
 import { createClosetItemAction, incrementClosetWearAction, updateClosetItemAction } from '@/app/actions/completion-v1';
 import { getClosetItems } from '@/lib/data/completion-v1';
@@ -9,6 +9,16 @@ import { Heart, Shirt, Sparkles, WashingMachine, Wrench, Gift, ShoppingBag, Laye
 
 export const dynamic='force-dynamic';
 const fieldClass='w-full border px-4 py-3 text-[10px]';
+
+const destinations=[
+  {label:'Style Identity',href:'/closet/style-identity',cue:'Your visual language'},
+  {label:'Digital Wardrobe',href:'/closet/wardrobe',cue:'What you own'},
+  {label:'Outfit Builder',href:'/closet/outfit-builder',cue:'Compose from owned pieces'},
+  {label:'Outfit Library',href:'/closet/outfits',cue:'Saved complete looks'},
+  {label:'Shopping',href:'/closet/shopping',cue:'Decide with wardrobe context'},
+  {label:'Laundry',href:'/closet/laundry',cue:'Care cycle'},
+  {label:'Repairs',href:'/closet/repairs',cue:'Restore and alter'},
+];
 
 function dollars(cents:number|null){return cents==null?'—':`$${(cents/100).toFixed(2)}`;}
 
@@ -29,7 +39,7 @@ export default async function ClosetPage(){
   const wardrobeValue=active.reduce((sum,item)=>sum+(item.purchasePriceCents??0),0);
   const totalWears=active.reduce((sum,item)=>sum+item.wearCount,0);
 
-  return <AppShell><SectionPage eyebrow="Digital Closet" title="Dress from your real wardrobe" description="A visual wardrobe for inventory, outfit ideas, wear history, laundry, repair, donate/sell decisions, wishlist planning, and cost-per-wear intelligence.">
+  return <AppShell><CanonicalDomainRoom eyebrow="Life · Closet" title="Closet" question="What can I wear, care for, combine, repair, or intentionally add from my real wardrobe?" climate="closet" destinations={destinations}>
     <div className="space-y-5">
       <div className="grid gap-3 lg:grid-cols-[1.3fr_.7fr]">
         <Card className="relative overflow-hidden bg-[linear-gradient(145deg,#f1e4e7,#eee6df)] p-6"><Shirt size={74} strokeWidth={.7} className="absolute right-6 top-4 text-[#98727c]/14"/><p className="glow-eyebrow">Wardrobe room</p><p className="glow-display mt-2 max-w-xl text-[29px] text-[#4c3c42]">Know what you own. Wear more of what you love.</p><p className="mt-3 max-w-xl text-[9px] leading-5 text-[#7b6870]">Glow turns closet records into a usable wardrobe: what is ready to wear, what needs care, what is underused, and which pieces create the best value over time.</p><div className="mt-5 flex flex-wrap gap-2 text-[8px]"><a href="#wardrobe" className="rounded-full border border-[#d9c8cd] bg-white/55 px-3 py-2 text-[#715b64]">Wardrobe</a><a href="#outfits" className="rounded-full border border-[#d9c8cd] bg-white/55 px-3 py-2 text-[#715b64]">Outfits</a><a href="#care" className="rounded-full border border-[#d9c8cd] bg-white/55 px-3 py-2 text-[#715b64]">Care queue</a><a href="#wishlist" className="rounded-full border border-[#d9c8cd] bg-white/55 px-3 py-2 text-[#715b64]">Wishlist</a></div></Card>
@@ -48,5 +58,5 @@ export default async function ClosetPage(){
 
       <div id="wishlist" className="grid gap-4 lg:grid-cols-[.9fr_1.1fr]"><Card className="paper-card"><div className="flex items-center gap-2"><ShoppingBag size={15} className="text-[#98727c]"/><div><p className="glow-eyebrow">Wishlist</p><h2 className="glow-display text-[21px] text-[#4c3c42]">Buy with wardrobe context</h2></div></div>{wishlist.length===0?<p className="mt-4 text-[8px] leading-4 text-[#8d7a82]">Mark a saved piece as Wishlist from its Manage menu. Keeping wanted items beside your real closet makes duplicates and impulse buys easier to spot.</p>:<div className="mt-4 space-y-2">{wishlist.map((item)=><div key={item.id} className="rounded-[7px] border border-[#eadfe2] p-3"><p className="text-[9px] font-medium text-[#5f4d55]">{item.name}</p><p className="mt-1 text-[7px] text-[#94838a]">{item.category}{item.purchasePriceCents?` · ${dollars(item.purchasePriceCents)}`:''}</p></div>)}</div>}</Card><Card className="paper-card"><p className="glow-eyebrow">Cost-per-wear</p><h2 className="glow-display mt-1 text-[21px] text-[#4c3c42]">Best value in your closet</h2>{bestValue.length===0?<p className="mt-4 text-[8px] leading-4 text-[#8d7a82]">Add purchase prices and record wears to see which pieces are earning their place in your wardrobe.</p>:<div className="mt-4 grid gap-2 sm:grid-cols-2">{bestValue.map((item)=>{const cpw=item.purchasePriceCents!/Math.max(item.wearCount,1);return <div key={item.id} className="rounded-[7px] bg-[#faf7f5] p-3"><p className="text-[9px] font-medium text-[#5f4d55]">{item.name}</p><p className="mt-1 text-[7px] text-[#94838a]">{dollars(Math.round(cpw))} per wear · {item.wearCount} wears</p></div>;})}</div>}</Card></div>
     </div>
-  </SectionPage></AppShell>;
+  </CanonicalDomainRoom></AppShell>;
 }
