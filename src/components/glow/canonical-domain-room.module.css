@@ -57,6 +57,21 @@
 .workingSurface{min-width:0;padding:clamp(22px,3vw,34px);border-radius:34px;border:1px solid rgba(127,107,94,.12);background:rgba(255,255,255,.54);backdrop-filter:blur(28px) saturate(1.05);box-shadow:0 24px 70px rgba(68,51,41,.055),inset 0 1px 0 rgba(255,255,255,.78);}
 .context{padding:24px;border-radius:30px;border:1px solid rgba(127,107,94,.11);background:rgba(250,247,241,.52);backdrop-filter:blur(24px);box-shadow:0 20px 60px rgba(68,51,41,.045);color:#6f655f;}
 
+@media(min-width:901px) and (max-width:1180px){
+  .room{padding:34px 28px}
+  .body{grid-template-columns:minmax(0,1fr) 250px;gap:18px}
+  .hero{margin-bottom:28px}
+  .threshold{min-width:148px}
+}
 @media(max-width:900px){.room{padding:28px 22px;border-radius:32px}.body{grid-template-columns:1fr}.context{order:-1}.hero{align-items:flex-start}.ask{display:none}}
 @media(max-width:600px){.room{padding:24px 16px;border-radius:0;margin-inline:-16px}.hero{margin-bottom:24px}.hero h1{font-size:42px}.hero p{font-size:16px}.workingSurface{padding:20px 16px;border-radius:26px}.threshold{min-width:144px}}
 @media(prefers-reduced-motion:reduce){.threshold{transition:none}.lightA,.lightB{filter:blur(28px)}}
+
+@media(min-width:768px) and (max-width:900px) and (orientation:portrait){
+  .room{padding:32px 26px}
+  .body{grid-template-columns:1fr}
+  .context{order:-1}
+}
+@media(min-width:768px) and (max-width:1180px) and (orientation:landscape){
+  .thresholds{padding-bottom:10px}
+}
