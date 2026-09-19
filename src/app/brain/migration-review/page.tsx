@@ -1,1 +1,1 @@
-export { default } from '@/app/import/review/page';
+export { default } from '@/app/import/page';
