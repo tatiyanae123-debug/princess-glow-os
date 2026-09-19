@@ -2,13 +2,21 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
+import { CanonicalDomainRoom } from '@/components/glow/canonical-domain-room';
 import { Card } from '@/components/ui/card';
 import { createFitnessSessionAction } from '@/app/actions/completion-v1';
 import { getFitnessSessions } from '@/lib/data/completion-v1';
 import { Activity, BarChart3, Dumbbell, HeartPulse, Library, Play, Sparkles, TimerReset } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
+
+const destinations=[
+  {label:'Seven-Day Week',href:'/fitness/week',cue:'Training rhythm'},
+  {label:'Workout Day',href:'/fitness/workout',cue:'Today’s sequence'},
+  {label:'Exercise Library',href:'/fitness/exercises',cue:'Movement reference'},
+  {label:'Progression',href:'/fitness/progression',cue:'Load over time'},
+  {label:'Recovery',href:'/fitness/recovery',cue:'Restore capacity'},
+];
 
 type FitnessView = 'workout' | 'library' | 'progress' | 'recovery';
 
@@ -81,7 +89,7 @@ export default async function FitnessPage({ searchParams }: FitnessPageProps) {
   }, {});
   const topWorkout = Object.entries(workoutCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
 
-  return <AppShell><SectionPage eyebrow="Fitness Intelligence" title="Train around your real energy" description="Use workout mode, your movement library, progress history, and recovery signals together so Glow OS can recommend the right kind of training for today.">
+  return <AppShell><CanonicalDomainRoom eyebrow="Life · Fitness" title="Fitness" question="What movement fits my body, readiness, goals, and recovery today?" climate="fitness" destinations={destinations}>
     <section className="grid gap-3 md:grid-cols-[1.3fr_.7fr]">
       <Card className="relative min-h-[190px] overflow-hidden bg-[linear-gradient(135deg,#e5e1de,#b9c2c2)] p-5"><div className="absolute right-0 top-0 h-full w-[42%] bg-[linear-gradient(145deg,#7d807d,#c5bbb2)] opacity-70"/><Dumbbell size={64} strokeWidth={.7} className="absolute right-[15%] top-1/2 -translate-y-1/2 text-white/55"/><div className="relative max-w-[58%]"><p className="glow-eyebrow">Today&apos;s movement</p><h2 className="glow-display mt-2 text-[27px] leading-8 text-[#354044]">{recommendation.title}</h2><p className="mt-3 text-[9px] leading-4 text-[#5f6b6d]">{recommendation.detail}</p><span className="mt-4 inline-flex rounded-full bg-white/55 px-3 py-1 text-[8px] font-medium text-[#53605e]">{recommendation.level} recommendation</span></div></Card>
       <Card className="bg-[linear-gradient(145deg,#edf0ed,#f7f1eb)] p-5"><p className="glow-display text-[17px] text-[#45514f]">Recovery snapshot</p><div className="mt-4 space-y-3"><div className="flex items-center justify-between text-[9px] text-[#6f7b79]"><span className="flex items-center gap-1"><TimerReset size={11}/>Recent minutes</span><strong className="text-[#3f4b49]">{minutes}</strong></div><div className="flex items-center justify-between text-[9px] text-[#6f7b79]"><span className="flex items-center gap-1"><Activity size={11}/>Sessions</span><strong className="text-[#3f4b49]">{recent.length}</strong></div><div className="flex items-center justify-between text-[9px] text-[#6f7b79]"><span className="flex items-center gap-1"><HeartPulse size={11}/>Avg. energy</span><strong className="text-[#3f4b49]">{avgEnergy || '—'}/10</strong></div><div className="flex items-center justify-between text-[9px] text-[#6f7b79]"><span>Soreness</span><strong className="text-[#3f4b49]">{avgSoreness || '—'}/10</strong></div></div></Card>
@@ -113,5 +121,5 @@ export default async function FitnessPage({ searchParams }: FitnessPageProps) {
       <Card className="paper-card"><div className="flex items-start justify-between gap-4"><div><p className="glow-eyebrow">Recovery-aware recommendation</p><h2 className="glow-display mt-2 text-[23px] text-[#414b49]">{recommendation.title}</h2></div><Sparkles size={18} className="text-[#7c8985]"/></div><p className="mt-4 max-w-2xl text-[9px] leading-5 text-[#6f7976]">{recommendation.detail}</p><div className="mt-5 grid gap-3 sm:grid-cols-3"><div className="rounded-[10px] border border-[#e2dedb] p-4"><p className="text-[7px] uppercase tracking-[.14em] text-[#929a98]">Latest energy</p><p className="glow-display mt-1 text-[22px] text-[#46514f]">{latestEnergy ?? '—'}<span className="text-[10px]">/10</span></p></div><div className="rounded-[10px] border border-[#e2dedb] p-4"><p className="text-[7px] uppercase tracking-[.14em] text-[#929a98]">Latest soreness</p><p className="glow-display mt-1 text-[22px] text-[#46514f]">{latestSoreness ?? '—'}<span className="text-[10px]">/10</span></p></div><div className="rounded-[10px] border border-[#e2dedb] p-4"><p className="text-[7px] uppercase tracking-[.14em] text-[#929a98]">Days since training</p><p className="glow-display mt-1 text-[22px] text-[#46514f]">{daysSinceLast ?? '—'}</p></div></div></Card>
       <Card className="bg-[linear-gradient(145deg,#eef1ef,#f7f2ed)] p-5"><p className="glow-eyebrow">Choose today</p><h2 className="glow-display mt-2 text-[18px] text-[#45514f]">Suggested intensity</h2><p className="mt-4 text-[27px] font-light text-[#54605d]">{recommendation.level}</p><p className="mt-3 text-[8px] leading-4 text-[#78817f]">This guidance is generated from your latest logged energy, soreness, and time since your last workout. Update those signals after training to keep the recommendation useful.</p><Link href="/fitness?view=library" className="mt-5 inline-flex rounded-[6px] bg-[#45504e] px-4 py-2 text-[8px] font-medium text-white">Browse matching workouts</Link></Card>
     </div> : null}
-  </SectionPage></AppShell>;
+  </CanonicalDomainRoom></AppShell>;
 }
