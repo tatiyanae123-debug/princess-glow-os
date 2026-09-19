@@ -32,6 +32,7 @@ const m = (
 });
 
 export const GLOW_PAGE_MANIFESTS: GlowPageManifest[] = [
+  m('root.home','/home','Glow Home','today','overlay',null,'origin','world-fold','open',['world'],'global'),
   m('today.world','/today','Today','today','world',null,'today','today-living','open',['day','task','event','routine']),
 
   m('plan.world','/planning','Plan','plan','world',null,'planning','planning-studio','open',['plan','task','event','goal']),
@@ -54,7 +55,7 @@ export const GLOW_PAGE_MANIFESTS: GlowPageManifest[] = [
   m('life.closet','/closet','Closet','life','room','/life','closet','dressing-room','open',['clothing-item','outfit','wear-history']),
   m('life.finance','/finance','Money','life','room','/life','money','money-room','structured',['transaction','account','bill']),
   m('life.money','/money','Money','life','room','/life','money','money-room','structured',['transaction','account','bill']),
-  m('life.home','/home','Home','life','room','/life','home','home-room','open',['space','maintenance','inventory']),
+  m('life.home','/life/home','Home','life','room','/life','home','home-room','open',['space','maintenance','inventory']),
   m('life.work','/work','Career + Work','life','room','/life','work','work-room','structured',['work-shift','job','interview']),
   m('life.travel','/travel','Travel','life','room','/life','travel','travel-room','open',['trip','reservation','place']),
   m('life.relationships','/relationships','Relationships','life','room','/life','relationships','relationship-room','open',['person','relationship']),
