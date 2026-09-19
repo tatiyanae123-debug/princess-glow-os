@@ -520,43 +520,53 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
   }
 
   const forwardLook = (
-    <Surface className={mode === 'night' ? 'border-[#d4c7bd] bg-[rgba(249,246,243,.88)] p-6 md:p-7' : 'p-6 md:p-7'}>
-      {sectionTitle('Forward', mode === 'night' ? 'Close today. See tomorrow.' : 'Later today · tonight · tomorrow', 'Only the next horizon, not the whole calendar.')}
-      <div className="grid gap-3 md:grid-cols-3">
+    <section className="border-y border-[#e7e5e3] py-7 md:py-8">
+      {sectionTitle('Forward', mode === 'night' ? 'Close today. See tomorrow.' : 'Your next horizon', 'Fixed information stays visible. Open time stays visibly open.')}
+      <div className="divide-y divide-[#ece9e7] border-t border-[#ece9e7]">
         {[
           ['Later today', laterToday, '/calendar'],
           ['Tonight', tonight, '/today?room=tonight'],
           ['Tomorrow', tomorrow, '/tomorrow'],
         ].map(([label, items, href]) => {
           const list = items as PersonalEvent[];
+          const emptyCopy =
+            String(label) === 'Tonight'
+              ? 'Tonight is open. Protect rest, care, creative time, or leave it untouched.'
+              : String(label) === 'Tomorrow'
+                ? 'Tomorrow has no fixed calendar item yet. Prepare only what will make it easier.'
+                : 'This part of today is open. Keep the space or fit one realistic next action.';
           return (
             <button
               key={String(label)}
               type="button"
               onClick={() => travel(String(href))}
-              className="group min-h-[132px] rounded-[20px] border border-[#e4dbd3] bg-white/65 p-4 text-left transition hover:-translate-y-0.5 hover:border-[#cbb7a7] hover:shadow-[0_12px_30px_rgba(68,51,43,.06)]"
+              className="group grid w-full gap-3 py-5 text-left transition md:grid-cols-[150px_1fr_auto] md:items-center"
             >
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9b7f70]">{String(label)}</span>
-                <ArrowRight size={14} className="text-[#baa99e] transition group-hover:translate-x-0.5" />
-              </div>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8d737d]">{String(label)}</span>
               {list.length ? (
-                <div className="mt-4 space-y-2">
+                <span className="grid gap-2 md:grid-cols-2">
                   {list.slice(0, 2).map((event) => (
-                    <div key={event.id}>
-                      <p className="truncate text-[12px] font-medium text-[#302a26]">{event.title}</p>
-                      <p className="mt-0.5 text-[10px] text-[#91857e]">{event.allDay ? 'All day' : formatClock(new Date(event.startAt))}</p>
-                    </div>
+                    <span key={event.id} className="min-w-0">
+                      <strong className="block truncate text-[13px] font-medium text-[#1c1c1e]">{event.title}</strong>
+                      <small className="mt-1 block text-[11px] text-[#6e6e73]">{event.allDay ? 'All day' : formatClock(new Date(event.startAt))}</small>
+                    </span>
                   ))}
-                </div>
+                </span>
               ) : (
-                <p className="mt-5 text-[12px] leading-5 text-[#948880]">Nothing fixed here yet.</p>
+                <span>
+                  <strong className="block text-[13px] font-medium text-[#3a3a3c]">Open time</strong>
+                  <small className="mt-1 block max-w-2xl text-[11px] leading-5 text-[#7d7d82]">{emptyCopy}</small>
+                </span>
               )}
+              <span className="flex items-center gap-2 justify-self-start md:justify-self-end">
+                {!list.length ? <span className="rounded-full border border-[#ead9de] px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-[#a16572]">Open</span> : null}
+                <ArrowRight size={14} className="text-[#aaa5a7] transition group-hover:translate-x-1" />
+              </span>
             </button>
           );
         })}
       </div>
-    </Surface>
+    </section>
   );
 
   return (
@@ -564,18 +574,14 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
       data-home-mode={mode}
       className={
         mode === 'night'
-          ? 'min-h-screen overflow-x-hidden bg-[#eeebe9] pb-24 text-[#2a2522] transition-colors duration-700'
-          : 'min-h-screen overflow-x-hidden bg-[#f5f1ec] pb-24 text-[#2a2522] transition-colors duration-700'
+          ? 'min-h-screen overflow-x-hidden bg-[#fafafa] pb-24 text-[#1c1c1e] transition-colors duration-700'
+          : 'min-h-screen overflow-x-hidden bg-white pb-24 text-[#1c1c1e] transition-colors duration-700'
       }
     >
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -left-[10%] -top-[18%] h-[620px] w-[620px] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,.95)_0%,rgba(239,219,209,.28)_42%,transparent_72%)]" />
-        <div className="absolute right-[-12%] top-[12%] h-[680px] w-[680px] rounded-full bg-[radial-gradient(circle,rgba(228,235,232,.55)_0%,rgba(245,240,235,.08)_55%,transparent_74%)]" />
-        <div className="absolute bottom-[-24%] left-[26%] h-[620px] w-[800px] rounded-full bg-[radial-gradient(circle,rgba(238,224,215,.48)_0%,transparent_69%)]" />
-      </div>
+      <div className="pointer-events-none fixed inset-x-0 top-0 h-[420px] bg-[radial-gradient(circle_at_20%_0%,rgba(248,239,241,.78),transparent_42%),radial-gradient(circle_at_84%_8%,rgba(242,244,243,.72),transparent_38%)]" />
 
       <div className="relative mx-auto w-full max-w-[1440px] px-4 pb-14 pt-5 sm:px-6 md:px-8 lg:px-10">
-        <header className="rounded-[32px] border border-white/70 bg-[rgba(255,253,250,.62)] px-5 py-5 shadow-[0_18px_70px_rgba(77,59,49,.06),inset_0_1px_0_rgba(255,255,255,.92)] backdrop-blur-2xl md:px-7 md:py-6">
+        <header className="border-b border-[#e8e8ea] px-1 pb-7 pt-4 md:pb-8 md:pt-5">
           <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-start">
             <div>
               <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#947b6d]">
@@ -709,14 +715,14 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                   const task = todayThree[index];
                   if (!task) {
                     return (
-                      <button key={index} type="button" onClick={() => travel('/tasks')} className="flex w-full items-center gap-3 rounded-[19px] border border-dashed border-[#ddd1c7] bg-white/35 p-4 text-left">
+                      <button key={index} type="button" onClick={() => travel('/tasks')} className="flex w-full items-center gap-3 border-b border-[#ececef] px-1 py-4 text-left">
                         <span className="grid h-8 w-8 place-items-center rounded-full border border-[#d8ccc2] text-[#a08f85]"><Plus size={13} /></span>
                         <span className="text-[11px] text-[#8d8179]">Choose outcome {index + 1}</span>
                       </button>
                     );
                   }
                   return (
-                    <button key={task.id} type="button" onClick={() => travel('/tasks')} className="group flex w-full items-start gap-3 rounded-[19px] border border-[#e3d9d1] bg-white/62 p-4 text-left transition hover:border-[#cbb9ac] hover:bg-white/85">
+                    <button key={task.id} type="button" onClick={() => travel('/tasks')} className="group flex w-full items-start gap-3 border-b border-[#ececef] px-1 py-4 text-left transition hover:bg-[#fafafa]">
                       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[#d6c8bd] bg-[#f9f5f1] font-serif text-[12px] text-[#7f685b]">{index + 1}</span>
                       <span className="min-w-0 flex-1">
                         <span className="line-clamp-2 text-[13px] font-medium leading-5 text-[#322b27]">{task.title}</span>
@@ -752,12 +758,12 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                       onClick={() => travel(item.kind === 'event' ? '/calendar' : '/today?room=what-now')}
                       className={
                         item.kind === 'open'
-                          ? 'flex w-full items-center gap-4 rounded-[17px] border border-dashed border-[#dcd1c8] bg-white/26 px-4 py-3 text-left'
+                          ? 'flex w-full items-center gap-4 border-b border-[#efeff1] bg-transparent px-2 py-3 text-left'
                           : isCurrent
-                            ? 'flex w-full items-center gap-4 rounded-[17px] border border-[#cbb7a7] bg-[#f6eee8] px-4 py-3 text-left shadow-[inset_3px_0_0_#9d7b68]'
+                            ? 'flex w-full items-center gap-4 border-b border-[#e4d7db] bg-[#f8eff1]/65 px-2 py-3 text-left shadow-[inset_3px_0_0_#b86f7d]'
                             : isPast
-                              ? 'flex w-full items-center gap-4 rounded-[17px] border border-[#e7dfd8] bg-white/36 px-4 py-3 text-left opacity-55'
-                              : 'flex w-full items-center gap-4 rounded-[17px] border border-[#e1d7cf] bg-white/62 px-4 py-3 text-left'
+                              ? 'flex w-full items-center gap-4 border-b border-[#efeff1] bg-transparent px-2 py-3 text-left opacity-50'
+                              : 'flex w-full items-center gap-4 border-b border-[#efeff1] bg-transparent px-2 py-3 text-left'
                       }
                     >
                       <span className="w-[76px] shrink-0 text-[10px] tabular-nums text-[#8c7f77]">{formatClock(item.start)}</span>
@@ -792,7 +798,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
               {sectionTitle('Execution', 'Smart Tasks', 'Ranked by live constraints when Glow Intelligence is available.')}
               <div className="space-y-3">
                 {(intelligence?.primary ? [intelligence.primary, ...(intelligence.alternatives ?? [])] : []).slice(0, 4).map((action, index) => (
-                  <button key={action.id} type="button" onClick={() => travel(action.href)} className="group grid w-full grid-cols-[auto_1fr_auto] items-start gap-3 rounded-[20px] border border-[#e3dad2] bg-white/58 p-4 text-left transition hover:border-[#cab8ab] hover:bg-white/86">
+                  <button key={action.id} type="button" onClick={() => travel(action.href)} className="group grid w-full grid-cols-[auto_1fr_auto] items-start gap-3 border-b border-[#ececef] px-1 py-4 text-left transition hover:bg-[#fafafa]">
                     <span className={index === 0 ? 'grid h-9 w-9 place-items-center rounded-full bg-[#342c27] text-white' : 'grid h-9 w-9 place-items-center rounded-full bg-[#efe7e0] text-[#8b7061]'}>
                       {index === 0 ? <Zap size={14} /> : <Target size={14} />}
                     </span>
@@ -810,7 +816,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                 ))}
                 {!intelligence?.primary
                   ? activeTasks.slice(0, 4).map((task) => (
-                      <button key={task.id} type="button" onClick={() => travel('/tasks')} className="group grid w-full grid-cols-[auto_1fr_auto] items-start gap-3 rounded-[20px] border border-[#e3dad2] bg-white/58 p-4 text-left transition hover:border-[#cab8ab] hover:bg-white/86">
+                      <button key={task.id} type="button" onClick={() => travel('/tasks')} className="group grid w-full grid-cols-[auto_1fr_auto] items-start gap-3 border-b border-[#ececef] px-1 py-4 text-left transition hover:bg-[#fafafa]">
                         <span className="grid h-9 w-9 place-items-center rounded-full bg-[#efe7e0] text-[#8b7061]"><Target size={14} /></span>
                         <span>
                           <span className="text-[13px] font-medium text-[#312a26]">{task.title}</span>
@@ -873,12 +879,12 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                         onClick={() => travel(item.kind === 'event' ? '/calendar' : '/today?room=what-now')}
                         className={
                           item.kind === 'open'
-                            ? 'flex w-full items-center gap-4 rounded-[17px] border border-dashed border-[#dcd1c8] bg-white/26 px-4 py-3 text-left'
+                            ? 'flex w-full items-center gap-4 border-b border-[#efeff1] bg-transparent px-2 py-3 text-left'
                             : isCurrent
-                              ? 'flex w-full items-center gap-4 rounded-[17px] border border-[#cbb7a7] bg-[#f6eee8] px-4 py-3 text-left shadow-[inset_3px_0_0_#9d7b68]'
+                              ? 'flex w-full items-center gap-4 border-b border-[#e4d7db] bg-[#f8eff1]/65 px-2 py-3 text-left shadow-[inset_3px_0_0_#b86f7d]'
                               : isPast
-                                ? 'flex w-full items-center gap-4 rounded-[17px] border border-[#e7dfd8] bg-white/36 px-4 py-3 text-left opacity-55'
-                                : 'flex w-full items-center gap-4 rounded-[17px] border border-[#e1d7cf] bg-white/62 px-4 py-3 text-left'
+                                ? 'flex w-full items-center gap-4 border-b border-[#efeff1] bg-transparent px-2 py-3 text-left opacity-50'
+                                : 'flex w-full items-center gap-4 border-b border-[#efeff1] bg-transparent px-2 py-3 text-left'
                         }
                       >
                         <span className="w-[72px] shrink-0 text-[10px] tabular-nums text-[#8c7f77]">{formatClock(item.start)}</span>
