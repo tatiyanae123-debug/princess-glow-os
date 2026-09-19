@@ -297,8 +297,21 @@ export function localTabsForPath(pathname: string): readonly NavigationTab[] {
 }
 
 export function localTabIsActive(currentPath: string, targetPath: string) {
-  const current = pathnameOf(currentPath);
-  const target = pathnameOf(targetPath);
+  const [currentRaw = '/', currentSearch = ''] = currentPath.split('?');
+  const [targetRaw = '/', targetSearch = ''] = targetPath.split('?');
+  const current = pathnameOf(currentRaw);
+  const target = pathnameOf(targetRaw);
+
+  if (targetSearch) {
+    if (current !== target) return false;
+    const currentParams = new URLSearchParams(currentSearch);
+    const targetParams = new URLSearchParams(targetSearch);
+    for (const [key, value] of targetParams.entries()) {
+      if (currentParams.get(key) !== value) return false;
+    }
+    return true;
+  }
+
   if (target === '/planning' || target === '/life' || target === '/beauty' || target === '/brain' || target === '/create' || target === '/closet' || target === '/fitness' || target === '/wellness') {
     return current === target;
   }
