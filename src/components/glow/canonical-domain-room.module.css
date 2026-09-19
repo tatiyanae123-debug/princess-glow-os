@@ -30,6 +30,7 @@
 .room[data-domain-climate='closet']{--domain-accent:#8d756f;--domain-wash:rgba(231,215,210,.42);--domain-wash-2:rgba(220,226,215,.26);}
 .room[data-domain-climate='fitness']{--domain-accent:#71828a;--domain-wash:rgba(213,223,228,.41);--domain-wash-2:rgba(220,228,215,.26);}
 .room[data-domain-climate='body']{--domain-accent:#9a7f76;--domain-wash:rgba(234,216,209,.42);--domain-wash-2:rgba(215,230,225,.27);}
+.room[data-domain-climate='global']{--domain-accent:#7e7772;--domain-wash:rgba(227,223,217,.38);--domain-wash-2:rgba(220,228,229,.26);}
 
 .atmosphere{position:absolute;inset:0;pointer-events:none;z-index:-1;filter:saturate(.92);}
 .lightA,.lightB{position:absolute;border-radius:50%;filter:blur(22px);opacity:.55;}
