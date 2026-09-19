@@ -21,7 +21,7 @@ const experience = (
 ): RoomExperience => ({ room, world, climate, physics, intelligence, primaryQuestion, completion });
 
 export function roomExperienceFor(pathname: string): RoomExperience {
-  if (pathname === '/home') return experience('threshold', 'today', 'crystal-sunrise-pavilion', 'threshold-and-portals', 'whole-system-orchestration', 'Where am I now, and where do I want to go?', 'horizon-opens');
+  if (pathname === '/home') return experience('home', 'today', 'editorial-ivory', 'now-next-horizon', 'whole-system-orchestration', 'What matters now, what comes next, and where is there room to breathe?', 'day-clarifies');
   if (pathname.startsWith('/search')) return experience('universal-search', 'brain', 'clear-prismatic-lens', 'focus-and-resolve', 'cross-world-retrieval', 'Where is the thing I am looking for?', 'result-focuses');
 
   if (pathname.startsWith('/beauty/gua-sha') || pathname.startsWith('/beauty/facial-massage')) return experience('gua-sha-studio', 'beauty', 'mint-water-pearl', 'guided-glide', 'shared-session-routine-and-tool-context', 'What does my face need, and what movement am I doing now?', 'soft-release');
