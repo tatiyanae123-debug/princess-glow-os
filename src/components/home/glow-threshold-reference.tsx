@@ -809,7 +809,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                   </button>
                 ))}
                 {!intelligence?.primary
-                  ? activeTasks.slice(0, 4).map((task, index) => (
+                  ? activeTasks.slice(0, 4).map((task) => (
                       <button key={task.id} type="button" onClick={() => travel('/tasks')} className="group grid w-full grid-cols-[auto_1fr_auto] items-start gap-3 rounded-[20px] border border-[#e3dad2] bg-white/58 p-4 text-left transition hover:border-[#cab8ab] hover:bg-white/86">
                         <span className="grid h-9 w-9 place-items-center rounded-full bg-[#efe7e0] text-[#8b7061]"><Target size={14} /></span>
                         <span>

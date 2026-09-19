@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
@@ -133,7 +134,7 @@ export default async function MemoryPage({ searchParams }: MemoryPageProps) {
                   <div className="p-8 text-center">
                     <p className="text-[10px] font-medium text-[#625448]">{filtersActive ? 'No memories match these filters.' : 'No active memories yet.'}</p>
                     <p className="mt-2 text-[8px] text-[#86796d]">{filtersActive ? 'Clear the search or adjust the category/privacy filter.' : 'Add the first memory so Glow OS can remember real context without inventing it.'}</p>
-                    {filtersActive ? <a href="/memory" className="mt-3 inline-block text-[8px] underline underline-offset-4">Clear filters</a> : null}
+                    {filtersActive ? <Link href="/memory" className="mt-3 inline-block text-[8px] underline underline-offset-4">Clear filters</Link> : null}
                   </div>
                 ) : (
                   <div className="divide-y divide-[#eee5da]">
