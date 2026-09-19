@@ -1,4 +1,5 @@
 import type { GlowWorld } from '@/lib/glow-world/room-experience';
+import { canonicalExperienceFor } from '@/lib/glow-world/canonical-experiences';
 
 export type GlowPageLevel = 'world' | 'room' | 'studio' | 'experience' | 'object' | 'detail' | 'overlay';
 export type GlowPageScope = 'world' | 'global';
@@ -104,10 +105,46 @@ export const GLOW_PAGE_MANIFESTS: GlowPageManifest[] = [
 
 function normalize(path: string) { return (path.split('?')[0] || '/').replace(/\/$/,'') || '/'; }
 
+function canonicalWorldForPath(pathname:string):GlowWorld{
+  if(pathname.startsWith('/planning') || pathname.startsWith('/tasks') || pathname.startsWith('/calendar') || pathname.startsWith('/routines') || pathname.startsWith('/goals') || pathname.startsWith('/projects') || pathname.startsWith('/habits')) return 'plan';
+  if(pathname.startsWith('/brain') || pathname.startsWith('/notes') || pathname.startsWith('/memory') || pathname.startsWith('/search') || pathname.startsWith('/ask-glow')) return 'brain';
+  if(pathname.startsWith('/create') || pathname.startsWith('/concierge')) return 'create';
+  if(pathname.startsWith('/settings') || pathname.startsWith('/attention') || pathname.startsWith('/notifications')) return 'today';
+  return 'life';
+}
+
+function manifestFromCanonical(pathname:string):GlowPageManifest|null{
+  const spec=canonicalExperienceFor(pathname);
+  if(!spec) return null;
+  const scope:GlowPageScope =
+    pathname.startsWith('/search') || pathname.startsWith('/ask-glow') || pathname.startsWith('/concierge') ||
+    pathname.startsWith('/attention') || pathname.startsWith('/notifications') || pathname.startsWith('/settings')
+      ? 'global' : 'world';
+  const level:GlowPageLevel =
+    /Detail$/.test(spec.title) ? 'detail' :
+    spec.enclosure === 'protected' ? 'experience' :
+    scope === 'global' ? 'detail' : 'experience';
+  return m(
+    `canonical.${pathname.replace(/^\//,'').replace(/[^a-zA-Z0-9]+/g,'.') || 'root'}`,
+    pathname,
+    spec.title,
+    canonicalWorldForPath(pathname),
+    level,
+    spec.parentHref || null,
+    `canonical-${spec.climate}`,
+    `canonical-${spec.climate}`,
+    spec.enclosure,
+    ['glow-object'],
+    scope,
+  );
+}
+
 export function pageManifestFor(path: string) {
   const pathname = normalize(path);
   const exact = GLOW_PAGE_MANIFESTS.find((item) => item.match === pathname);
   if (exact) return exact;
+  const canonical = manifestFromCanonical(pathname);
+  if (canonical) return canonical;
   return [...GLOW_PAGE_MANIFESTS].filter((item) => pathname.startsWith(`${item.match}/`)).sort((a,b) => b.match.length - a.match.length)[0] ?? null;
 }
 
