@@ -574,11 +574,11 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
         <div className="absolute bottom-[-24%] left-[26%] h-[620px] w-[800px] rounded-full bg-[radial-gradient(circle,rgba(238,224,215,.48)_0%,transparent_69%)]" />
       </div>
 
-      <div className="relative mx-auto w-full max-w-[1440px] px-4 pb-14 pt-5 sm:px-6 md:px-8 lg:px-10">
-        <header className="rounded-[32px] border border-white/70 bg-[rgba(255,253,250,.62)] px-5 py-5 shadow-[0_18px_70px_rgba(77,59,49,.06),inset_0_1px_0_rgba(255,255,255,.92)] backdrop-blur-2xl md:px-7 md:py-6">
-          <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-start">
+      <div className="relative mx-auto w-full max-w-[1600px] px-3 pb-14 pt-4 sm:px-5 md:px-7 lg:px-8">
+        <header className="rounded-[28px] border border-white/75 bg-[rgba(255,253,250,.72)] px-5 py-4 shadow-[0_20px_80px_rgba(77,59,49,.08),inset_0_1px_0_rgba(255,255,255,.96)] backdrop-blur-2xl md:px-7 md:py-5">
+          <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
             <div>
-              <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#947b6d]">
+              <div className="mb-2 flex flex-wrap items-center gap-3"><span className="font-serif text-[22px] tracking-[-0.03em] text-[#2f2925]">♕ Princess Glow OS</span><span className="text-[9px] uppercase tracking-[0.26em] text-[#9b8c83]">A more aligned you. A brighter tomorrow.</span></div><div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#947b6d]">
                 <span>{now ? formatDate(now) : 'Today'}</span>
                 <span className="h-1 w-1 rounded-full bg-[#c8b8ad]" />
                 <span>{now ? formatClock(now) : '—'}</span>
@@ -586,7 +586,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                 <span>{modeLabel(mode)}</span>
               </div>
               <h1 className="mt-3 font-serif text-[35px] leading-[1.04] tracking-[-0.04em] text-[#2d2723] sm:text-[43px] md:text-[50px]">
-                {now ? greetingFor(now) : 'Glow Home'}{firstName ? ', ' + firstName : ''}.
+                {now ? greetingFor(now) : 'Welcome'}{firstName ? ', ' + firstName : ''} 🌷
               </h1>
               <p className="mt-3 max-w-3xl text-[13px] leading-6 text-[#746a64] md:text-[14px]">{summary}</p>
             </div>
@@ -627,7 +627,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
           </div>
         </header>
 
-        <div className="mt-5 space-y-5">
+        <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_265px]"><div className="space-y-5">
           {(mode === 'evening' || mode === 'night') ? forwardLook : null}
 
           <div className="grid gap-5 xl:grid-cols-[1.45fr_.78fr]">
@@ -703,7 +703,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
             </Surface>
 
             <Surface className="p-6 md:p-7">
-              {sectionTitle('Outcomes', 'Today’s Three', 'Exactly three. Everything else stays underneath.')}
+              {sectionTitle('What now?', 'Your next priorities', String(todayThree.length) + ' real priority outcomes from your current task state.')}
               <div className="space-y-3">
                 {[0, 1, 2].map((index) => {
                   const task = todayThree[index];
@@ -749,7 +749,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => travel(item.kind === 'event' ? '/calendar' : '/today?room=what-now')}
+                      onClick={() => travel(item.kind === 'event' && item.event ? '/calendar?event=' + encodeURIComponent(item.event.id) : '/today?room=what-now')}
                       className={
                         item.kind === 'open'
                           ? 'flex w-full items-center gap-4 rounded-[17px] border border-dashed border-[#dcd1c8] bg-white/26 px-4 py-3 text-left'
@@ -776,7 +776,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                   <summary className="cursor-pointer list-none text-[10px] font-medium text-[#896f61]">Show full day flow</summary>
                   <div className="mt-3 space-y-2">
                     {flow.slice(7).map((item) => (
-                      <button key={item.id} type="button" onClick={() => travel(item.kind === 'event' ? '/calendar' : '/today')} className="flex w-full items-center gap-4 rounded-[17px] border border-[#e4dbd4] bg-white/48 px-4 py-3 text-left">
+                      <button key={item.id} type="button" onClick={() => travel(item.kind === 'event' && item.event ? '/calendar?event=' + encodeURIComponent(item.event.id) : '/today')} className="flex w-full items-center gap-4 rounded-[17px] border border-[#e4dbd4] bg-white/48 px-4 py-3 text-left">
                         <span className="w-[76px] text-[10px] text-[#8c7f77]">{formatClock(item.start)}</span>
                         <span className="text-[12px] text-[#4a413b]">{item.title}</span>
                       </button>
@@ -789,7 +789,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
 
           <div className="grid gap-5 lg:grid-cols-[1.18fr_.82fr]">
             <Surface className="p-6 md:p-7">
-              {sectionTitle('Execution', 'Smart Tasks', 'Ranked by live constraints when Glow Intelligence is available.')}
+              {sectionTitle('Today Systems', 'Tasks · reminders · routines', 'Only live objects from your real Glow state are shown here.')}
               <div className="space-y-3">
                 {(intelligence?.primary ? [intelligence.primary, ...(intelligence.alternatives ?? [])] : []).slice(0, 4).map((action, index) => (
                   <button key={action.id} type="button" onClick={() => travel(action.href)} className="group grid w-full grid-cols-[auto_1fr_auto] items-start gap-3 rounded-[20px] border border-[#e3dad2] bg-white/58 p-4 text-left transition hover:border-[#cab8ab] hover:bg-white/86">
@@ -892,7 +892,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                   <p className="text-[9px] font-semibold uppercase tracking-[0.17em] text-[#9b8172]">Current routine window</p>
                   <div className="mt-3 space-y-2">
                     {routineWindow.length ? routineWindow.map((routine) => (
-                      <button key={routine.id} type="button" onClick={() => travel('/routines')} className="block w-full rounded-[13px] bg-white/65 px-3 py-2.5 text-left text-[10px] text-[#61564f]">{routine.name}</button>
+                      <button key={routine.id} type="button" onClick={() => travel('/routines?routine=' + encodeURIComponent(routine.id))} className="block w-full rounded-[13px] bg-white/65 px-3 py-2.5 text-left text-[10px] text-[#61564f]">{routine.name}</button>
                     )) : <p className="text-[10px] leading-5 text-[#94877f]">No routine is explicitly assigned to this daypart.</p>}
                   </div>
                 </div>
@@ -915,7 +915,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
 
           <div className="grid gap-5 lg:grid-cols-2">
             <Surface className="p-6 md:p-7">
-              {sectionTitle('Intervention only', 'Attention Center', 'This room stays quiet unless something actually needs you.')}
+              {sectionTitle('Important Inbox', 'What needs attention', 'Only real unresolved items, conflicts, connection issues, or maintenance signals.')}
               {attention.length ? (
                 <div className="space-y-3">
                   {attention.map((item) => (
@@ -938,7 +938,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
             </Surface>
 
             <Surface className="p-6 md:p-7">
-              {sectionTitle('Pattern layer', 'Glow Noticed', 'One or two useful observations. No suggestion wall.')}
+              {sectionTitle('Life Pulse', 'What Glow is noticing', 'A small pattern layer derived from the information Glow actually has.')}
               {observations.length ? (
                 <div className="space-y-3">
                   {observations.map((observation, index) => (
@@ -1000,7 +1000,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
           {(mode !== 'evening' && mode !== 'night') ? forwardLook : null}
 
           <Surface className="p-6 md:p-7">
-            {sectionTitle('System entrances', 'World Pulse', 'Home synthesizes. The Worlds remain the places where deep work happens.')}
+            {sectionTitle('Brain Web · Moving Forward', 'Your connected worlds', 'Real entrances into the same shared Glow system, not duplicate dashboard data.')}
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
               {[
                 ['Today', '/today', String(todayEvents.length) + ' events · ' + String(activeTasks.length) + ' open tasks', 'Immediate present'],
@@ -1037,10 +1037,80 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
           </Surface>
 
           <div className="flex flex-wrap items-center justify-between gap-3 px-1 pt-1 text-[9px] uppercase tracking-[0.14em] text-[#a09187]">
-            <span>Home V2 · Modern Heirloom Computing</span>
-            <span>Progressive disclosure · live context · calm by default</span>
+            <span>Home V3 · Living Dashboard</span>
+            <span>Reference-led visuals · canonical data · continuity preserved</span>
           </div>
         </div>
+
+        <aside className="space-y-4 xl:sticky xl:top-4 xl:self-start">
+          <Surface className="p-4">
+            <p className="font-serif text-[18px] text-[#332c28]">Vision & You</p>
+            <p className="mt-1 text-[9px] italic text-[#9a8b82]">Same you. Brighter possibilities.</p>
+            <div className="mt-4 rounded-[18px] border border-[#e2d8d0] bg-white/52 p-3">
+              <p className="text-[8px] font-semibold uppercase tracking-[0.14em] text-[#9b8477]">Current You → Proposed You</p>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <div className="rounded-[12px] bg-[#f3eee9] p-2.5">
+                  <p className="text-[8px] uppercase tracking-[0.12em] text-[#9a897f]">Current</p>
+                  <p className="mt-1 line-clamp-2 text-[10px] font-medium text-[#443a35]">{currentEvent?.title ?? nowTitle}</p>
+                </div>
+                <div className="rounded-[12px] bg-[#eeeaf3] p-2.5">
+                  <p className="text-[8px] uppercase tracking-[0.12em] text-[#8d8195]">Proposed</p>
+                  <p className="mt-1 line-clamp-2 text-[10px] font-medium text-[#443a35]">{recommendedAction.title}</p>
+                </div>
+              </div>
+              <button type="button" onClick={() => openGlow('Show me how my current state could become a more aligned version of today without changing anything until I confirm.')} className="mt-3 w-full rounded-full bg-[#cbb9aa] px-3 py-2.5 text-[9px] font-medium text-white">
+                Explore proposed changes →
+              </button>
+            </div>
+          </Surface>
+
+          <Surface className="p-4">
+            <p className="font-serif text-[18px] text-[#332c28]">Life Areas</p>
+            <p className="mt-1 text-[9px] italic text-[#9a8b82]">All parts of your life, in rhythm.</p>
+            <div className="mt-4 space-y-2">
+              {[
+                ['Routine World', '/routines', String(data?.routines.length ?? 0) + ' routines'],
+                ['Personal House', '/life', 'Life systems'],
+                ['Beauty', '/beauty', 'Life · Beauty'],
+                ['Fitness', '/fitness', 'Life · Fitness'],
+              ].map(([label, href, meta]) => (
+                <button key={label} type="button" onClick={() => travel(href)} className="flex w-full items-center justify-between rounded-[16px] border border-[#e4dbd4] bg-white/48 px-3 py-3 text-left transition hover:bg-white/78">
+                  <span>
+                    <span className="block text-[10px] font-medium text-[#433a35]">{label}</span>
+                    <span className="mt-0.5 block text-[8px] text-[#9b8d84]">{meta}</span>
+                  </span>
+                  <ArrowRight size={12} className="text-[#b1a197]" />
+                </button>
+              ))}
+            </div>
+          </Surface>
+
+          <button type="button" onClick={() => openGlow('Open Shakti with the exact context of what I am viewing on Home right now.')} className="w-full rounded-[24px] border border-white/80 bg-[rgba(255,253,250,.72)] p-4 text-left shadow-[0_18px_60px_rgba(71,55,46,.07),inset_0_1px_0_rgba(255,255,255,.9)] backdrop-blur-xl">
+            <div className="flex items-center gap-3">
+              <span className="grid h-11 w-11 place-items-center rounded-full bg-[radial-gradient(circle,rgba(255,255,255,1)_0%,rgba(226,218,238,.92)_36%,rgba(214,231,238,.48)_62%,transparent_74%)] shadow-[0_0_26px_rgba(208,198,229,.7)]"><Sparkles size={14} className="text-[#7d7187]" /></span>
+              <span>
+                <span className="block font-serif text-[16px] text-[#342d29]">Shakti Support</span>
+                <span className="mt-0.5 block text-[9px] italic text-[#94867d]">Deeper support. More you.</span>
+              </span>
+            </div>
+          </button>
+
+          <Surface className="p-4">
+            <p className="font-serif text-[15px] italic leading-6 text-[#6e6057]">“A balanced life is a beautiful life.”</p>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => travel('/brain')} className="rounded-[14px] border border-[#e4dbd4] bg-white/45 p-3 text-left">
+                <span className="text-[8px] uppercase tracking-[0.12em] text-[#9b877a]">Brain Web</span>
+                <span className="mt-1 block text-[16px] font-medium text-[#443a35]">{data?.notes.length ?? 0}</span>
+                <span className="text-[8px] text-[#9a8b82]">notes</span>
+              </button>
+              <button type="button" onClick={() => travel('/create')} className="rounded-[14px] border border-[#e4dbd4] bg-white/45 p-3 text-left">
+                <span className="text-[8px] uppercase tracking-[0.12em] text-[#9b877a]">Moving Forward</span>
+                <span className="mt-1 block text-[16px] font-medium text-[#443a35]">{(data?.goals ?? []).filter((goal) => goal.status !== 'complete').length}</span>
+                <span className="text-[8px] text-[#9a8b82]">active goals</span>
+              </button>
+            </div>
+          </Surface>
+        </aside>
       </div>
     </div>
   );
