@@ -5,21 +5,39 @@ import {
   Bell,
   BrainCircuit,
   CalendarDays,
+  CalendarRange,
+  Check,
   CheckCircle2,
-  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
+  Crown,
+  Dumbbell,
+  Heart,
+  Home as HomeIcon,
   Inbox,
+  Lightbulb,
+  ListChecks,
   Mic2,
+  Moon,
+  MoreHorizontal,
   Plus,
   Search,
+  Settings,
   Sparkles,
+  Sun,
   Target,
+  Undo2,
+  UserRound,
+  WalletCards,
   Zap,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { universalIntakeAction } from '@/app/actions/universal-intake';
+import { updateTaskAction } from '@/app/actions/tasks';
 import type { PersonalEvent, PersonalTask } from '@/lib/personal-context/types';
 import { usePersonalContext } from '@/lib/personal-context/use-personal-context';
+import { useServerAction } from '@/lib/hooks/use-server-action';
 
 export type HomeAction = {
   id: string;
@@ -60,6 +78,7 @@ export type HomeIntelligence = {
 } | null;
 
 type DayMode = 'morning' | 'day' | 'evening' | 'night';
+type SystemTab = 'tasks' | 'reminders' | 'habits' | 'routines';
 
 type WeatherState = {
   temperature: number;
@@ -75,6 +94,19 @@ type FlowItem = {
   end: Date;
   event?: PersonalEvent;
 };
+
+const HERO_IMAGE =
+  'https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=1200';
+const ROUTINE_IMAGES = [
+  'https://images.pexels.com/photos/4145190/pexels-photo-4145190.jpeg?auto=compress&cs=tinysrgb&w=500',
+  'https://images.pexels.com/photos/3768916/pexels-photo-3768916.jpeg?auto=compress&cs=tinysrgb&w=500',
+  'https://images.pexels.com/photos/3771069/pexels-photo-3771069.jpeg?auto=compress&cs=tinysrgb&w=500',
+  'https://images.pexels.com/photos/1034662/pexels-photo-1034662.jpeg?auto=compress&cs=tinysrgb&w=500',
+];
+const LIFE_IMAGES = [
+  'https://images.pexels.com/photos/1084199/pexels-photo-1084199.jpeg?auto=compress&cs=tinysrgb&w=500',
+  'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=500',
+];
 
 function travel(path: string) {
   document.dispatchEvent(new CustomEvent('glow:navigate', { detail: { path } }));
@@ -93,7 +125,7 @@ function formatClock(date: Date) {
 }
 
 function formatDate(date: Date) {
-  return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function formatDuration(minutes: number) {
@@ -113,15 +145,15 @@ function modeFor(date: Date): DayMode {
 }
 
 function modeLabel(mode: DayMode) {
-  if (mode === 'morning') return 'Morning';
-  if (mode === 'day') return 'Active day';
-  if (mode === 'evening') return 'Evening';
-  return 'Night';
+  if (mode === 'morning') return 'Good morning';
+  if (mode === 'day') return 'Good afternoon';
+  if (mode === 'evening') return 'Good evening';
+  return 'Good night';
 }
 
 function greetingFor(date: Date) {
   const hour = date.getHours();
-  if (hour < 12) return 'Good morning';
+  if (hour < 12) return 'Welcome';
   if (hour < 17) return 'Good afternoon';
   return 'Good evening';
 }
@@ -168,7 +200,6 @@ function buildFlow(events: PersonalEvent[], now: Date): FlowItem[] {
   dayStart.setHours(5, 0, 0, 0);
   const dayEnd = new Date(now);
   dayEnd.setHours(23, 0, 0, 0);
-
   const timed = events
     .filter((event) => !event.allDay)
     .map((event) => ({ event, start: new Date(event.startAt), end: eventEnd(event) }))
@@ -177,62 +208,22 @@ function buildFlow(events: PersonalEvent[], now: Date): FlowItem[] {
 
   const result: FlowItem[] = [];
   let cursor = dayStart;
-
   for (const item of timed) {
     const start = item.start < dayStart ? dayStart : item.start;
     const end = item.end > dayEnd ? dayEnd : item.end;
     if (start.getTime() - cursor.getTime() >= 45 * 60_000) {
-      result.push({
-        id: 'open-' + String(cursor.getTime()),
-        kind: 'open',
-        title: 'Open space',
-        start: new Date(cursor),
-        end: new Date(start),
-      });
+      result.push({ id: 'open-' + String(cursor.getTime()), kind: 'open', title: 'Open time', start: new Date(cursor), end: new Date(start) });
     }
-    result.push({
-      id: 'event-' + item.event.id,
-      kind: 'event',
-      title: item.event.title,
-      start,
-      end,
-      event: item.event,
-    });
+    result.push({ id: 'event-' + item.event.id, kind: 'event', title: item.event.title, start, end, event: item.event });
     if (end > cursor) cursor = end;
   }
-
   if (dayEnd.getTime() - cursor.getTime() >= 45 * 60_000) {
-    result.push({
-      id: 'open-' + String(cursor.getTime()),
-      kind: 'open',
-      title: 'Open space',
-      start: new Date(cursor),
-      end: dayEnd,
-    });
+    result.push({ id: 'open-' + String(cursor.getTime()), kind: 'open', title: 'Open time', start: new Date(cursor), end: dayEnd });
   }
-
   return result;
 }
 
-function minutesOfOverlap(start: Date, end: Date, rangeStart: Date, rangeEnd: Date) {
-  const left = Math.max(start.getTime(), rangeStart.getTime());
-  const right = Math.min(end.getTime(), rangeEnd.getTime());
-  return Math.max(0, Math.round((right - left) / 60_000));
-}
-
-function sectionTitle(eyebrow: string, title: string, detail?: string) {
-  return (
-    <div className="mb-5 flex items-end justify-between gap-4">
-      <div>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#9a7d6d]">{eyebrow}</p>
-        <h2 className="mt-2 font-serif text-[25px] leading-none tracking-[-0.025em] text-[#29231f]">{title}</h2>
-      </div>
-      {detail ? <p className="max-w-[240px] text-right text-[11px] leading-4 text-[#8d817a]">{detail}</p> : null}
-    </div>
-  );
-}
-
-function Surface({
+function Glass({
   children,
   className = '',
 }: {
@@ -242,7 +233,7 @@ function Surface({
   return (
     <section
       className={
-        'relative overflow-hidden rounded-[28px] border border-[#ded4ca]/80 bg-[rgba(255,253,250,.78)] shadow-[0_18px_60px_rgba(71,55,46,.07),inset_0_1px_0_rgba(255,255,255,.82)] backdrop-blur-xl ' +
+        'relative overflow-hidden rounded-[18px] border border-white/75 bg-[rgba(255,253,250,.67)] shadow-[0_10px_28px_rgba(68,52,44,.055),inset_0_1px_0_rgba(255,255,255,.92)] backdrop-blur-[18px] ' +
         className
       }
     >
@@ -251,13 +242,22 @@ function Surface({
   );
 }
 
+function MicroTitle({ children }: { children: React.ReactNode }) {
+  return <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[#866f63]">{children}</p>;
+}
+
 export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIntelligence }) {
   const personal = usePersonalContext();
   const data = personal.status === 'ready' ? personal.data : null;
   const [now, setNow] = useState<Date | null>(null);
   const [capture, setCapture] = useState('');
+  const [systemTab, setSystemTab] = useState<SystemTab>('tasks');
   const [weather, setWeather] = useState<WeatherState>(null);
   const [weatherStatus, setWeatherStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  const [completedTaskIds, setCompletedTaskIds] = useState<Set<string>>(new Set());
+  const taskUpdate = useServerAction((payload: { id: string; data: { status: 'done' } }) =>
+    updateTaskAction(payload.id, payload.data),
+  );
 
   useEffect(() => {
     const update = () => setNow(new Date());
@@ -268,24 +268,32 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (window.localStorage.getItem('glow:weather-enabled') === 'yes') {
-      requestWeather();
-    }
+    if (window.localStorage.getItem('glow:weather-enabled') === 'yes') requestWeather();
   }, []);
 
   const clock = now ?? new Date(0);
   const mode = now ? modeFor(now) : 'day';
   const firstName = data?.user.name?.trim().split(/\s+/)[0] ?? '';
+  const initials = data?.user.name
+    ? data.user.name
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((part) => part.charAt(0).toUpperCase())
+        .join('')
+    : 'G';
+
   const todayEvents = useMemo(
     () => [...(data?.todayEvents ?? [])].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime()),
     [data?.todayEvents],
   );
+
   const activeTasks = useMemo(
     () =>
       [...(data?.tasks ?? [])]
-        .filter((task) => task.status !== 'done' && task.status !== 'cancelled')
+        .filter((task) => task.status !== 'done' && task.status !== 'cancelled' && !completedTaskIds.has(task.id))
         .sort((a, b) => taskScore(b, clock) - taskScore(a, clock)),
-    [data?.tasks, clock],
+    [data?.tasks, clock, completedTaskIds],
   );
 
   const currentEvent = now
@@ -301,187 +309,79 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
     ? todayEvents.find((event) => !event.allDay && new Date(event.startAt) > now) ?? null
     : null;
 
-  const eventProgress = currentEvent && now
-    ? Math.max(
-        0,
-        Math.min(
-          100,
-          Math.round(
-            ((now.getTime() - new Date(currentEvent.startAt).getTime()) /
-              (eventEnd(currentEvent).getTime() - new Date(currentEvent.startAt).getTime())) *
-              100,
-          ),
-        ),
-      )
-    : null;
-
-  const eventMinutesLeft = currentEvent && now
-    ? Math.max(0, Math.round((eventEnd(currentEvent).getTime() - now.getTime()) / 60_000))
-    : null;
+  const eventMinutesLeft =
+    currentEvent && now ? Math.max(0, Math.round((eventEnd(currentEvent).getTime() - now.getTime()) / 60_000)) : null;
 
   const engineAction = intelligence?.primary ?? null;
-  const nowTitle = currentEvent?.title ?? engineAction?.title ?? data?.activeTask?.title ?? 'Your next right step';
-  const nowReason = currentEvent
-    ? currentEvent.location
-      ? 'You are in a scheduled block at ' + currentEvent.location + '.'
-      : 'This is the commitment occupying the current block.'
-    : engineAction?.reason ?? 'Glow will place the most useful next action here as your day develops.';
-  const nowHref = currentEvent ? '/today?room=meeting&event=' + encodeURIComponent(currentEvent.id) : engineAction?.href ?? '/today?room=what-now';
+  const nowTitle = currentEvent?.title ?? engineAction?.title ?? data?.activeTask?.title ?? 'Open space';
+  const nowHref = currentEvent
+    ? '/today?room=meeting&event=' + encodeURIComponent(currentEvent.id)
+    : engineAction?.href ?? (data?.activeTask ? '/tasks?task=' + encodeURIComponent(data.activeTask.id) : '/today?room=what-now');
 
-  const nextEventMinutes = nextEvent && now ? Math.max(0, Math.round((new Date(nextEvent.startAt).getTime() - now.getTime()) / 60_000)) : null;
-  const recommendedAction =
-    nextEvent && nextEventMinutes !== null && nextEventMinutes <= 45
-      ? {
-          title: 'Prepare for ' + nextEvent.title,
-          detail: 'Begins in ' + formatDuration(nextEventMinutes),
-          href: '/calendar',
-        }
-      : engineAction
-        ? {
-            title: engineAction.title,
-            detail: engineAction.reason,
-            href: engineAction.href,
-          }
-        : activeTasks[0]
-          ? {
-              title: activeTasks[0].title,
-              detail: dueLabel(activeTasks[0], clock),
-              href: '/tasks',
-            }
-          : {
-              title: 'Protect the open space',
-              detail: 'Nothing urgent is asking for intervention.',
-              href: '/today',
-            };
+  const recommendedAction = engineAction
+    ? { title: engineAction.title, detail: engineAction.reason, href: engineAction.href }
+    : activeTasks[0]
+      ? { title: activeTasks[0].title, detail: dueLabel(activeTasks[0], clock), href: '/tasks?task=' + encodeURIComponent(activeTasks[0].id) }
+      : nextEvent
+        ? { title: 'Prepare for ' + nextEvent.title, detail: formatClock(new Date(nextEvent.startAt)), href: '/calendar?event=' + encodeURIComponent(nextEvent.id) }
+        : { title: 'Protect the open space', detail: 'Nothing urgent is asking for intervention.', href: '/today' };
 
-  const todayThree = activeTasks.slice(0, 3);
+  const todayThree = activeTasks.slice(0, 6);
   const flow = now ? buildFlow(todayEvents, now) : [];
-  const allDayEvents = todayEvents.filter((event) => event.allDay);
+  const routineWindow = (data?.routines ?? [])
+    .filter((routine) => {
+      if (mode === 'morning') return routine.timeOfDay === 'morning' || routine.timeOfDay === 'anytime';
+      if (mode === 'day') return routine.timeOfDay === 'afternoon' || routine.timeOfDay === 'anytime';
+      if (mode === 'evening') return routine.timeOfDay === 'evening' || routine.timeOfDay === 'anytime';
+      return routine.timeOfDay === 'night' || routine.timeOfDay === 'anytime';
+    })
+    .slice(0, 4);
 
-  const dayEnd = now ? new Date(now) : new Date();
-  dayEnd.setHours(23, 0, 0, 0);
-  const remainingMinutes = now ? Math.max(0, Math.round((dayEnd.getTime() - now.getTime()) / 60_000)) : 0;
-  const scheduledRemaining = now
-    ? todayEvents
-        .filter((event) => !event.allDay)
-        .reduce((total, event) => total + minutesOfOverlap(new Date(event.startAt), eventEnd(event), now, dayEnd), 0)
-    : 0;
-  const openMinutes = Math.max(0, remainingMinutes - scheduledRemaining);
-  const openPercent = remainingMinutes ? Math.round((openMinutes / remainingMinutes) * 100) : 0;
+  const activeGoals = (data?.goals ?? []).filter((goal) => goal.status !== 'complete').slice(0, 3);
+  const futureUndated = activeTasks.filter((task) => !task.dueDate).length;
+  const pendingTasks = activeTasks.filter((task) => task.status === 'pending').length;
 
-  const overdueTasks = now
-    ? activeTasks.filter((task) => task.dueDate && new Date(task.dueDate) < now).slice(0, 2)
-    : [];
+  const attentionCount =
+    (data?.sourceStatus.googleCalendar && data.sourceStatus.googleCalendar !== 'connected' ? 1 : 0) +
+    (intelligence?.maintenance?.filter((item) => item.urgency === 'urgent').length ?? 0) +
+    (intelligence?.systemHealth?.filter((item) => item.status !== 'stable').length ?? 0);
 
-  const conflicts = useMemo(() => {
-    const timed = todayEvents.filter((event) => !event.allDay);
-    const found: Array<[PersonalEvent, PersonalEvent]> = [];
-    for (let i = 0; i < timed.length - 1; i += 1) {
-      if (eventEnd(timed[i]) > new Date(timed[i + 1].startAt)) found.push([timed[i], timed[i + 1]]);
+  const summary =
+    todayEvents.length || activeTasks.length
+      ? String(todayEvents.length) + ' calendar item' + (todayEvents.length === 1 ? '' : 's') + ' · ' +
+        String(activeTasks.length) + ' open task' + (activeTasks.length === 1 ? '' : 's')
+      : 'A calm start. Nothing urgent is crowding the day.';
+
+  const systemItems = useMemo(() => {
+    if (systemTab === 'tasks') {
+      return activeTasks.slice(0, 5).map((task) => ({
+        id: task.id,
+        label: task.title,
+        meta: dueLabel(task, clock),
+        href: '/tasks?task=' + encodeURIComponent(task.id),
+        task,
+      }));
     }
-    return found.slice(0, 1);
-  }, [todayEvents]);
-
-  const attention = [
-    ...overdueTasks.map((task) => ({
-      id: 'task-' + task.id,
-      title: task.title,
-      detail: 'Overdue task',
-      href: '/tasks',
-      level: 'urgent',
-    })),
-    ...conflicts.map(([first, second]) => ({
-      id: 'conflict-' + first.id,
-      title: 'Calendar conflict',
-      detail: first.title + ' overlaps ' + second.title,
-      href: '/calendar',
-      level: 'urgent',
-    })),
-    ...(nextEvent && nextEventMinutes !== null && nextEventMinutes <= 60
-      ? [
-          {
-            id: 'prep-' + nextEvent.id,
-            title: 'Prepare for ' + nextEvent.title,
-            detail: 'Starts in ' + formatDuration(nextEventMinutes),
-            href: '/calendar',
-            level: 'soon',
-          },
-        ]
-      : []),
-    ...(data?.sourceStatus.googleCalendar && data.sourceStatus.googleCalendar !== 'connected'
-      ? [
-          {
-            id: 'calendar-source',
-            title: 'Calendar needs attention',
-            detail: 'Connection status: ' + data.sourceStatus.googleCalendar.replace(/_/g, ' '),
-            href: '/connections',
-            level: 'soon',
-          },
-        ]
-      : []),
-    ...(intelligence?.maintenance ?? []).slice(0, 2).map((item) => ({
-      id: 'maintenance-' + item.id,
-      title: item.title,
-      detail: item.recommendation ?? item.domain + ' maintenance',
-      href: '/maintenance',
-      level: item.urgency === 'urgent' ? 'urgent' : 'soon',
-    })),
-    ...(intelligence?.systemHealth ?? [])
-      .filter((item) => item.status !== 'stable')
-      .slice(0, 2)
-      .map((item) => ({
-        id: 'health-' + item.domain,
-        title: item.domain + ' needs attention',
-        detail: item.reason,
-        href: '/brain',
-        level: item.status === 'behind' ? 'urgent' : 'soon',
-      })),
-  ].filter((item, index, list) => list.findIndex((other) => other.id === item.id) === index).slice(0, 4);
-
-  const remainingToday = now ? todayEvents.filter((event) => new Date(event.startAt) > now) : [];
-  const tonight = remainingToday.filter((event) => new Date(event.startAt).getHours() >= 17).slice(0, 3);
-  const laterToday = remainingToday.filter((event) => new Date(event.startAt).getHours() < 17).slice(0, 3);
-  const tomorrow = (data?.tomorrowEvents ?? []).slice(0, 3);
-
-  const observations = useMemo(() => {
-    const items: string[] = [];
-    if (openMinutes >= 120 && activeTasks.length) {
-      items.push('You still have ' + formatDuration(openMinutes) + ' of genuine open space. Protect the longest block for one meaningful task.');
+    if (systemTab === 'habits') {
+      return (data?.habits ?? []).slice(0, 5).map((habit) => ({
+        id: habit.id,
+        label: habit.name,
+        meta: habit.frequency,
+        href: '/habits',
+        task: null,
+      }));
     }
-    if (todayEvents.length >= 4 && activeTasks.filter((task) => task.priority === 'urgent' || task.priority === 'high').length >= 2) {
-      items.push('Today is commitment-heavy. Glow is keeping the task layer selective instead of showing the full database.');
+    if (systemTab === 'routines') {
+      return (data?.routines ?? []).slice(0, 5).map((routine) => ({
+        id: routine.id,
+        label: routine.name,
+        meta: routine.timeOfDay,
+        href: '/routines?routine=' + encodeURIComponent(routine.id),
+        task: null,
+      }));
     }
-    if (!attention.length && todayEvents.length <= 2) {
-      items.push('Nothing currently requires intervention. The calm screen is intentional.');
-    }
-    if (data?.wellness?.energy) {
-      items.push('Today’s energy check-in is ' + data.wellness.energy + '. The action layer can use that signal when choosing what fits now.');
-    }
-    return items.slice(0, 2);
-  }, [activeTasks, attention.length, data?.wellness?.energy, openMinutes, todayEvents.length]);
-
-  const routineWindow = (data?.routines ?? []).filter((routine) => {
-    if (mode === 'morning') return routine.timeOfDay === 'morning' || routine.timeOfDay === 'anytime';
-    if (mode === 'day') return routine.timeOfDay === 'afternoon' || routine.timeOfDay === 'anytime';
-    if (mode === 'evening') return routine.timeOfDay === 'evening' || routine.timeOfDay === 'anytime';
-    return routine.timeOfDay === 'night' || routine.timeOfDay === 'anytime';
-  }).slice(0, 4);
-
-  const summary = now
-    ? mode === 'morning'
-      ? String(todayEvents.length) + ' calendar commitments and ' + String(todayThree.length) + ' priority outcomes shape the day.'
-      : mode === 'day'
-        ? currentEvent
-          ? 'You are inside ' + currentEvent.title + '. Glow is protecting the transition that follows.'
-          : nextEvent
-            ? 'Your next commitment is ' + nextEvent.title + ' in ' + formatDuration(nextEventMinutes ?? 0) + '.'
-            : 'The rest of the active day is comparatively open. Use the space deliberately.'
-        : mode === 'evening'
-          ? String(tonight.length) + ' evening commitments remain. Tomorrow is already visible below.'
-          : tomorrow[0]
-            ? 'The interface is quieter now. Tomorrow begins with ' + tomorrow[0].title + '.'
-            : 'The interface is quieter now. Close loops and protect your night.'
-    : 'Glow is assembling the shape of your day.';
+    return [];
+  }, [systemTab, activeTasks, clock, data?.habits, data?.routines]);
 
   async function requestWeather() {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
@@ -519,600 +419,457 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
     );
   }
 
-  const forwardLook = (
-    <Surface className={mode === 'night' ? 'border-[#d4c7bd] bg-[rgba(249,246,243,.88)] p-6 md:p-7' : 'p-6 md:p-7'}>
-      {sectionTitle('Forward', mode === 'night' ? 'Close today. See tomorrow.' : 'Later today · tonight · tomorrow', 'Only the next horizon, not the whole calendar.')}
-      <div className="grid gap-3 md:grid-cols-3">
-        {[
-          ['Later today', laterToday, '/calendar'],
-          ['Tonight', tonight, '/today?room=tonight'],
-          ['Tomorrow', tomorrow, '/tomorrow'],
-        ].map(([label, items, href]) => {
-          const list = items as PersonalEvent[];
-          return (
-            <button
-              key={String(label)}
-              type="button"
-              onClick={() => travel(String(href))}
-              className="group min-h-[132px] rounded-[20px] border border-[#e4dbd3] bg-white/65 p-4 text-left transition hover:-translate-y-0.5 hover:border-[#cbb7a7] hover:shadow-[0_12px_30px_rgba(68,51,43,.06)]"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9b7f70]">{String(label)}</span>
-                <ArrowRight size={14} className="text-[#baa99e] transition group-hover:translate-x-0.5" />
-              </div>
-              {list.length ? (
-                <div className="mt-4 space-y-2">
-                  {list.slice(0, 2).map((event) => (
-                    <div key={event.id}>
-                      <p className="truncate text-[12px] font-medium text-[#302a26]">{event.title}</p>
-                      <p className="mt-0.5 text-[10px] text-[#91857e]">{event.allDay ? 'All day' : formatClock(new Date(event.startAt))}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="mt-5 text-[12px] leading-5 text-[#948880]">Nothing fixed here yet.</p>
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </Surface>
-  );
+  function completeTask(task: PersonalTask) {
+    if (taskUpdate.isPending) return;
+    taskUpdate.run({ id: task.id, data: { status: 'done' } }, () => {
+      setCompletedTaskIds((current) => {
+        const next = new Set(current);
+        next.add(task.id);
+        return next;
+      });
+    });
+  }
+
+  const energyLabel = data?.wellness?.energy ?? 'Not checked in';
+  const dayFlow = flow.length ? flow.slice(0, 7) : [];
 
   return (
-    <div
-      data-home-mode={mode}
-      className={
-        mode === 'night'
-          ? 'min-h-screen overflow-x-hidden bg-[#eeebe9] pb-24 text-[#2a2522] transition-colors duration-700'
-          : 'min-h-screen overflow-x-hidden bg-[#f5f1ec] pb-24 text-[#2a2522] transition-colors duration-700'
-      }
-    >
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -left-[10%] -top-[18%] h-[620px] w-[620px] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,.95)_0%,rgba(239,219,209,.28)_42%,transparent_72%)]" />
-        <div className="absolute right-[-12%] top-[12%] h-[680px] w-[680px] rounded-full bg-[radial-gradient(circle,rgba(228,235,232,.55)_0%,rgba(245,240,235,.08)_55%,transparent_74%)]" />
-        <div className="absolute bottom-[-24%] left-[26%] h-[620px] w-[800px] rounded-full bg-[radial-gradient(circle,rgba(238,224,215,.48)_0%,transparent_69%)]" />
-      </div>
+    <div className="min-h-screen overflow-x-hidden bg-[#ebe4db] text-[#302925] md:pl-[76px]">
+      <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_15%_10%,rgba(255,255,255,.98),transparent_32%),radial-gradient(circle_at_86%_12%,rgba(244,229,215,.88),transparent_34%),linear-gradient(135deg,#eee7de_0%,#e8dfd5_52%,#ddd6ce_100%)]" />
+      <div className="pointer-events-none fixed inset-0 -z-10 opacity-40 [background-image:linear-gradient(rgba(255,255,255,.28)_1px,transparent_1px)] [background-size:100%_18px]" />
 
-      <div className="relative mx-auto w-full max-w-[1600px] px-3 pb-14 pt-4 sm:px-5 md:px-7 lg:px-8">
-        <header className="rounded-[28px] border border-white/75 bg-[rgba(255,253,250,.72)] px-5 py-4 shadow-[0_20px_80px_rgba(77,59,49,.08),inset_0_1px_0_rgba(255,255,255,.96)] backdrop-blur-2xl md:px-7 md:py-5">
-          <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
-            <div>
-              <div className="mb-2 flex flex-wrap items-center gap-3"><span className="font-serif text-[22px] tracking-[-0.03em] text-[#2f2925]">♕ Princess Glow OS</span><span className="text-[9px] uppercase tracking-[0.26em] text-[#9b8c83]">A more aligned you. A brighter tomorrow.</span></div><div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#947b6d]">
-                <span>{now ? formatDate(now) : 'Today'}</span>
-                <span className="h-1 w-1 rounded-full bg-[#c8b8ad]" />
-                <span>{now ? formatClock(now) : '—'}</span>
-                <span className="h-1 w-1 rounded-full bg-[#c8b8ad]" />
-                <span>{modeLabel(mode)}</span>
+      <main className="mx-auto w-full max-w-[1500px] px-2 py-3 sm:px-3 lg:px-4">
+        <div className="rounded-[26px] border border-white/80 bg-[rgba(249,246,242,.53)] p-3 shadow-[0_28px_90px_rgba(74,55,45,.12),inset_0_1px_0_rgba(255,255,255,.95)] backdrop-blur-[26px] sm:p-4">
+          <header className="mb-3 flex min-h-[54px] items-center justify-between gap-4 border-b border-white/70 px-1 pb-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <Crown size={23} strokeWidth={1.2} className="shrink-0 text-[#9a816f]" />
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+                  <h1 className="font-serif text-[24px] leading-none tracking-[-0.035em] text-[#27211e]">Princess Glow OS</h1>
+                  <p className="hidden text-[8px] uppercase tracking-[0.24em] text-[#9b8b80] md:block">A more aligned you. A brighter tomorrow.</p>
+                </div>
               </div>
-              <h1 className="mt-3 font-serif text-[35px] leading-[1.04] tracking-[-0.04em] text-[#2d2723] sm:text-[43px] md:text-[50px]">
-                {now ? greetingFor(now) : 'Welcome'}{firstName ? ', ' + firstName : ''} 🌷
-              </h1>
-              <p className="mt-3 max-w-3xl text-[13px] leading-6 text-[#746a64] md:text-[14px]">{summary}</p>
             </div>
-
-            <div className="flex flex-wrap items-center gap-2 lg:max-w-[470px] lg:justify-end">
-              <button
-                type="button"
-                onClick={requestWeather}
-                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#dfd5cd] bg-white/65 px-4 text-[11px] text-[#5f554f] transition hover:bg-white"
-                aria-label="Load local weather"
-              >
-                <Sparkles size={13} />
-                {weatherStatus === 'loading'
-                  ? 'Weather…'
-                  : weatherStatus === 'ready' && weather
-                    ? String(weather.temperature) + '° · ' + weatherText(weather.code)
-                    : weatherStatus === 'error'
-                      ? 'Weather unavailable'
-                      : 'Enable weather'}
+            <div className="flex shrink-0 items-center gap-3">
+              <div className="hidden text-right md:block">
+                <p className="text-[10px] font-medium text-[#413832]">{now ? formatDate(now) : 'Today'}</p>
+                <p className="mt-0.5 text-[9px] italic text-[#8c7c72]">{modeLabel(mode)}</p>
+              </div>
+              <button type="button" onClick={() => travel('/search')} className="grid h-9 w-9 place-items-center rounded-full border border-white/70 bg-white/45 text-[#514640]" aria-label="Search">
+                <Search size={15} />
               </button>
-              <button
-                type="button"
-                onClick={() => travel('/settings/intelligence')}
-                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#dfd5cd] bg-white/65 px-4 text-[11px] text-[#5f554f] transition hover:bg-white"
-              >
-                <Zap size={13} />
-                {intelligence?.mode?.name ?? 'Normal Day'}
-              </button>
-              <button
-                type="button"
-                onClick={() => travel('/notifications')}
-                className="grid h-11 w-11 place-items-center rounded-full border border-[#dfd5cd] bg-white/65 text-[#665b54] transition hover:bg-white"
-                aria-label="Open notifications"
-              >
+              <button type="button" onClick={() => travel('/notifications')} className="relative grid h-9 w-9 place-items-center rounded-full border border-white/70 bg-white/45 text-[#514640]" aria-label="Notifications">
                 <Bell size={15} />
+                {attentionCount ? <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#b07078]" /> : null}
+              </button>
+              <button type="button" onClick={() => travel('/settings')} className="flex items-center gap-2 rounded-full border border-white/70 bg-white/46 p-1.5 pr-3 text-left">
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-[linear-gradient(145deg,#eadfd4,#c9bbb2)] text-[10px] font-semibold text-white">{initials}</span>
+                <span className="hidden sm:block">
+                  <span className="block text-[9px] font-medium text-[#4b403a]">Same you.</span>
+                  <span className="block text-[8px] text-[#8f8076]">Bigger dreams. ♡</span>
+                </span>
               </button>
             </div>
-          </div>
-        </header>
+          </header>
 
-        <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_265px]"><div className="space-y-5">
-          {(mode === 'evening' || mode === 'night') ? forwardLook : null}
-
-          <div className="grid gap-5 xl:grid-cols-[1.45fr_.78fr]">
-            <Surface className="min-h-[390px] p-6 md:p-8">
-              <div className="absolute right-[-90px] top-[-110px] h-[310px] w-[310px] rounded-full bg-[radial-gradient(circle,rgba(223,205,194,.55),rgba(255,255,255,.05)_62%,transparent_72%)]" />
-              <div className="relative">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-[#d6c7ba] bg-[#f7f0ea]/80 px-3 py-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#9f7f6c]" />
-                    <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#83695b]">Now</span>
+          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_230px]">
+            <div className="space-y-3">
+              <div className="grid gap-3 lg:grid-cols-[minmax(0,1.55fr)_118px_118px_118px]">
+                <Glass className="min-h-[150px] p-5">
+                  <div className="absolute inset-0 opacity-35" style={{ backgroundImage: 'linear-gradient(90deg,rgba(255,252,248,.97) 0%,rgba(255,252,248,.84) 45%,rgba(255,252,248,.28) 100%),url(' + HERO_IMAGE + ')', backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                  <div className="relative z-10 max-w-[62%]">
+                    <h2 className="font-serif text-[31px] leading-[1.02] tracking-[-0.04em] text-[#2d2723]">
+                      {greetingFor(clock)}{firstName ? ', ' + firstName : ''} 🌷
+                    </h2>
+                    <p className="mt-1.5 text-[11px] text-[#796d65]">{summary}</p>
+                    <p className="mt-4 font-serif text-[13px] italic leading-5 text-[#675a52]">“Progress, not perfection, creates a beautiful life.”</p>
                   </div>
-                  {eventMinutesLeft !== null ? (
-                    <span className="text-[11px] text-[#81766e]">{formatDuration(eventMinutesLeft)} remaining</span>
-                  ) : intelligence?.availableMinutes !== null && intelligence?.availableMinutes !== undefined ? (
-                    <span className="text-[11px] text-[#81766e]">{formatDuration(intelligence.availableMinutes)} usable before next constraint</span>
-                  ) : null}
-                </div>
+                </Glass>
 
-                <h2 className="mt-7 max-w-3xl font-serif text-[34px] leading-[1.08] tracking-[-0.035em] text-[#28221f] sm:text-[40px] md:text-[46px]">{nowTitle}</h2>
-                <p className="mt-4 max-w-2xl text-[13px] leading-6 text-[#746a63]">{nowReason}</p>
+                <button type="button" onClick={requestWeather} className="rounded-[18px] border border-white/75 bg-white/58 p-3 text-center shadow-[0_8px_25px_rgba(70,50,40,.04)] backdrop-blur-xl">
+                  <Sun size={25} strokeWidth={1.4} className="mx-auto text-[#d3a548]" />
+                  <p className="mt-2 font-serif text-[23px] leading-none text-[#322a26]">{weather ? String(weather.temperature) + '°' : weatherStatus === 'loading' ? '…' : '—'}</p>
+                  <p className="mt-1 text-[8px] leading-3 text-[#81736b]">{weather ? weatherText(weather.code) : weatherStatus === 'error' ? 'Unavailable' : 'Enable weather'}</p>
+                </button>
 
-                {eventProgress !== null ? (
-                  <div className="mt-7">
-                    <div className="mb-2 flex items-center justify-between text-[10px] text-[#8a7d75]">
-                      <span>Block progress</span>
-                      <span>{eventProgress}%</span>
-                    </div>
-                    <div className="h-[5px] overflow-hidden rounded-full bg-[#e5ddd6]">
-                      <div className="h-full rounded-full bg-[#8e7567] transition-all" style={{ width: String(eventProgress) + '%' }} />
-                    </div>
+                <button type="button" onClick={() => travel('/wellness')} className="rounded-[18px] border border-white/75 bg-white/58 p-3 text-center shadow-[0_8px_25px_rgba(70,50,40,.04)] backdrop-blur-xl">
+                  <div className="mx-auto grid h-12 w-12 place-items-center rounded-full border-[5px] border-[#dce9e2] bg-white/50">
+                    <Zap size={17} className="text-[#668f80]" />
                   </div>
-                ) : null}
+                  <p className="mt-1 font-serif text-[14px] text-[#342d29]">Energy</p>
+                  <p className="mt-0.5 line-clamp-2 text-[8px] text-[#81736b]">{energyLabel}</p>
+                </button>
 
-                <div className="mt-8 grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
-                  <button
-                    type="button"
-                    onClick={() => travel(recommendedAction.href)}
-                    className="group rounded-[21px] border border-[#dfd3c8] bg-white/72 p-4 text-left transition hover:border-[#cbb6a7] hover:bg-white"
-                  >
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[#9b7d6e]">Recommended next action</p>
-                    <div className="mt-2 flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-[14px] font-semibold text-[#302923]">{recommendedAction.title}</p>
-                        <p className="mt-1 line-clamp-2 text-[11px] leading-5 text-[#857a73]">{recommendedAction.detail}</p>
+                <button type="button" onClick={() => openGlow('Open Shakti with the exact context of my Home dashboard.')} className="rounded-[18px] border border-white/75 bg-white/58 p-3 text-center shadow-[0_8px_25px_rgba(70,50,40,.04)] backdrop-blur-xl">
+                  <span className="mx-auto block h-12 w-12 rounded-full bg-[radial-gradient(circle_at_40%_32%,#fff_0%,#fff_18%,#eadff1_38%,#d9ecf1_54%,#f2e4e7_67%,transparent_73%)] shadow-[0_0_24px_rgba(194,185,224,.72)]" />
+                  <p className="mt-1 font-serif text-[14px] text-[#342d29]">Shakti</p>
+                  <p className="mt-0.5 text-[8px] text-[#81736b]">Present for you</p>
+                </button>
+              </div>
+
+              <div className="grid gap-3 lg:grid-cols-[1.02fr_1.03fr_.95fr]">
+                <Glass className="p-4">
+                  <div className="flex items-center justify-between">
+                    <MicroTitle>● &nbsp; Now</MicroTitle>
+                    <span className="text-[9px] text-[#8b7d74]">{eventMinutesLeft !== null ? formatDuration(eventMinutesLeft) : intelligence?.availableMinutes ? formatDuration(intelligence.availableMinutes) : ''}</span>
+                  </div>
+                  <button type="button" onClick={() => travel(nowHref)} className="mt-3 block w-full text-left">
+                    <p className="line-clamp-2 font-serif text-[20px] leading-tight text-[#342c28]">{nowTitle}</p>
+                  </button>
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {engineAction ? <span className="rounded-full border border-[#eadfd6] bg-white/55 px-2 py-1 text-[8px] text-[#7e6c61]">{engineAction.energyCost} energy</span> : null}
+                    {engineAction?.estimatedMinutes ? <span className="rounded-full border border-[#eadfd6] bg-white/55 px-2 py-1 text-[8px] text-[#7e6c61]">~ {engineAction.estimatedMinutes} min</span> : null}
+                    {currentEvent ? <span className="rounded-full border border-[#eadfd6] bg-white/55 px-2 py-1 text-[8px] text-[#7e6c61]">Scheduled</span> : null}
+                  </div>
+                  <div className="mt-4 grid grid-cols-2 gap-2">
+                    <button type="button" onClick={() => travel(nowHref)} className="rounded-full bg-[#302a27] px-3 py-2 text-[9px] font-medium text-white">▶ Start focus</button>
+                    <button type="button" onClick={() => travel(nextEvent ? '/calendar?event=' + encodeURIComponent(nextEvent.id) : recommendedAction.href)} className="rounded-full border border-white/80 bg-white/55 px-3 py-2 text-[9px] text-[#514640]">See next</button>
+                  </div>
+                </Glass>
+
+                <Glass className="p-4">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-serif text-[20px] leading-none text-[#332b27]">What now?</h3>
+                    <span className="text-[8px] text-[#95867d]">{todayThree.length} open</span>
+                    <button type="button" onClick={() => travel('/tasks')} className="ml-auto grid h-7 w-7 place-items-center rounded-full hover:bg-white/55" aria-label="Add or open tasks"><Plus size={14} /></button>
+                  </div>
+                  <div className="mt-2 h-[3px] overflow-hidden rounded-full bg-[#e9e0d8]">
+                    <div className="h-full bg-[#6f7b73]" style={{ width: todayThree.length ? Math.min(100, (completedTaskIds.size / Math.max(todayThree.length + completedTaskIds.size, 1)) * 100) + '%' : '0%' }} />
+                  </div>
+                  <div className="mt-2 space-y-1">
+                    {todayThree.length ? todayThree.slice(0, 5).map((task) => (
+                      <div key={task.id} className="group flex items-center gap-2 rounded-[8px] px-1 py-1 hover:bg-white/45">
+                        <button type="button" onClick={() => completeTask(task)} disabled={taskUpdate.isPending} className="grid h-4 w-4 shrink-0 place-items-center rounded-[5px] border border-[#9d938d] bg-white/50" aria-label={'Complete ' + task.title}>
+                          <Check size={10} className="opacity-0 group-hover:opacity-35" />
+                        </button>
+                        <button type="button" onClick={() => travel('/tasks?task=' + encodeURIComponent(task.id))} className="min-w-0 flex-1 truncate text-left text-[10px] text-[#433a35]">{task.title}</button>
+                        <span className="shrink-0 text-[8px] text-[#92857d]">{task.dueDate ? dueLabel(task, clock) : ''}</span>
                       </div>
-                      <ArrowRight size={16} className="mt-1 shrink-0 text-[#a99080] transition group-hover:translate-x-1" />
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => travel(nowHref)}
-                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#312a26] px-5 text-[11px] font-medium text-white shadow-[0_10px_24px_rgba(48,38,33,.16)] transition hover:-translate-y-0.5"
-                  >
-                    Open current context <ArrowRight size={14} />
-                  </button>
-                </div>
+                    )) : <p className="py-5 text-center text-[9px] italic text-[#91847c]">No open task is asking for attention.</p>}
+                  </div>
+                </Glass>
 
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {nextEvent ? (
-                    <button type="button" onClick={() => travel('/calendar')} className="rounded-full border border-[#e4dad2] bg-white/55 px-3 py-2 text-[10px] text-[#756a63]">
-                      Next · {formatClock(new Date(nextEvent.startAt))} · {nextEvent.title}
-                    </button>
-                  ) : (
-                    <span className="rounded-full border border-[#e4dad2] bg-white/55 px-3 py-2 text-[10px] text-[#756a63]">No fixed event next</span>
-                  )}
-                  {routineWindow.slice(0, 2).map((routine) => (
-                    <button key={routine.id} type="button" onClick={() => travel('/routines')} className="rounded-full border border-[#e4dad2] bg-white/55 px-3 py-2 text-[10px] text-[#756a63]">
-                      {routine.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </Surface>
-
-            <Surface className="p-6 md:p-7">
-              {sectionTitle('What now?', 'Your next priorities', String(todayThree.length) + ' real priority outcomes from your current task state.')}
-              <div className="space-y-3">
-                {[0, 1, 2].map((index) => {
-                  const task = todayThree[index];
-                  if (!task) {
-                    return (
-                      <button key={index} type="button" onClick={() => travel('/tasks')} className="flex w-full items-center gap-3 rounded-[19px] border border-dashed border-[#ddd1c7] bg-white/35 p-4 text-left">
-                        <span className="grid h-8 w-8 place-items-center rounded-full border border-[#d8ccc2] text-[#a08f85]"><Plus size={13} /></span>
-                        <span className="text-[11px] text-[#8d8179]">Choose outcome {index + 1}</span>
-                      </button>
-                    );
-                  }
-                  return (
-                    <button key={task.id} type="button" onClick={() => travel('/tasks')} className="group flex w-full items-start gap-3 rounded-[19px] border border-[#e3d9d1] bg-white/62 p-4 text-left transition hover:border-[#cbb9ac] hover:bg-white/85">
-                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[#d6c8bd] bg-[#f9f5f1] font-serif text-[12px] text-[#7f685b]">{index + 1}</span>
-                      <span className="min-w-0 flex-1">
-                        <span className="line-clamp-2 text-[13px] font-medium leading-5 text-[#322b27]">{task.title}</span>
-                        <span className="mt-1.5 block text-[9px] uppercase tracking-[0.12em] text-[#9b877a]">{dueLabel(task, clock)}</span>
-                      </span>
-                      <ChevronDown size={13} className="-rotate-90 text-[#baa99d] transition group-hover:translate-x-0.5" />
-                    </button>
-                  );
-                })}
-              </div>
-              <button type="button" onClick={() => travel('/tasks')} className="mt-5 inline-flex items-center gap-1.5 text-[10px] font-medium text-[#8a6f60]">
-                Open task system <ArrowRight size={12} />
-              </button>
-            </Surface>
-          </div>
-
-          {mode === 'morning' ? (
-            <Surface className="p-6 md:p-7">
-              {sectionTitle('Flow', 'The shape of today', 'Calendar facts stay visible. Open space is shown as real space.')}
-              {allDayEvents.length ? (
-                <div className="mb-4 flex flex-wrap gap-2">
-                  {allDayEvents.map((event) => <span key={event.id} className="rounded-full bg-[#eee6df] px-3 py-1.5 text-[9px] text-[#786b63]">All day · {event.title}</span>)}
-                </div>
-              ) : null}
-              <div className="space-y-2">
-                {flow.slice(0, 7).map((item) => {
-                  const isCurrent = now ? item.start <= now && item.end > now : false;
-                  const isPast = now ? item.end <= now : false;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => travel(item.kind === 'event' && item.event ? '/calendar?event=' + encodeURIComponent(item.event.id) : '/today?room=what-now')}
-                      className={
-                        item.kind === 'open'
-                          ? 'flex w-full items-center gap-4 rounded-[17px] border border-dashed border-[#dcd1c8] bg-white/26 px-4 py-3 text-left'
-                          : isCurrent
-                            ? 'flex w-full items-center gap-4 rounded-[17px] border border-[#cbb7a7] bg-[#f6eee8] px-4 py-3 text-left shadow-[inset_3px_0_0_#9d7b68]'
-                            : isPast
-                              ? 'flex w-full items-center gap-4 rounded-[17px] border border-[#e7dfd8] bg-white/36 px-4 py-3 text-left opacity-55'
-                              : 'flex w-full items-center gap-4 rounded-[17px] border border-[#e1d7cf] bg-white/62 px-4 py-3 text-left'
-                      }
-                    >
-                      <span className="w-[76px] shrink-0 text-[10px] tabular-nums text-[#8c7f77]">{formatClock(item.start)}</span>
-                      <span className="h-7 w-px bg-[#d9cdc4]" />
-                      <span className="min-w-0 flex-1">
-                        <span className={item.kind === 'open' ? 'text-[12px] italic text-[#92867f]' : 'truncate text-[12px] font-medium text-[#342d29]'}>{item.title}</span>
-                        <span className="mt-0.5 block text-[9px] text-[#9a8d85]">{formatDuration(Math.max(0, Math.round((item.end.getTime() - item.start.getTime()) / 60_000)))}</span>
-                      </span>
-                      {isCurrent ? <span className="rounded-full bg-[#8c7060] px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.12em] text-white">Now</span> : null}
-                    </button>
-                  );
-                })}
-              </div>
-              {flow.length > 7 ? (
-                <details className="mt-3">
-                  <summary className="cursor-pointer list-none text-[10px] font-medium text-[#896f61]">Show full day flow</summary>
-                  <div className="mt-3 space-y-2">
-                    {flow.slice(7).map((item) => (
-                      <button key={item.id} type="button" onClick={() => travel(item.kind === 'event' && item.event ? '/calendar?event=' + encodeURIComponent(item.event.id) : '/today')} className="flex w-full items-center gap-4 rounded-[17px] border border-[#e4dbd4] bg-white/48 px-4 py-3 text-left">
-                        <span className="w-[76px] text-[10px] text-[#8c7f77]">{formatClock(item.start)}</span>
-                        <span className="text-[12px] text-[#4a413b]">{item.title}</span>
+                <Glass className="p-4">
+                  <h3 className="font-serif text-[20px] leading-none text-[#332b27]">Planning Studio</h3>
+                  <p className="mt-1 text-[8px] italic text-[#91827a]">Explore. Adjust. Create your best day.</p>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    {[
+                      ['This Month', '/calendar?view=month', CalendarRange],
+                      ['Week Ahead', '/calendar?view=week', CalendarDays],
+                      ['Tomorrow', '/tomorrow', Moon],
+                      ['Tasks & To-Dos', '/tasks', ListChecks],
+                    ].map(([label, href, Icon]) => (
+                      <button key={String(label)} type="button" onClick={() => travel(String(href))} className="flex min-h-[48px] items-center gap-2 rounded-[12px] border border-white/75 bg-white/52 px-3 text-left text-[9px] text-[#4d433d] transition hover:bg-white/82">
+                        {typeof Icon !== 'string' ? <Icon size={14} strokeWidth={1.5} className="text-[#8d7769]" /> : null}
+                        <span>{String(label)}</span>
                       </button>
                     ))}
                   </div>
-                </details>
-              ) : null}
-            </Surface>
-          ) : null}
-
-          <div className="grid gap-5 lg:grid-cols-[1.18fr_.82fr]">
-            <Surface className="p-6 md:p-7">
-              {sectionTitle('Today Systems', 'Tasks · reminders · routines', 'Only live objects from your real Glow state are shown here.')}
-              <div className="space-y-3">
-                {(intelligence?.primary ? [intelligence.primary, ...(intelligence.alternatives ?? [])] : []).slice(0, 4).map((action, index) => (
-                  <button key={action.id} type="button" onClick={() => travel(action.href)} className="group grid w-full grid-cols-[auto_1fr_auto] items-start gap-3 rounded-[20px] border border-[#e3dad2] bg-white/58 p-4 text-left transition hover:border-[#cab8ab] hover:bg-white/86">
-                    <span className={index === 0 ? 'grid h-9 w-9 place-items-center rounded-full bg-[#342c27] text-white' : 'grid h-9 w-9 place-items-center rounded-full bg-[#efe7e0] text-[#8b7061]'}>
-                      {index === 0 ? <Zap size={14} /> : <Target size={14} />}
-                    </span>
-                    <span>
-                      <span className="text-[13px] font-medium text-[#312a26]">{action.title}</span>
-                      <span className="mt-1 block line-clamp-2 text-[10px] leading-4 text-[#8b7f77]">{action.reason}</span>
-                      <span className="mt-2 flex flex-wrap gap-1.5">
-                        <span className="rounded-full bg-[#f0e8e1] px-2 py-1 text-[8px] uppercase tracking-[0.1em] text-[#8d7465]">{action.source}</span>
-                        <span className="rounded-full bg-[#f0e8e1] px-2 py-1 text-[8px] uppercase tracking-[0.1em] text-[#8d7465]">{action.estimatedMinutes} min</span>
-                        <span className="rounded-full bg-[#f0e8e1] px-2 py-1 text-[8px] uppercase tracking-[0.1em] text-[#8d7465]">{action.energyCost} energy</span>
-                      </span>
-                    </span>
-                    <ArrowRight size={14} className="mt-1 text-[#b7a69a] transition group-hover:translate-x-1" />
-                  </button>
-                ))}
-                {!intelligence?.primary
-                  ? activeTasks.slice(0, 4).map((task) => (
-                      <button key={task.id} type="button" onClick={() => travel('/tasks')} className="group grid w-full grid-cols-[auto_1fr_auto] items-start gap-3 rounded-[20px] border border-[#e3dad2] bg-white/58 p-4 text-left transition hover:border-[#cab8ab] hover:bg-white/86">
-                        <span className="grid h-9 w-9 place-items-center rounded-full bg-[#efe7e0] text-[#8b7061]"><Target size={14} /></span>
-                        <span>
-                          <span className="text-[13px] font-medium text-[#312a26]">{task.title}</span>
-                          <span className="mt-1 block text-[10px] text-[#8b7f77]">{dueLabel(task, clock)} · ranked from task priority and deadline</span>
-                        </span>
-                        <ArrowRight size={14} className="mt-1 text-[#b7a69a] transition group-hover:translate-x-1" />
-                      </button>
-                    ))
-                  : null}
-                {!activeTasks.length && !intelligence?.primary ? <p className="rounded-[18px] border border-[#e3dad2] bg-white/42 p-5 text-[12px] leading-5 text-[#897d75]">No active tasks are competing for attention.</p> : null}
+                </Glass>
               </div>
-            </Surface>
 
-            <Surface className="p-6 md:p-7">
-              {sectionTitle('Capacity + Energy', 'What the day can hold', 'Time is measured. Energy is shown only from signals Glow actually has.')}
-              <div className="rounded-[22px] border border-[#e1d7cf] bg-white/60 p-5">
-                <div className="flex items-end justify-between gap-4">
-                  <div>
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[#9a8172]">Open time remaining</p>
-                    <p className="mt-2 font-serif text-[34px] tracking-[-0.04em] text-[#302925]">{formatDuration(openMinutes)}</p>
+              <Glass className="p-3">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <div className="flex items-baseline gap-3">
+                    <h3 className="font-serif text-[19px] text-[#332b27]">Your Day in Flow</h3>
+                    <span className="text-[8px] text-[#94867d]">5 AM – 11 PM</span>
                   </div>
-                  <p className="text-[11px] text-[#897d76]">{openPercent}% of the remaining day</p>
-                </div>
-                <div className="mt-4 h-[6px] overflow-hidden rounded-full bg-[#e7dfd8]">
-                  <div className="h-full rounded-full bg-[#9a806f]" style={{ width: String(openPercent) + '%' }} />
-                </div>
-                {intelligence?.availableMinutes !== null && intelligence?.availableMinutes !== undefined ? (
-                  <p className="mt-3 text-[10px] leading-4 text-[#887b73]">Immediate usable block: {formatDuration(intelligence.availableMinutes)} after Glow’s transition buffer.</p>
-                ) : null}
-              </div>
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                {[
-                  ['Mental', data?.wellness?.energy ?? 'Not checked in'],
-                  ['Physical', data?.wellness?.energy ?? 'Not checked in'],
-                  ['Creative', engineAction?.source === 'task' ? 'Task context' : 'Contextual'],
-                  ['Social', todayEvents.length ? String(todayEvents.length) + ' commitments' : 'Open'],
-                  ['Emotional', data?.wellness?.mood ?? 'Not logged'],
-                ].map(([label, value], index) => (
-                  <div key={label} className={index === 4 ? 'col-span-2 rounded-[16px] border border-[#e5dcd5] bg-white/45 px-3 py-3' : 'rounded-[16px] border border-[#e5dcd5] bg-white/45 px-3 py-3'}>
-                    <p className="text-[8px] font-semibold uppercase tracking-[0.15em] text-[#9d887b]">{label}</p>
-                    <p className="mt-1.5 truncate text-[11px] font-medium text-[#4c423c]">{value}</p>
+                  <div className="flex rounded-full border border-white/75 bg-white/45 p-0.5 text-[8px]">
+                    <button type="button" className="rounded-full bg-white px-2.5 py-1 text-[#4a403a]">Day</button>
+                    <button type="button" onClick={() => travel('/calendar?view=week')} className="rounded-full px-2.5 py-1 text-[#8d7d74]">Week</button>
+                    <button type="button" onClick={() => travel('/calendar?view=month')} className="rounded-full px-2.5 py-1 text-[#8d7d74]">Month</button>
                   </div>
-                ))}
-              </div>
-            </Surface>
-          </div>
-
-          {mode !== 'morning' ? (
-            <Surface className="p-6 md:p-7">
-              {sectionTitle('Flow', 'Day Flow', 'Events and genuine open space. Routine windows stay contextual, not falsely scheduled.')}
-              <div className="grid gap-5 lg:grid-cols-[1fr_auto]">
-                <div className="space-y-2">
-                  {flow.slice(0, 6).map((item) => {
+                </div>
+                <div className="flex items-stretch gap-1.5 overflow-x-auto pb-1">
+                  <button type="button" onClick={() => travel('/calendar')} className="grid h-[54px] w-7 shrink-0 place-items-center rounded-full bg-white/48 text-[#8e7d73]"><ChevronLeft size={13} /></button>
+                  {dayFlow.length ? dayFlow.map((item, index) => {
                     const isCurrent = now ? item.start <= now && item.end > now : false;
-                    const isPast = now ? item.end <= now : false;
+                    const backgrounds = ['#f8efd9', '#e4edf8', '#f7e8dd', '#e4f0e9', '#eee7f7', '#f6e3e7', '#e6ebf6'];
                     return (
                       <button
                         key={item.id}
                         type="button"
-                        onClick={() => travel(item.kind === 'event' ? '/calendar' : '/today?room=what-now')}
-                        className={
-                          item.kind === 'open'
-                            ? 'flex w-full items-center gap-4 rounded-[17px] border border-dashed border-[#dcd1c8] bg-white/26 px-4 py-3 text-left'
-                            : isCurrent
-                              ? 'flex w-full items-center gap-4 rounded-[17px] border border-[#cbb7a7] bg-[#f6eee8] px-4 py-3 text-left shadow-[inset_3px_0_0_#9d7b68]'
-                              : isPast
-                                ? 'flex w-full items-center gap-4 rounded-[17px] border border-[#e7dfd8] bg-white/36 px-4 py-3 text-left opacity-55'
-                                : 'flex w-full items-center gap-4 rounded-[17px] border border-[#e1d7cf] bg-white/62 px-4 py-3 text-left'
-                        }
+                        onClick={() => travel(item.kind === 'event' && item.event ? '/calendar?event=' + encodeURIComponent(item.event.id) : '/today?room=what-now')}
+                        className="relative min-w-[120px] flex-1 rounded-[10px] border border-white/70 px-3 py-2 text-left"
+                        style={{ backgroundColor: backgrounds[index % backgrounds.length] }}
                       >
-                        <span className="w-[72px] shrink-0 text-[10px] tabular-nums text-[#8c7f77]">{formatClock(item.start)}</span>
-                        <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-[#342d29]">{item.title}</span>
-                        {isCurrent ? <span className="rounded-full bg-[#8c7060] px-2 py-1 text-[8px] uppercase tracking-[0.12em] text-white">Now</span> : null}
+                        {isCurrent ? <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[7px] font-semibold uppercase tracking-[.12em] text-[#59749d]">Now</span> : null}
+                        <p className="truncate text-[9px] font-medium text-[#403833]">{item.title}</p>
+                        <p className="mt-1 text-[7px] text-[#81766f]">{formatClock(item.start)} · {formatDuration(Math.round((item.end.getTime() - item.start.getTime()) / 60_000))}</p>
                       </button>
                     );
-                  })}
+                  }) : (
+                    <button type="button" onClick={() => travel('/calendar')} className="min-w-[220px] flex-1 rounded-[10px] border border-dashed border-[#dacfc7] bg-white/32 px-3 py-2 text-left">
+                      <p className="text-[9px] font-medium text-[#574c45]">Open day</p>
+                      <p className="mt-1 text-[7px] text-[#91847c]">No timed calendar items are loaded.</p>
+                    </button>
+                  )}
+                  <button type="button" onClick={() => travel('/calendar')} className="grid h-[54px] w-7 shrink-0 place-items-center rounded-full bg-white/48 text-[#8e7d73]"><ChevronRight size={13} /></button>
                 </div>
-                <div className="min-w-[210px] rounded-[20px] border border-[#e2d8d0] bg-white/45 p-4">
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.17em] text-[#9b8172]">Current routine window</p>
-                  <div className="mt-3 space-y-2">
-                    {routineWindow.length ? routineWindow.map((routine) => (
-                      <button key={routine.id} type="button" onClick={() => travel('/routines?routine=' + encodeURIComponent(routine.id))} className="block w-full rounded-[13px] bg-white/65 px-3 py-2.5 text-left text-[10px] text-[#61564f]">{routine.name}</button>
-                    )) : <p className="text-[10px] leading-5 text-[#94877f]">No routine is explicitly assigned to this daypart.</p>}
+              </Glass>
+
+              <div className="grid gap-3 xl:grid-cols-[.96fr_.92fr_.83fr_1.15fr]">
+                <Glass className="p-3.5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-serif text-[16px] text-[#332b27]">Today Systems</h3>
+                    <span className="text-[8px] text-[#8b7d74]">{systemItems.length}</span>
                   </div>
-                </div>
-              </div>
-              {flow.length > 6 ? (
-                <details className="mt-4">
-                  <summary className="cursor-pointer list-none text-[10px] font-medium text-[#896f61]">Show the rest of the day</summary>
-                  <div className="mt-3 space-y-2">
-                    {flow.slice(6).map((item) => (
-                      <button key={item.id} type="button" onClick={() => travel(item.kind === 'event' ? '/calendar' : '/today')} className="flex w-full items-center gap-4 rounded-[17px] border border-[#e4dbd4] bg-white/48 px-4 py-3 text-left">
-                        <span className="w-[72px] text-[10px] text-[#8c7f77]">{formatClock(item.start)}</span>
-                        <span className="text-[12px] text-[#4a413b]">{item.title}</span>
+                  <div className="mt-2 flex gap-1 overflow-x-auto">
+                    {(['tasks', 'reminders', 'habits', 'routines'] as SystemTab[]).map((tab) => (
+                      <button key={tab} type="button" onClick={() => setSystemTab(tab)} className={systemTab === tab ? 'rounded-full bg-white px-2 py-1 text-[7px] capitalize text-[#4a403a] shadow-sm' : 'rounded-full px-2 py-1 text-[7px] capitalize text-[#908178]'}>
+                        {tab}
                       </button>
                     ))}
                   </div>
-                </details>
-              ) : null}
-            </Surface>
-          ) : null}
+                  <div className="mt-2 space-y-0.5">
+                    {systemItems.length ? systemItems.map((item) => (
+                      <div key={item.id} className="flex items-center gap-2 py-1">
+                        {item.task ? (
+                          <button type="button" onClick={() => completeTask(item.task as PersonalTask)} className="grid h-3.5 w-3.5 shrink-0 place-items-center rounded-[4px] border border-[#aaa09a]" aria-label={'Complete ' + item.label} />
+                        ) : <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#b9a79b]" />}
+                        <button type="button" onClick={() => travel(item.href)} className="min-w-0 flex-1 truncate text-left text-[8.5px] text-[#4b413b]">{item.label}</button>
+                        <span className="shrink-0 text-[7px] text-[#a09289]">{item.meta}</span>
+                      </div>
+                    )) : (
+                      <button type="button" onClick={() => travel(systemTab === 'reminders' ? '/reminders' : '/' + systemTab)} className="w-full rounded-[10px] border border-dashed border-[#ddd2ca] bg-white/26 p-3 text-left text-[8px] italic text-[#91847c]">
+                        {systemTab === 'reminders' ? 'No reminder data is loaded here. Open Reminders.' : 'Nothing is loaded in this view.'}
+                      </button>
+                    )}
+                  </div>
+                </Glass>
 
-          <div className="grid gap-5 lg:grid-cols-2">
-            <Surface className="p-6 md:p-7">
-              {sectionTitle('Important Inbox', 'What needs attention', 'Only real unresolved items, conflicts, connection issues, or maintenance signals.')}
-              {attention.length ? (
-                <div className="space-y-3">
-                  {attention.map((item) => (
-                    <button key={item.id} type="button" onClick={() => travel(item.href)} className="flex w-full items-start gap-3 rounded-[18px] border border-[#e2d8d0] bg-white/55 p-4 text-left transition hover:bg-white/82">
-                      <span className={item.level === 'urgent' ? 'mt-1 h-2 w-2 shrink-0 rounded-full bg-[#a55e5e]' : 'mt-1 h-2 w-2 shrink-0 rounded-full bg-[#b59669]'} />
-                      <span className="min-w-0 flex-1">
-                        <span className="text-[12px] font-medium text-[#3a322d]">{item.title}</span>
-                        <span className="mt-1 block line-clamp-2 text-[10px] leading-4 text-[#8b7e76]">{item.detail}</span>
+                <Glass className="p-3.5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-serif text-[16px] text-[#332b27]">Important Inbox</h3>
+                    {intelligence?.inboxCount ? <span className="rounded-full bg-[#f4e1e3] px-2 py-0.5 text-[7px] text-[#9d626b]">{intelligence.inboxCount} new</span> : null}
+                  </div>
+                  <div className="mt-2 space-y-2">
+                    {intelligence?.inboxCount ? (
+                      <button type="button" onClick={() => travel('/inbox')} className="flex w-full items-center gap-2 rounded-[10px] bg-white/42 p-2 text-left">
+                        <span className="grid h-7 w-7 place-items-center rounded-full bg-[#eee4df]"><Inbox size={12} className="text-[#8a7468]" /></span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-[8.5px] font-medium text-[#4a403a]">Glow Inbox</span>
+                          <span className="block text-[7px] text-[#978980]">{intelligence.inboxCount} item{intelligence.inboxCount === 1 ? '' : 's'} waiting</span>
+                        </span>
+                        <ChevronRight size={11} className="text-[#ad9d93]" />
+                      </button>
+                    ) : (
+                      <p className="rounded-[10px] border border-dashed border-[#ddd3cb] bg-white/26 p-3 text-[8px] italic leading-4 text-[#91847c]">Nothing is waiting in your Glow inbox.</p>
+                    )}
+                    {attentionCount ? (
+                      <button type="button" onClick={() => travel('/notifications')} className="flex w-full items-center justify-between rounded-[10px] bg-[#f5ede6]/70 px-2.5 py-2 text-[8px] text-[#755f53]">
+                        <span>{attentionCount} system signal{attentionCount === 1 ? '' : 's'} in Attention</span>
+                        <ArrowRight size={10} />
+                      </button>
+                    ) : null}
+                  </div>
+                </Glass>
+
+                <Glass className="p-3.5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-serif text-[16px] text-[#332b27]">People to Contact</h3>
+                    <UserRound size={13} className="text-[#9d887b]" />
+                  </div>
+                  <div className="mt-3">
+                    <p className="rounded-[10px] border border-dashed border-[#ddd3cb] bg-white/26 p-3 text-center text-[8px] italic leading-4 text-[#91847c]">No contact follow-up source is connected to Home yet.</p>
+                    <button type="button" onClick={() => openGlow('Who do I need to follow up with based only on information Glow actually has?')} className="mt-2 w-full rounded-full border border-white/70 bg-white/45 px-3 py-1.5 text-[8px] text-[#75665d]">Ask Shakti</button>
+                  </div>
+                </Glass>
+
+                <Glass className="p-3.5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-serif text-[16px] text-[#332b27]">Routine Hub</h3>
+                    <button type="button" onClick={() => travel('/routines')} className="text-[7px] text-[#7e6e65]">See all →</button>
+                  </div>
+                  <div className="mt-2 grid grid-cols-4 gap-1.5">
+                    {routineWindow.length ? routineWindow.map((routine, index) => (
+                      <button key={routine.id} type="button" onClick={() => travel('/routines?routine=' + encodeURIComponent(routine.id))} className="min-w-0 text-left">
+                        <div className="relative h-[55px] overflow-hidden rounded-[9px] border border-white/75 bg-[#eee6df] bg-cover bg-center" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.16),rgba(246,240,235,.34)),url(' + ROUTINE_IMAGES[index % ROUTINE_IMAGES.length] + ')' }}>
+                          <MoreHorizontal size={12} className="absolute right-1 top-1 rounded-full bg-white/65 p-0.5 text-[#64574f]" />
+                        </div>
+                        <p className="mt-1 truncate text-[7.5px] font-medium text-[#514640]">{routine.name}</p>
+                        <p className="truncate text-[6.5px] text-[#9c8d84]">{routine.timeOfDay}</p>
+                      </button>
+                    )) : (
+                      <button type="button" onClick={() => travel('/routines')} className="col-span-4 rounded-[10px] border border-dashed border-[#ddd3cb] bg-white/26 p-3 text-[8px] italic text-[#91847c]">No routine fits this current daypart.</button>
+                    )}
+                  </div>
+                </Glass>
+              </div>
+
+              <div className="grid gap-3 xl:grid-cols-[1.08fr_1.03fr_1.15fr_.9fr]">
+                <Glass className="p-3.5">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-serif text-[16px] text-[#332b27]">Brain Web</h3>
+                    <span className="text-[7px] text-[#998b82]">Ideas. Notes. Everything connects.</span>
+                  </div>
+                  <div className="mt-2 grid grid-cols-3 gap-1.5 text-[7px]">
+                    {[
+                      ['Goals', '/goals', String(data?.goals.length ?? 0)],
+                      ['Projects', '/projects', '→'],
+                      ['Ideas', '/brain', String(data?.notes.length ?? 0)],
+                      ['Memory', '/brain', String(data?.notes.filter((note) => note.pinned).length ?? 0)],
+                      ['You', '/brain', '●'],
+                      ['Learning', '/brain', '→'],
+                    ].map(([label, href, value]) => (
+                      <button key={label} type="button" onClick={() => travel(href)} className={label === 'You' ? 'rounded-full bg-[radial-gradient(circle,#fff,#e8def2_58%,#dce9ed)] px-2 py-2 text-[#554b61] shadow-[0_0_16px_rgba(197,188,224,.45)]' : 'rounded-full border border-white/75 bg-white/46 px-2 py-2 text-[#6e625a]'}>
+                        {label} <span className="ml-0.5 text-[#9f8f85]">{value}</span>
+                      </button>
+                    ))}
+                  </div>
+                </Glass>
+
+                <Glass className="p-3.5">
+                  <h3 className="font-serif text-[16px] text-[#332b27]">Moving Forward</h3>
+                  <div className="mt-2 space-y-1.5">
+                    {activeGoals.length ? activeGoals.map((goal) => (
+                      <button key={goal.id} type="button" onClick={() => travel('/goals?goal=' + encodeURIComponent(goal.id))} className="flex w-full items-center gap-2 rounded-[9px] bg-white/38 px-2 py-2 text-left">
+                        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-[8px] bg-[#ebe7f5] text-[#8270a2]"><Target size={11} /></span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-[8px] font-medium text-[#4a403a]">{goal.title}</span>
+                          <span className="block text-[6.5px] text-[#998b82]">{Math.round(goal.progress)}% · {goal.category}</span>
+                        </span>
+                        <ChevronRight size={10} className="text-[#b3a49a]" />
+                      </button>
+                    )) : <p className="rounded-[9px] border border-dashed border-[#ddd3cb] p-3 text-[8px] italic text-[#91847c]">No active goals are loaded.</p>}
+                  </div>
+                </Glass>
+
+                <Glass className="p-3.5">
+                  <div className="flex items-baseline gap-2">
+                    <h3 className="font-serif text-[16px] text-[#332b27]">Life Pulse</h3>
+                    <span className="text-[7px] text-[#998b82]">All parts of you, in balance.</span>
+                  </div>
+                  <div className="mt-2 grid grid-cols-2 gap-1.5">
+                    {[
+                      ['Mind', data?.wellness?.mood ?? 'No signal', Heart],
+                      ['Finances', 'No signal', WalletCards],
+                      ['Body', data?.wellness?.energy ?? 'No signal', Dumbbell],
+                      ['Relationships', 'No signal', UserRound],
+                      ['Creativity', activeGoals.some((goal) => /creative|design|content|brand/i.test(goal.category + ' ' + goal.title)) ? 'In motion' : 'No signal', Sparkles],
+                      ['Home', 'No signal', HomeIcon],
+                    ].map(([label, value, Icon]) => (
+                      <button key={String(label)} type="button" onClick={() => travel(label === 'Finances' ? '/finance' : label === 'Body' ? '/wellness' : label === 'Home' ? '/life' : '/brain')} className="flex items-center gap-2 rounded-[9px] bg-white/38 px-2 py-2 text-left">
+                        {typeof Icon !== 'string' ? <Icon size={11} className="text-[#6f9488]" /> : null}
+                        <span>
+                          <span className="block text-[7.5px] font-medium text-[#4a403a]">{String(label)}</span>
+                          <span className="block max-w-[75px] truncate text-[6.5px] text-[#998b82]">{String(value)}</span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </Glass>
+
+                <Glass className="p-3.5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-serif text-[16px] text-[#332b27]">Catch Up</h3>
+                    <MoreHorizontal size={13} className="text-[#9d8d83]" />
+                  </div>
+                  <div className="mt-3 grid grid-cols-4 gap-1.5">
+                    {[
+                      ['Unfinished', activeTasks.length, Inbox],
+                      ['Waiting', pendingTasks, Clock3],
+                      ['Someday', futureUndated, Target],
+                      ['Ideas', data?.notes.length ?? 0, Lightbulb],
+                    ].map(([label, value, Icon]) => (
+                      <button key={String(label)} type="button" onClick={() => travel(label === 'Ideas' ? '/brain' : '/tasks')} className="rounded-[9px] border border-white/70 bg-white/42 px-1 py-2 text-center">
+                        {typeof Icon !== 'string' ? <Icon size={12} className="mx-auto text-[#9b8476]" /> : null}
+                        <p className="mt-1 text-[6.5px] text-[#7e7067]">{String(label)}</p>
+                        <p className="mt-0.5 font-serif text-[18px] leading-none text-[#3a312c]">{String(value)}</p>
+                      </button>
+                    ))}
+                  </div>
+                </Glass>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-[1fr_1.1fr_auto_auto_auto]">
+                <button type="button" onClick={() => travel('/search')} className="flex min-h-10 items-center gap-2 rounded-full border border-white/75 bg-white/50 px-4 text-left text-[9px] text-[#8c7e75]"><Search size={13} /> Search your life…</button>
+                <form action={universalIntakeAction} className="flex min-h-10 items-center gap-2 rounded-full border border-white/75 bg-white/50 px-3">
+                  <input type="hidden" name="sourceRoute" value="/home" />
+                  <Plus size={13} className="shrink-0 text-[#8c7e75]" />
+                  <input name="text" value={capture} onChange={(event) => setCapture(event.target.value)} placeholder="Capture anything…" className="min-w-0 flex-1 bg-transparent text-[9px] text-[#4c423c] outline-none placeholder:text-[#9c8e85]" />
+                  <button type="button" onClick={openVoice} className="grid h-7 w-7 place-items-center rounded-full text-[#85766d]" aria-label="Use voice"><Mic2 size={12} /></button>
+                  <button type="submit" className="rounded-full bg-[#efe6df] px-2.5 py-1.5 text-[8px] text-[#695a51]">Save</button>
+                </form>
+                <button type="button" onClick={() => travel('/notifications')} className="flex min-h-10 items-center gap-2 rounded-full border border-white/75 bg-white/50 px-4 text-[9px] text-[#685b53]">
+                  <span className={attentionCount ? 'h-2 w-2 rounded-full bg-[#bd7a72]' : 'h-2 w-2 rounded-full bg-[#63a779]'} />
+                  {attentionCount ? String(attentionCount) + ' need attention' : 'Reality stable'}
+                </button>
+                <button type="button" onClick={() => window.history.back()} className="flex min-h-10 items-center gap-2 rounded-full border border-white/75 bg-white/50 px-4 text-[9px] text-[#685b53]"><Undo2 size={12} /> Undo</button>
+                <button type="button" onClick={() => travel('/settings')} className="flex min-h-10 items-center gap-2 rounded-full border border-white/75 bg-white/50 px-4 text-[9px] text-[#685b53]"><Settings size={12} /> Settings</button>
+              </div>
+            </div>
+
+            <aside className="space-y-3">
+              <Glass className="p-3.5">
+                <div className="flex items-center gap-2">
+                  <Sparkles size={14} className="text-[#a28d7f]" />
+                  <div>
+                    <h3 className="font-serif text-[17px] text-[#332b27]">Vision & You</h3>
+                    <p className="text-[7px] italic text-[#94867d]">Same you. Brighter possibilities.</p>
+                  </div>
+                </div>
+                <div className="mt-3 rounded-[12px] border border-white/70 bg-white/38 p-2.5">
+                  <MicroTitle>Current You → Proposed You</MicroTitle>
+                  <div className="mt-2 space-y-1.5">
+                    {[
+                      [currentEvent?.title ?? nowTitle, recommendedAction.title],
+                      [nextEvent ? nextEvent.title : 'Open time', activeTasks[1]?.title ?? 'No second proposal'],
+                      [routineWindow[0]?.name ?? 'No routine active', activeTasks[2]?.title ?? 'No third proposal'],
+                    ].map(([current, proposed], index) => (
+                      <div key={String(current) + String(index)} className="grid grid-cols-2 gap-1.5">
+                        <div className="rounded-[8px] bg-[#f2ece7] px-2 py-1.5 text-[7px] text-[#62554d]">{current}</div>
+                        <div className="rounded-[8px] bg-[#eee9f4] px-2 py-1.5 text-[7px] text-[#62554d]">{proposed}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <button type="button" onClick={() => openGlow('Show proposed changes for today using only my real current Glow state. Do not apply anything until I confirm.')} className="mt-2.5 w-full rounded-full bg-[#c6b3a4] px-3 py-2 text-[8px] font-medium text-white">Explore proposed changes →</button>
+                </div>
+              </Glass>
+
+              <Glass className="p-3.5">
+                <div className="flex items-center gap-2">
+                  <Target size={13} className="text-[#9b877a]" />
+                  <div>
+                    <h3 className="font-serif text-[17px] text-[#332b27]">Life Areas</h3>
+                    <p className="text-[7px] italic text-[#94867d]">All parts of your life, in rhythm.</p>
+                  </div>
+                </div>
+                <div className="mt-3 space-y-2">
+                  {[
+                    ['Routine World', '/routines', LIFE_IMAGES[0], String(data?.routines.length ?? 0) + ' routines'],
+                    ['Personal House', '/life', LIFE_IMAGES[1], 'Life systems'],
+                  ].map(([label, href, image, meta]) => (
+                    <button key={String(label)} type="button" onClick={() => travel(String(href))} className="grid w-full grid-cols-[58px_1fr_auto] items-center gap-2 overflow-hidden rounded-[11px] border border-white/70 bg-white/42 text-left">
+                      <span className="h-[58px] bg-cover bg-center" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.12),rgba(255,255,255,.22)),url(' + image + ')' }} />
+                      <span className="min-w-0">
+                        <span className="block font-serif text-[12px] text-[#463c36]">{label}</span>
+                        <span className="block text-[6.5px] text-[#988a81]">{meta}</span>
                       </span>
-                      <ArrowRight size={13} className="mt-1 text-[#b8a79b]" />
+                      <ChevronRight size={11} className="mr-2 text-[#aa9b92]" />
                     </button>
                   ))}
                 </div>
-              ) : (
-                <div className="rounded-[20px] border border-[#dfe1d9] bg-[#f5f7f2]/70 p-5">
-                  <div className="flex items-center gap-2 text-[#65705c]"><CheckCircle2 size={16} /><span className="text-[11px] font-medium">Nothing needs intervention right now.</span></div>
-                  <p className="mt-2 text-[10px] leading-5 text-[#7e8878]">No overdue task, conflict, urgent maintenance item, or connection issue is currently being surfaced.</p>
-                </div>
-              )}
-            </Surface>
+              </Glass>
 
-            <Surface className="p-6 md:p-7">
-              {sectionTitle('Life Pulse', 'What Glow is noticing', 'A small pattern layer derived from the information Glow actually has.')}
-              {observations.length ? (
-                <div className="space-y-3">
-                  {observations.map((observation, index) => (
-                    <div key={observation} className="rounded-[20px] border border-[#e2d8d0] bg-white/55 p-5">
-                      <div className="flex items-start gap-3">
-                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#eee4dc] text-[#8d7061]"><Sparkles size={13} /></span>
-                        <div>
-                          <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#9b8172]">Observation {index + 1}</p>
-                          <p className="mt-2 text-[12px] leading-5 text-[#4b413b]">{observation}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+              <button type="button" onClick={() => openGlow('Open Shakti with the exact context of what I am viewing on Home right now.')} className="w-full rounded-[18px] border border-white/75 bg-[rgba(255,253,250,.67)] p-3.5 text-left shadow-[0_10px_28px_rgba(68,52,44,.055)] backdrop-blur-[18px]">
+                <div className="flex items-center gap-3">
+                  <span className="h-11 w-11 shrink-0 rounded-full bg-[radial-gradient(circle_at_40%_32%,#fff_0%,#fff_18%,#eadff1_38%,#d9ecf1_54%,#f2e4e7_67%,transparent_73%)] shadow-[0_0_22px_rgba(194,185,224,.7)]" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-serif text-[15px] text-[#342d29]">Shakti Support</span>
+                    <span className="block text-[7px] italic text-[#94867d]">Deeper support. More you.</span>
+                  </span>
+                  <ChevronRight size={12} className="text-[#9c8c82]" />
                 </div>
-              ) : (
-                <p className="rounded-[20px] border border-[#e2d8d0] bg-white/45 p-5 text-[11px] leading-5 text-[#897d75]">Glow is waiting for enough context to make a useful observation.</p>
-              )}
-              <button type="button" onClick={() => travel('/brain/insights')} className="mt-5 inline-flex items-center gap-1.5 text-[10px] font-medium text-[#8a6f60]">
-                Open evidence-backed insights <ArrowRight size={12} />
               </button>
-            </Surface>
-          </div>
 
-          <Surface className="p-6 md:p-7">
-            {sectionTitle('Universal input', 'Capture something or ask Glow', 'One field. Glow decides whether you are saving information or asking for help.')}
-            <form action={universalIntakeAction} className="rounded-[24px] border border-[#d8cdc4] bg-white/70 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,.8)]">
-              <input type="hidden" name="sourceRoute" value="/home" />
-              <div className="flex items-center gap-2">
-                <Search size={17} className="ml-3 shrink-0 text-[#9f8b7e]" />
-                <input
-                  name="text"
-                  value={capture}
-                  onChange={(event) => setCapture(event.target.value)}
-                  placeholder="Task, idea, shopping item, appointment, note, question, command…"
-                  className="min-w-0 flex-1 bg-transparent px-2 py-3 text-[13px] text-[#342d29] outline-none placeholder:text-[#a79b94]"
-                />
-                <button type="button" onClick={openVoice} className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#dfd5cd] bg-white text-[#79685e]" aria-label="Use voice with Glow">
-                  <Mic2 size={15} />
-                </button>
-                <button type="submit" className="hidden min-h-10 items-center gap-2 rounded-full border border-[#d7cac0] bg-[#f6f0eb] px-4 text-[10px] font-medium text-[#675850] sm:inline-flex">
-                  <Inbox size={13} /> Capture
-                </button>
-                <button type="button" onClick={() => openGlow(capture.trim() || 'What should I do next?')} className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full bg-[#302925] px-4 text-[10px] font-medium text-white sm:px-5">
-                  <Sparkles size={13} /> Ask Glow
-                </button>
-              </div>
-              <div className="flex items-center justify-between gap-3 border-t border-[#ebe3dc] px-3 py-2 sm:hidden">
-                <span className="text-[9px] text-[#94877f]">Capture classifies + stores for review.</span>
-                <button type="submit" className="inline-flex items-center gap-1.5 rounded-full bg-[#f2ebe5] px-3 py-2 text-[9px] text-[#6d5d54]"><Plus size={11} /> Capture</button>
-              </div>
-            </form>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button type="button" onClick={() => openGlow('What should I focus on right now?')} className="rounded-full border border-[#e0d6ce] bg-white/45 px-3 py-2 text-[9px] text-[#766961]">What should I focus on?</button>
-              <button type="button" onClick={() => openGlow('Replan the rest of today around my current capacity.')} className="rounded-full border border-[#e0d6ce] bg-white/45 px-3 py-2 text-[9px] text-[#766961]">Replan the rest of today</button>
-              <button type="button" onClick={() => travel('/inbox')} className="rounded-full border border-[#e0d6ce] bg-white/45 px-3 py-2 text-[9px] text-[#766961]">Glow Inbox · {intelligence?.inboxCount ?? 0}</button>
-            </div>
-          </Surface>
-
-          {(mode !== 'evening' && mode !== 'night') ? forwardLook : null}
-
-          <Surface className="p-6 md:p-7">
-            {sectionTitle('Brain Web · Moving Forward', 'Your connected worlds', 'Real entrances into the same shared Glow system, not duplicate dashboard data.')}
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-              {[
-                ['Today', '/today', String(todayEvents.length) + ' events · ' + String(activeTasks.length) + ' open tasks', 'Immediate present'],
-                ['Plan', '/planning', nextEvent ? 'Next · ' + formatClock(new Date(nextEvent.startAt)) : 'Calendar is open', 'Time becoming you'],
-                ['Life', '/life', data?.wellness?.energy ? 'Energy · ' + data.wellness.energy : 'Life systems connected', 'Your inhabited world'],
-                ['Brain', '/brain', String(data?.notes.length ?? 0) + ' notes · ' + String(intelligence?.inboxCount ?? 0) + ' inbox', 'Knowledge in motion'],
-                ['Create', '/create', String((data?.goals ?? []).filter((goal) => goal.status !== 'complete').length) + ' active goals', 'Ideas into reality'],
-              ].map(([label, href, status, cue]) => (
-                <button key={label} type="button" onClick={() => travel(href)} className="group min-h-[154px] rounded-[21px] border border-[#e0d6ce] bg-white/53 p-4 text-left transition hover:-translate-y-0.5 hover:border-[#c9b6a8] hover:bg-white/82">
-                  <div className="flex items-center justify-between">
-                    <span className="grid h-9 w-9 place-items-center rounded-full bg-[#eee6df] text-[#8a7062]">
-                      {label === 'Today' ? <Clock3 size={14} /> : label === 'Plan' ? <CalendarDays size={14} /> : label === 'Life' ? <Sparkles size={14} /> : label === 'Brain' ? <BrainCircuit size={14} /> : <Target size={14} />}
-                    </span>
-                    <ArrowRight size={13} className="text-[#b7a69a] transition group-hover:translate-x-1" />
-                  </div>
-                  <p className="mt-5 font-serif text-[18px] text-[#352d29]">{label}</p>
-                  <p className="mt-1 text-[9px] uppercase tracking-[0.12em] text-[#a08a7c]">{cue}</p>
-                  <p className="mt-3 text-[10px] leading-4 text-[#81756e]">{status}</p>
-                </button>
-              ))}
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {[
-                ['Beauty', '/beauty'],
-                ['Closet', '/closet'],
-                ['Fitness', '/fitness'],
-                ['Wellness', '/wellness'],
-              ].map(([label, href]) => (
-                <button key={label} type="button" onClick={() => travel(href)} className="rounded-[16px] border border-[#e4dbd4] bg-white/35 px-3 py-3 text-[10px] text-[#766960] transition hover:bg-white/72">
-                  Life · {label}
-                </button>
-              ))}
-            </div>
-          </Surface>
-
-          <div className="flex flex-wrap items-center justify-between gap-3 px-1 pt-1 text-[9px] uppercase tracking-[0.14em] text-[#a09187]">
-            <span>Home V3 · Living Dashboard</span>
-            <span>Reference-led visuals · canonical data · continuity preserved</span>
+              <Glass className="p-4 text-center">
+                <p className="font-serif text-[13px] italic leading-5 text-[#6e6057]">“A balanced life is a beautiful life. ♡”</p>
+              </Glass>
+            </aside>
           </div>
         </div>
-
-        <aside className="space-y-4 xl:sticky xl:top-4 xl:self-start">
-          <Surface className="p-4">
-            <p className="font-serif text-[18px] text-[#332c28]">Vision & You</p>
-            <p className="mt-1 text-[9px] italic text-[#9a8b82]">Same you. Brighter possibilities.</p>
-            <div className="mt-4 rounded-[18px] border border-[#e2d8d0] bg-white/52 p-3">
-              <p className="text-[8px] font-semibold uppercase tracking-[0.14em] text-[#9b8477]">Current You → Proposed You</p>
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <div className="rounded-[12px] bg-[#f3eee9] p-2.5">
-                  <p className="text-[8px] uppercase tracking-[0.12em] text-[#9a897f]">Current</p>
-                  <p className="mt-1 line-clamp-2 text-[10px] font-medium text-[#443a35]">{currentEvent?.title ?? nowTitle}</p>
-                </div>
-                <div className="rounded-[12px] bg-[#eeeaf3] p-2.5">
-                  <p className="text-[8px] uppercase tracking-[0.12em] text-[#8d8195]">Proposed</p>
-                  <p className="mt-1 line-clamp-2 text-[10px] font-medium text-[#443a35]">{recommendedAction.title}</p>
-                </div>
-              </div>
-              <button type="button" onClick={() => openGlow('Show me how my current state could become a more aligned version of today without changing anything until I confirm.')} className="mt-3 w-full rounded-full bg-[#cbb9aa] px-3 py-2.5 text-[9px] font-medium text-white">
-                Explore proposed changes →
-              </button>
-            </div>
-          </Surface>
-
-          <Surface className="p-4">
-            <p className="font-serif text-[18px] text-[#332c28]">Life Areas</p>
-            <p className="mt-1 text-[9px] italic text-[#9a8b82]">All parts of your life, in rhythm.</p>
-            <div className="mt-4 space-y-2">
-              {[
-                ['Routine World', '/routines', String(data?.routines.length ?? 0) + ' routines'],
-                ['Personal House', '/life', 'Life systems'],
-                ['Beauty', '/beauty', 'Life · Beauty'],
-                ['Fitness', '/fitness', 'Life · Fitness'],
-              ].map(([label, href, meta]) => (
-                <button key={label} type="button" onClick={() => travel(href)} className="flex w-full items-center justify-between rounded-[16px] border border-[#e4dbd4] bg-white/48 px-3 py-3 text-left transition hover:bg-white/78">
-                  <span>
-                    <span className="block text-[10px] font-medium text-[#433a35]">{label}</span>
-                    <span className="mt-0.5 block text-[8px] text-[#9b8d84]">{meta}</span>
-                  </span>
-                  <ArrowRight size={12} className="text-[#b1a197]" />
-                </button>
-              ))}
-            </div>
-          </Surface>
-
-          <button type="button" onClick={() => openGlow('Open Shakti with the exact context of what I am viewing on Home right now.')} className="w-full rounded-[24px] border border-white/80 bg-[rgba(255,253,250,.72)] p-4 text-left shadow-[0_18px_60px_rgba(71,55,46,.07),inset_0_1px_0_rgba(255,255,255,.9)] backdrop-blur-xl">
-            <div className="flex items-center gap-3">
-              <span className="grid h-11 w-11 place-items-center rounded-full bg-[radial-gradient(circle,rgba(255,255,255,1)_0%,rgba(226,218,238,.92)_36%,rgba(214,231,238,.48)_62%,transparent_74%)] shadow-[0_0_26px_rgba(208,198,229,.7)]"><Sparkles size={14} className="text-[#7d7187]" /></span>
-              <span>
-                <span className="block font-serif text-[16px] text-[#342d29]">Shakti Support</span>
-                <span className="mt-0.5 block text-[9px] italic text-[#94867d]">Deeper support. More you.</span>
-              </span>
-            </div>
-          </button>
-
-          <Surface className="p-4">
-            <p className="font-serif text-[15px] italic leading-6 text-[#6e6057]">“A balanced life is a beautiful life.”</p>
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => travel('/brain')} className="rounded-[14px] border border-[#e4dbd4] bg-white/45 p-3 text-left">
-                <span className="text-[8px] uppercase tracking-[0.12em] text-[#9b877a]">Brain Web</span>
-                <span className="mt-1 block text-[16px] font-medium text-[#443a35]">{data?.notes.length ?? 0}</span>
-                <span className="text-[8px] text-[#9a8b82]">notes</span>
-              </button>
-              <button type="button" onClick={() => travel('/create')} className="rounded-[14px] border border-[#e4dbd4] bg-white/45 p-3 text-left">
-                <span className="text-[8px] uppercase tracking-[0.12em] text-[#9b877a]">Moving Forward</span>
-                <span className="mt-1 block text-[16px] font-medium text-[#443a35]">{(data?.goals ?? []).filter((goal) => goal.status !== 'complete').length}</span>
-                <span className="text-[8px] text-[#9a8b82]">active goals</span>
-              </button>
-            </div>
-          </Surface>
-        </aside>
-      </div>
-    </div>
+      </main>
     </div>
   );
 }
