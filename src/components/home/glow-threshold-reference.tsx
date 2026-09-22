@@ -246,6 +246,23 @@ function MicroTitle({ children }: { children: React.ReactNode }) {
   return <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[#866f63]">{children}</p>;
 }
 
+function MiniIcon({ kind, size = 11, className = '' }: { kind: string; size?: number; className?: string }) {
+  if (kind === 'month') return <CalendarRange size={size} className={className} />;
+  if (kind === 'week') return <CalendarDays size={size} className={className} />;
+  if (kind === 'tomorrow') return <Moon size={size} className={className} />;
+  if (kind === 'tasks') return <ListChecks size={size} className={className} />;
+  if (kind === 'mind') return <Heart size={size} className={className} />;
+  if (kind === 'finance') return <WalletCards size={size} className={className} />;
+  if (kind === 'body') return <Dumbbell size={size} className={className} />;
+  if (kind === 'relationships') return <UserRound size={size} className={className} />;
+  if (kind === 'creativity') return <Sparkles size={size} className={className} />;
+  if (kind === 'home') return <HomeIcon size={size} className={className} />;
+  if (kind === 'unfinished') return <Inbox size={size} className={className} />;
+  if (kind === 'waiting') return <Clock3 size={size} className={className} />;
+  if (kind === 'someday') return <Target size={size} className={className} />;
+  return <Lightbulb size={size} className={className} />;
+}
+
 export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIntelligence }) {
   const personal = usePersonalContext();
   const data = personal.status === 'ready' ? personal.data : null;
@@ -554,14 +571,14 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                   <p className="mt-1 text-[8px] italic text-[#91827a]">Explore. Adjust. Create your best day.</p>
                   <div className="mt-3 grid grid-cols-2 gap-2">
                     {[
-                      ['This Month', '/calendar?view=month', CalendarRange],
-                      ['Week Ahead', '/calendar?view=week', CalendarDays],
-                      ['Tomorrow', '/tomorrow', Moon],
-                      ['Tasks & To-Dos', '/tasks', ListChecks],
-                    ].map(([label, href, Icon]) => (
-                      <button key={String(label)} type="button" onClick={() => travel(String(href))} className="flex min-h-[48px] items-center gap-2 rounded-[12px] border border-white/75 bg-white/52 px-3 text-left text-[9px] text-[#4d433d] transition hover:bg-white/82">
-                        {typeof Icon !== 'string' ? <Icon size={14} strokeWidth={1.5} className="text-[#8d7769]" /> : null}
-                        <span>{String(label)}</span>
+                      ['This Month', '/calendar?view=month', 'month'],
+                      ['Week Ahead', '/calendar?view=week', 'week'],
+                      ['Tomorrow', '/tomorrow', 'tomorrow'],
+                      ['Tasks & To-Dos', '/tasks', 'tasks'],
+                    ].map(([label, href, kind]) => (
+                      <button key={label} type="button" onClick={() => travel(href)} className="flex min-h-[48px] items-center gap-2 rounded-[12px] border border-white/75 bg-white/52 px-3 text-left text-[9px] text-[#4d433d] transition hover:bg-white/82">
+                        <MiniIcon kind={kind} size={14} className="text-[#8d7769]" />
+                        <span>{label}</span>
                       </button>
                     ))}
                   </div>
@@ -742,18 +759,18 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                   </div>
                   <div className="mt-2 grid grid-cols-2 gap-1.5">
                     {[
-                      ['Mind', data?.wellness?.mood ?? 'No signal', Heart],
-                      ['Finances', 'No signal', WalletCards],
-                      ['Body', data?.wellness?.energy ?? 'No signal', Dumbbell],
-                      ['Relationships', 'No signal', UserRound],
-                      ['Creativity', activeGoals.some((goal) => /creative|design|content|brand/i.test(goal.category + ' ' + goal.title)) ? 'In motion' : 'No signal', Sparkles],
-                      ['Home', 'No signal', HomeIcon],
-                    ].map(([label, value, Icon]) => (
-                      <button key={String(label)} type="button" onClick={() => travel(label === 'Finances' ? '/finance' : label === 'Body' ? '/wellness' : label === 'Home' ? '/life' : '/brain')} className="flex items-center gap-2 rounded-[9px] bg-white/38 px-2 py-2 text-left">
-                        {typeof Icon !== 'string' ? <Icon size={11} className="text-[#6f9488]" /> : null}
+                      ['Mind', data?.wellness?.mood ?? 'No signal', 'mind'],
+                      ['Finances', 'No signal', 'finance'],
+                      ['Body', data?.wellness?.energy ?? 'No signal', 'body'],
+                      ['Relationships', 'No signal', 'relationships'],
+                      ['Creativity', activeGoals.some((goal) => /creative|design|content|brand/i.test(goal.category + ' ' + goal.title)) ? 'In motion' : 'No signal', 'creativity'],
+                      ['Home', 'No signal', 'home'],
+                    ].map(([label, value, kind]) => (
+                      <button key={label} type="button" onClick={() => travel(label === 'Finances' ? '/finance' : label === 'Body' ? '/wellness' : label === 'Home' ? '/life' : '/brain')} className="flex items-center gap-2 rounded-[9px] bg-white/38 px-2 py-2 text-left">
+                        <MiniIcon kind={kind} size={11} className="text-[#6f9488]" />
                         <span>
-                          <span className="block text-[7.5px] font-medium text-[#4a403a]">{String(label)}</span>
-                          <span className="block max-w-[75px] truncate text-[6.5px] text-[#998b82]">{String(value)}</span>
+                          <span className="block text-[7.5px] font-medium text-[#4a403a]">{label}</span>
+                          <span className="block max-w-[75px] truncate text-[6.5px] text-[#998b82]">{value}</span>
                         </span>
                       </button>
                     ))}
@@ -767,15 +784,15 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                   </div>
                   <div className="mt-3 grid grid-cols-4 gap-1.5">
                     {[
-                      ['Unfinished', activeTasks.length, Inbox],
-                      ['Waiting', pendingTasks, Clock3],
-                      ['Someday', futureUndated, Target],
-                      ['Ideas', data?.notes.length ?? 0, Lightbulb],
-                    ].map(([label, value, Icon]) => (
-                      <button key={String(label)} type="button" onClick={() => travel(label === 'Ideas' ? '/brain' : '/tasks')} className="rounded-[9px] border border-white/70 bg-white/42 px-1 py-2 text-center">
-                        {typeof Icon !== 'string' ? <Icon size={12} className="mx-auto text-[#9b8476]" /> : null}
-                        <p className="mt-1 text-[6.5px] text-[#7e7067]">{String(label)}</p>
-                        <p className="mt-0.5 font-serif text-[18px] leading-none text-[#3a312c]">{String(value)}</p>
+                      ['Unfinished', String(activeTasks.length), 'unfinished'],
+                      ['Waiting', String(pendingTasks), 'waiting'],
+                      ['Someday', String(futureUndated), 'someday'],
+                      ['Ideas', String(data?.notes.length ?? 0), 'ideas'],
+                    ].map(([label, value, kind]) => (
+                      <button key={label} type="button" onClick={() => travel(label === 'Ideas' ? '/brain' : '/tasks')} className="rounded-[9px] border border-white/70 bg-white/42 px-1 py-2 text-center">
+                        <MiniIcon kind={kind} size={12} className="mx-auto text-[#9b8476]" />
+                        <p className="mt-1 text-[6.5px] text-[#7e7067]">{label}</p>
+                        <p className="mt-0.5 font-serif text-[18px] leading-none text-[#3a312c]">{value}</p>
                       </button>
                     ))}
                   </div>
