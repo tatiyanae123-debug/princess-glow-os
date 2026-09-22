@@ -1113,5 +1113,6 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
         </aside>
       </div>
     </div>
+    </div>
   );
 }
