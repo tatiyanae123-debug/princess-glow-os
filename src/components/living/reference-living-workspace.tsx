@@ -288,12 +288,12 @@ function WhatNow({
   const alternates = open.filter((task) => task.id !== focus?.id).slice(0, 4);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.15fr_.85fr]">
+    <div className="space-y-4">
       <Glass className="p-4">
         <p className="text-[8px] uppercase tracking-[.18em] text-[#8f7669]">Your next best move</p>
         <div className="mt-3 grid gap-3 md:grid-cols-[.72fr_1.28fr]">
           <div className="rounded-[15px] border border-white/75 bg-white/52 p-4">
-            <h2 className="font-serif text-[24px] leading-tight text-[#342b27]">{focus?.title ?? 'Your priority list is clear'}</h2>
+            <h2 className="font-serif text-[25px] leading-tight text-[#342b27]">{focus?.title ?? 'Your priority list is clear'}</h2>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {focus ? <><span className="rounded-full bg-[#f2e8de] px-2 py-1 text-[7px] text-[#80695e]">~{estimateMinutes(focus)} min</span><span className="rounded-full bg-[#e6eee9] px-2 py-1 text-[7px] text-[#65796f]">{focus.priority} priority</span></> : null}
             </div>
@@ -304,23 +304,24 @@ function WhatNow({
               <p>✓ Updates persist through Glow</p>
             </div>
           </div>
-          <ImagePanel src={ART.desk} className="min-h-[250px] p-5">
+          <ImagePanel src={ART.desk} className="min-h-[270px] p-5">
             <div className="absolute bottom-4 right-4 rounded-full border border-white/70 bg-white/50 px-3 py-1.5 text-[7px] text-[#6f6159]">Focused workspace</div>
           </ImagePanel>
         </div>
       </Glass>
 
-      <Glass className="p-4">
-        <p className="text-[8px] uppercase tracking-[.18em] text-[#8f7669]">Other options</p>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {alternates.length ? alternates.map((task) => (
-            <Link key={task.id} href={'/tasks?task=' + encodeURIComponent(task.id)} className="rounded-[13px] border border-white/75 bg-white/45 p-3 text-left">
+      <div>
+        <p className="mb-2 text-[8px] uppercase tracking-[.18em] text-[#8f7669]">Other options</p>
+        <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+          {alternates.length ? alternates.map((task,index) => (
+            <Link key={task.id} href={'/tasks?task=' + encodeURIComponent(task.id)} className="rounded-[14px] border border-white/78 bg-[rgba(255,253,250,.66)] p-3 shadow-[0_8px_22px_rgba(68,52,44,.045)] backdrop-blur">
+              <div className="mb-3 grid h-7 w-7 place-items-center rounded-[9px]" style={{ backgroundColor: ['#efe7dd','#e5efec','#e7eaf5','#f0e5ea'][index % 4] }}><ArrowRight size={11} className="text-[#88786f]" /></div>
               <p className="line-clamp-2 text-[8px] font-medium text-[#51453f]">{task.title}</p>
-              <p className="mt-2 text-[7px] text-[#9a8c83]">~{estimateMinutes(task)} min</p>
+              <p className="mt-2 text-[7px] text-[#9a8c83]">~{estimateMinutes(task)} min · {task.priority}</p>
             </Link>
-          )) : Array.from({ length: 4 }, (_, index) => <div key={index} className="rounded-[13px] border border-dashed border-[#ddd1c9] bg-white/26 p-3 text-[8px] italic text-[#9b8d84]">Open option</div>)}
+          )) : Array.from({ length: 4 }, (_, index) => <div key={index} className="rounded-[14px] border border-dashed border-[#ddd1c9] bg-white/26 p-3 text-[8px] italic text-[#9b8d84]">Open option</div>)}
         </div>
-      </Glass>
+      </div>
     </div>
   );
 }
