@@ -982,7 +982,7 @@ export function GlowThresholdReference({ intelligence, userName, userImage }: { 
                       </div>
                     ))}
                   </div>
-                  <button type="button" onClick={() => openGlow('Show proposed changes for today using only my real current Glow state. Do not apply anything until I confirm.')} className="mt-2.5 w-full rounded-full bg-[#c6b3a4] px-3 py-2 text-[8px] font-medium text-white">Explore proposed changes →</button>
+                  <button type="button" onClick={() => travel('/living/vision-you')} className="mt-2.5 w-full rounded-full bg-[#c6b3a4] px-3 py-2 text-[8px] font-medium text-white">Explore proposed changes →</button>
                 </div>
               </Glass>
 
