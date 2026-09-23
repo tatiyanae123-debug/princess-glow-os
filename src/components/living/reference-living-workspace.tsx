@@ -388,13 +388,49 @@ function PlanningStudio({ data }: { data: PersonalContextData }) {
 }
 
 function DayFlow({ data }: { data: PersonalContextData }) {
-  const events = [...data.todayEvents].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
-  const scoreSignals = [Boolean(data.wellness?.energy), Boolean(data.wellness?.mood), data.todayEvents.length > 0, data.tasks.some((task) => task.status === 'done')];
-  const coverage = Math.round((scoreSignals.filter(Boolean).length / scoreSignals.length) * 100);
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const [dateKey, setDateKey] = useState(todayKey);
+
+  useEffect(() => {
+    const saved = window.sessionStorage.getItem('glow:living:day-flow-date');
+    if (saved && /^\d{4}-\d{2}-\d{2}$/.test(saved)) setDateKey(saved);
+  }, []);
+
+  useEffect(() => {
+    window.sessionStorage.setItem('glow:living:day-flow-date', dateKey);
+  }, [dateKey]);
+
+  function shiftDay(amount: number) {
+    const date = new Date(dateKey + 'T12:00:00');
+    date.setDate(date.getDate() + amount);
+    setDateKey(date.toISOString().slice(0, 10));
+  }
+
+  const selectedDate = new Date(dateKey + 'T12:00:00');
+  const events = data.events
+    .filter((event) => new Date(event.startAt).toISOString().slice(0, 10) === dateKey)
+    .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
+  const selectedTasks = data.tasks.filter((task) => task.dueDate && new Date(task.dueDate).toISOString().slice(0,10) === dateKey);
+  const scoreSignals = [
+    dateKey === todayKey && Boolean(data.wellness?.energy),
+    dateKey === todayKey && Boolean(data.wellness?.mood),
+    events.length > 0,
+    selectedTasks.some((task) => task.status === 'done'),
+  ];
+  const observed = scoreSignals.filter(Boolean).length;
+  const coverage = observed ? Math.round((observed / scoreSignals.length) * 100) : 0;
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1.35fr_.65fr]">
       <Glass className="p-4">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-1.5">
+            <button type="button" onClick={() => shiftDay(-1)} className="grid h-7 w-7 place-items-center rounded-full bg-white/48 text-[#8c7f76]" aria-label="Previous day">‹</button>
+            <button type="button" onClick={() => setDateKey(todayKey)} className="rounded-full bg-white/55 px-3 py-1.5 text-[7px] text-[#6f625a]">Today</button>
+            <button type="button" onClick={() => shiftDay(1)} className="grid h-7 w-7 place-items-center rounded-full bg-white/48 text-[#8c7f76]" aria-label="Next day">›</button>
+          </div>
+          <p className="text-[7px] text-[#94867d]">{selectedDate.toLocaleDateString([], { weekday:'short', month:'short', day:'numeric', year:'numeric' })}</p>
+        </div>
         <div className="grid grid-cols-[44px_1fr] gap-3">
           <div className="space-y-9 pt-1 text-[7px] text-[#9d8f86]">{['6 AM','9 AM','12 PM','3 PM','6 PM','9 PM'].map((time) => <p key={time}>{time}</p>)}</div>
           <div className="space-y-2">{events.length ? events.map((event, index) => <Link href={'/calendar?event=' + encodeURIComponent(event.id)} key={event.id} className="block rounded-[11px] border border-white/78 px-3 py-2.5" style={{ backgroundColor: ['#f4e8d7','#e3ecf7','#f2e3dd','#e2efe8','#eee6f6','#e7edf8'][index % 6] }}><div className="flex items-center justify-between gap-3"><span className="text-[8.5px] font-medium text-[#4e433d]">{event.title}</span><span className="text-[7px] text-[#92857c]">{formatTime(event.startAt)}</span></div><p className="mt-1 text-[7px] text-[#94877f]">{event.location || 'Scheduled event'}</p></Link>) : ['Morning','Between','Evening','Night'].map((part, index) => <div key={part} className="rounded-[11px] border border-white/75 px-3 py-2.5" style={{ backgroundColor: ['#f5edd8','#e6edf7','#f3e5df','#e4efe9'][index] }}><p className="text-[8.5px] font-medium text-[#4e433d]">{part}</p><p className="mt-1 text-[7px] text-[#95877f]">Open time</p></div>)}</div>
@@ -403,10 +439,10 @@ function DayFlow({ data }: { data: PersonalContextData }) {
       <div className="space-y-4">
         <Glass className="p-4">
           <p className="text-[8px] uppercase tracking-[.16em] text-[#8d786c]">Day insights</p>
-          <div className="mt-3 grid h-20 w-20 place-items-center rounded-full bg-[conic-gradient(#6e9a89_0_var(--p),#e7eee9_var(--p)_100%)] p-[7px]" style={{ '--p': coverage + '%' } as React.CSSProperties}><div className="grid h-full w-full place-items-center rounded-full bg-white/85 font-serif text-[20px] text-[#587769]">{coverage || '—'}</div></div>
-          <div className="mt-4 space-y-2 text-[8px] text-[#5f534c]"><p>Focus · {data.tasks.filter((task) => task.status === 'in_progress').length}</p><p>Movement · {data.routines.filter((routine) => /fitness|workout|move/i.test(routine.name)).length}</p><p>Personal · {data.todayEvents.length}</p><p>Free time · {Math.max(0, 8 - data.todayEvents.length)} hrs</p></div>
+          <div className="mt-3 grid h-20 w-20 place-items-center rounded-full bg-[conic-gradient(#6e9a89_0_var(--p),#e7eee9_var(--p)_100%)] p-[7px]" style={{ '--p': coverage + '%' } as React.CSSProperties}><div className="grid h-full w-full place-items-center rounded-full bg-white/85 font-serif text-[20px] text-[#587769]">{coverage ? coverage + '%' : '—'}</div></div>
+          <div className="mt-4 space-y-2 text-[8px] text-[#5f534c]"><p>Events · {events.length}</p><p>Tasks due · {selectedTasks.length}</p><p>Completed · {selectedTasks.filter((task)=>task.status === 'done').length}</p><p>Open space · {Math.max(0, 8 - events.length)} hrs</p></div>
         </Glass>
-        <ImagePanel src={ART.calm} className="min-h-[145px] p-4"><p className="absolute bottom-3 left-3 max-w-[65%] font-serif text-[11px] italic text-[#695c54]">{data.wellness?.notes || 'Your real day, arranged in one calm view.'}</p></ImagePanel>
+        <ImagePanel src={ART.calm} className="min-h-[145px] p-4"><p className="absolute bottom-3 left-3 max-w-[65%] font-serif text-[11px] italic text-[#695c54]">{dateKey === todayKey && data.wellness?.notes ? data.wellness.notes : 'Your real day, arranged in one calm view.'}</p></ImagePanel>
       </div>
     </div>
   );
@@ -552,7 +588,7 @@ function MovingForward({ data }: { data: PersonalContextData }) {
   const goals = data.goals.filter((goal) => goal.status !== 'done');
   const categories = Array.from(new Set(goals.map((goal) => goal.category))).slice(0, 5);
   const movingTabs = ['All', ...categories] as string[];
-  const [category, setCategory] = useState('All');
+  const [category, setCategory] = useSessionChoice('glow:living:moving-forward-category', 'All', movingTabs);
   const visibleGoals = category === 'All' ? goals : goals.filter((goal) => goal.category === category);
   return (
     <div className="space-y-4">
@@ -567,24 +603,28 @@ function MovingForward({ data }: { data: PersonalContextData }) {
 
 function LifePulse({ data }: { data: PersonalContextData }) {
   const signals = [
-    { label: 'Mind', value: data.wellness?.mood || 'No signal', icon: Heart },
-    { label: 'Body', value: data.wellness?.energy || 'No signal', icon: Dumbbell },
-    { label: 'Finances', value: 'No connected signal', icon: Target },
-    { label: 'Relationships', value: 'No connected signal', icon: UserRound },
-    { label: 'Creativity', value: data.notes.length ? data.notes.length + ' notes' : 'No signal', icon: Sparkles },
-    { label: 'Home', value: data.tasks.some((task) => /home|clean|room|laundry/i.test(task.title)) ? 'Tasks present' : 'No signal', icon: Home },
+    { label: 'Mind', value: data.wellness?.mood || 'No signal', icon: Heart, href: '/brain' },
+    { label: 'Body', value: data.wellness?.energy || 'No signal', icon: Dumbbell, href: '/wellness' },
+    { label: 'Finances', value: 'No connected signal', icon: Target, href: '/finance' },
+    { label: 'Relationships', value: 'No connected signal', icon: UserRound, href: '/relationships' },
+    { label: 'Creativity', value: data.notes.length ? data.notes.length + ' notes' : 'No signal', icon: Sparkles, href: '/brain' },
+    { label: 'Home', value: data.tasks.some((task) => /home|clean|room|laundry/i.test(task.title)) ? 'Tasks present' : 'No signal', icon: Home, href: '/life/home' },
   ];
+  const observed = signals.filter((item) => item.value !== 'No signal' && item.value !== 'No connected signal').length;
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1.25fr_.75fr]">
       <Glass className="p-4">
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{signals.map(({ label, value, icon: Icon }, index) => <div key={label} className="rounded-[13px] border border-white/75 bg-white/44 p-4"><Icon size={15} className={['text-[#c8798b]','text-[#72a48e]','text-[#6e91b2]','text-[#c68199]','text-[#8a7fc2]','text-[#6da29c]'][index]} /><p className="mt-3 text-[8px] font-medium text-[#51463f]">{label}</p><p className="mt-1 text-[7px] text-[#978980]">{value}</p></div>)}</div>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{signals.map(({ label, value, icon: Icon, href }, index) => <Link href={href} key={label} className="rounded-[13px] border border-white/75 bg-white/44 p-4 transition hover:bg-white/65"><Icon size={15} className={['text-[#c8798b]','text-[#72a48e]','text-[#6e91b2]','text-[#c68199]','text-[#8a7fc2]','text-[#6da29c]'][index]} /><p className="mt-3 text-[8px] font-medium text-[#51463f]">{label}</p><p className="mt-1 text-[7px] text-[#978980]">{value}</p></Link>)}</div>
       </Glass>
-      <Glass className="p-4">
-        <p className="text-[8px] uppercase tracking-[.16em] text-[#8d786c]">Overall</p>
-        <div className="mt-4 grid h-24 w-24 place-items-center rounded-full border-[8px] border-[#dceae4] bg-white/55 font-serif text-[26px] text-[#5f8175]">{signals.filter((item) => item.value !== 'No signal' && item.value !== 'No connected signal').length}/6</div>
-        <p className="mt-4 font-serif text-[11px] italic leading-5 text-[#6b5c54]">{data.wellness?.notes || 'Glow only scores what it can actually observe.'}</p>
-      </Glass>
+      <div className="space-y-4">
+        <Glass className="p-4">
+          <p className="text-[8px] uppercase tracking-[.16em] text-[#8d786c]">Overall</p>
+          <div className="mt-4 grid h-24 w-24 place-items-center rounded-full border-[8px] border-[#dceae4] bg-white/55 font-serif text-[22px] text-[#5f8175]">{observed ? observed + '/6' : '—'}</div>
+          <p className="mt-3 text-[7px] text-[#8b7c73]">{observed ? observed + ' life areas have current observable signals.' : 'No broad life-area signal is available yet.'}</p>
+        </Glass>
+        <ImagePanel src={ART.calm} className="min-h-[130px]"><p className="absolute bottom-3 right-3 max-w-[70%] text-right font-serif text-[10px] italic leading-4 text-[#6b5c54]">{data.wellness?.notes || 'A balanced view comes from real signals, not invented scores.'}</p></ImagePanel>
+      </div>
     </div>
   );
 }
@@ -627,7 +667,7 @@ function PersonalHouse({ data, toggleTask }: { data: PersonalContextData; toggle
       <div className="flex flex-wrap gap-2">{houseTabs.map((item) => <button key={item} type="button" onClick={() => setTab(item)} className={'rounded-full px-3 py-1.5 text-[8px] ' + (tab === item ? 'bg-[#eee4dd] text-[#5d4d45]' : 'bg-white/44 text-[#92847b]')}>{item}</button>)}</div>
       <div className="grid gap-4 lg:grid-cols-[1.32fr_.68fr]">
         <Glass className="p-4">
-          {tab === 'Spaces' ? <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{Array.from({ length: 6 }, (_, index) => <div key={index} className="overflow-hidden rounded-[12px] border border-white/75 bg-white/42"><div className="h-28 bg-cover bg-center" style={{ backgroundImage: 'url(' + [ART.room,ART.bath,ART.table,ART.bath,ART.room,ART.desk][index] + ')' }} /><p className="px-2 py-2 text-[8px] font-medium text-[#51463f]">{discovered[index] || 'Open space'}</p></div>)}</div> : null}
+          {tab === 'Spaces' ? <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{Array.from({ length: 6 }, (_, index) => discovered[index] ? <Link href={'/life/home?space=' + encodeURIComponent(discovered[index])} key={index} className="overflow-hidden rounded-[12px] border border-white/75 bg-white/42"><div className="h-28 bg-cover bg-center" style={{ backgroundImage: 'url(' + [ART.room,ART.bath,ART.table,ART.bath,ART.room,ART.desk][index] + ')' }} /><p className="px-2 py-2 text-[8px] font-medium text-[#51463f]">{discovered[index]}</p></Link> : <div key={index} className="overflow-hidden rounded-[12px] border border-dashed border-[#ddd1c9] bg-white/32"><div className="h-28 bg-cover bg-center opacity-55" style={{ backgroundImage: 'url(' + [ART.room,ART.bath,ART.table,ART.bath,ART.room,ART.desk][index] + ')' }} /><p className="px-2 py-2 text-[8px] italic text-[#9b8d84]">Open space</p></div>)}</div> : null}
           {tab === 'Tasks' ? <TaskRows tasks={homeTasks} onToggle={toggleTask} limit={8} /> : null}
           {tab === 'Routines' ? <div className="space-y-2">{homeRoutines.length ? homeRoutines.map((routine) => <Link key={routine.id} href={'/routines?routine=' + encodeURIComponent(routine.id)} className="block rounded-[10px] bg-white/42 px-3 py-2 text-[8px] text-[#51463f]">{routine.name}</Link>) : <EmptyRows count={6} label="No home routines loaded" />}</div> : null}
           {tab === 'Maintenance' || tab === 'Shopping' ? <EmptyRows count={6} label={'No ' + tab.toLowerCase() + ' objects are loaded here'} /> : null}
