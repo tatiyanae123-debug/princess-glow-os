@@ -469,7 +469,7 @@ function TodaySystems({ data, toggleTask }: { data: PersonalContextData; toggleT
             </div>
             <div className="grid grid-cols-2 gap-1.5">
               {data.routines.length ? data.routines.slice(0, 4).map((routine) => (
-                <Link key={routine.id} href={'/routines?routine=' + encodeURIComponent(routine.id)} className="flex items-center gap-2 rounded-[9px] bg-white/42 px-2.5 py-2 text-[8px] text-[#51463f]">
+                <Link key={routine.id} href={/midday\s*reset/i.test(routine.name) ? '/living/midday-reset' : '/routines?routine=' + encodeURIComponent(routine.id)} className="flex items-center gap-2 rounded-[9px] bg-white/42 px-2.5 py-2 text-[8px] text-[#51463f]">
                   <span className="h-3.5 w-3.5 rounded-[4px] border border-[#c7b9b1] bg-white/55" />
                   <span className="truncate">{routine.name}</span>
                 </Link>
@@ -560,7 +560,7 @@ function BrainWeb({ data }: { data: PersonalContextData }) {
   const nodes = [
     ...data.goals.slice(0, 2).map((goal) => ({ id: 'g' + goal.id, label: goal.title, href: '/goals?goal=' + encodeURIComponent(goal.id), kind: 'Goal' })),
     ...data.notes.slice(0, 3).map((note) => ({ id: 'n' + note.id, label: note.title, href: '/brain', kind: 'Idea' })),
-    ...data.routines.slice(0, 2).map((routine) => ({ id: 'r' + routine.id, label: routine.name, href: '/routines?routine=' + encodeURIComponent(routine.id), kind: 'Routine' })),
+    ...data.routines.slice(0, 2).map((routine) => ({ id: 'r' + routine.id, label: routine.name, href: /midday\s*reset/i.test(routine.name) ? '/living/midday-reset' : '/routines?routine=' + encodeURIComponent(routine.id), kind: 'Routine' })),
     ...data.habits.slice(0, 1).map((habit) => ({ id: 'h' + habit.id, label: habit.name, href: '/habits', kind: 'Habit' })),
   ].filter((node) => !query || node.label.toLowerCase().includes(query.toLowerCase())).slice(0, 8);
 
@@ -669,7 +669,7 @@ function PersonalHouse({ data, toggleTask }: { data: PersonalContextData; toggle
         <Glass className="p-4">
           {tab === 'Spaces' ? <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{Array.from({ length: 6 }, (_, index) => discovered[index] ? <Link href={'/life/home?space=' + encodeURIComponent(discovered[index])} key={index} className="overflow-hidden rounded-[12px] border border-white/75 bg-white/42"><div className="h-28 bg-cover bg-center" style={{ backgroundImage: 'url(' + [ART.room,ART.bath,ART.table,ART.bath,ART.room,ART.desk][index] + ')' }} /><p className="px-2 py-2 text-[8px] font-medium text-[#51463f]">{discovered[index]}</p></Link> : <div key={index} className="overflow-hidden rounded-[12px] border border-dashed border-[#ddd1c9] bg-white/32"><div className="h-28 bg-cover bg-center opacity-55" style={{ backgroundImage: 'url(' + [ART.room,ART.bath,ART.table,ART.bath,ART.room,ART.desk][index] + ')' }} /><p className="px-2 py-2 text-[8px] italic text-[#9b8d84]">Open space</p></div>)}</div> : null}
           {tab === 'Tasks' ? <TaskRows tasks={homeTasks} onToggle={toggleTask} limit={8} /> : null}
-          {tab === 'Routines' ? <div className="space-y-2">{homeRoutines.length ? homeRoutines.map((routine) => <Link key={routine.id} href={'/routines?routine=' + encodeURIComponent(routine.id)} className="block rounded-[10px] bg-white/42 px-3 py-2 text-[8px] text-[#51463f]">{routine.name}</Link>) : <EmptyRows count={6} label="No home routines loaded" />}</div> : null}
+          {tab === 'Routines' ? <div className="space-y-2">{homeRoutines.length ? homeRoutines.map((routine) => <Link key={routine.id} href={/midday\s*reset/i.test(routine.name) ? '/living/midday-reset' : '/routines?routine=' + encodeURIComponent(routine.id)} className="block rounded-[10px] bg-white/42 px-3 py-2 text-[8px] text-[#51463f]">{routine.name}</Link>) : <EmptyRows count={6} label="No home routines loaded" />}</div> : null}
           {tab === 'Maintenance' || tab === 'Shopping' ? <EmptyRows count={6} label={'No ' + tab.toLowerCase() + ' objects are loaded here'} /> : null}
         </Glass>
         <Glass className="p-4"><p className="text-[8px] uppercase tracking-[.16em] text-[#8d786c]">Home tasks</p><div className="mt-3 space-y-2">{homeTasks.slice(0, 6).map((task) => <Link key={task.id} href={'/tasks?task=' + encodeURIComponent(task.id)} className="block rounded-[9px] bg-white/42 px-3 py-2 text-[8px] text-[#51463f]">{task.title}</Link>)}{!homeTasks.length ? <p className="text-[8px] italic text-[#998b83]">No home-specific tasks loaded.</p> : null}</div><ImagePanel src={ART.flowers} className="mt-4 min-h-[170px]" /></Glass>
