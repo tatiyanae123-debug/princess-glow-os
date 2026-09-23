@@ -104,6 +104,21 @@ function priorityRank(priority: PersonalTask['priority']) {
   return { urgent: 4, high: 3, medium: 2, low: 1 }[priority];
 }
 
+function useSessionChoice<T extends string>(key: string, initial: T, allowed: readonly T[]) {
+  const [value, setValue] = useState<T>(initial);
+
+  useEffect(() => {
+    const saved = window.sessionStorage.getItem(key);
+    if (saved && (allowed as readonly string[]).includes(saved)) setValue(saved as T);
+  }, [key, allowed]);
+
+  useEffect(() => {
+    window.sessionStorage.setItem(key, value);
+  }, [key, value]);
+
+  return [value, setValue] as const;
+}
+
 function estimateMinutes(task: PersonalTask) {
   const text = (task.title + ' ' + (task.description ?? '')).toLowerCase();
   const explicit = text.match(/(\d{1,3})\s*(?:min|mins|minutes)/);
@@ -261,10 +276,10 @@ function useContacts(enabled: boolean) {
 
 function WhatNow({
   data,
-  toggleTask,
+  startTask,
 }: {
   data: PersonalContextData;
-  toggleTask: (task: PersonalTask) => void;
+  startTask: (task: PersonalTask) => void;
 }) {
   const open = data.tasks
     .filter((task) => task.status !== 'done' && task.status !== 'cancelled')
@@ -282,7 +297,7 @@ function WhatNow({
             <div className="mt-3 flex flex-wrap gap-1.5">
               {focus ? <><span className="rounded-full bg-[#f2e8de] px-2 py-1 text-[7px] text-[#80695e]">~{estimateMinutes(focus)} min</span><span className="rounded-full bg-[#e6eee9] px-2 py-1 text-[7px] text-[#65796f]">{focus.priority} priority</span></> : null}
             </div>
-            <button type="button" onClick={() => focus && toggleTask(focus)} className="mt-4 rounded-full bg-[#302a27] px-5 py-2.5 text-[8px] font-medium text-white">{focus?.status === 'done' ? 'Reopen' : focus ? 'Start now' : 'Open tasks'}</button>
+            <button type="button" onClick={() => focus ? startTask(focus) : window.location.assign('/tasks')} className="mt-4 rounded-full bg-[#302a27] px-5 py-2.5 text-[8px] font-medium text-white">{focus ? (focus.status === 'in_progress' ? 'Continue' : 'Start now') : 'Open tasks'}</button>
             <div className="mt-4 space-y-1 text-[7px] text-[#8d8077]">
               <p>✓ Uses your real current task state</p>
               <p>✓ Keeps object identity intact</p>
@@ -299,10 +314,10 @@ function WhatNow({
         <p className="text-[8px] uppercase tracking-[.18em] text-[#8f7669]">Other options</p>
         <div className="mt-3 grid grid-cols-2 gap-2">
           {alternates.length ? alternates.map((task) => (
-            <button key={task.id} type="button" onClick={() => toggleTask(task)} className="rounded-[13px] border border-white/75 bg-white/45 p-3 text-left">
+            <Link key={task.id} href={'/tasks?task=' + encodeURIComponent(task.id)} className="rounded-[13px] border border-white/75 bg-white/45 p-3 text-left">
               <p className="line-clamp-2 text-[8px] font-medium text-[#51453f]">{task.title}</p>
               <p className="mt-2 text-[7px] text-[#9a8c83]">~{estimateMinutes(task)} min</p>
-            </button>
+            </Link>
           )) : Array.from({ length: 4 }, (_, index) => <div key={index} className="rounded-[13px] border border-dashed border-[#ddd1c9] bg-white/26 p-3 text-[8px] italic text-[#9b8d84]">Open option</div>)}
         </div>
       </Glass>
@@ -311,13 +326,14 @@ function WhatNow({
 }
 
 function PlanningStudio({ data }: { data: PersonalContextData }) {
-  const [scope, setScope] = useState<'Today' | 'This Week' | 'This Month' | 'Custom'>('Today');
+  const planningScopes = ['Today', 'This Week', 'This Month', 'Custom'] as const;
+  const [scope, setScope] = useSessionChoice('glow:living:planning-scope', 'Today', planningScopes);
   const items = [...data.todayEvents.map((event) => ({ id: event.id, title: event.title, time: formatTime(event.startAt), type: 'event' as const })), ...data.tasks.filter((task) => task.status !== 'done' && task.status !== 'cancelled').slice(0, 4).map((task) => ({ id: task.id, title: task.title, time: task.dueDate ? formatTime(task.dueDate) : '', type: 'task' as const }))].slice(0, 8);
   const goals = data.goals.filter((goal) => goal.status !== 'done').slice(0, 5);
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">{(['Today', 'This Week', 'This Month', 'Custom'] as const).map((item) => <button key={item} type="button" onClick={() => setScope(item)} className={'rounded-full px-3 py-1.5 text-[8px] ' + (scope === item ? 'bg-[#e9ded6] text-[#59483f]' : 'bg-white/45 text-[#8f8177]')}>{item}</button>)}</div>
+      <div className="flex flex-wrap gap-2">{planningScopes.map((item) => <button key={item} type="button" onClick={() => setScope(item)} className={'rounded-full px-3 py-1.5 text-[8px] ' + (scope === item ? 'bg-[#e9ded6] text-[#59483f]' : 'bg-white/45 text-[#8f8177]')}>{item}</button>)}</div>
       <div className="grid gap-4 lg:grid-cols-[1.35fr_.65fr]">
         <Glass className="p-4">
           <p className="mb-3 text-[8px] uppercase tracking-[.16em] text-[#8d786c]">{scope}</p>
@@ -370,12 +386,13 @@ function DayFlow({ data }: { data: PersonalContextData }) {
 }
 
 function TodaySystems({ data, toggleTask }: { data: PersonalContextData; toggleTask: (task: PersonalTask) => void }) {
-  const [tab, setTab] = useState<'Tasks' | 'Routines' | 'Habits' | 'Reminders'>('Tasks');
+  const todayTabs = ['Tasks', 'Routines', 'Habits', 'Reminders'] as const;
+  const [tab, setTab] = useSessionChoice('glow:living:today-systems-tab', 'Tasks', todayTabs);
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1.38fr_.62fr]">
       <Glass className="p-4">
-        <div className="mb-3 flex gap-2">{(['Tasks','Routines','Habits','Reminders'] as const).map((item) => <button key={item} type="button" onClick={() => setTab(item)} className={'rounded-full px-3 py-1.5 text-[8px] ' + (tab === item ? 'bg-[#eee4de] text-[#5a4a42]' : 'bg-white/44 text-[#93867e]')}>{item}</button>)}</div>
+        <div className="mb-3 flex gap-2">{todayTabs.map((item) => <button key={item} type="button" onClick={() => setTab(item)} className={'rounded-full px-3 py-1.5 text-[8px] ' + (tab === item ? 'bg-[#eee4de] text-[#5a4a42]' : 'bg-white/44 text-[#93867e]')}>{item}</button>)}</div>
         {tab === 'Tasks' ? <TaskRows tasks={data.tasks} onToggle={toggleTask} limit={7} /> : null}
         {tab === 'Routines' ? <div className="space-y-2">{data.routines.length ? data.routines.slice(0, 7).map((routine) => <Link key={routine.id} href={'/routines?routine=' + encodeURIComponent(routine.id)} className="flex items-center justify-between rounded-[10px] bg-white/42 px-3 py-2 text-[8px] text-[#53473f]"><span>{routine.name}</span><span className="text-[#998b82]">{routine.timeOfDay}</span></Link>) : <EmptyRows count={5} label="No routines loaded" />}</div> : null}
         {tab === 'Habits' ? <div className="grid grid-cols-2 gap-2">{data.habits.length ? data.habits.slice(0, 8).map((habit) => <div key={habit.id} className="rounded-[11px] bg-white/42 p-3"><p className="text-[8px] font-medium text-[#51463f]">{habit.name}</p><p className="mt-1 text-[7px] text-[#9a8c83]">{habit.frequency}</p></div>) : Array.from({ length: 6 }, (_, index) => <div key={index} className="rounded-[11px] border border-dashed border-[#ddd1c9] p-3 text-[8px] italic text-[#9b8d84]">Open habit slot</div>)}</div> : null}
@@ -390,22 +407,25 @@ function TodaySystems({ data, toggleTask }: { data: PersonalContextData; toggleT
 }
 
 function ImportantInbox({ data }: { data: PersonalContextData }) {
+  const inboxTabs = ['All', 'Captures', 'Tasks', 'Connections'] as const;
+  const [tab, setTab] = useSessionChoice('glow:living:important-inbox-tab', 'All', inboxTabs);
   const notes = [...data.notes].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
   const signals = [
     ...(data.sourceStatus.googleCalendar !== 'connected' ? [{ id: 'calendar', title: 'Calendar connection needs attention', detail: data.sourceStatus.googleCalendar, type: 'Connection' }] : []),
     ...data.tasks.filter((task) => task.priority === 'urgent' || task.priority === 'high').slice(0, 4).map((task) => ({ id: task.id, title: task.title, detail: task.dueDate ? formatDate(task.dueDate) : task.priority, type: 'Task' })),
     ...notes.slice(0, 4).map((note) => ({ id: note.id, title: note.title, detail: formatDate(note.updatedAt), type: 'Capture' })),
   ];
+  const visibleSignals = tab === 'All' ? signals : signals.filter((item) => item.type === tab.slice(0, -1) || (tab === 'Connections' && item.type === 'Connection'));
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1.25fr_.75fr]">
       <Glass className="p-4">
-        <div className="mb-3 flex flex-wrap gap-2">{['All','Captures','Tasks','Connections'].map((item) => <span key={item} className="rounded-full bg-white/50 px-3 py-1.5 text-[7px] text-[#887a71]">{item}</span>)}</div>
-        <div className="space-y-1.5">{signals.length ? signals.map((item, index) => <Link key={item.type + item.id} href={item.type === 'Task' ? '/tasks?task=' + encodeURIComponent(item.id) : item.type === 'Connection' ? '/connections' : '/brain'} className="flex items-center gap-3 rounded-[11px] bg-white/42 px-3 py-2.5"><span className="grid h-8 w-8 place-items-center rounded-full bg-[#eee6df] text-[#8e776b]">{item.type === 'Task' ? <ListChecks size={13} /> : item.type === 'Connection' ? <Bell size={13} /> : <Inbox size={13} />}</span><span className="min-w-0 flex-1"><span className="block truncate text-[8.5px] font-medium text-[#4d423b]">{item.title}</span><span className="block text-[7px] text-[#9c8e85]">{item.detail}</span></span><span className="rounded-full bg-[#f3e6e8] px-2 py-1 text-[6.5px] text-[#a27079]">{item.type}</span></Link>) : <EmptyRows count={7} label="Nothing important is waiting" />}</div>
+        <div className="mb-3 flex flex-wrap gap-2">{inboxTabs.map((item) => <button key={item} type="button" onClick={() => setTab(item)} className={'rounded-full px-3 py-1.5 text-[7px] ' + (tab === item ? 'bg-[#eee3dc] text-[#5c4b43]' : 'bg-white/50 text-[#887a71]')}>{item}</button>)}</div>
+        <div className="space-y-1.5">{visibleSignals.length ? visibleSignals.map((item) => <Link key={item.type + item.id} href={item.type === 'Task' ? '/tasks?task=' + encodeURIComponent(item.id) : item.type === 'Connection' ? '/connections' : '/brain'} className="flex items-center gap-3 rounded-[11px] bg-white/42 px-3 py-2.5"><span className="grid h-8 w-8 place-items-center rounded-full bg-[#eee6df] text-[#8e776b]">{item.type === 'Task' ? <ListChecks size={13} /> : item.type === 'Connection' ? <Bell size={13} /> : <Inbox size={13} />}</span><span className="min-w-0 flex-1"><span className="block truncate text-[8.5px] font-medium text-[#4d423b]">{item.title}</span><span className="block text-[7px] text-[#9c8e85]">{item.detail}</span></span><span className="rounded-full bg-[#f3e6e8] px-2 py-1 text-[6.5px] text-[#a27079]">{item.type}</span></Link>) : <EmptyRows count={7} label="Nothing important is waiting" />}</div>
       </Glass>
       <Glass className="p-4">
         <p className="text-[8px] uppercase tracking-[.16em] text-[#8d786c]">Suggested next</p>
-        <div className="mt-3 space-y-2">{signals.slice(0, 3).map((item) => <div key={item.type + item.id} className="rounded-[11px] bg-[#f6f0eb] p-3"><p className="text-[8px] font-medium text-[#51463f]">{item.title}</p><p className="mt-1 text-[7px] text-[#94877f]">Open the real source to act.</p></div>)}</div>
+        <div className="mt-3 space-y-2">{visibleSignals.slice(0, 3).map((item) => <div key={item.type + item.id} className="rounded-[11px] bg-[#f6f0eb] p-3"><p className="text-[8px] font-medium text-[#51463f]">{item.title}</p><p className="mt-1 text-[7px] text-[#94877f]">Open the real source to act.</p></div>)}</div>
         <ImagePanel src={ART.room} className="mt-4 min-h-[170px]"><p className="absolute bottom-3 left-3 font-serif text-[10px] italic text-[#6d5f56]">Handle what is actually waiting.</p></ImagePanel>
       </Glass>
     </div>
@@ -413,11 +433,15 @@ function ImportantInbox({ data }: { data: PersonalContextData }) {
 }
 
 function PeopleToContact({ contacts, status }: { contacts: GlowContact[]; status: 'idle' | 'loading' | 'ready' | 'unavailable' }) {
-  const visible = contacts.slice(0, 8);
+  const contactTabs = ['All', 'Work', 'Personal'] as const;
+  const [tab, setTab] = useSessionChoice('glow:living:people-tab', 'All', contactTabs);
+  const visible = contacts
+    .filter((contact) => tab === 'All' || (tab === 'Work' ? Boolean(contact.organization) : !contact.organization))
+    .slice(0, 8);
   return (
     <div className="grid gap-4 lg:grid-cols-[1.25fr_.75fr]">
       <Glass className="p-4">
-        <div className="mb-3 flex flex-wrap gap-2">{['All','Friends','Family','Work','Other'].map((item) => <span key={item} className="rounded-full bg-white/48 px-3 py-1.5 text-[7px] text-[#8a7c73]">{item}</span>)}</div>
+        <div className="mb-3 flex flex-wrap gap-2">{contactTabs.map((item) => <button key={item} type="button" onClick={() => setTab(item)} className={'rounded-full px-3 py-1.5 text-[7px] ' + (tab === item ? 'bg-[#eee3dc] text-[#5c4b43]' : 'bg-white/48 text-[#8a7c73]')}>{item}</button>)}</div>
         <div className="space-y-1.5">{visible.length ? visible.map((contact) => <a key={contact.id} href={contact.email ? 'mailto:' + contact.email : contact.phone ? 'tel:' + contact.phone : '#'} className="flex items-center gap-3 rounded-[11px] bg-white/42 px-3 py-2"><span className="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-[#ebe3dc] text-[8px] font-medium text-[#78685f]">{contact.photoUrl ? <img src={contact.photoUrl} alt="" className="h-full w-full object-cover" /> : contact.name.split(/\s+/).map((part) => part[0]).slice(0,2).join('')}</span><span className="min-w-0 flex-1"><span className="block truncate text-[8.5px] font-medium text-[#4d423b]">{contact.name}</span><span className="block truncate text-[7px] text-[#9b8d84]">{contact.organization || contact.email || contact.phone || 'Contact'}</span></span><span className="text-[7px] text-[#a09188]">Open</span></a>) : <EmptyRows count={7} label={status === 'loading' ? 'Loading real contacts…' : 'No contact source is available'} />}</div>
       </Glass>
       <div className="space-y-4">
@@ -512,8 +536,9 @@ function CatchUp({ data, toggleTask }: { data: PersonalContextData; toggleTask: 
   );
 }
 
-function PersonalHouse({ data }: { data: PersonalContextData }) {
-  const [tab, setTab] = useState<'Spaces' | 'Tasks' | 'Routines' | 'Maintenance' | 'Shopping'>('Spaces');
+function PersonalHouse({ data, toggleTask }: { data: PersonalContextData; toggleTask: (task: PersonalTask) => void }) {
+  const houseTabs = ['Spaces', 'Tasks', 'Routines', 'Maintenance', 'Shopping'] as const;
+  const [tab, setTab] = useSessionChoice('glow:living:personal-house-tab', 'Spaces', houseTabs);
   const homeTasks = data.tasks.filter((task) => /home|clean|room|bath|kitchen|bed|closet|laundry|trash|tidy/i.test(task.title + ' ' + (task.description ?? '')));
   const homeRoutines = data.routines.filter((routine) => /home|clean|room|reset|laundry/i.test(routine.name + ' ' + (routine.description ?? '')));
   const roomWords = ['Living room','Bedroom','Kitchen','Bathroom','Closet','Office'];
@@ -524,11 +549,11 @@ function PersonalHouse({ data }: { data: PersonalContextData }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">{(['Spaces','Tasks','Routines','Maintenance','Shopping'] as const).map((item) => <button key={item} type="button" onClick={() => setTab(item)} className={'rounded-full px-3 py-1.5 text-[8px] ' + (tab === item ? 'bg-[#eee4dd] text-[#5d4d45]' : 'bg-white/44 text-[#92847b]')}>{item}</button>)}</div>
+      <div className="flex flex-wrap gap-2">{houseTabs.map((item) => <button key={item} type="button" onClick={() => setTab(item)} className={'rounded-full px-3 py-1.5 text-[8px] ' + (tab === item ? 'bg-[#eee4dd] text-[#5d4d45]' : 'bg-white/44 text-[#92847b]')}>{item}</button>)}</div>
       <div className="grid gap-4 lg:grid-cols-[1.32fr_.68fr]">
         <Glass className="p-4">
           {tab === 'Spaces' ? <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{Array.from({ length: 6 }, (_, index) => <div key={index} className="overflow-hidden rounded-[12px] border border-white/75 bg-white/42"><div className="h-28 bg-cover bg-center" style={{ backgroundImage: 'url(' + [ART.room,ART.bath,ART.table,ART.bath,ART.room,ART.desk][index] + ')' }} /><p className="px-2 py-2 text-[8px] font-medium text-[#51463f]">{discovered[index] || 'Open space'}</p></div>)}</div> : null}
-          {tab === 'Tasks' ? <TaskRows tasks={homeTasks} onToggle={() => {}} limit={8} /> : null}
+          {tab === 'Tasks' ? <TaskRows tasks={homeTasks} onToggle={toggleTask} limit={8} /> : null}
           {tab === 'Routines' ? <div className="space-y-2">{homeRoutines.length ? homeRoutines.map((routine) => <Link key={routine.id} href={'/routines?routine=' + encodeURIComponent(routine.id)} className="block rounded-[10px] bg-white/42 px-3 py-2 text-[8px] text-[#51463f]">{routine.name}</Link>) : <EmptyRows count={6} label="No home routines loaded" />}</div> : null}
           {tab === 'Maintenance' || tab === 'Shopping' ? <EmptyRows count={6} label={'No ' + tab.toLowerCase() + ' objects are loaded here'} /> : null}
         </Glass>
@@ -596,14 +621,16 @@ function WorkspaceContent({
   contacts,
   contactsStatus,
   toggleTask,
+  startTask,
 }: {
   workspace: LivingWorkspaceId;
   data: PersonalContextData;
   contacts: GlowContact[];
   contactsStatus: 'idle' | 'loading' | 'ready' | 'unavailable';
   toggleTask: (task: PersonalTask) => void;
+  startTask: (task: PersonalTask) => void;
 }) {
-  if (workspace === 'what-now') return <WhatNow data={data} toggleTask={toggleTask} />;
+  if (workspace === 'what-now') return <WhatNow data={data} startTask={startTask} />;
   if (workspace === 'planning-studio') return <PlanningStudio data={data} />;
   if (workspace === 'day-flow') return <DayFlow data={data} />;
   if (workspace === 'today-systems') return <TodaySystems data={data} toggleTask={toggleTask} />;
@@ -613,7 +640,7 @@ function WorkspaceContent({
   if (workspace === 'moving-forward') return <MovingForward data={data} />;
   if (workspace === 'life-pulse') return <LifePulse data={data} />;
   if (workspace === 'catch-up') return <CatchUp data={data} toggleTask={toggleTask} />;
-  if (workspace === 'personal-house') return <PersonalHouse data={data} />;
+  if (workspace === 'personal-house') return <PersonalHouse data={data} toggleTask={toggleTask} />;
   if (workspace === 'midday-reset') return <MiddayReset data={data} />;
   return <VisionYou data={data} />;
 }
@@ -637,13 +664,25 @@ export function ReferenceLivingWorkspace({
 
   function toggleTask(task: PersonalTask) {
     updateTask.run({ id: task.id, status: task.status === 'done' ? 'pending' : 'done' }, () => {
+      window.sessionStorage.removeItem('glow:personal-context:v1');
       window.location.reload();
+    });
+  }
+
+  function startTask(task: PersonalTask) {
+    if (task.status === 'in_progress') {
+      window.location.assign('/tasks?task=' + encodeURIComponent(task.id));
+      return;
+    }
+    updateTask.run({ id: task.id, status: 'in_progress' }, () => {
+      window.sessionStorage.removeItem('glow:personal-context:v1');
+      window.location.assign('/tasks?task=' + encodeURIComponent(task.id));
     });
   }
 
   return (
     <Shell workspace={workspace} userName={data?.user.name || userName}>
-      {data ? <WorkspaceContent workspace={workspace} data={data} contacts={contacts} contactsStatus={contactsStatus} toggleTask={toggleTask} /> : <Glass className="p-5"><p className="text-[9px] italic text-[#998b82]">Glow is loading your real information.</p></Glass>}
+      {data ? <WorkspaceContent workspace={workspace} data={data} contacts={contacts} contactsStatus={contactsStatus} toggleTask={toggleTask} startTask={startTask} /> : <Glass className="p-5"><p className="text-[9px] italic text-[#998b82]">Glow is loading your real information.</p></Glass>}
     </Shell>
   );
 }
