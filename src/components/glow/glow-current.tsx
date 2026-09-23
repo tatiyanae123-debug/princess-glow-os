@@ -267,7 +267,7 @@ export function GlowCurrent() {
     travel(`/search?q=${encodeURIComponent(query)}`);
   }, [commandDestinations, commandQuery, travel]);
 
-  if (pathname === '/sign-in' || pathname === '/sign-up' || pathname.startsWith('/api/')) return null;
+  if (pathname === '/home' || pathname === '/sign-in' || pathname === '/sign-up' || pathname.startsWith('/api/')) return null;
 
   return (
     <div className="glow-nav" data-visible-world={visibleWorld} data-tablet-expanded={tabletExpanded ? 'true' : 'false'}>
