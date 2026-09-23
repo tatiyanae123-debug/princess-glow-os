@@ -151,15 +151,20 @@ function Shell({
       <div className="mx-auto min-h-screen w-full max-w-[1360px] px-2 py-2 sm:px-3 md:px-4">
         <div className="relative overflow-hidden rounded-[25px] border border-white/90 bg-[rgba(252,250,247,.64)] shadow-[0_24px_75px_rgba(74,58,49,.10),inset_0_1px_0_rgba(255,255,255,.98)] backdrop-blur-[28px]">
           <div className="grid min-h-[780px] md:grid-cols-[44px_minmax(0,1fr)]">
-            <nav className="hidden border-r border-white/70 bg-white/26 py-3 md:flex md:flex-col md:items-center md:gap-3">
-              <button onClick={backHome} className="grid h-8 w-8 place-items-center rounded-full bg-white/72 text-[#8c776b]" aria-label="Dashboard">
-                <Home size={14} />
-              </button>
-              <Link href="/search" className="grid h-8 w-8 place-items-center rounded-full text-[#9a8b82] hover:bg-white/55" aria-label="Search"><Search size={14} /></Link>
-              <Link href="/notifications" className="grid h-8 w-8 place-items-center rounded-full text-[#9a8b82] hover:bg-white/55" aria-label="Notifications"><Bell size={14} /></Link>
-              <button type="button" onClick={() => document.dispatchEvent(new CustomEvent('glow:open', { detail: { context: { room: current.title } } }))} className="mt-auto grid h-8 w-8 place-items-center rounded-full bg-[radial-gradient(circle,#fff,#eee6f6_58%,#dbecef)] text-[#8d7ea2]" aria-label="Ask Shakti">
-                <Sparkles size={14} />
-              </button>
+            <nav className="hidden border-r border-white/70 bg-white/24 py-3 md:flex md:flex-col md:items-center">
+              <button onClick={backHome} className="mb-2 grid h-7 w-7 place-items-center rounded-full bg-white/72 text-[#8c776b] shadow-sm" aria-label="Dashboard"><Home size={12} /></button>
+              <div className="flex flex-col gap-1.5">
+                <Link href="/living/day-flow" className="grid h-7 w-7 place-items-center rounded-full text-[#9a8b82] hover:bg-white/55" aria-label="Day flow"><CalendarDays size={11} /></Link>
+                <Link href="/living/today-systems" className="grid h-7 w-7 place-items-center rounded-full text-[#9a8b82] hover:bg-white/55" aria-label="Today systems"><ListChecks size={11} /></Link>
+                <Link href="/living/important-inbox" className="grid h-7 w-7 place-items-center rounded-full text-[#9a8b82] hover:bg-white/55" aria-label="Important inbox"><Inbox size={11} /></Link>
+                <Link href="/living/people-to-contact" className="grid h-7 w-7 place-items-center rounded-full text-[#9a8b82] hover:bg-white/55" aria-label="People"><UserRound size={11} /></Link>
+                <Link href="/living/brain-web" className="grid h-7 w-7 place-items-center rounded-full text-[#9a8b82] hover:bg-white/55" aria-label="Brain web"><Lightbulb size={11} /></Link>
+              </div>
+              <div className="mt-auto flex flex-col gap-1.5">
+                <Link href="/search" className="grid h-7 w-7 place-items-center rounded-full text-[#9a8b82] hover:bg-white/55" aria-label="Search"><Search size={11} /></Link>
+                <Link href="/settings" className="grid h-7 w-7 place-items-center rounded-full text-[#9a8b82] hover:bg-white/55" aria-label="Settings"><span className="text-[12px]">⚙</span></Link>
+                <button type="button" onClick={() => document.dispatchEvent(new CustomEvent('glow:open', { detail: { context: { room: current.title } } }))} className="grid h-7 w-7 place-items-center rounded-full bg-[radial-gradient(circle,#fff,#eee6f6_58%,#dbecef)] text-[#8d7ea2] shadow-[0_0_14px_rgba(194,185,224,.45)]" aria-label="Ask Shakti"><Sparkles size={11} /></button>
+              </div>
             </nav>
 
             <main className="min-w-0 p-3 sm:p-4 md:p-5">
@@ -171,14 +176,14 @@ function Shell({
                   <h1 className="font-serif text-[29px] leading-none text-[#302824] sm:text-[34px]">{current.title}</h1>
                   <p className="mt-1.5 text-[9px] italic text-[#92847a]">{current.subtitle}</p>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <div className="hidden text-right sm:block">
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <button type="button" onClick={() => window.history.back()} className="grid h-7 w-7 place-items-center rounded-full border border-white/75 bg-white/46 text-[10px] text-[#8e8178]" aria-label="Back">↩</button>
+                  <button type="button" onClick={() => document.dispatchEvent(new CustomEvent('glow:open', { detail: { context: { room: current.title } } }))} className="grid h-7 w-7 place-items-center rounded-full border border-white/75 bg-white/46 text-[#8c7ca1]" aria-label="Ask Shakti"><Sparkles size={10} /></button>
+                  <Link href="/settings" className="grid h-7 w-7 place-items-center rounded-full border border-white/75 bg-white/46 text-[11px] text-[#8e8178]" aria-label="Settings">⋮</Link>
+                  <div className="ml-1 hidden text-right sm:block">
                     <p className="text-[8px] font-medium text-[#61534c]">{firstName || 'Glow OS'}</p>
                     <p className="text-[7px] text-[#a09289]">Living system</p>
                   </div>
-                  <button type="button" onClick={() => document.dispatchEvent(new CustomEvent('glow:open', { detail: { context: { room: current.title } } }))} className="grid h-10 w-10 place-items-center rounded-full border border-white/85 bg-[radial-gradient(circle_at_35%_30%,#fff,#efe7f8_42%,#dcecef_68%,transparent_72%)] shadow-[0_0_22px_rgba(194,185,224,.58)]" aria-label="Ask Shakti">
-                    <Sparkles size={13} className="text-[#8c7ca1]" />
-                  </button>
                 </div>
               </header>
 
@@ -523,22 +528,23 @@ function BrainWeb({ data }: { data: PersonalContextData }) {
     ...data.habits.slice(0, 1).map((habit) => ({ id: 'h' + habit.id, label: habit.name, href: '/habits', kind: 'Habit' })),
   ].filter((node) => !query || node.label.toLowerCase().includes(query.toLowerCase())).slice(0, 8);
 
-  const positions = ['left-[4%] top-[12%]','right-[4%] top-[12%]','left-[1%] top-[44%]','right-[1%] top-[44%]','left-[8%] bottom-[8%]','right-[8%] bottom-[8%]','left-[31%] bottom-[1%]','right-[31%] top-[2%]'];
+  const positions = ['left-[12%] top-[18%]','right-[12%] top-[18%]','left-[4%] top-[45%]','right-[4%] top-[45%]','left-[13%] bottom-[12%]','right-[13%] bottom-[12%]','left-[36%] bottom-[4%]','right-[35%] top-[5%]'];
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.4fr_.6fr]">
-      <Glass className="p-4">
-        <label className="flex items-center gap-2 rounded-full border border-white/75 bg-white/48 px-3 py-2"><Search size={12} className="text-[#998a81]" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search your brain…" className="w-full bg-transparent text-[8px] outline-none placeholder:text-[#aa9d95]" /></label>
-        <div className="mt-3 flex flex-wrap gap-2">{['Ideas','Projects','Goals','People','Notes','Learning','Inspiration','Resources'].map((item) => <span key={item} className="rounded-full bg-white/48 px-3 py-1.5 text-[7px] text-[#85776e]">{item}</span>)}</div>
-        <div className="relative mt-4 h-[360px] overflow-hidden rounded-[16px] bg-[radial-gradient(circle_at_center,rgba(239,231,248,.7),rgba(255,255,255,.16)_48%,transparent_70%)]">
-          <div className="absolute left-1/2 top-1/2 h-px w-[65%] -translate-x-1/2 bg-[#ded5e6]" />
-          <div className="absolute left-1/2 top-[18%] h-[64%] w-px -translate-x-1/2 bg-[#ded5e6]" />
-          {nodes.length ? nodes.map((node, index) => <Link key={node.id} href={node.href} className={'absolute max-w-[150px] rounded-full border border-white/80 bg-white/68 px-3 py-2 text-center text-[7px] text-[#5f5350] shadow-sm ' + positions[index % positions.length]}><span className="block truncate">{node.label}</span><span className="text-[6px] text-[#9f8f88]">{node.kind}</span></Link>) : null}
-          <Link href="/brain" className="absolute left-1/2 top-1/2 grid h-20 w-20 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-[radial-gradient(circle,#fff,#f0e9f8_50%,#dcebed_78%)] font-serif text-[13px] text-[#554b61] shadow-[0_0_24px_rgba(197,188,224,.55)]">You</Link>
-        </div>
-      </Glass>
-      <ImagePanel src={ART.room} className="min-h-[460px] p-4"><p className="absolute bottom-5 right-4 max-w-[72%] text-right font-serif text-[11px] italic text-[#675a52]">{nodes.length ? 'Your real ideas and systems are connected here.' : 'Your graph will grow as Glow has more real context.'}</p></ImagePanel>
-    </div>
+    <Glass className="relative overflow-hidden p-4">
+      <div className="absolute right-0 top-0 h-24 w-44 bg-cover bg-center opacity-45" style={{ backgroundImage: 'linear-gradient(90deg,rgba(255,253,250,1),rgba(255,253,250,.05)),url(' + ART.room + ')' }} />
+      <label className="relative z-10 flex items-center gap-2 rounded-full border border-white/75 bg-white/56 px-3 py-2"><Search size={12} className="text-[#998a81]" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search your brain…" className="w-full bg-transparent text-[8px] outline-none placeholder:text-[#aa9d95]" /></label>
+      <div className="relative z-10 mt-3 flex flex-wrap gap-2">{['Ideas','Projects','Goals','People','Notes','Learning','Inspiration','Resources'].map((item,index) => <Link key={item} href={item === 'Goals' ? '/goals' : item === 'Projects' ? '/projects' : item === 'People' ? '/living/people-to-contact' : '/brain'} className="rounded-[10px] border border-white/70 bg-white/52 px-3 py-1.5 text-[7px] text-[#85776e]"><span className="mr-1 text-[#8b84b4]">{['◉','◇','○','□','▣','△','⌁','▤'][index]}</span>{item}</Link>)}</div>
+      <div className="relative mt-4 h-[455px] overflow-hidden rounded-[17px] bg-[radial-gradient(circle_at_center,rgba(239,231,248,.78),rgba(247,250,249,.34)_43%,rgba(255,255,255,.12)_72%)]">
+        <div className="absolute left-1/2 top-1/2 h-px w-[68%] -translate-x-1/2 bg-[#ded5e6]/75" />
+        <div className="absolute left-1/2 top-[17%] h-[66%] w-px -translate-x-1/2 bg-[#ded5e6]/75" />
+        <div className="absolute left-[17%] top-[24%] h-px w-[66%] rotate-[24deg] bg-[#e1d9e8]/65" />
+        <div className="absolute left-[17%] top-[68%] h-px w-[66%] -rotate-[24deg] bg-[#e1d9e8]/65" />
+        {nodes.length ? nodes.map((node, index) => <Link key={node.id} href={node.href} className={'absolute max-w-[155px] rounded-full border border-white/82 bg-white/70 px-3 py-2 text-center text-[7px] text-[#5f5350] shadow-[0_6px_18px_rgba(75,60,52,.06)] backdrop-blur ' + positions[index % positions.length]}><span className="block truncate">{node.label}</span><span className="text-[6px] text-[#9f8f88]">{node.kind}</span></Link>) : Array.from({length:6},(_,index)=><span key={index} className={'absolute rounded-full border border-dashed border-[#ddd2e5] bg-white/34 px-4 py-2 text-[7px] italic text-[#a2949c] ' + positions[index]}>Open connection</span>)}
+        <Link href="/brain" className="absolute left-1/2 top-1/2 grid h-[78px] w-[78px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/90 bg-[radial-gradient(circle,#fff,#f0e9f8_50%,#dcebed_78%)] font-serif text-[13px] text-[#554b61] shadow-[0_0_28px_rgba(197,188,224,.62)]">You</Link>
+        <p className="absolute bottom-3 right-4 max-w-[180px] text-right font-serif text-[10px] italic leading-4 text-[#6f6159]">{nodes.length ? 'A more curious you, a brighter tomorrow.' : 'Your graph will grow from real Glow objects.'}</p>
+      </div>
+    </Glass>
   );
 }
 
