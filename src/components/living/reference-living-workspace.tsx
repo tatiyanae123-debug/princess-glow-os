@@ -656,18 +656,13 @@ function PersonalHouse({ data, toggleTask }: { data: PersonalContextData; toggle
   const [tab, setTab] = useSessionChoice('glow:living:personal-house-tab', 'Spaces', houseTabs);
   const homeTasks = data.tasks.filter((task) => /home|clean|room|bath|kitchen|bed|closet|laundry|trash|tidy/i.test(task.title + ' ' + (task.description ?? '')));
   const homeRoutines = data.routines.filter((routine) => /home|clean|room|reset|laundry/i.test(routine.name + ' ' + (routine.description ?? '')));
-  const roomWords = ['Living room','Bedroom','Kitchen','Bathroom','Closet','Office'];
-  const discovered = roomWords.filter((room) => {
-    const needle = room.toLowerCase().replace(' room','');
-    return homeTasks.some((task) => (task.title + ' ' + (task.description ?? '')).toLowerCase().includes(needle)) || homeRoutines.some((routine) => (routine.name + ' ' + (routine.description ?? '')).toLowerCase().includes(needle));
-  });
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">{houseTabs.map((item) => <button key={item} type="button" onClick={() => setTab(item)} className={'rounded-full px-3 py-1.5 text-[8px] ' + (tab === item ? 'bg-[#eee4dd] text-[#5d4d45]' : 'bg-white/44 text-[#92847b]')}>{item}</button>)}</div>
       <div className="grid gap-4 md:grid-cols-[1.32fr_.68fr]">
         <Glass className="p-4">
-          {tab === 'Spaces' ? <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{Array.from({ length: 6 }, (_, index) => discovered[index] ? <Link href={'/life/home?space=' + encodeURIComponent(discovered[index])} key={index} className="overflow-hidden rounded-[12px] border border-white/75 bg-white/42"><div className="h-28 bg-cover bg-center" style={{ backgroundImage: 'url(' + [ART.room,ART.bath,ART.table,ART.bath,ART.room,ART.desk][index] + ')' }} /><p className="px-2 py-2 text-[8px] font-medium text-[#51463f]">{discovered[index]}</p></Link> : <div key={index} className="overflow-hidden rounded-[12px] border border-dashed border-[#ddd1c9] bg-white/32"><div className="h-28 bg-cover bg-center opacity-55" style={{ backgroundImage: 'url(' + [ART.room,ART.bath,ART.table,ART.bath,ART.room,ART.desk][index] + ')' }} /><p className="px-2 py-2 text-[8px] italic text-[#9b8d84]">Open space</p></div>)}</div> : null}
+          {tab === 'Spaces' ? <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{Array.from({ length: 6 }, (_, index) => <div key={index} className="overflow-hidden rounded-[12px] border border-dashed border-[#ddd1c9] bg-white/32"><div className="h-28 bg-cover bg-center opacity-55" style={{ backgroundImage: 'url(' + [ART.room,ART.bath,ART.table,ART.bath,ART.room,ART.desk][index] + ')' }} /><p className="px-2 py-2 text-[8px] italic text-[#9b8d84]">Open space</p></div>)}</div> : null}
           {tab === 'Tasks' ? <TaskRows tasks={homeTasks} onToggle={toggleTask} limit={8} /> : null}
           {tab === 'Routines' ? <div className="space-y-2">{homeRoutines.length ? homeRoutines.map((routine) => <Link key={routine.id} href={/midday\s*reset/i.test(routine.name) ? '/living/midday-reset' : '/routines?routine=' + encodeURIComponent(routine.id)} className="block rounded-[10px] bg-white/42 px-3 py-2 text-[8px] text-[#51463f]">{routine.name}</Link>) : <EmptyRows count={6} label="No home routines loaded" />}</div> : null}
           {tab === 'Maintenance' || tab === 'Shopping' ? <EmptyRows count={6} label={'No ' + tab.toLowerCase() + ' objects are loaded here'} /> : null}
