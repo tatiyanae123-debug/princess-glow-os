@@ -33,6 +33,19 @@ const m = (
 
 export const GLOW_PAGE_MANIFESTS: GlowPageManifest[] = [
   m('root.home','/home','Glow Home','today','overlay',null,'origin','world-fold','open',['world'],'global'),
+  m('living.what-now','/living/what-now','What Now?','today','studio','/home','living-workspace','reference-living','structured',['task','event','routine']),
+  m('living.planning-studio','/living/planning-studio','Planning Studio','plan','studio','/home','living-workspace','reference-living','structured',['task','event','goal','routine']),
+  m('living.day-flow','/living/day-flow','Your Day in Flow','today','studio','/home','living-workspace','reference-living','structured',['event','task','routine']),
+  m('living.today-systems','/living/today-systems','Today Systems','today','studio','/home','living-workspace','reference-living','structured',['task','routine','habit','reminder']),
+  m('living.important-inbox','/living/important-inbox','Important Inbox','create','studio','/home','living-workspace','reference-living','structured',['capture','task','notification']),
+  m('living.people','/living/people-to-contact','People to Contact','life','studio','/home','living-workspace','reference-living','structured',['person','relationship']),
+  m('living.brain-web','/living/brain-web','Brain Web','brain','studio','/home','living-workspace','reference-living','open',['note','goal','routine','habit','relationship']),
+  m('living.moving-forward','/living/moving-forward','Moving Forward','plan','studio','/home','living-workspace','reference-living','structured',['goal','project','task']),
+  m('living.life-pulse','/living/life-pulse','Life Pulse','life','studio','/home','living-workspace','reference-living','structured',['wellness-entry','goal','task','note']),
+  m('living.catch-up','/living/catch-up','Catch Up','today','studio','/home','living-workspace','reference-living','structured',['task','note']),
+  m('living.personal-house','/living/personal-house','Personal House','life','studio','/home','living-workspace','reference-living','open',['space','task','routine','maintenance']),
+  m('living.midday-reset','/living/midday-reset','Prepare for Midday Reset','plan','experience','/home','living-workspace','reference-living','protected',['routine','task']),
+  m('living.vision-you','/living/vision-you','Vision & You','life','studio','/home','living-workspace','reference-living','open',['goal','task','wellness-entry']),
   m('today.world','/today','Today','today','world',null,'today','today-living','open',['day','task','event','routine']),
 
   m('plan.world','/planning','Plan','plan','world',null,'planning','planning-studio','open',['plan','task','event','goal']),
