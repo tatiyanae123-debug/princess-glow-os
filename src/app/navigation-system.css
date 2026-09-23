@@ -199,3 +199,10 @@ html[data-glow-navigation='unified-v1'] .glow-world-shell .glow-room-stage {
 @media (prefers-reduced-motion:reduce) {
   .glow-nav * { scroll-behavior:auto!important;transition:none!important;animation:none!important; }
 }
+
+
+/* Home is the reference dashboard itself: no competing global chrome or floating Shakti trigger. */
+body:has([data-glow-home-reference]) .glow-presence-trigger,
+body:has([data-glow-home-reference]) .glow-unfolded-surface {
+  display:none!important;
+}
