@@ -100,6 +100,15 @@ function formatDate(value: string | null) {
   return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
 
+function localDateKey(value: string | Date) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return year + '-' + month + '-' + day;
+}
+
 function priorityRank(priority: PersonalTask['priority']) {
   return { urgent: 4, high: 3, medium: 2, low: 1 }[priority];
 }
@@ -388,7 +397,7 @@ function PlanningStudio({ data }: { data: PersonalContextData }) {
 }
 
 function DayFlow({ data }: { data: PersonalContextData }) {
-  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayKey = localDateKey(new Date());
   const [dateKey, setDateKey] = useState(todayKey);
 
   useEffect(() => {
@@ -403,14 +412,14 @@ function DayFlow({ data }: { data: PersonalContextData }) {
   function shiftDay(amount: number) {
     const date = new Date(dateKey + 'T12:00:00');
     date.setDate(date.getDate() + amount);
-    setDateKey(date.toISOString().slice(0, 10));
+    setDateKey(localDateKey(date));
   }
 
   const selectedDate = new Date(dateKey + 'T12:00:00');
   const events = data.events
-    .filter((event) => new Date(event.startAt).toISOString().slice(0, 10) === dateKey)
+    .filter((event) => localDateKey(event.startAt) === dateKey)
     .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
-  const selectedTasks = data.tasks.filter((task) => task.dueDate && new Date(task.dueDate).toISOString().slice(0,10) === dateKey);
+  const selectedTasks = data.tasks.filter((task) => task.dueDate && localDateKey(task.dueDate) === dateKey);
   const scoreSignals = [
     dateKey === todayKey && Boolean(data.wellness?.energy),
     dateKey === todayKey && Boolean(data.wellness?.mood),
