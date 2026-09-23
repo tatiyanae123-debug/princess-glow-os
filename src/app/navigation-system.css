@@ -221,3 +221,18 @@ body:has([data-glow-home-reference]) {
   --glow-nav-sidebar: 0px;
   --glow-nav-header: 0px;
 }
+
+
+/* Focused Living Workspaces own the viewport while GlowCurrent stays mounted as
+   the navigation/Shakti event bridge. */
+body:has([data-living-workspace]) .glow-nav__sidebar,
+body:has([data-living-workspace]) .glow-nav__header,
+body:has([data-living-workspace]) .glow-nav__local-tabs,
+body:has([data-living-workspace]) .glow-nav__mobile-bottom,
+body:has([data-living-workspace]) .glow-presence-trigger {
+  display:none!important;
+}
+body:has([data-living-workspace]) {
+  --glow-nav-sidebar: 0px;
+  --glow-nav-header: 0px;
+}
