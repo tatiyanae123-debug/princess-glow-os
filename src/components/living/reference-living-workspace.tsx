@@ -503,7 +503,7 @@ function TodaySystems({ data, toggleTask }: { data: PersonalContextData; toggleT
       </Glass>
       <div className="grid gap-4">
         <ImagePanel src={ART.flowers} className="min-h-[260px]" />
-        <ImagePanel src={ART.table} className="min-h-[210px]"><p className="absolute bottom-4 right-4 max-w-[72%] text-right font-serif text-[10px] italic text-[#6d5f56]">Your systems support the life you are building.</p></ImagePanel>
+        <ImagePanel src={ART.table} className="min-h-[210px]"><p className="absolute bottom-4 right-4 max-w-[72%] text-right text-[8px] leading-4 text-[#6d5f56]">{data.routines.length || data.habits.length ? 'Current routines and habits are loaded from Glow.' : 'No routine or habit data is loaded yet.'}</p></ImagePanel>
       </div>
     </div>
   );
@@ -549,7 +549,7 @@ function PeopleToContact({ contacts, status }: { contacts: GlowContact[]; status
       </Glass>
       <div className="space-y-4">
         <Glass className="p-4"><p className="text-[8px] uppercase tracking-[.16em] text-[#8d786c]">Relationship focus</p><p className="mt-2 text-[9px] leading-4 text-[#706159]">{visible.length ? visible.length + ' real contacts are available in this view.' : 'Connect or load contacts to build follow-up context.'}</p></Glass>
-        <ImagePanel src={ART.flowers} className="min-h-[250px]"><p className="absolute bottom-4 left-4 max-w-[70%] font-serif text-[11px] italic text-[#665850]">The right people make life lighter.</p></ImagePanel>
+        <ImagePanel src={ART.flowers} className="min-h-[250px]"><p className="absolute bottom-4 left-4 max-w-[72%] text-[8px] leading-4 text-[#665850]">{visible.length ? visible.length + ' real contacts are visible in this workspace.' : 'No contacts are available in this view.'}</p></ImagePanel>
       </div>
     </div>
   );
@@ -578,7 +578,7 @@ function BrainWeb({ data }: { data: PersonalContextData }) {
         <div className="absolute left-[17%] top-[68%] h-px w-[66%] -rotate-[24deg] bg-[#e1d9e8]/65" />
         {nodes.length ? nodes.map((node, index) => <Link key={node.id} href={node.href} className={'absolute max-w-[155px] rounded-full border border-white/82 bg-white/70 px-3 py-2 text-center text-[7px] text-[#5f5350] shadow-[0_6px_18px_rgba(75,60,52,.06)] backdrop-blur ' + positions[index % positions.length]}><span className="block truncate">{node.label}</span><span className="text-[6px] text-[#9f8f88]">{node.kind}</span></Link>) : Array.from({length:6},(_,index)=><span key={index} className={'absolute rounded-full border border-dashed border-[#ddd2e5] bg-white/34 px-4 py-2 text-[7px] italic text-[#a2949c] ' + positions[index]}>Open connection</span>)}
         <Link href="/brain" className="absolute left-1/2 top-1/2 grid h-[78px] w-[78px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/90 bg-[radial-gradient(circle,#fff,#f0e9f8_50%,#dcebed_78%)] font-serif text-[13px] text-[#554b61] shadow-[0_0_28px_rgba(197,188,224,.62)]">You</Link>
-        <p className="absolute bottom-3 right-4 max-w-[180px] text-right font-serif text-[10px] italic leading-4 text-[#6f6159]">{nodes.length ? 'A more curious you, a brighter tomorrow.' : 'Your graph will grow from real Glow objects.'}</p>
+        <p className="absolute bottom-3 right-4 max-w-[180px] text-right text-[8px] leading-4 text-[#6f6159]">{nodes.length ? nodes.length + ' real connected objects are projected here.' : 'No connected objects match this view yet.'}</p>
       </div>
     </Glass>
   );
@@ -646,7 +646,7 @@ function CatchUp({ data, toggleTask }: { data: PersonalContextData; toggleTask: 
           <div className="space-y-1.5">{ideas.length ? ideas.slice(0,7).map((note) => <Link key={note.id} href="/brain" className="flex items-center gap-2 rounded-[9px] bg-white/42 px-3 py-2"><Lightbulb size={11} className="text-[#72a79e]" /><span className="min-w-0 flex-1 truncate text-[8px] text-[#51463f]">{note.title}</span><span className="text-[7px] text-[#9b8d84]">{formatDate(note.updatedAt)}</span></Link>) : <EmptyRows count={6} label="No ideas loaded" />}</div>
         ) : <TaskRows tasks={visibleTasks} onToggle={toggleTask} limit={7} />}
       </Glass>
-      <ImagePanel src={ART.room} className="min-h-[430px]"><p className="absolute bottom-5 right-4 max-w-[72%] text-right font-serif text-[11px] italic text-[#675a52]">A clearer mind creates a lighter day.</p></ImagePanel>
+      <ImagePanel src={ART.room} className="min-h-[430px]"><p className="absolute bottom-5 right-4 max-w-[72%] text-right text-[8px] leading-4 text-[#675a52]">{open.length + ' unfinished tasks · ' + ideas.length + ' captured ideas'}</p></ImagePanel>
     </div>
   );
 }
@@ -692,7 +692,7 @@ function MiddayReset({ data }: { data: PersonalContextData }) {
         <Link href={routine ? '/routines?routine=' + encodeURIComponent(routine.id) : '/routines'} className="mt-4 inline-flex rounded-full bg-[#302a27] px-5 py-2.5 text-[8px] font-medium text-white">{routine ? 'Start Routine' : 'Open Routines'}</Link>
       </Glass>
       <div className="space-y-4">
-        <ImagePanel src={ART.table} className="min-h-[330px]"><p className="absolute bottom-5 right-5 font-serif text-[12px] italic text-[#675a52]">You’ve got this.</p></ImagePanel>
+        <ImagePanel src={ART.table} className="min-h-[330px]"><p className="absolute bottom-5 right-5 text-[8px] text-[#675a52]">{routine ? 'This opens the saved Glow routine.' : task ? 'This opens the saved Glow task.' : 'No Midday Reset object is loaded yet.'}</p></ImagePanel>
         <Glass className="grid grid-cols-5 gap-2 p-3">{['Items','Playlist','Duration','Adapt','Notes'].map((item) => <button key={item} type="button" onClick={() => document.dispatchEvent(new CustomEvent('glow:open', { detail: { context: { room: 'Midday Reset', intent: item } } }))} className="rounded-[9px] bg-white/42 px-2 py-2 text-[7px] text-[#74665d]">{item}</button>)}</Glass>
       </div>
     </div>
@@ -732,8 +732,8 @@ function VisionYou({ data }: { data: PersonalContextData }) {
 
       <ImagePanel src={ART.calm} className="min-h-[400px] p-5">
         <div className="absolute inset-x-5 top-1/2 -translate-y-1/2 rounded-[16px] border border-white/70 bg-white/58 p-5 text-center backdrop-blur-md">
-          <p className="text-[8px] uppercase tracking-[.22em] text-[#8d786c]">A brighter you is already possible.</p>
-          <p className="mt-2 font-serif text-[13px] italic text-[#62564f]">Current state → proposed direction</p>
+          <p className="text-[8px] uppercase tracking-[.22em] text-[#8d786c]">Current state → proposed direction</p>
+          <p className="mt-2 text-[8px] text-[#62564f]">{activeGoals.length + ' active goals · ' + openTasks.length + ' open tasks'}</p>
           <button type="button" onClick={() => document.dispatchEvent(new CustomEvent('glow:open', { detail: { context: { room: 'Vision & You', intent: 'Simulate a realistic next version of my day using only my real Glow data. Do not change anything until I approve.' } } }))} className="mt-4 rounded-full bg-[#342d29] px-5 py-2.5 text-[8px] text-white">Simulate This Life</button>
         </div>
       </ImagePanel>
