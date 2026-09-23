@@ -448,7 +448,25 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
   }
 
   const energyLabel = data?.wellness?.energy ?? 'Not checked in';
-  const dayFlow = flow.length ? flow.slice(0, 7) : [];
+  const dayFlow = (() => {
+    if (!now) return [] as FlowItem[];
+    const isFullyOpen = flow.length === 1 && flow[0]?.kind === 'open';
+    if (!isFullyOpen) return flow.slice(0, 7);
+    const at = (hour: number, minute = 0) => {
+      const date = new Date(now);
+      date.setHours(hour, minute, 0, 0);
+      return date;
+    };
+    return [
+      { id: 'open-morning', kind: 'open' as const, title: 'Morning', start: at(5), end: at(10) },
+      { id: 'open-between', kind: 'open' as const, title: 'Between', start: at(10), end: at(16) },
+      { id: 'open-evening', kind: 'open' as const, title: 'Evening', start: at(16), end: at(20, 30) },
+      { id: 'open-night', kind: 'open' as const, title: 'Night', start: at(20, 30), end: at(23) },
+    ];
+  })();
+  const dayProgress = now
+    ? Math.max(0, Math.min(100, (((now.getHours() * 60 + now.getMinutes()) - 300) / 1080) * 100))
+    : 0;
 
   return (
     <div data-glow-home-reference className="min-h-screen overflow-x-hidden bg-[#ebe4db] text-[#302925]">
@@ -555,9 +573,9 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                   </div>
                 </Glass>
 
-                <Glass className="p-4">
+                <Glass className="p-3.5 lg:h-[170px]">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-serif text-[20px] leading-none text-[#332b27]">What now?</h3>
+                    <h3 className="font-serif text-[19px] leading-none text-[#332b27]">What now?</h3>
                     <span className="text-[8px] text-[#95867d]">{todayThree.length} open</span>
                     <button type="button" onClick={() => travel('/tasks')} className="ml-auto grid h-7 w-7 place-items-center rounded-full hover:bg-white/55" aria-label="Add or open tasks"><Plus size={14} /></button>
                   </div>
@@ -586,8 +604,8 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                   </div>
                 </Glass>
 
-                <Glass className="p-4">
-                  <h3 className="font-serif text-[20px] leading-none text-[#332b27]">Planning Studio</h3>
+                <Glass className="p-3.5 lg:h-[170px]">
+                  <h3 className="font-serif text-[19px] leading-none text-[#332b27]">Planning Studio</h3>
                   <p className="mt-1 text-[8px] italic text-[#91827a]">Explore. Adjust. Create your best day.</p>
                   <div className="mt-2.5 grid grid-cols-2 gap-1.5">
                     {[
@@ -617,31 +635,43 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                     <button type="button" onClick={() => travel('/calendar?view=month')} className="rounded-full px-2.5 py-1 text-[#8d7d74]">Month</button>
                   </div>
                 </div>
-                <div className="flex items-stretch gap-1.5 overflow-x-auto pb-1">
-                  <button type="button" onClick={() => travel('/calendar')} className="grid h-[54px] w-7 shrink-0 place-items-center rounded-full bg-white/48 text-[#8e7d73]"><ChevronLeft size={13} /></button>
-                  {dayFlow.length ? dayFlow.map((item, index) => {
-                    const isCurrent = now ? item.start <= now && item.end > now : false;
-                    const backgrounds = ['#f8efd9', '#e4edf8', '#f7e8dd', '#e4f0e9', '#eee7f7', '#f6e3e7', '#e6ebf6'];
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => travel(item.kind === 'event' && item.event ? '/calendar?event=' + encodeURIComponent(item.event.id) : '/today?room=what-now')}
-                        className="relative min-w-[120px] flex-1 rounded-[10px] border border-white/70 px-3 py-2 text-left"
-                        style={{ backgroundColor: backgrounds[index % backgrounds.length] }}
-                      >
-                        {isCurrent ? <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[7px] font-semibold uppercase tracking-[.12em] text-[#59749d]">Now</span> : null}
-                        <p className="truncate text-[9px] font-medium text-[#403833]">{item.title}</p>
-                        <p className="mt-1 text-[7px] text-[#81766f]">{formatClock(item.start)} · {formatDuration(Math.round((item.end.getTime() - item.start.getTime()) / 60_000))}</p>
-                      </button>
-                    );
-                  }) : (
-                    <button type="button" onClick={() => travel('/calendar')} className="min-w-[220px] flex-1 rounded-[10px] border border-dashed border-[#dacfc7] bg-white/32 px-3 py-2 text-left">
-                      <p className="text-[9px] font-medium text-[#574c45]">Open day</p>
-                      <p className="mt-1 text-[7px] text-[#91847c]">No timed calendar items are loaded.</p>
-                    </button>
-                  )}
-                  <button type="button" onClick={() => travel('/calendar')} className="grid h-[54px] w-7 shrink-0 place-items-center rounded-full bg-white/48 text-[#8e7d73]"><ChevronRight size={13} /></button>
+                <div className="grid grid-cols-[28px_minmax(0,1fr)_28px] items-end gap-1.5">
+                  <button type="button" onClick={() => travel('/calendar')} className="mb-1 grid h-[48px] w-7 shrink-0 place-items-center rounded-full bg-white/48 text-[#8e7d73]"><ChevronLeft size={13} /></button>
+                  <div className="min-w-0">
+                    <div className="mb-1 grid grid-cols-6 px-1 text-[6.5px] tabular-nums text-[#9a8d84]">
+                      {['5 AM','8 AM','11 AM','2 PM','5 PM','8 PM'].map((label) => <span key={label}>{label}</span>)}
+                    </div>
+                    <div className="relative flex h-[48px] items-stretch gap-1 overflow-hidden">
+                      {now ? (
+                        <div className="pointer-events-none absolute inset-y-[-9px] z-20 w-px bg-[#4d8ec8]" style={{ left: String(dayProgress) + '%' }}>
+                          <span className="absolute -top-1 -translate-x-1/2 whitespace-nowrap rounded-full bg-white/85 px-1.5 py-0.5 text-[6px] font-semibold uppercase tracking-[.08em] text-[#4d78a0] shadow-sm">Now</span>
+                        </div>
+                      ) : null}
+                      {dayFlow.length ? dayFlow.map((item, index) => {
+                        const isCurrent = now ? item.start <= now && item.end > now : false;
+                        const backgrounds = ['#f8efd9', '#e4edf8', '#f7e8dd', '#e4f0e9', '#eee7f7', '#f6e3e7', '#e6ebf6'];
+                        const totalMinutes = Math.max(1, Math.round((item.end.getTime() - item.start.getTime()) / 60_000));
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => travel(item.kind === 'event' && item.event ? '/calendar?event=' + encodeURIComponent(item.event.id) : '/today?room=what-now')}
+                            className={isCurrent ? 'relative min-w-[80px] rounded-[9px] border border-white/80 px-2 py-1.5 text-left shadow-[inset_0_-2px_0_rgba(82,125,166,.22)]' : 'relative min-w-[80px] rounded-[9px] border border-white/70 px-2 py-1.5 text-left'}
+                            style={{ backgroundColor: backgrounds[index % backgrounds.length], flexGrow: Math.max(.75, totalMinutes / 120) }}
+                          >
+                            <p className="truncate text-[8px] font-medium text-[#403833]">{item.title}</p>
+                            <p className="mt-0.5 truncate text-[6.5px] text-[#81766f]">{item.kind === 'event' ? formatClock(item.start) : 'Open'} · {formatDuration(totalMinutes)}</p>
+                          </button>
+                        );
+                      }) : (
+                        <button type="button" onClick={() => travel('/calendar')} className="min-w-[220px] flex-1 rounded-[9px] border border-dashed border-[#dacfc7] bg-white/32 px-3 py-1.5 text-left">
+                          <p className="text-[8px] font-medium text-[#574c45]">Open day</p>
+                          <p className="mt-0.5 text-[6.5px] text-[#91847c]">No timed calendar items are loaded.</p>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => travel('/calendar')} className="mb-1 grid h-[48px] w-7 shrink-0 place-items-center rounded-full bg-white/48 text-[#8e7d73]"><ChevronRight size={13} /></button>
                 </div>
               </Glass>
 
@@ -797,7 +827,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                       ['Home', 'No signal', 'home'],
                     ].map(([label, value, kind]) => (
                       <button key={label} type="button" onClick={() => travel(label === 'Finances' ? '/finance' : label === 'Body' ? '/wellness' : label === 'Home' ? '/life' : '/brain')} className="flex items-center gap-2 rounded-[9px] bg-white/38 px-2 py-2 text-left">
-                        <MiniIcon kind={kind} size={11} className="text-[#6f9488]" />
+                        <MiniIcon kind={kind} size={11} className={kind === 'mind' ? 'text-[#c8798b]' : kind === 'finance' ? 'text-[#69a28e]' : kind === 'body' ? 'text-[#78a58f]' : kind === 'relationships' ? 'text-[#c97a94]' : kind === 'creativity' ? 'text-[#7d91c3]' : 'text-[#6ca6a1]'} />
                         <span>
                           <span className="block text-[7.5px] font-medium text-[#4a403a]">{label}</span>
                           <span className="block max-w-[75px] truncate text-[6.5px] text-[#998b82]">{value}</span>
@@ -820,7 +850,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                       ['Ideas', String(data?.notes.length ?? 0), 'ideas'],
                     ].map(([label, value, kind]) => (
                       <button key={label} type="button" onClick={() => travel(label === 'Ideas' ? '/brain' : '/tasks')} className="rounded-[9px] border border-white/70 bg-white/42 px-1 py-2 text-center">
-                        <MiniIcon kind={kind} size={12} className="mx-auto text-[#9b8476]" />
+                        <MiniIcon kind={kind} size={12} className={kind === 'unfinished' ? 'mx-auto text-[#d29a5d]' : kind === 'waiting' ? 'mx-auto text-[#8f77c5]' : kind === 'someday' ? 'mx-auto text-[#d5a34d]' : 'mx-auto text-[#62a39b]'} />
                         <p className="mt-1 text-[6.5px] text-[#7e7067]">{label}</p>
                         <p className="mt-0.5 font-serif text-[18px] leading-none text-[#3a312c]">{value}</p>
                       </button>
