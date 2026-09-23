@@ -329,7 +329,28 @@ function WhatNow({
 function PlanningStudio({ data }: { data: PersonalContextData }) {
   const planningScopes = ['Today', 'This Week', 'This Month', 'Custom'] as const;
   const [scope, setScope] = useSessionChoice('glow:living:planning-scope', 'Today', planningScopes);
-  const items = [...data.todayEvents.map((event) => ({ id: event.id, title: event.title, time: formatTime(event.startAt), type: 'event' as const })), ...data.tasks.filter((task) => task.status !== 'done' && task.status !== 'cancelled').slice(0, 4).map((task) => ({ id: task.id, title: task.title, time: task.dueDate ? formatTime(task.dueDate) : '', type: 'task' as const }))].slice(0, 8);
+  const now = new Date();
+  const startToday = new Date(now); startToday.setHours(0,0,0,0);
+  const endToday = new Date(startToday); endToday.setDate(endToday.getDate() + 1);
+  const endWeek = new Date(startToday); endWeek.setDate(endWeek.getDate() + 7);
+  const endMonth = new Date(startToday.getFullYear(), startToday.getMonth() + 1, 1);
+  const scopedEvents = data.events.filter((event) => {
+    const start = new Date(event.startAt);
+    if (scope === 'Today') return start >= startToday && start < endToday;
+    if (scope === 'This Week') return start >= startToday && start < endWeek;
+    if (scope === 'This Month') return start >= startToday && start < endMonth;
+    return start >= startToday;
+  });
+  const scopedTasks = data.tasks.filter((task) => {
+    if (task.status === 'done' || task.status === 'cancelled') return false;
+    if (!task.dueDate) return scope === 'Custom';
+    const due = new Date(task.dueDate);
+    if (scope === 'Today') return due >= startToday && due < endToday;
+    if (scope === 'This Week') return due >= startToday && due < endWeek;
+    if (scope === 'This Month') return due >= startToday && due < endMonth;
+    return due >= startToday;
+  });
+  const items = [...scopedEvents.map((event) => ({ id: event.id, title: event.title, time: formatTime(event.startAt), type: 'event' as const, startsAt: event.startAt })), ...scopedTasks.map((task) => ({ id: task.id, title: task.title, time: task.dueDate ? formatTime(task.dueDate) : '', type: 'task' as const, startsAt: task.dueDate ?? '' }))].sort((a,b)=>new Date(a.startsAt || 0).getTime()-new Date(b.startsAt || 0).getTime()).slice(0, 8);
   const goals = data.goals.filter((goal) => goal.status !== 'done').slice(0, 5);
 
   return (
@@ -524,13 +545,16 @@ function BrainWeb({ data }: { data: PersonalContextData }) {
 function MovingForward({ data }: { data: PersonalContextData }) {
   const goals = data.goals.filter((goal) => goal.status !== 'done');
   const categories = Array.from(new Set(goals.map((goal) => goal.category))).slice(0, 5);
+  const movingTabs = ['All', ...categories] as string[];
+  const [category, setCategory] = useState('All');
+  const visibleGoals = category === 'All' ? goals : goals.filter((goal) => goal.category === category);
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">{['All', ...categories].map((item) => <span key={item} className="rounded-full bg-white/48 px-3 py-1.5 text-[7px] text-[#887a71]">{item}</span>)}</div>
+      <div className="flex flex-wrap gap-2">{movingTabs.map((item) => <button type="button" onClick={() => setCategory(item)} key={item} className={'rounded-full px-3 py-1.5 text-[7px] ' + (category === item ? 'bg-[#eee3dc] text-[#5c4b43]' : 'bg-white/48 text-[#887a71]')}>{item}</button>)}</div>
       <Glass className="p-4">
-        <div className="space-y-2">{goals.length ? goals.slice(0, 8).map((goal, index) => <Link key={goal.id} href={'/goals?goal=' + encodeURIComponent(goal.id)} className="grid grid-cols-[34px_1fr_120px] items-center gap-3 rounded-[12px] bg-white/44 px-3 py-3"><span className="grid h-8 w-8 place-items-center rounded-[9px]" style={{ backgroundColor: ['#e5edf9','#eee8f7','#f7eadf','#e5f0eb'][index % 4] }}><Target size={13} className="text-[#7c879d]" /></span><span className="min-w-0"><span className="block truncate text-[8.5px] font-medium text-[#4d423b]">{goal.title}</span><span className="block truncate text-[7px] text-[#9b8d84]">{goal.category} · {goal.targetDate ? formatDate(goal.targetDate) : 'No target date'}</span></span><span><span className="block text-right text-[7px] text-[#8c7c73]">{goal.progress}%</span><span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-[#ece7e2]"><span className="block h-full rounded-full bg-[#7c9db2]" style={{ width: Math.max(0, Math.min(100, goal.progress)) + '%' }} /></span></span></Link>) : <EmptyRows count={6} label="No active goals loaded" />}</div>
+        <div className="space-y-2">{visibleGoals.length ? visibleGoals.slice(0, 8).map((goal, index) => <Link key={goal.id} href={'/goals?goal=' + encodeURIComponent(goal.id)} className="grid grid-cols-[34px_1fr_120px] items-center gap-3 rounded-[12px] bg-white/44 px-3 py-3"><span className="grid h-8 w-8 place-items-center rounded-[9px]" style={{ backgroundColor: ['#e5edf9','#eee8f7','#f7eadf','#e5f0eb'][index % 4] }}><Target size={13} className="text-[#7c879d]" /></span><span className="min-w-0"><span className="block truncate text-[8.5px] font-medium text-[#4d423b]">{goal.title}</span><span className="block truncate text-[7px] text-[#9b8d84]">{goal.category} · {goal.targetDate ? formatDate(goal.targetDate) : 'No target date'}</span></span><span><span className="block text-right text-[7px] text-[#8c7c73]">{goal.progress}%</span><span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-[#ece7e2]"><span className="block h-full rounded-full bg-[#7c9db2]" style={{ width: Math.max(0, Math.min(100, goal.progress)) + '%' }} /></span></span></Link>) : <EmptyRows count={6} label="No active goals loaded" />}</div>
       </Glass>
-      <ImagePanel src={ART.room} className="min-h-[155px]"><p className="absolute bottom-4 right-4 max-w-[42%] text-right font-serif text-[11px] italic text-[#665850]">{goals.length ? 'Progress is being drawn from your real goals.' : 'Create a goal when there is something you want to move forward.'}</p></ImagePanel>
+      <ImagePanel src={ART.room} className="min-h-[155px]"><p className="absolute bottom-4 right-4 max-w-[42%] text-right font-serif text-[11px] italic text-[#665850]">{visibleGoals.length ? 'Progress is being drawn from your real goals.' : 'No goals match this view yet.'}</p></ImagePanel>
     </div>
   );
 }
@@ -564,11 +588,17 @@ function CatchUp({ data, toggleTask }: { data: PersonalContextData; toggleTask: 
   const waiting = open.filter((task) => task.status === 'pending');
   const someday = open.filter((task) => !task.dueDate);
   const ideas = data.notes;
+  const catchTabs = ['Unfinished','Waiting','Someday','Ideas'] as const;
+  const [tab, setTab] = useSessionChoice('glow:living:catch-up-tab', 'Unfinished', catchTabs);
+  const visibleTasks = tab === 'Waiting' ? waiting : tab === 'Someday' ? someday : open;
+
   return (
     <div className="grid gap-4 lg:grid-cols-[1.3fr_.7fr]">
       <Glass className="p-4">
-        <div className="mb-3 grid grid-cols-4 gap-2">{[['Unfinished',open.length],['Waiting',waiting.length],['Someday',someday.length],['Ideas',ideas.length]].map(([label,value]) => <div key={String(label)} className="rounded-[11px] bg-white/44 px-2 py-2 text-center"><p className="text-[6.5px] text-[#8f8178]">{label}</p><p className="mt-1 font-serif text-[18px] text-[#3f3631]">{value}</p></div>)}</div>
-        <TaskRows tasks={open} onToggle={toggleTask} limit={7} />
+        <div className="mb-3 grid grid-cols-4 gap-2">{[['Unfinished',open.length],['Waiting',waiting.length],['Someday',someday.length],['Ideas',ideas.length]].map(([label,value]) => <button type="button" key={String(label)} onClick={() => setTab(label as typeof tab)} className={'rounded-[11px] px-2 py-2 text-center ' + (tab === label ? 'bg-[#eee3dc]' : 'bg-white/44')}><p className="text-[6.5px] text-[#8f8178]">{label}</p><p className="mt-1 font-serif text-[18px] text-[#3f3631]">{value}</p></button>)}</div>
+        {tab === 'Ideas' ? (
+          <div className="space-y-1.5">{ideas.length ? ideas.slice(0,7).map((note) => <Link key={note.id} href="/brain" className="flex items-center gap-2 rounded-[9px] bg-white/42 px-3 py-2"><Lightbulb size={11} className="text-[#72a79e]" /><span className="min-w-0 flex-1 truncate text-[8px] text-[#51463f]">{note.title}</span><span className="text-[7px] text-[#9b8d84]">{formatDate(note.updatedAt)}</span></Link>) : <EmptyRows count={6} label="No ideas loaded" />}</div>
+        ) : <TaskRows tasks={visibleTasks} onToggle={toggleTask} limit={7} />}
       </Glass>
       <ImagePanel src={ART.room} className="min-h-[430px]"><p className="absolute bottom-5 right-4 max-w-[72%] text-right font-serif text-[11px] italic text-[#675a52]">A clearer mind creates a lighter day.</p></ImagePanel>
     </div>
