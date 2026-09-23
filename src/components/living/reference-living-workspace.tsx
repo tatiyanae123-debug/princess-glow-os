@@ -361,7 +361,7 @@ function PlanningStudio({ data }: { data: PersonalContextData }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">{planningScopes.map((item) => <button key={item} type="button" onClick={() => setScope(item)} className={'rounded-full px-3 py-1.5 text-[8px] ' + (scope === item ? 'bg-[#e9ded6] text-[#59483f]' : 'bg-white/45 text-[#8f8177]')}>{item}</button>)}</div>
-      <div className="grid gap-4 lg:grid-cols-[1.35fr_.65fr]">
+      <div className="grid gap-4 md:grid-cols-[1.35fr_.65fr]">
         <Glass className="p-4">
           <p className="mb-3 text-[8px] uppercase tracking-[.16em] text-[#8d786c]">{scope}</p>
           <div className="grid grid-cols-[45px_1fr] gap-2">
@@ -421,7 +421,7 @@ function DayFlow({ data }: { data: PersonalContextData }) {
   const coverage = observed ? Math.round((observed / scoreSignals.length) * 100) : 0;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.35fr_.65fr]">
+    <div className="grid gap-4 md:grid-cols-[1.35fr_.65fr]">
       <Glass className="p-4">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-1.5">
@@ -451,7 +451,7 @@ function DayFlow({ data }: { data: PersonalContextData }) {
 function TodaySystems({ data, toggleTask }: { data: PersonalContextData; toggleTask: (task: PersonalTask) => void }) {
   const openTasks = data.tasks.filter((task) => task.status !== 'done' && task.status !== 'cancelled');
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.42fr_.58fr]">
+    <div className="grid gap-4 md:grid-cols-[1.42fr_.58fr]">
       <Glass className="p-4">
         <div className="grid gap-4">
           <section>
@@ -501,7 +501,7 @@ function TodaySystems({ data, toggleTask }: { data: PersonalContextData; toggleT
           </section>
         </div>
       </Glass>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+      <div className="grid gap-4">
         <ImagePanel src={ART.flowers} className="min-h-[260px]" />
         <ImagePanel src={ART.table} className="min-h-[210px]"><p className="absolute bottom-4 right-4 max-w-[72%] text-right font-serif text-[10px] italic text-[#6d5f56]">Your systems support the life you are building.</p></ImagePanel>
       </div>
@@ -521,7 +521,7 @@ function ImportantInbox({ data }: { data: PersonalContextData }) {
   const visibleSignals = tab === 'All' ? signals : signals.filter((item) => item.type === tab.slice(0, -1) || (tab === 'Connections' && item.type === 'Connection'));
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.25fr_.75fr]">
+    <div className="grid gap-4 md:grid-cols-[1.25fr_.75fr]">
       <Glass className="p-4">
         <div className="mb-3 flex flex-wrap gap-2">{inboxTabs.map((item) => <button key={item} type="button" onClick={() => setTab(item)} className={'rounded-full px-3 py-1.5 text-[7px] ' + (tab === item ? 'bg-[#eee3dc] text-[#5c4b43]' : 'bg-white/50 text-[#887a71]')}>{item}</button>)}</div>
         <div className="space-y-1.5">{visibleSignals.length ? visibleSignals.map((item) => <Link key={item.type + item.id} href={item.type === 'Task' ? '/tasks?task=' + encodeURIComponent(item.id) : item.type === 'Connection' ? '/connections' : '/brain'} className="flex items-center gap-3 rounded-[11px] bg-white/42 px-3 py-2.5"><span className="grid h-8 w-8 place-items-center rounded-full bg-[#eee6df] text-[#8e776b]">{item.type === 'Task' ? <ListChecks size={13} /> : item.type === 'Connection' ? <Bell size={13} /> : <Inbox size={13} />}</span><span className="min-w-0 flex-1"><span className="block truncate text-[8.5px] font-medium text-[#4d423b]">{item.title}</span><span className="block text-[7px] text-[#9c8e85]">{item.detail}</span></span><span className="rounded-full bg-[#f3e6e8] px-2 py-1 text-[6.5px] text-[#a27079]">{item.type}</span></Link>) : <EmptyRows count={7} label="Nothing important is waiting" />}</div>
@@ -542,7 +542,7 @@ function PeopleToContact({ contacts, status }: { contacts: GlowContact[]; status
     .filter((contact) => tab === 'All' || (tab === 'Work' ? Boolean(contact.organization) : !contact.organization))
     .slice(0, 8);
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.25fr_.75fr]">
+    <div className="grid gap-4 md:grid-cols-[1.25fr_.75fr]">
       <Glass className="p-4">
         <div className="mb-3 flex flex-wrap gap-2">{contactTabs.map((item) => <button key={item} type="button" onClick={() => setTab(item)} className={'rounded-full px-3 py-1.5 text-[7px] ' + (tab === item ? 'bg-[#eee3dc] text-[#5c4b43]' : 'bg-white/48 text-[#8a7c73]')}>{item}</button>)}</div>
         <div className="space-y-1.5">{visible.length ? visible.map((contact) => <a key={contact.id} href={contact.email ? 'mailto:' + contact.email : contact.phone ? 'tel:' + contact.phone : '#'} className="flex items-center gap-3 rounded-[11px] bg-white/42 px-3 py-2"><span className="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-[#ebe3dc] text-[8px] font-medium text-[#78685f]">{contact.photoUrl ? <img src={contact.photoUrl} alt="" className="h-full w-full object-cover" /> : contact.name.split(/\s+/).map((part) => part[0]).slice(0,2).join('')}</span><span className="min-w-0 flex-1"><span className="block truncate text-[8.5px] font-medium text-[#4d423b]">{contact.name}</span><span className="block truncate text-[7px] text-[#9b8d84]">{contact.organization || contact.email || contact.phone || 'Contact'}</span></span><span className="text-[7px] text-[#a09188]">Open</span></a>) : <EmptyRows count={7} label={status === 'loading' ? 'Loading real contacts…' : 'No contact source is available'} />}</div>
@@ -613,7 +613,7 @@ function LifePulse({ data }: { data: PersonalContextData }) {
   const observed = signals.filter((item) => item.value !== 'No signal' && item.value !== 'No connected signal').length;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.25fr_.75fr]">
+    <div className="grid gap-4 md:grid-cols-[1.25fr_.75fr]">
       <Glass className="p-4">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{signals.map(({ label, value, icon: Icon, href }, index) => <Link href={href} key={label} className="rounded-[13px] border border-white/75 bg-white/44 p-4 transition hover:bg-white/65"><Icon size={15} className={['text-[#c8798b]','text-[#72a48e]','text-[#6e91b2]','text-[#c68199]','text-[#8a7fc2]','text-[#6da29c]'][index]} /><p className="mt-3 text-[8px] font-medium text-[#51463f]">{label}</p><p className="mt-1 text-[7px] text-[#978980]">{value}</p></Link>)}</div>
       </Glass>
@@ -639,7 +639,7 @@ function CatchUp({ data, toggleTask }: { data: PersonalContextData; toggleTask: 
   const visibleTasks = tab === 'Waiting' ? waiting : tab === 'Someday' ? someday : open;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.3fr_.7fr]">
+    <div className="grid gap-4 md:grid-cols-[1.3fr_.7fr]">
       <Glass className="p-4">
         <div className="mb-3 grid grid-cols-4 gap-2">{[['Unfinished',open.length],['Waiting',waiting.length],['Someday',someday.length],['Ideas',ideas.length]].map(([label,value]) => <button type="button" key={String(label)} onClick={() => setTab(label as typeof tab)} className={'rounded-[11px] px-2 py-2 text-center ' + (tab === label ? 'bg-[#eee3dc]' : 'bg-white/44')}><p className="text-[6.5px] text-[#8f8178]">{label}</p><p className="mt-1 font-serif text-[18px] text-[#3f3631]">{value}</p></button>)}</div>
         {tab === 'Ideas' ? (
@@ -665,7 +665,7 @@ function PersonalHouse({ data, toggleTask }: { data: PersonalContextData; toggle
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">{houseTabs.map((item) => <button key={item} type="button" onClick={() => setTab(item)} className={'rounded-full px-3 py-1.5 text-[8px] ' + (tab === item ? 'bg-[#eee4dd] text-[#5d4d45]' : 'bg-white/44 text-[#92847b]')}>{item}</button>)}</div>
-      <div className="grid gap-4 lg:grid-cols-[1.32fr_.68fr]">
+      <div className="grid gap-4 md:grid-cols-[1.32fr_.68fr]">
         <Glass className="p-4">
           {tab === 'Spaces' ? <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{Array.from({ length: 6 }, (_, index) => discovered[index] ? <Link href={'/life/home?space=' + encodeURIComponent(discovered[index])} key={index} className="overflow-hidden rounded-[12px] border border-white/75 bg-white/42"><div className="h-28 bg-cover bg-center" style={{ backgroundImage: 'url(' + [ART.room,ART.bath,ART.table,ART.bath,ART.room,ART.desk][index] + ')' }} /><p className="px-2 py-2 text-[8px] font-medium text-[#51463f]">{discovered[index]}</p></Link> : <div key={index} className="overflow-hidden rounded-[12px] border border-dashed border-[#ddd1c9] bg-white/32"><div className="h-28 bg-cover bg-center opacity-55" style={{ backgroundImage: 'url(' + [ART.room,ART.bath,ART.table,ART.bath,ART.room,ART.desk][index] + ')' }} /><p className="px-2 py-2 text-[8px] italic text-[#9b8d84]">Open space</p></div>)}</div> : null}
           {tab === 'Tasks' ? <TaskRows tasks={homeTasks} onToggle={toggleTask} limit={8} /> : null}
@@ -685,7 +685,7 @@ function MiddayReset({ data }: { data: PersonalContextData }) {
   const steps = sourceText.split(/\n|•|\d+\./).map((value) => value.trim()).filter(Boolean).slice(0, 6);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
+    <div className="grid gap-4 md:grid-cols-[1.2fr_.8fr]">
       <Glass className="p-4">
         <div className="flex items-center justify-between"><div><p className="text-[8px] uppercase tracking-[.16em] text-[#8d786c]">{routine ? 'Routine' : task ? 'Task' : 'Reset'}</p><h2 className="mt-1 font-serif text-[22px] text-[#342b27]">{routine?.name || task?.title || 'No Midday Reset object is loaded'}</h2></div>{task ? <span className="rounded-full bg-[#f1e8df] px-3 py-1.5 text-[7px] text-[#806d61]">~{estimateMinutes(task)} min</span> : null}</div>
         <div className="mt-4 space-y-2">{steps.length ? steps.map((step, index) => <div key={index} className="flex items-center gap-3 rounded-[10px] bg-white/42 px-3 py-2.5"><span className="grid h-6 w-6 place-items-center rounded-full border border-[#d7c9c1] text-[7px] text-[#87766c]">{index + 1}</span><span className="text-[8px] text-[#51463f]">{step}</span></div>) : <EmptyRows count={6} label="No routine steps are stored yet" />}</div>
@@ -717,7 +717,7 @@ function VisionYou({ data }: { data: PersonalContextData }) {
   ];
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[.82fr_1.18fr_.78fr]">
+    <div className="grid gap-4 md:grid-cols-[.82fr_1.18fr_.78fr]">
       <Glass className="p-4">
         <div className="flex items-center justify-between"><p className="text-[8px] uppercase tracking-[.17em] text-[#8d786c]">Current You</p><span className="text-[7px] text-[#a09289]">real state</span></div>
         <div className="mt-3 space-y-2.5">
