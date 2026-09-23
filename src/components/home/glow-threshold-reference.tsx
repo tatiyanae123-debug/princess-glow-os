@@ -829,7 +829,7 @@ export function GlowThresholdReference({ intelligence, userName, userImage }: { 
                   </div>
                   <div className="mt-2 grid grid-cols-4 gap-1">
                     {routineWindow.length ? routineWindow.map((routine, index) => (
-                      <button key={routine.id} type="button" onClick={() => travel('/routines?routine=' + encodeURIComponent(routine.id))} className="min-w-0 text-left">
+                      <button key={routine.id} type="button" onClick={() => travel(/midday\s*reset/i.test(routine.name) ? '/living/midday-reset' : '/routines?routine=' + encodeURIComponent(routine.id))} className="min-w-0 text-left">
                         <div className="relative h-[55px] overflow-hidden rounded-[9px] border border-white/75 bg-[#eee6df] bg-cover bg-center" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.16),rgba(246,240,235,.34)),url(' + ROUTINE_IMAGES[index % ROUTINE_IMAGES.length] + ')' }}>
                           <MoreHorizontal size={12} className="absolute right-1 top-1 rounded-full bg-white/65 p-0.5 text-[#64574f]" />
                         </div>
