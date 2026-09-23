@@ -386,21 +386,61 @@ function DayFlow({ data }: { data: PersonalContextData }) {
 }
 
 function TodaySystems({ data, toggleTask }: { data: PersonalContextData; toggleTask: (task: PersonalTask) => void }) {
-  const todayTabs = ['Tasks', 'Routines', 'Habits', 'Reminders'] as const;
-  const [tab, setTab] = useSessionChoice('glow:living:today-systems-tab', 'Tasks', todayTabs);
-
+  const openTasks = data.tasks.filter((task) => task.status !== 'done' && task.status !== 'cancelled');
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.38fr_.62fr]">
+    <div className="grid gap-4 lg:grid-cols-[1.42fr_.58fr]">
       <Glass className="p-4">
-        <div className="mb-3 flex gap-2">{todayTabs.map((item) => <button key={item} type="button" onClick={() => setTab(item)} className={'rounded-full px-3 py-1.5 text-[8px] ' + (tab === item ? 'bg-[#eee4de] text-[#5a4a42]' : 'bg-white/44 text-[#93867e]')}>{item}</button>)}</div>
-        {tab === 'Tasks' ? <TaskRows tasks={data.tasks} onToggle={toggleTask} limit={7} /> : null}
-        {tab === 'Routines' ? <div className="space-y-2">{data.routines.length ? data.routines.slice(0, 7).map((routine) => <Link key={routine.id} href={'/routines?routine=' + encodeURIComponent(routine.id)} className="flex items-center justify-between rounded-[10px] bg-white/42 px-3 py-2 text-[8px] text-[#53473f]"><span>{routine.name}</span><span className="text-[#998b82]">{routine.timeOfDay}</span></Link>) : <EmptyRows count={5} label="No routines loaded" />}</div> : null}
-        {tab === 'Habits' ? <div className="grid grid-cols-2 gap-2">{data.habits.length ? data.habits.slice(0, 8).map((habit) => <div key={habit.id} className="rounded-[11px] bg-white/42 p-3"><p className="text-[8px] font-medium text-[#51463f]">{habit.name}</p><p className="mt-1 text-[7px] text-[#9a8c83]">{habit.frequency}</p></div>) : Array.from({ length: 6 }, (_, index) => <div key={index} className="rounded-[11px] border border-dashed border-[#ddd1c9] p-3 text-[8px] italic text-[#9b8d84]">Open habit slot</div>)}</div> : null}
-        {tab === 'Reminders' ? <EmptyRows count={5} label="No reminder source is loaded here" /> : null}
+        <div className="grid gap-4">
+          <section>
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-[8px] font-semibold uppercase tracking-[.16em] text-[#7d6d64]">Tasks</p>
+              <span className="text-[7px] text-[#9b8e85]">{openTasks.length} open</span>
+            </div>
+            <TaskRows tasks={openTasks} onToggle={toggleTask} limit={5} />
+          </section>
+
+          <section>
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-[8px] font-semibold uppercase tracking-[.16em] text-[#7d6d64]">Routines</p>
+              <span className="text-[7px] text-[#9b8e85]">{data.routines.length}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              {data.routines.length ? data.routines.slice(0, 4).map((routine) => (
+                <Link key={routine.id} href={'/routines?routine=' + encodeURIComponent(routine.id)} className="flex items-center gap-2 rounded-[9px] bg-white/42 px-2.5 py-2 text-[8px] text-[#51463f]">
+                  <span className="h-3.5 w-3.5 rounded-[4px] border border-[#c7b9b1] bg-white/55" />
+                  <span className="truncate">{routine.name}</span>
+                </Link>
+              )) : <><div className="rounded-[9px] border border-dashed border-[#ddd1c9] p-2 text-[7px] italic text-[#9b8d84]">No routines loaded</div><div className="rounded-[9px] border border-dashed border-[#ddd1c9] p-2 text-[7px] italic text-[#9b8d84]">Open slot</div></>}
+            </div>
+          </section>
+
+          <section>
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-[8px] font-semibold uppercase tracking-[.16em] text-[#7d6d64]">Habits</p>
+              <span className="text-[7px] text-[#9b8e85]">{data.habits.length}</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {data.habits.length ? data.habits.slice(0, 6).map((habit) => (
+                <Link key={habit.id} href="/habits" className="rounded-[9px] bg-white/44 px-2.5 py-2 text-[7px] text-[#62564f]">{habit.name}</Link>
+              )) : ['Open habit','Open habit','Open habit','Open habit'].map((label,index)=><span key={index} className="rounded-[9px] border border-dashed border-[#ddd1c9] px-2.5 py-2 text-[7px] italic text-[#9b8d84]">{label}</span>)}
+            </div>
+          </section>
+
+          <section>
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-[8px] font-semibold uppercase tracking-[.16em] text-[#7d6d64]">Reminders</p>
+              <span className="text-[7px] text-[#9b8e85]">source aware</span>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              <Link href="/reminders" className="rounded-[9px] bg-white/42 px-2.5 py-2 text-[7px] text-[#62564f]">Open Reminders</Link>
+              <div className="rounded-[9px] border border-dashed border-[#ddd1c9] px-2.5 py-2 text-[7px] italic text-[#9b8d84]">No reminder details loaded here</div>
+            </div>
+          </section>
+        </div>
       </Glass>
-      <div className="space-y-4">
-        <ImagePanel src={ART.flowers} className="min-h-[220px]" />
-        <ImagePanel src={ART.table} className="min-h-[150px]"><p className="absolute bottom-3 right-3 max-w-[70%] text-right font-serif text-[10px] italic text-[#6d5f56]">Your systems support the life you are building.</p></ImagePanel>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+        <ImagePanel src={ART.flowers} className="min-h-[260px]" />
+        <ImagePanel src={ART.table} className="min-h-[210px]"><p className="absolute bottom-4 right-4 max-w-[72%] text-right font-serif text-[10px] italic text-[#6d5f56]">Your systems support the life you are building.</p></ImagePanel>
       </div>
     </div>
   );
@@ -486,12 +526,10 @@ function MovingForward({ data }: { data: PersonalContextData }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">{['All', ...categories].map((item) => <span key={item} className="rounded-full bg-white/48 px-3 py-1.5 text-[7px] text-[#887a71]">{item}</span>)}</div>
-      <div className="grid gap-4 lg:grid-cols-[1.28fr_.72fr]">
-        <Glass className="p-4">
-          <div className="space-y-2">{goals.length ? goals.slice(0, 8).map((goal, index) => <Link key={goal.id} href={'/goals?goal=' + encodeURIComponent(goal.id)} className="grid grid-cols-[34px_1fr_120px] items-center gap-3 rounded-[12px] bg-white/44 px-3 py-3"><span className="grid h-8 w-8 place-items-center rounded-[9px]" style={{ backgroundColor: ['#e5edf9','#eee8f7','#f7eadf','#e5f0eb'][index % 4] }}><Target size={13} className="text-[#7c879d]" /></span><span className="min-w-0"><span className="block truncate text-[8.5px] font-medium text-[#4d423b]">{goal.title}</span><span className="block truncate text-[7px] text-[#9b8d84]">{goal.category} · {goal.targetDate ? formatDate(goal.targetDate) : 'No target date'}</span></span><span><span className="block text-right text-[7px] text-[#8c7c73]">{goal.progress}%</span><span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-[#ece7e2]"><span className="block h-full rounded-full bg-[#7c9db2]" style={{ width: Math.max(0, Math.min(100, goal.progress)) + '%' }} /></span></span></Link>) : <EmptyRows count={6} label="No active goals loaded" />}</div>
-        </Glass>
-        <ImagePanel src={ART.room} className="min-h-[430px]"><p className="absolute bottom-4 right-4 max-w-[72%] text-right font-serif text-[11px] italic text-[#665850]">{goals.length ? 'Progress is being drawn from your real goals.' : 'Create a goal when there is something you want to move forward.'}</p></ImagePanel>
-      </div>
+      <Glass className="p-4">
+        <div className="space-y-2">{goals.length ? goals.slice(0, 8).map((goal, index) => <Link key={goal.id} href={'/goals?goal=' + encodeURIComponent(goal.id)} className="grid grid-cols-[34px_1fr_120px] items-center gap-3 rounded-[12px] bg-white/44 px-3 py-3"><span className="grid h-8 w-8 place-items-center rounded-[9px]" style={{ backgroundColor: ['#e5edf9','#eee8f7','#f7eadf','#e5f0eb'][index % 4] }}><Target size={13} className="text-[#7c879d]" /></span><span className="min-w-0"><span className="block truncate text-[8.5px] font-medium text-[#4d423b]">{goal.title}</span><span className="block truncate text-[7px] text-[#9b8d84]">{goal.category} · {goal.targetDate ? formatDate(goal.targetDate) : 'No target date'}</span></span><span><span className="block text-right text-[7px] text-[#8c7c73]">{goal.progress}%</span><span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-[#ece7e2]"><span className="block h-full rounded-full bg-[#7c9db2]" style={{ width: Math.max(0, Math.min(100, goal.progress)) + '%' }} /></span></span></Link>) : <EmptyRows count={6} label="No active goals loaded" />}</div>
+      </Glass>
+      <ImagePanel src={ART.room} className="min-h-[155px]"><p className="absolute bottom-4 right-4 max-w-[42%] text-right font-serif text-[11px] italic text-[#665850]">{goals.length ? 'Progress is being drawn from your real goals.' : 'Create a goal when there is something you want to move forward.'}</p></ImagePanel>
     </div>
   );
 }
@@ -587,30 +625,49 @@ function MiddayReset({ data }: { data: PersonalContextData }) {
 function VisionYou({ data }: { data: PersonalContextData }) {
   const openTasks = data.tasks.filter((task) => task.status !== 'done' && task.status !== 'cancelled');
   const activeGoals = data.goals.filter((goal) => goal.status !== 'done');
-  const current = [
-    { label: 'Current focus', value: data.activeTask?.title || openTasks[0]?.title || 'Open time' },
-    { label: 'Energy', value: data.wellness?.energy || 'Not checked in' },
-    { label: 'Progress', value: activeGoals.length ? Math.round(activeGoals.reduce((sum, goal) => sum + goal.progress, 0) / activeGoals.length) + '% avg goal progress' : 'No active goals' },
+  const currentRows = [
+    ['Focus', data.activeTask?.title || openTasks[0]?.title || 'Open time'],
+    ['Energy', data.wellness?.energy || 'Not checked in'],
+    ['Mood', data.wellness?.mood || 'No signal'],
+    ['Goals', activeGoals.length ? activeGoals.length + ' active' : 'No active goals'],
+    ['Today', data.todayEvents.length ? data.todayEvents.length + ' scheduled' : 'Open'],
   ];
-  const proposed = [
-    { label: 'Next shift', value: activeGoals[0] ? 'Move ' + activeGoals[0].title + ' forward' : openTasks[0] ? 'Finish one open priority' : 'Protect open time' },
-    { label: 'Capacity', value: data.wellness?.energy ? 'Plan around ' + data.wellness.energy + ' energy' : 'Check in before adding more' },
-    { label: 'Alignment', value: activeGoals[0]?.targetDate ? 'Keep ' + formatDate(activeGoals[0].targetDate) + ' visible' : 'Choose a direction when ready' },
+  const shifts = [
+    activeGoals[0] ? 'Move ' + activeGoals[0].title + ' forward' : openTasks[0] ? 'Finish one open priority' : 'Protect open time',
+    data.wellness?.energy ? 'Plan around ' + data.wellness.energy + ' energy' : 'Check in before adding more',
+    activeGoals[0]?.targetDate ? 'Keep ' + formatDate(activeGoals[0].targetDate) + ' visible' : 'Choose a direction when ready',
+    data.todayEvents.length > 3 ? 'Protect breathing room around commitments' : 'Use open space intentionally',
   ];
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.15fr_.85fr]">
+    <div className="grid gap-4 lg:grid-cols-[.82fr_1.18fr_.78fr]">
       <Glass className="p-4">
-        <div className="grid gap-4 md:grid-cols-2">
-          <div><p className="text-[8px] uppercase tracking-[.16em] text-[#8d786c]">Current You</p><div className="mt-3 space-y-2">{current.map((item) => <div key={item.label} className="rounded-[11px] bg-[#f3ede8] p-3"><p className="text-[6.5px] uppercase tracking-[.12em] text-[#9a887d]">{item.label}</p><p className="mt-1 text-[8px] text-[#51463f]">{item.value}</p></div>)}</div></div>
-          <div><p className="text-[8px] uppercase tracking-[.16em] text-[#8d786c]">Proposed You</p><div className="mt-3 space-y-2">{proposed.map((item) => <div key={item.label} className="rounded-[11px] bg-[#eee9f4] p-3"><p className="text-[6.5px] uppercase tracking-[.12em] text-[#998aa3]">{item.label}</p><p className="mt-1 text-[8px] text-[#51463f]">{item.value}</p></div>)}</div></div>
+        <div className="flex items-center justify-between"><p className="text-[8px] uppercase tracking-[.17em] text-[#8d786c]">Current You</p><span className="text-[7px] text-[#a09289]">real state</span></div>
+        <div className="mt-3 space-y-2.5">
+          {currentRows.map(([label,value],index) => (
+            <div key={label}>
+              <div className="flex items-center justify-between gap-2 text-[7px]"><span className="text-[#6b5c54]">{label}</span><span className="max-w-[58%] truncate text-[#978981]">{value}</span></div>
+              <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[#eee7e2]"><span className="block h-full rounded-full bg-[linear-gradient(90deg,#9fb7ca,#d8c7ea)]" style={{ width: (28 + index * 11) + '%' }} /></div>
+            </div>
+          ))}
         </div>
-        <button type="button" onClick={() => document.dispatchEvent(new CustomEvent('glow:open', { detail: { context: { room: 'Vision & You', intent: 'Simulate a realistic next version of my day using only my real Glow data. Do not change anything until I approve.' } } }))} className="mt-4 w-full rounded-full bg-[#c8b09f] px-4 py-2.5 text-[8px] text-white">Simulate This Life</button>
       </Glass>
-      <div className="space-y-4">
-        <ImagePanel src={ART.calm} className="min-h-[290px]"><div className="absolute inset-x-5 top-1/2 -translate-y-1/2 rounded-[14px] bg-white/52 p-5 text-center backdrop-blur"><p className="text-[8px] uppercase tracking-[.2em] text-[#8d786c]">A brighter you is already possible.</p></div></ImagePanel>
-        <Glass className="p-4"><p className="text-[8px] uppercase tracking-[.16em] text-[#8d786c]">Potential shifts</p><div className="mt-3 space-y-2 text-[8px] text-[#5d514a]">{proposed.map((item) => <p key={item.label}>+ {item.value}</p>)}</div></Glass>
-      </div>
+
+      <ImagePanel src={ART.calm} className="min-h-[400px] p-5">
+        <div className="absolute inset-x-5 top-1/2 -translate-y-1/2 rounded-[16px] border border-white/70 bg-white/58 p-5 text-center backdrop-blur-md">
+          <p className="text-[8px] uppercase tracking-[.22em] text-[#8d786c]">A brighter you is already possible.</p>
+          <p className="mt-2 font-serif text-[13px] italic text-[#62564f]">Current state → proposed direction</p>
+          <button type="button" onClick={() => document.dispatchEvent(new CustomEvent('glow:open', { detail: { context: { room: 'Vision & You', intent: 'Simulate a realistic next version of my day using only my real Glow data. Do not change anything until I approve.' } } }))} className="mt-4 rounded-full bg-[#342d29] px-5 py-2.5 text-[8px] text-white">Simulate This Life</button>
+        </div>
+      </ImagePanel>
+
+      <Glass className="p-4">
+        <p className="text-[8px] uppercase tracking-[.17em] text-[#8d786c]">Potential shifts</p>
+        <div className="mt-3 space-y-2">
+          {shifts.map((shift,index) => <div key={shift} className="flex items-start gap-2 rounded-[10px] bg-white/42 px-3 py-2.5"><span className="mt-0.5 text-[#9a86b0]">{index + 1}</span><p className="text-[8px] leading-4 text-[#5b4e47]">{shift}</p></div>)}
+        </div>
+        <p className="mt-4 font-serif text-[10px] italic leading-4 text-[#74655d]">Proposals stay separate from reality until you approve them.</p>
+      </Glass>
     </div>
   );
 }
