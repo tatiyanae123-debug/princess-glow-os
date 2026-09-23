@@ -41,5 +41,5 @@ export default async function HomePage() {
     intelligence = null;
   }
 
-  return <GlowThresholdReference intelligence={intelligence} />;
+  return <GlowThresholdReference intelligence={intelligence} userName={session.user.name ?? null} userImage={session.user.image ?? null} />;
 }
