@@ -32,7 +32,7 @@ import {
   WalletCards,
   Zap,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { universalIntakeAction } from '@/app/actions/universal-intake';
 import { updateTaskAction } from '@/app/actions/tasks';
 import type { PersonalEvent, PersonalTask } from '@/lib/personal-context/types';
@@ -263,7 +263,7 @@ function MiniIcon({ kind, size = 11, className = '' }: { kind: string; size?: nu
   return <Lightbulb size={size} className={className} />;
 }
 
-export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIntelligence }) {
+export function GlowThresholdReference({ intelligence, userName, userImage }: { intelligence?: HomeIntelligence; userName?: string | null; userImage?: string | null }) {
   const personal = usePersonalContext();
   const data = personal.status === 'ready' ? personal.data : null;
   const [now, setNow] = useState<Date | null>(null);
@@ -272,6 +272,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
   const [weather, setWeather] = useState<WeatherState>(null);
   const [weatherStatus, setWeatherStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
   const [completedTaskIds, setCompletedTaskIds] = useState<Set<string>>(new Set());
+  const [viewportWidth, setViewportWidth] = useState<number | null>(null);
   const taskUpdate = useServerAction((payload: { id: string; data: { status: 'done' } }) =>
     updateTaskAction(payload.id, payload.data),
   );
@@ -284,21 +285,37 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
   }, []);
 
   useEffect(() => {
+    const updateViewport = () => setViewportWidth(window.innerWidth);
+    updateViewport();
+    window.addEventListener('resize', updateViewport);
+    return () => window.removeEventListener('resize', updateViewport);
+  }, []);
+
+  useEffect(() => {
     if (typeof window === 'undefined') return;
     if (window.localStorage.getItem('glow:weather-enabled') === 'yes') requestWeather();
   }, []);
 
   const clock = now ?? new Date(0);
   const mode = now ? modeFor(now) : 'day';
-  const firstName = data?.user.name?.trim().split(/\s+/)[0] ?? '';
-  const initials = data?.user.name
-    ? data.user.name
-        .trim()
+  const resolvedName = data?.user.name?.trim() || userName?.trim() || '';
+  const firstName = resolvedName ? resolvedName.split(/\s+/)[0] : '';
+  const initials = resolvedName
+    ? resolvedName
         .split(/\s+/)
         .slice(0, 2)
         .map((part) => part.charAt(0).toUpperCase())
         .join('')
     : 'G';
+
+  const referenceBaseWidth = 1240;
+  const fitReferenceCanvas = viewportWidth !== null && viewportWidth >= 640 && viewportWidth < referenceBaseWidth;
+  const referenceScale = fitReferenceCanvas
+    ? Math.max(0.52, Math.min(1, (viewportWidth - 12) / referenceBaseWidth))
+    : 1;
+  const referenceCanvasStyle: CSSProperties | undefined = fitReferenceCanvas
+    ? ({ width: referenceBaseWidth, maxWidth: 'none', zoom: referenceScale } as CSSProperties)
+    : undefined;
 
   const todayEvents = useMemo(
     () => [...(data?.todayEvents ?? [])].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime()),
@@ -477,7 +494,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_12%_8%,rgba(255,255,255,.98),transparent_34%),radial-gradient(circle_at_88%_10%,rgba(248,232,219,.76),transparent_36%),linear-gradient(135deg,rgba(241,235,228,.76)_0%,rgba(239,232,224,.67)_55%,rgba(226,220,212,.76)_100%)]" />
       <div className="pointer-events-none fixed inset-0 -z-10 opacity-25 [background-image:linear-gradient(rgba(255,255,255,.24)_1px,transparent_1px)] [background-size:100%_20px]" />
 
-      <main className="mx-auto w-full max-w-[1680px] px-2 py-2 sm:px-3 lg:px-4">
+      <main className="mx-auto w-full max-w-[1680px] px-2 py-2 sm:px-3 lg:px-4" style={referenceCanvasStyle}>
         <div className="rounded-[25px] border border-white/90 bg-[rgba(252,250,247,.58)] p-2.5 shadow-[0_26px_80px_rgba(73,58,49,.10),inset_0_1px_0_rgba(255,255,255,.98),inset_0_0_42px_rgba(255,255,255,.20)] backdrop-blur-[30px] sm:p-3">
           <header className="mb-3 flex min-h-[54px] items-center justify-between gap-4 border-b border-white/70 px-1 pb-3">
             <div className="flex min-w-0 items-center gap-3">
@@ -502,7 +519,12 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                 {attentionCount ? <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#b07078]" /> : null}
               </button>
               <button type="button" onClick={() => travel('/settings')} className="flex items-center gap-2 rounded-full border border-white/70 bg-white/46 p-1.5 pr-3 text-left">
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-[linear-gradient(145deg,#eadfd4,#c9bbb2)] text-[10px] font-semibold text-white">{initials}</span>
+                <span
+                  className="grid h-8 w-8 place-items-center rounded-full bg-[linear-gradient(145deg,#eadfd4,#c9bbb2)] bg-cover bg-center text-[10px] font-semibold text-white"
+                  style={userImage ? { backgroundImage: 'url(' + userImage + ')' } : undefined}
+                >
+                  {userImage ? null : initials}
+                </span>
                 <span className="hidden sm:block">
                   <span className="block text-[9px] font-medium text-[#4b403a]">Same you.</span>
                   <span className="block text-[8px] text-[#8f8076]">Bigger dreams. ♡</span>
@@ -511,9 +533,9 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
             </div>
           </header>
 
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px]">
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_205px]">
             <div className="space-y-3">
-              <div className="grid gap-3 lg:grid-cols-[minmax(0,1.55fr)_118px_118px_118px]">
+              <div className="grid gap-3 sm:grid-cols-[minmax(0,1.62fr)_104px_104px_104px]">
                 <Glass className="min-h-[150px] p-5">
                   <div className="absolute inset-0 opacity-35" style={{ backgroundImage: 'linear-gradient(90deg,rgba(255,252,248,.97) 0%,rgba(255,252,248,.84) 45%,rgba(255,252,248,.28) 100%),url(' + HERO_IMAGE + ')', backgroundSize: 'cover', backgroundPosition: 'center' }} />
                   <div className="pointer-events-none absolute bottom-3 right-5 z-[1] hidden h-[92px] w-[210px] lg:block" aria-hidden="true">
@@ -553,8 +575,8 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                 </button>
               </div>
 
-              <div className="grid gap-2.5 lg:grid-cols-[.92fr_1.08fr_.96fr]">
-                <Glass className="p-3.5 lg:h-[170px]">
+              <div className="grid gap-2.5 sm:grid-cols-[.90fr_1.12fr_.92fr]">
+                <Glass className="p-3.5 sm:h-[170px]">
                   <div className="flex items-center justify-between">
                     <MicroTitle>● &nbsp; Now</MicroTitle>
                     <span className="text-[9px] text-[#8b7d74]">{eventMinutesLeft !== null ? formatDuration(eventMinutesLeft) : intelligence?.availableMinutes ? formatDuration(intelligence.availableMinutes) : ''}</span>
@@ -573,7 +595,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                   </div>
                 </Glass>
 
-                <Glass className="p-3.5 lg:h-[170px]">
+                <Glass className="p-3.5 sm:h-[170px]">
                   <div className="flex items-center gap-2">
                     <h3 className="font-serif text-[19px] leading-none text-[#332b27]">What now?</h3>
                     <span className="text-[8px] text-[#95867d]">{todayThree.length} open</span>
@@ -604,7 +626,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                   </div>
                 </Glass>
 
-                <Glass className="p-3.5 lg:h-[170px]">
+                <Glass className="p-3.5 sm:h-[170px]">
                   <h3 className="font-serif text-[19px] leading-none text-[#332b27]">Planning Studio</h3>
                   <p className="mt-1 text-[8px] italic text-[#91827a]">Explore. Adjust. Create your best day.</p>
                   <div className="mt-2.5 grid grid-cols-2 gap-1.5">
@@ -623,7 +645,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                 </Glass>
               </div>
 
-              <Glass className="p-2.5 lg:h-[104px]">
+              <Glass className="p-2.5 sm:h-[104px]">
                 <div className="mb-1.5 flex items-center justify-between gap-3">
                   <div className="flex items-baseline gap-3">
                     <h3 className="font-serif text-[19px] text-[#332b27]">Your Day in Flow</h3>
@@ -675,8 +697,8 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                 </div>
               </Glass>
 
-              <div className="grid gap-3 lg:grid-cols-[.96fr_.92fr_.83fr_1.15fr]">
-                <Glass className="p-3 lg:h-[154px]">
+              <div className="grid gap-3 sm:grid-cols-[.98fr_.94fr_.82fr_1.12fr]">
+                <Glass className="p-3 sm:h-[154px]">
                   <div className="flex items-center justify-between">
                     <h3 className="font-serif text-[15px] text-[#332b27]">Today Systems</h3>
                     <span className="text-[8px] text-[#8b7d74]">{systemItems.length}</span>
@@ -705,7 +727,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                   </div>
                 </Glass>
 
-                <Glass className="p-3 lg:h-[154px]">
+                <Glass className="p-3 sm:h-[154px]">
                   <div className="flex items-center justify-between">
                     <h3 className="font-serif text-[15px] text-[#332b27]">Important Inbox</h3>
                     {intelligence?.inboxCount ? <span className="rounded-full bg-[#f4e1e3] px-2 py-0.5 text-[7px] text-[#9d626b]">{intelligence.inboxCount} new</span> : null}
@@ -732,7 +754,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                   </div>
                 </Glass>
 
-                <Glass className="p-3 lg:h-[154px]">
+                <Glass className="p-3 sm:h-[154px]">
                   <div className="flex items-center justify-between">
                     <h3 className="font-serif text-[15px] text-[#332b27]">People to Contact</h3>
                     <UserRound size={13} className="text-[#9d887b]" />
@@ -743,7 +765,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                   </div>
                 </Glass>
 
-                <Glass className="p-3 lg:h-[154px]">
+                <Glass className="p-3 sm:h-[154px]">
                   <div className="flex items-center justify-between">
                     <h3 className="font-serif text-[15px] text-[#332b27]">Routine Hub</h3>
                     <button type="button" onClick={() => travel('/routines')} className="text-[7px] text-[#7e6e65]">See all →</button>
@@ -769,8 +791,8 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                 </Glass>
               </div>
 
-              <div className="grid gap-3 lg:grid-cols-[1.08fr_1.03fr_1.15fr_.9fr]">
-                <Glass className="p-3 lg:h-[146px]">
+              <div className="grid gap-3 sm:grid-cols-[1.05fr_1.03fr_1.12fr_.88fr]">
+                <Glass className="p-3 sm:h-[146px]">
                   <div className="flex items-center gap-2">
                     <h3 className="font-serif text-[16px] text-[#332b27]">Brain Web</h3>
                     <span className="text-[7px] text-[#998b82]">Ideas. Notes. Everything connects.</span>
@@ -791,7 +813,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                   </div>
                 </Glass>
 
-                <Glass className="p-3 lg:h-[146px]">
+                <Glass className="p-3 sm:h-[146px]">
                   <h3 className="font-serif text-[15px] text-[#332b27]">Moving Forward</h3>
                   <div className="mt-2 space-y-1.5">
                     {activeGoals.length ? activeGoals.map((goal) => (
@@ -812,7 +834,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                   </div>
                 </Glass>
 
-                <Glass className="p-3 lg:h-[146px]">
+                <Glass className="p-3 sm:h-[146px]">
                   <div className="flex items-baseline gap-2">
                     <h3 className="font-serif text-[15px] text-[#332b27]">Life Pulse</h3>
                     <span className="text-[7px] text-[#998b82]">All parts of you, in balance.</span>
@@ -837,7 +859,7 @@ export function GlowThresholdReference({ intelligence }: { intelligence?: HomeIn
                   </div>
                 </Glass>
 
-                <Glass className="p-3 lg:h-[146px]">
+                <Glass className="p-3 sm:h-[146px]">
                   <div className="flex items-center justify-between">
                     <h3 className="font-serif text-[15px] text-[#332b27]">Catch Up</h3>
                     <MoreHorizontal size={13} className="text-[#9d8d83]" />
