@@ -61,6 +61,29 @@ type GlowContact = {
   organization: string | null;
 };
 
+type LivingReminder = {
+  id: string;
+  title: string;
+  notes: string | null;
+  listName: string;
+  dueAt: string | null;
+  completed: boolean;
+};
+
+type LivingInboxMessage = {
+  id: string;
+  threadId: string;
+  from: string;
+  subject: string;
+  summary: string;
+  unread: boolean;
+  date: string | null;
+  category: string;
+  priority: string;
+  route: string;
+  rationale: string;
+};
+
 const ART = {
   bath: 'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1400&q=82',
   room: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1400&q=82',
@@ -288,6 +311,62 @@ function useContacts(enabled: boolean) {
   return { contacts, status };
 }
 
+function useLivingReminders(enabled: boolean) {
+  const [reminders, setReminders] = useState<LivingReminder[]>([]);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'unavailable'>('idle');
+
+  useEffect(() => {
+    if (!enabled) return;
+    let live = true;
+    setStatus('loading');
+    fetch('/api/living/reminders', { cache: 'no-store' })
+      .then(async (response) => {
+        const payload = (await response.json()) as { ok?: boolean; reminders?: LivingReminder[] };
+        if (!live) return;
+        if (response.ok && payload.ok) {
+          setReminders(payload.reminders ?? []);
+          setStatus('ready');
+        } else {
+          setStatus('unavailable');
+        }
+      })
+      .catch(() => {
+        if (live) setStatus('unavailable');
+      });
+    return () => { live = false; };
+  }, [enabled]);
+
+  return { reminders, status };
+}
+
+function useLivingInbox(enabled: boolean) {
+  const [messages, setMessages] = useState<LivingInboxMessage[]>([]);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'unavailable'>('idle');
+
+  useEffect(() => {
+    if (!enabled) return;
+    let live = true;
+    setStatus('loading');
+    fetch('/api/living/inbox', { cache: 'no-store' })
+      .then(async (response) => {
+        const payload = (await response.json()) as { ok?: boolean; messages?: LivingInboxMessage[] };
+        if (!live) return;
+        if (response.ok && payload.ok) {
+          setMessages(payload.messages ?? []);
+          setStatus('ready');
+        } else {
+          setStatus('unavailable');
+        }
+      })
+      .catch(() => {
+        if (live) setStatus('unavailable');
+      });
+    return () => { live = false; };
+  }, [enabled]);
+
+  return { messages, status };
+}
+
 function WhatNow({
   data,
   startTask,
@@ -457,7 +536,17 @@ function DayFlow({ data }: { data: PersonalContextData }) {
   );
 }
 
-function TodaySystems({ data, toggleTask }: { data: PersonalContextData; toggleTask: (task: PersonalTask) => void }) {
+function TodaySystems({
+  data,
+  toggleTask,
+  reminders,
+  remindersStatus,
+}: {
+  data: PersonalContextData;
+  toggleTask: (task: PersonalTask) => void;
+  reminders: LivingReminder[];
+  remindersStatus: 'idle' | 'loading' | 'ready' | 'unavailable';
+}) {
   const openTasks = data.tasks.filter((task) => task.status !== 'done' && task.status !== 'cancelled');
   return (
     <div className="grid gap-4 md:grid-cols-[1.42fr_.58fr]">
@@ -501,11 +590,16 @@ function TodaySystems({ data, toggleTask }: { data: PersonalContextData; toggleT
           <section>
             <div className="mb-2 flex items-center justify-between">
               <p className="text-[8px] font-semibold uppercase tracking-[.16em] text-[#7d6d64]">Reminders</p>
-              <span className="text-[7px] text-[#9b8e85]">source aware</span>
+              <span className="text-[7px] text-[#9b8e85]">{remindersStatus === 'ready' ? reminders.filter((item) => !item.completed).length + ' open' : remindersStatus === 'loading' ? 'loading' : 'source unavailable'}</span>
             </div>
-            <div className="grid grid-cols-2 gap-1.5">
-              <Link href="/reminders" className="rounded-[9px] bg-white/42 px-2.5 py-2 text-[7px] text-[#62564f]">Open Reminders</Link>
-              <div className="rounded-[9px] border border-dashed border-[#ddd1c9] px-2.5 py-2 text-[7px] italic text-[#9b8d84]">No reminder details loaded here</div>
+            <div className="space-y-1.5">
+              {remindersStatus === 'ready' && reminders.length ? reminders.filter((item) => !item.completed).slice(0, 3).map((reminder) => (
+                <Link key={reminder.id} href="/reminders" className="flex items-center gap-2 rounded-[9px] bg-white/42 px-2.5 py-2 text-[7px] text-[#62564f]">
+                  <span className="grid h-4 w-4 place-items-center rounded-full border border-[#d6c8bf] text-[6px] text-[#a58b75]">○</span>
+                  <span className="min-w-0 flex-1 truncate">{reminder.title}</span>
+                  <span className="text-[#9b8d84]">{reminder.dueAt ? formatTime(reminder.dueAt) || formatDate(reminder.dueAt) : reminder.listName}</span>
+                </Link>
+              )) : <Link href="/reminders" className="block rounded-[9px] border border-dashed border-[#ddd1c9] px-2.5 py-2 text-[7px] italic text-[#9b8d84]">{remindersStatus === 'loading' ? 'Loading real reminders…' : 'No open reminders loaded'}</Link>}
             </div>
           </section>
         </div>
@@ -518,27 +612,81 @@ function TodaySystems({ data, toggleTask }: { data: PersonalContextData; toggleT
   );
 }
 
-function ImportantInbox({ data }: { data: PersonalContextData }) {
-  const inboxTabs = ['All', 'Captures', 'Tasks', 'Connections'] as const;
+function ImportantInbox({
+  data,
+  messages,
+  inboxStatus,
+}: {
+  data: PersonalContextData;
+  messages: LivingInboxMessage[];
+  inboxStatus: 'idle' | 'loading' | 'ready' | 'unavailable';
+}) {
+  const inboxTabs = ['All', 'Messages', 'Tasks', 'Captures', 'Connections'] as const;
   const [tab, setTab] = useSessionChoice('glow:living:important-inbox-tab', 'All', inboxTabs);
   const notes = [...data.notes].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+
   const signals = [
-    ...(data.sourceStatus.googleCalendar !== 'connected' ? [{ id: 'calendar', title: 'Calendar connection needs attention', detail: data.sourceStatus.googleCalendar, type: 'Connection' }] : []),
-    ...data.tasks.filter((task) => task.priority === 'urgent' || task.priority === 'high').slice(0, 4).map((task) => ({ id: task.id, title: task.title, detail: task.dueDate ? formatDate(task.dueDate) : task.priority, type: 'Task' })),
-    ...notes.slice(0, 4).map((note) => ({ id: note.id, title: note.title, detail: formatDate(note.updatedAt), type: 'Capture' })),
+    ...messages.map((message) => ({
+      id: message.id,
+      title: message.from,
+      detail: message.subject,
+      meta: message.date ? formatDate(message.date) : message.priority,
+      type: 'Message' as const,
+      href: '/gmail',
+      priority: message.priority,
+    })),
+    ...(data.sourceStatus.googleCalendar !== 'connected' ? [{
+      id: 'calendar',
+      title: 'Calendar connection',
+      detail: data.sourceStatus.googleCalendar.replaceAll('_', ' '),
+      meta: 'Connection',
+      type: 'Connection' as const,
+      href: '/connections',
+      priority: 'normal',
+    }] : []),
+    ...data.tasks.filter((task) => task.priority === 'urgent' || task.priority === 'high').slice(0, 5).map((task) => ({
+      id: task.id,
+      title: task.title,
+      detail: task.dueDate ? 'Due ' + formatDate(task.dueDate) : task.priority + ' priority',
+      meta: task.priority,
+      type: 'Task' as const,
+      href: '/tasks?task=' + encodeURIComponent(task.id),
+      priority: task.priority,
+    })),
+    ...notes.slice(0, 4).map((note) => ({
+      id: note.id,
+      title: note.title,
+      detail: note.content?.slice(0, 70) || 'Captured note',
+      meta: formatDate(note.updatedAt),
+      type: 'Capture' as const,
+      href: '/brain',
+      priority: 'normal',
+    })),
   ];
-  const visibleSignals = tab === 'All' ? signals : signals.filter((item) => item.type === tab.slice(0, -1) || (tab === 'Connections' && item.type === 'Connection'));
+
+  const visibleSignals = tab === 'All'
+    ? signals
+    : signals.filter((item) => item.type === tab.slice(0, -1) || (tab === 'Connections' && item.type === 'Connection'));
 
   return (
     <div className="grid gap-4 md:grid-cols-[1.25fr_.75fr]">
       <Glass className="p-4">
         <div className="mb-3 flex flex-wrap gap-2">{inboxTabs.map((item) => <button key={item} type="button" onClick={() => setTab(item)} className={'rounded-full px-3 py-1.5 text-[7px] ' + (tab === item ? 'bg-[#eee3dc] text-[#5c4b43]' : 'bg-white/50 text-[#887a71]')}>{item}</button>)}</div>
-        <div className="space-y-1.5">{visibleSignals.length ? visibleSignals.map((item) => <Link key={item.type + item.id} href={item.type === 'Task' ? '/tasks?task=' + encodeURIComponent(item.id) : item.type === 'Connection' ? '/connections' : '/brain'} className="flex items-center gap-3 rounded-[11px] bg-white/42 px-3 py-2.5"><span className="grid h-8 w-8 place-items-center rounded-full bg-[#eee6df] text-[#8e776b]">{item.type === 'Task' ? <ListChecks size={13} /> : item.type === 'Connection' ? <Bell size={13} /> : <Inbox size={13} />}</span><span className="min-w-0 flex-1"><span className="block truncate text-[8.5px] font-medium text-[#4d423b]">{item.title}</span><span className="block text-[7px] text-[#9c8e85]">{item.detail}</span></span><span className="rounded-full bg-[#f3e6e8] px-2 py-1 text-[6.5px] text-[#a27079]">{item.type}</span></Link>) : <EmptyRows count={7} label="Nothing important is waiting" />}</div>
+        <div className="space-y-1.5">
+          {visibleSignals.length ? visibleSignals.slice(0, 9).map((item) => <Link key={item.type + item.id} href={item.href} className="grid grid-cols-[34px_1fr_auto] items-center gap-3 rounded-[11px] bg-white/42 px-3 py-2.5">
+            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#eee6df] text-[#8e776b]">{item.type === 'Message' ? <Mail size={13} /> : item.type === 'Task' ? <ListChecks size={13} /> : item.type === 'Connection' ? <Bell size={13} /> : <Inbox size={13} />}</span>
+            <span className="min-w-0">
+              <span className="block truncate text-[8.5px] font-medium text-[#4d423b]">{item.title}</span>
+              <span className="block truncate text-[7px] text-[#9c8e85]">{item.detail}</span>
+            </span>
+            <span className={'rounded-full px-2 py-1 text-[6.5px] ' + (item.priority === 'urgent' || item.priority === 'high' ? 'bg-[#f3e2e5] text-[#a36b75]' : 'bg-[#edf1ee] text-[#70827a]')}>{item.meta}</span>
+          </Link>) : <EmptyRows count={7} label={inboxStatus === 'loading' ? 'Loading real inbox signals…' : 'Nothing important is waiting'} />}
+        </div>
       </Glass>
       <Glass className="p-4">
         <p className="text-[8px] uppercase tracking-[.16em] text-[#8d786c]">Suggested next</p>
-        <div className="mt-3 space-y-2">{visibleSignals.slice(0, 3).map((item) => <div key={item.type + item.id} className="rounded-[11px] bg-[#f6f0eb] p-3"><p className="text-[8px] font-medium text-[#51463f]">{item.title}</p><p className="mt-1 text-[7px] text-[#94877f]">Open the real source to act.</p></div>)}</div>
-        <ImagePanel src={ART.room} className="mt-4 min-h-[170px]"><p className="absolute bottom-3 left-3 font-serif text-[10px] italic text-[#6d5f56]">Handle what is actually waiting.</p></ImagePanel>
+        <div className="mt-3 space-y-2">{visibleSignals.slice(0, 3).map((item) => <Link href={item.href} key={item.type + item.id} className="block rounded-[11px] bg-[#f6f0eb] p-3"><p className="text-[8px] font-medium text-[#51463f]">{item.title}</p><p className="mt-1 line-clamp-2 text-[7px] text-[#94877f]">{item.detail}</p></Link>)}</div>
+        <ImagePanel src={ART.room} className="mt-4 min-h-[170px]"><p className="absolute bottom-3 left-3 text-[8px] text-[#6d5f56]">{messages.length ? messages.length + ' recent Gmail messages are available to Glow.' : inboxStatus === 'unavailable' ? 'Gmail is not available in this workspace right now.' : 'Glow is showing other real attention signals.'}</p></ImagePanel>
       </Glass>
     </div>
   );
@@ -554,7 +702,7 @@ function PeopleToContact({ contacts, status }: { contacts: GlowContact[]; status
     <div className="grid gap-4 md:grid-cols-[1.25fr_.75fr]">
       <Glass className="p-4">
         <div className="mb-3 flex flex-wrap gap-2">{contactTabs.map((item) => <button key={item} type="button" onClick={() => setTab(item)} className={'rounded-full px-3 py-1.5 text-[7px] ' + (tab === item ? 'bg-[#eee3dc] text-[#5c4b43]' : 'bg-white/48 text-[#8a7c73]')}>{item}</button>)}</div>
-        <div className="space-y-1.5">{visible.length ? visible.map((contact) => <a key={contact.id} href={contact.email ? 'mailto:' + contact.email : contact.phone ? 'tel:' + contact.phone : '#'} className="flex items-center gap-3 rounded-[11px] bg-white/42 px-3 py-2"><span className="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-[#ebe3dc] text-[8px] font-medium text-[#78685f]">{contact.photoUrl ? <img src={contact.photoUrl} alt="" className="h-full w-full object-cover" /> : contact.name.split(/\s+/).map((part) => part[0]).slice(0,2).join('')}</span><span className="min-w-0 flex-1"><span className="block truncate text-[8.5px] font-medium text-[#4d423b]">{contact.name}</span><span className="block truncate text-[7px] text-[#9b8d84]">{contact.organization || contact.email || contact.phone || 'Contact'}</span></span><span className="text-[7px] text-[#a09188]">Open</span></a>) : <EmptyRows count={7} label={status === 'loading' ? 'Loading real contacts…' : 'No contact source is available'} />}</div>
+        <div className="space-y-1.5">{visible.length ? visible.map((contact) => <Link key={contact.id} href={'/relationships?person=' + encodeURIComponent(contact.id)} className="flex items-center gap-3 rounded-[11px] bg-white/42 px-3 py-2"><span className="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-[#ebe3dc] text-[8px] font-medium text-[#78685f]">{contact.photoUrl ? <img src={contact.photoUrl} alt="" className="h-full w-full object-cover" /> : contact.name.split(/\s+/).map((part) => part[0]).slice(0,2).join('')}</span><span className="min-w-0 flex-1"><span className="block truncate text-[8.5px] font-medium text-[#4d423b]">{contact.name}</span><span className="block truncate text-[7px] text-[#9b8d84]">{contact.organization || contact.email || contact.phone || 'Contact'}</span></span><span className="text-[7px] text-[#a09188]">Open</span></Link>) : <EmptyRows count={7} label={status === 'loading' ? 'Loading real contacts…' : 'No contact source is available'} />}</div>
       </Glass>
       <div className="space-y-4">
         <Glass className="p-4"><p className="text-[8px] uppercase tracking-[.16em] text-[#8d786c]">Relationship focus</p><p className="mt-2 text-[9px] leading-4 text-[#706159]">{visible.length ? visible.length + ' real contacts are available in this view.' : 'Connect or load contacts to build follow-up context.'}</p></Glass>
@@ -758,6 +906,10 @@ function WorkspaceContent({
   data,
   contacts,
   contactsStatus,
+  reminders,
+  remindersStatus,
+  inboxMessages,
+  inboxStatus,
   toggleTask,
   startTask,
 }: {
@@ -765,14 +917,18 @@ function WorkspaceContent({
   data: PersonalContextData;
   contacts: GlowContact[];
   contactsStatus: 'idle' | 'loading' | 'ready' | 'unavailable';
+  reminders: LivingReminder[];
+  remindersStatus: 'idle' | 'loading' | 'ready' | 'unavailable';
+  inboxMessages: LivingInboxMessage[];
+  inboxStatus: 'idle' | 'loading' | 'ready' | 'unavailable';
   toggleTask: (task: PersonalTask) => void;
   startTask: (task: PersonalTask) => void;
 }) {
   if (workspace === 'what-now') return <WhatNow data={data} startTask={startTask} />;
   if (workspace === 'planning-studio') return <PlanningStudio data={data} />;
   if (workspace === 'day-flow') return <DayFlow data={data} />;
-  if (workspace === 'today-systems') return <TodaySystems data={data} toggleTask={toggleTask} />;
-  if (workspace === 'important-inbox') return <ImportantInbox data={data} />;
+  if (workspace === 'today-systems') return <TodaySystems data={data} toggleTask={toggleTask} reminders={reminders} remindersStatus={remindersStatus} />;
+  if (workspace === 'important-inbox') return <ImportantInbox data={data} messages={inboxMessages} inboxStatus={inboxStatus} />;
   if (workspace === 'people-to-contact') return <PeopleToContact contacts={contacts} status={contactsStatus} />;
   if (workspace === 'brain-web') return <BrainWeb data={data} />;
   if (workspace === 'moving-forward') return <MovingForward data={data} />;
@@ -799,6 +955,8 @@ export function ReferenceLivingWorkspace({
     }),
   );
   const { contacts, status: contactsStatus } = useContacts(workspace === 'people-to-contact');
+  const { reminders, status: remindersStatus } = useLivingReminders(workspace === 'today-systems');
+  const { messages: inboxMessages, status: inboxStatus } = useLivingInbox(workspace === 'important-inbox');
 
   function toggleTask(task: PersonalTask) {
     updateTask.run({ id: task.id, status: task.status === 'done' ? 'pending' : 'done' }, () => {
@@ -820,7 +978,7 @@ export function ReferenceLivingWorkspace({
 
   return (
     <Shell workspace={workspace} userName={data?.user.name || userName}>
-      {data ? <WorkspaceContent workspace={workspace} data={data} contacts={contacts} contactsStatus={contactsStatus} toggleTask={toggleTask} startTask={startTask} /> : <Glass className="p-5"><p className="text-[9px] italic text-[#998b82]">Glow is loading your real information.</p></Glass>}
+      {data ? <WorkspaceContent workspace={workspace} data={data} contacts={contacts} contactsStatus={contactsStatus} reminders={reminders} remindersStatus={remindersStatus} inboxMessages={inboxMessages} inboxStatus={inboxStatus} toggleTask={toggleTask} startTask={startTask} /> : <Glass className="p-5"><p className="text-[9px] italic text-[#998b82]">Glow is loading your real information.</p></Glass>}
     </Shell>
   );
 }
