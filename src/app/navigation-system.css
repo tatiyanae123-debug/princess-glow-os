@@ -206,3 +206,18 @@ body:has([data-glow-home-reference]) .glow-presence-trigger,
 body:has([data-glow-home-reference]) .glow-unfolded-surface {
   display:none!important;
 }
+
+
+/* Home owns the viewport. Keep GlowCurrent mounted as the navigation/Shakti bridge,
+   but suppress competing global chrome while the reference dashboard is present. */
+body:has([data-glow-home-reference]) .glow-nav__sidebar,
+body:has([data-glow-home-reference]) .glow-nav__header,
+body:has([data-glow-home-reference]) .glow-nav__local-tabs,
+body:has([data-glow-home-reference]) .glow-nav__mobile-bottom,
+body:has([data-glow-home-reference]) .glow-presence-trigger {
+  display:none!important;
+}
+body:has([data-glow-home-reference]) {
+  --glow-nav-sidebar: 0px;
+  --glow-nav-header: 0px;
+}
