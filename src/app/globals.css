@@ -201,3 +201,37 @@ body {
   [data-glow-deep-page='true'] .editorial-surface,
   [data-glow-deep-page='true'] .paper-card{border-radius:14px}
 }
+
+
+/* Global descendant bridge. GlowCurrent marks every non-Home route as a
+   descendant of the new Dashboard so legacy route families cannot fall back
+   to the old beige application language while they are being migrated. */
+html[data-glow-architecture='dashboard-descendant'] body{
+  color:#302a27;
+  background:
+    radial-gradient(circle at 10% 0%,rgba(255,255,255,.98),transparent 26%),
+    radial-gradient(circle at 88% 4%,rgba(224,233,231,.30),transparent 28%),
+    radial-gradient(circle at 58% 96%,rgba(239,226,219,.22),transparent 32%),
+    linear-gradient(180deg,#fbfaf8 0%,#f7f4f0 52%,#f2eeea 100%);
+}
+html[data-glow-architecture='dashboard-descendant'] :is(.editorial-surface,.paper-card,[data-glass-surface='true']){
+  border-color:rgba(255,255,255,.82)!important;
+  box-shadow:0 14px 38px rgba(68,52,44,.045),inset 0 1px 0 rgba(255,255,255,.95)!important;
+}
+html[data-glow-architecture='dashboard-descendant'] :is(input,textarea,select):not([type='range']){
+  border-color:rgba(126,105,94,.13);
+  background:rgba(255,255,255,.60);
+}
+html[data-glow-architecture='dashboard-descendant'] :is(button,a):focus-visible{
+  outline:2px solid rgba(139,119,151,.34);
+  outline-offset:2px;
+}
+html[data-glow-architecture='dashboard-descendant'] .glow-display{
+  font-family:var(--glow-font-display,Georgia,serif);
+  color:#332d2a;
+}
+html[data-glow-architecture='dashboard-descendant'] [data-empty-state='true']{
+  border:1px dashed rgba(140,119,108,.22);
+  border-radius:13px;
+  background:rgba(255,255,255,.26);
+}
