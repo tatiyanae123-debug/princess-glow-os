@@ -8,7 +8,7 @@ const read = (file: string) => fs.readFileSync(path.join(ROOT, file), 'utf8');
 describe('Dashboard descendant architecture', () => {
   it('marks AppShell pages as descendants of the new Dashboard visual system', () => {
     const shell = read('src/components/app-shell.tsx');
-    expect(shell).toContain("data-glow-deep-page="true"");
+    expect(shell).toContain('data-glow-deep-page="true"');
     expect(shell).toContain("dashboard-descendant-v1");
   });
 
