@@ -154,13 +154,18 @@ export function GlowCurrent() {
   }, [currentPath]);
 
   useEffect(() => {
-    document.documentElement.dataset.glowVisibleWorld = visibleWorld;
-    document.documentElement.dataset.glowNavigation = 'unified-v1';
+    const root = document.documentElement;
+    root.dataset.glowVisibleWorld = visibleWorld;
+    root.dataset.glowNavigation = 'unified-v1';
+    root.dataset.glowArchitecture = pathname === '/home' ? 'dashboard' : 'dashboard-descendant';
+    root.dataset.glowVisualSystem = pathname === '/home' ? 'new-dashboard' : 'dashboard-descendant-v1';
     return () => {
-      delete document.documentElement.dataset.glowVisibleWorld;
-      delete document.documentElement.dataset.glowNavigation;
+      delete root.dataset.glowVisibleWorld;
+      delete root.dataset.glowNavigation;
+      delete root.dataset.glowArchitecture;
+      delete root.dataset.glowVisualSystem;
     };
-  }, [visibleWorld]);
+  }, [pathname, visibleWorld]);
 
   const closeLayers = useCallback(() => {
     setWorldsOpen(false);
@@ -336,7 +341,7 @@ export function GlowCurrent() {
           <button type="button" className="glow-nav__header-action glow-nav__search-trigger" onClick={() => setCommandOpen(true)} aria-label="Search Glow OS"><Search size={15}/><span>Search</span><kbd>⌘K</kbd></button>
           <button type="button" className="glow-nav__header-action" onClick={() => travel('/attention')} aria-label="Attention Center"><BellRing size={15}/><span className="glow-nav__action-label">Attention</span></button>
           <button type="button" className="glow-nav__header-action glow-nav__header-create" onClick={() => setCreateOpen(true)} aria-label="Create"><Plus size={16}/></button>
-          <button type="button" className="glow-nav__header-action glow-nav__ask" onClick={() => document.dispatchEvent(new CustomEvent('glow:open'))} aria-label={`Ask Glow from ${currentRoom}`}><Sparkles size={15}/><span className="glow-nav__action-label">Ask Glow</span></button>
+          <button type="button" className="glow-nav__header-action glow-nav__ask" onClick={() => document.dispatchEvent(new CustomEvent('glow:open'))} aria-label={`Shakti from ${currentRoom}`}><Sparkles size={15}/><span className="glow-nav__action-label">Shakti</span></button>
         </div>
       </header>
 
