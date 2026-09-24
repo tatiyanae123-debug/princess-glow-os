@@ -54,6 +54,7 @@ export const GLOW_PAGE_MANIFESTS: GlowPageManifest[] = [
   ...['today','tomorrow','week','month','archive','insights'].map((key) => m(`plan.planner.${key}`,`/planning/planner/${key}`,key,'plan','experience','/planning/planner','planner-v1',key==='archive'||key==='insights'?'history-room':'planning-studio','structured',['planning-period','task','event'])),
   m('plan.calendar','/calendar','Calendar','plan','room','/planning','planning','temporal-observatory','structured',['event','appointment']),
   m('plan.tasks','/tasks','Tasks','plan','room','/planning','planning','planning-studio','structured',['task']),
+  m('plan.tasks.detail','/tasks/[id]','Task Detail','plan','detail','/tasks','planning','dashboard-descendant','structured',['task']),
   m('plan.reminders','/reminders','Reminders','plan','room','/planning','planning','planning-studio','structured',['reminder']),
   m('plan.routines','/routines','Routines','plan','room','/planning','routines','routine-world','structured',['routine']),
   m('plan.habits','/habits','Habits','plan','room','/planning','habits','routine-world','structured',['habit']),
@@ -64,6 +65,11 @@ export const GLOW_PAGE_MANIFESTS: GlowPageManifest[] = [
   m('life.body','/body','Body','life','room','/life','body','body-blueprint','structured',['measurement','body-profile']),
   m('life.wellness','/wellness','Wellness','life','room','/life','wellness','wellness-room','structured',['wellness-entry','appointment']),
   m('life.fitness','/fitness','Fitness','life','room','/life','fitness','fitness-room','structured',['workout','exercise','recovery-signal']),
+  m('life.fitness.week','/fitness/week','Fitness Week','life','studio','/fitness','fitness','dashboard-descendant','structured',['workout','recovery-signal']),
+  m('life.fitness.workout','/fitness/workout','Workout','life','experience','/fitness','fitness','dashboard-descendant','protected',['workout','exercise']),
+  m('life.fitness.exercises','/fitness/exercises','Exercise Library','life','studio','/fitness','fitness','dashboard-descendant','structured',['exercise']),
+  m('life.fitness.progression','/fitness/progression','Progression','life','studio','/fitness','fitness','dashboard-descendant','structured',['workout','exercise','history']),
+  m('life.fitness.recovery','/fitness/recovery','Recovery','life','studio','/fitness','fitness','dashboard-descendant','structured',['recovery-signal','workout']),
   m('life.food','/food','Food','life','room','/life','food','food-room','structured',['meal','recipe','food']),
   m('life.closet','/closet','Closet','life','room','/life','closet','dressing-room','open',['clothing-item','outfit','wear-history']),
   m('life.finance','/finance','Money','life','room','/life','money','money-room','structured',['transaction','account','bill']),
@@ -97,6 +103,7 @@ export const GLOW_PAGE_MANIFESTS: GlowPageManifest[] = [
   m('beauty.hair','/hair','Hair','life','studio','/beauty','hair','hair-studio','open',['product','routine','style']),
 
   m('brain.world','/brain','Brain','brain','world',null,'brain','knowledge-world','open',['note','memory','connection']),
+  m('brain.dump','/brain/dump','Brain Dump','brain','studio','/brain','capture','dashboard-descendant','open',['capture','note','task','event','goal','project']),
   m('brain.notes','/notes','Notes','brain','room','/brain','notes','knowledge-room','structured',['note']),
   m('brain.memory','/memory','Memory','brain','room','/brain','memory','knowledge-room','open',['memory']),
   m('brain.timeline','/timeline','Timeline','brain','room','/brain','timeline','history-room','open',['history']),
@@ -155,6 +162,9 @@ function manifestFromCanonical(pathname:string):GlowPageManifest|null{
 
 export function pageManifestFor(path: string) {
   const pathname = normalize(path);
+  if (/^\/tasks\/[^/]+$/.test(pathname)) {
+    return m('plan.tasks.detail.runtime',pathname,'Task Detail','plan','detail','/tasks','planning','dashboard-descendant','structured',['task']);
+  }
   const exact = GLOW_PAGE_MANIFESTS.find((item) => item.match === pathname);
   if (exact) return exact;
   const canonical = manifestFromCanonical(pathname);
