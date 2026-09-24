@@ -19,6 +19,8 @@ export type CanonicalDomainClimate =
   | 'closet'
   | 'fitness'
   | 'body'
+  | 'plan'
+  | 'today'
   | 'global';
 
 export type CanonicalDomainDestination = {
