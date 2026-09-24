@@ -53,6 +53,7 @@ export const GLOW_PAGE_MANIFESTS: GlowPageManifest[] = [
   m('plan.planner','/planning/planner','Planner','plan','room','/planning','planner-v1','planning-studio','structured',['planning-period','task','event']),
   ...['today','tomorrow','week','month','archive','insights'].map((key) => m(`plan.planner.${key}`,`/planning/planner/${key}`,key,'plan','experience','/planning/planner','planner-v1',key==='archive'||key==='insights'?'history-room':'planning-studio','structured',['planning-period','task','event'])),
   m('plan.calendar','/calendar','Calendar','plan','room','/planning','planning','temporal-observatory','structured',['event','appointment']),
+  m('plan.calendar.detail','/calendar/[id]','Event Detail','plan','detail','/calendar','planning','dashboard-descendant','structured',['event','appointment']),
   m('plan.tasks','/tasks','Tasks','plan','room','/planning','planning','planning-studio','structured',['task']),
   m('plan.tasks.detail','/tasks/[id]','Task Detail','plan','detail','/tasks','planning','dashboard-descendant','structured',['task']),
   m('plan.reminders','/reminders','Reminders','plan','room','/planning','planning','planning-studio','structured',['reminder']),
@@ -164,6 +165,9 @@ export function pageManifestFor(path: string) {
   const pathname = normalize(path);
   if (/^\/tasks\/[^/]+$/.test(pathname)) {
     return m('plan.tasks.detail.runtime',pathname,'Task Detail','plan','detail','/tasks','planning','dashboard-descendant','structured',['task']);
+  }
+  if (/^\/calendar\/[^/]+$/.test(pathname)) {
+    return m('plan.calendar.detail.runtime',pathname,'Event Detail','plan','detail','/calendar','planning','dashboard-descendant','structured',['event','appointment']);
   }
   const exact = GLOW_PAGE_MANIFESTS.find((item) => item.match === pathname);
   if (exact) return exact;
