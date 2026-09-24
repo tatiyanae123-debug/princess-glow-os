@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 export default async function BrainDumpPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
-  const items = await getInboxItems(session.user.id);
+  const items = await getInbox(session.user.id);
   const recent = items.slice(0, 6);
 
   return (
