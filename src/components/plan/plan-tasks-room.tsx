@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
-import { useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Ban,
@@ -135,6 +135,25 @@ export function PlanTasksRoom({ initialTasks }: { initialTasks: PlanTaskItem[] }
   const [durationFilter, setDurationFilter] = useState('all');
   const [showSubtasks, setShowSubtasks] = useState(true);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    const saved = window.sessionStorage.getItem('glow:tasks:view-state');
+    if (!saved) return;
+    try {
+      const state = JSON.parse(saved) as Partial<{ horizon: PlanHorizon; viewBy: ViewBy; contextFilter: string; locationFilter: string; priorityFilter: string; durationFilter: string; showSubtasks: boolean }>;
+      if (state.horizon) setHorizon(state.horizon);
+      if (state.viewBy) setViewBy(state.viewBy);
+      if (state.contextFilter) setContextFilter(state.contextFilter);
+      if (state.locationFilter) setLocationFilter(state.locationFilter);
+      if (state.priorityFilter) setPriorityFilter(state.priorityFilter);
+      if (state.durationFilter) setDurationFilter(state.durationFilter);
+      if (typeof state.showSubtasks === 'boolean') setShowSubtasks(state.showSubtasks);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    window.sessionStorage.setItem('glow:tasks:view-state', JSON.stringify({ horizon, viewBy, contextFilter, locationFilter, priorityFilter, durationFilter, showSubtasks }));
+  }, [horizon, viewBy, contextFilter, locationFilter, priorityFilter, durationFilter, showSubtasks]);
 
   const now = useMemo(() => new Date(), []);
   const end = useMemo(() => horizonEnd(horizon, now), [horizon, now]);
