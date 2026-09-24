@@ -556,3 +556,5 @@
     transform-origin:top left;
   }
 }
+
+.taskTitleLink{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:650;color:inherit;text-decoration:none}.taskTitleLink:hover{text-decoration:underline;text-decoration-color:rgba(126,105,94,.25);text-underline-offset:3px}
