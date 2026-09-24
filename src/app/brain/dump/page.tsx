@@ -3,7 +3,7 @@ import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
 import { CanonicalDomainRoom } from '@/components/glow/canonical-domain-room';
 import { addInboxItemFormAction } from '@/app/actions/adaptive-os';
-import { getInboxItems } from '@/lib/intelligence/adaptive-os';
+import { getInbox } from '@/lib/intelligence/adaptive-os';
 import { Inbox, Sparkles } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
