@@ -10,7 +10,7 @@ export const dynamic='force-dynamic';
 const destinations=[
   {label:'Notes',href:'/notes',cue:'Thinking on paper'},
   {label:'Memory',href:'/memory',cue:'Long-term context'},
-  {label:'Thoughts',href:'/brain/thoughts',cue:'Raw fragments'},
+  {label:'Brain Dump',href:'/brain/dump',cue:'Capture first · organize second'},
   {label:'Ideas',href:'/brain/ideas',cue:'Possibilities taking shape'},
   {label:'Insights',href:'/brain/insights',cue:'Evidence becoming meaning'},
   {label:'Timeline',href:'/timeline',cue:'History in sequence'},
