@@ -24,15 +24,6 @@ type FitnessPageProps = {
   searchParams?: Promise<{ view?: string }>;
 };
 
-const workoutLibrary = [
-  { title: '20-minute reset', focus: 'Low-impact full body', duration: 20, equipment: 'Mat', energy: 'Low–medium' },
-  { title: 'Strong lower body', focus: 'Glutes + legs', duration: 35, equipment: 'Dumbbells / bands', energy: 'Medium–high' },
-  { title: 'Upper body sculpt', focus: 'Back + shoulders + arms', duration: 30, equipment: 'Dumbbells', energy: 'Medium' },
-  { title: 'Recovery walk', focus: 'Circulation + nervous-system reset', duration: 25, equipment: 'None', energy: 'Low' },
-  { title: 'Pilates core flow', focus: 'Core + posture + mobility', duration: 30, equipment: 'Mat', energy: 'Medium' },
-  { title: 'Mobility restore', focus: 'Hips + spine + shoulders', duration: 15, equipment: 'Mat', energy: 'Low' },
-];
-
 function clampScore(value: number | null | undefined) {
   if (value == null || Number.isNaN(value)) return null;
   return Math.max(1, Math.min(10, value));
@@ -88,6 +79,30 @@ export default async function FitnessPage({ searchParams }: FitnessPageProps) {
     return acc;
   }, {});
   const topWorkout = Object.entries(workoutCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const workoutLibrary = Array.from(
+    sessions.reduce((map, item) => {
+      const key = item.workoutType.trim() || 'Workout';
+      const current = map.get(key) ?? { title: key, count: 0, minutes: 0, energy: 0, energyCount: 0, equipment: new Set<string>() };
+      current.count += 1;
+      current.minutes += item.durationMinutes ?? 0;
+      if (item.energy != null) {
+        current.energy += item.energy;
+        current.energyCount += 1;
+      }
+      if (item.equipment?.trim()) current.equipment.add(item.equipment.trim());
+      map.set(key, current);
+      return map;
+    }, new Map<string, { title: string; count: number; minutes: number; energy: number; energyCount: number; equipment: Set<string> }>())
+      .values(),
+  )
+    .map((item) => ({
+      title: item.title,
+      count: item.count,
+      duration: item.count ? Math.round(item.minutes / item.count) : 0,
+      equipment: item.equipment.size ? Array.from(item.equipment).slice(0, 2).join(' · ') : 'No equipment recorded',
+      energy: item.energyCount ? Math.round(item.energy / item.energyCount) : null,
+    }))
+    .sort((a, b) => b.count - a.count);
 
   return <AppShell><CanonicalDomainRoom eyebrow="Life · Fitness" title="Fitness" question="What movement fits my body, readiness, goals, and recovery today?" climate="fitness" destinations={destinations}>
     <section className="grid gap-3 md:grid-cols-[1.3fr_.7fr]">
@@ -110,7 +125,7 @@ export default async function FitnessPage({ searchParams }: FitnessPageProps) {
       <Card className="overflow-hidden p-0"><div className="border-b border-[#e1dddd] px-5 py-4"><p className="glow-eyebrow">Movement archive</p><h2 className="glow-display mt-1 text-[19px] text-[#3d4746]">Session history</h2></div>{sessions.length === 0 ? <div className="p-8 text-center"><p className="text-[9px] text-[#7f8987]">No workouts logged yet.</p><p className="mt-2 text-[8px] text-[#99a19f]">Start with a short walk, Pilates flow, or strength session and log it here.</p></div> : <div className="divide-y divide-[#e6e1df]">{sessions.map((item, index) => <div key={item.id} className={`grid gap-3 px-5 py-4 md:grid-cols-[55px_1fr_auto] ${index === 0 ? 'bg-[#edf0ef]/65' : ''}`}><div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#cfd7d4] bg-white/45 text-[#6f7c79]"><Dumbbell size={16}/></div><div><div className="flex flex-wrap items-center gap-2"><p className="glow-display text-[14px] text-[#414b49]">{item.workoutType}</p><span className="text-[7px] text-[#8d9694]">{item.occurredAt.toLocaleDateString()}</span></div><p className="mt-1 text-[8px] text-[#78817f]">{item.durationMinutes ?? '—'} min · energy {item.energy ?? '—'} · soreness {item.soreness ?? '—'}</p>{item.equipment ? <p className="mt-1 text-[8px] text-[#8a9391]">Equipment: {item.equipment}</p> : null}{item.notes ? <p className="mt-2 text-[8px] leading-4 text-[#68716f]">{item.notes}</p> : null}</div><span className="self-start rounded-full bg-[#e7ece8] px-2 py-1 text-[7px] text-[#68756b]">session {String(index + 1).padStart(2, '0')}</span></div>)}</div>}</Card>
     </div> : null}
 
-    {view === 'library' ? <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">{workoutLibrary.map((workout) => <Card key={workout.title} className="paper-card"><div className="flex items-center justify-between"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e9edeb] text-[#5d6966]"><Dumbbell size={14}/></span><span className="text-[7px] uppercase tracking-[.16em] text-[#919a97]">{workout.energy}</span></div><h2 className="glow-display mt-4 text-[18px] text-[#414b49]">{workout.title}</h2><p className="mt-2 text-[8px] leading-4 text-[#747e7b]">{workout.focus}</p><div className="mt-4 flex items-center justify-between border-t border-[#e5e0de] pt-3 text-[8px] text-[#7a8481]"><span>{workout.duration} min</span><span>{workout.equipment}</span></div><Link href={`/fitness?view=workout`} className="mt-4 inline-flex items-center gap-1 text-[8px] font-medium text-[#53615e]"><Play size={10}/>Open workout mode</Link></Card>)}</div> : null}
+    {view === 'library' ? <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">{workoutLibrary.length ? workoutLibrary.map((workout) => <Card key={workout.title} className="paper-card"><div className="flex items-center justify-between"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e9edeb] text-[#5d6966]"><Dumbbell size={14}/></span><span className="text-[7px] uppercase tracking-[.16em] text-[#919a97]">{workout.energy == null ? 'No energy signal' : `Avg energy ${workout.energy}/10`}</span></div><h2 className="glow-display mt-4 text-[18px] text-[#414b49]">{workout.title}</h2><p className="mt-2 text-[8px] leading-4 text-[#747e7b]">{workout.count} logged session{workout.count === 1 ? '' : 's'} from your real history.</p><div className="mt-4 flex items-center justify-between border-t border-[#e5e0de] pt-3 text-[8px] text-[#7a8481]"><span>{workout.duration || '—'} avg min</span><span>{workout.equipment}</span></div><Link href="/fitness?view=workout" className="mt-4 inline-flex items-center gap-1 text-[8px] font-medium text-[#53615e]"><Play size={10}/>Log this workout</Link></Card>) : <Card className="paper-card md:col-span-2 xl:col-span-3 p-6 text-center"><p className="glow-display text-[18px] text-[#414b49]">Your workout library will grow from your real training history.</p><p className="mt-2 text-[8px] text-[#7b8582]">No demo workouts are inserted. Log a session and Glow will build the library from what you actually do.</p></Card>}</div> : null}
 
     {view === 'progress' ? <div className="mt-4 grid gap-4 lg:grid-cols-[.75fr_1.25fr]">
       <Card className="paper-card"><p className="glow-eyebrow">30-day progress</p><h2 className="glow-display mt-2 text-[21px] text-[#414b49]">Your movement trend</h2><div className="mt-5 grid grid-cols-2 gap-3"><div className="rounded-[10px] bg-[#eef1ef] p-4"><p className="text-[7px] uppercase tracking-[.14em] text-[#89928f]">Sessions</p><p className="glow-display mt-1 text-[24px] text-[#46514f]">{last30.length}</p></div><div className="rounded-[10px] bg-[#f3eee9] p-4"><p className="text-[7px] uppercase tracking-[.14em] text-[#968d87]">Minutes</p><p className="glow-display mt-1 text-[24px] text-[#514944]">{total30Minutes}</p></div><div className="rounded-[10px] bg-[#eef1ef] p-4"><p className="text-[7px] uppercase tracking-[.14em] text-[#89928f]">This week</p><p className="glow-display mt-1 text-[24px] text-[#46514f]">{weeklyMinutes}</p><p className="mt-1 text-[7px] text-[#7e8986]">minutes</p></div><div className="rounded-[10px] bg-[#f3eee9] p-4"><p className="text-[7px] uppercase tracking-[.14em] text-[#968d87]">Week change</p><p className="glow-display mt-1 text-[24px] text-[#514944]">{weeklyDelta == null ? '—' : `${weeklyDelta > 0 ? '+' : ''}${weeklyDelta}%`}</p></div></div></Card>
