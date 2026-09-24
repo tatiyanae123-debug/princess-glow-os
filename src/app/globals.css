@@ -140,3 +140,64 @@ body {
 @media (prefers-reduced-motion: reduce) {
   *,*::before,*::after { transition-duration:.01ms !important; animation-duration:.01ms !important; }
 }
+
+
+/* Dashboard-descendant constitution: every AppShell subpage inherits the new
+   pearl-white editorial material system while preserving its domain-specific
+   information architecture and canonical behavior. */
+[data-glow-deep-page='true']{
+  --glow-bg:#f7f4ef;
+  --glow-surface:rgba(255,255,255,.64);
+  --glow-surface-muted:rgba(250,247,243,.52);
+  --glow-border:rgba(124,105,94,.11);
+  --glow-text:#302a27;
+  --glow-text-muted:#81746d;
+  --glow-shadow:0 16px 42px rgba(75,59,50,.045);
+}
+[data-glow-deep-page='true'] .glow-room-content{
+  max-width:1560px;
+}
+[data-glow-deep-page='true'] .editorial-surface,
+[data-glow-deep-page='true'] .paper-card{
+  border:1px solid rgba(255,255,255,.82);
+  border-radius:16px;
+  background:
+    radial-gradient(circle at 12% 0%,rgba(255,255,255,.92),transparent 34%),
+    linear-gradient(145deg,rgba(255,255,255,.62),rgba(248,244,240,.42));
+  box-shadow:0 14px 38px rgba(68,52,44,.045),inset 0 1px 0 rgba(255,255,255,.96);
+  backdrop-filter:blur(22px) saturate(108%);
+}
+[data-glow-deep-page='true'] .tape::before{display:none}
+[data-glow-deep-page='true'] input,
+[data-glow-deep-page='true'] textarea,
+[data-glow-deep-page='true'] select{
+  border-color:rgba(126,105,94,.13)!important;
+  border-radius:11px!important;
+  background:rgba(255,255,255,.58)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.84);
+}
+[data-glow-deep-page='true'] button,
+[data-glow-deep-page='true'] a{
+  -webkit-tap-highlight-color:transparent;
+}
+[data-glow-deep-page='true'] .glow-eyebrow{
+  font-size:7px;
+  letter-spacing:.18em;
+  color:#907970;
+}
+[data-glow-deep-page='true'] .glow-display{
+  letter-spacing:-.018em;
+}
+[data-glow-deep-page='true'] .room-canvas::before{
+  background:
+    radial-gradient(circle at 74% 8%,var(--room-wash,rgba(231,199,181,.14)),transparent 26%),
+    radial-gradient(circle at 18% 74%,rgba(220,232,228,.16),transparent 30%);
+}
+
+@media (min-width:701px) and (max-width:1180px){
+  [data-glow-deep-page='true'] .glow-room-content{max-width:none}
+}
+@media (max-width:700px){
+  [data-glow-deep-page='true'] .editorial-surface,
+  [data-glow-deep-page='true'] .paper-card{border-radius:14px}
+}
