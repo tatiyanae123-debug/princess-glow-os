@@ -36,7 +36,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     root.dataset.glowDesignFamily = manifest?.designFamily ?? 'legacy-unregistered';
     root.dataset.glowLocationDepth = String(manifestChain.length);
     root.dataset.glowContractState = violations.length ? 'violation' : 'valid';
-    root.dataset.glowVisualSystem = 'wave-7-converged';
+    root.dataset.glowVisualSystem = 'dashboard-descendant-v1';
 
     document.dispatchEvent(new CustomEvent('glow:location-context', {
       detail: { pathname, page: manifest, ancestry: manifestChain, violations },
@@ -67,12 +67,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     'data-experience-family': manifest?.family ?? 'legacy-unregistered',
     'data-design-family': manifest?.designFamily ?? 'legacy-unregistered',
     'data-page-contract': violations.length ? 'violation' : 'valid',
-    'data-visual-system': 'wave-7-converged',
+    'data-visual-system': 'dashboard-descendant-v1',
   } as const;
 
   return (
     <GlowProvider>
-      <div className="glow-world-shell room-canvas min-h-screen text-[#1C1C1E]" {...worldData} data-focus-mode={focus ? 'true' : 'false'}>
+      <div className="glow-world-shell room-canvas min-h-screen text-[#1C1C1E]" {...worldData} data-focus-mode={focus ? 'true' : 'false'} data-glow-deep-page="true">
         <div className="glow-world-atmosphere" aria-hidden="true" />
         <div className="glow-world-caustic" aria-hidden="true" />
         <div className="glow-world-depth-plane glow-world-depth-plane-far" aria-hidden="true" />

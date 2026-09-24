@@ -1,12 +1,23 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
+import { CanonicalDomainRoom } from '@/components/glow/canonical-domain-room';
 import { FinanceEntryManager } from '@/components/finance/finance-entry-manager';
 import { getFinanceEntriesByUser } from '@/lib/data/finance-entries';
 import { getFinanceGoals } from '@/lib/data/completion-v1';
 
 export const dynamic = 'force-dynamic';
+
+const destinations = [
+  { label: 'Baseline', href: '/finance/baseline', cue: 'What is true now' },
+  { label: 'Spending', href: '/finance/spending', cue: 'Money movement' },
+  { label: 'Recurring Bills', href: '/finance/recurring-bills', cue: 'Obligations over time' },
+  { label: 'Debt', href: '/finance/debt', cue: 'Liabilities and scenarios' },
+  { label: 'Savings', href: '/finance/savings', cue: 'Future capacity' },
+  { label: 'Purchase Studio', href: '/finance/purchase-decision', cue: 'Preview before buying' },
+  { label: 'Calendar', href: '/finance/calendar', cue: 'Dates that affect money' },
+  { label: 'Learning', href: '/finance/learning', cue: 'Understand the why' },
+];
 
 export default async function FinancePage() {
   const session = await auth();
@@ -19,9 +30,15 @@ export default async function FinancePage() {
 
   return (
     <AppShell>
-      <SectionPage eyebrow="Finance" title="Your wealth in one clear view" description="A calmer relationship with money begins with honest visibility, recurring-cost awareness, and gentle structure.">
+      <CanonicalDomainRoom
+        eyebrow="Life · Money"
+        title="Money"
+        question="What is true about my money, what is already committed, and what changes next?"
+        climate="money"
+        destinations={destinations}
+      >
         <FinanceEntryManager initialEntries={entries} initialGoals={goals} />
-      </SectionPage>
+      </CanonicalDomainRoom>
     </AppShell>
   );
 }

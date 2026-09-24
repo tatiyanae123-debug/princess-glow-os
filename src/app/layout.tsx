@@ -4,28 +4,23 @@ import { GlowCurrent } from '@/components/glow/glow-current';
 import { GlowPresence } from '@/components/glow/glow-presence';
 import { DeepRoomAtmosphere } from '@/components/glow/deep-room-atmosphere';
 import { SpatialRouteTransition } from '@/components/glow/spatial-route-transition';
-import { WorldFoldReferenceChrome } from '@/components/glow/world-fold-reference-chrome';
 import { NetworkStateBridge } from '@/components/glow/network-state-bridge';
 import './globals.css';
 import './continuous-world.css';
 import './reference-rooms.css';
 import './glow-os-3.css';
 import './reference-board-exact-v2.css';
-import './dashboard-reference-exact.css';
-import './dashboard-sidebar-exact.css';
 import './image-polish.css';
 import './image-page-overrides.css';
 import './spatial-navigation.css';
 import './glow-current.css';
 import './today-spatial-world.css';
-import './sidebar-precision.css';
 import './plan-time-observatory.css';
 import './glow-living-presence.css';
 import './glow-canonical-integration.css';
 import './glow-shell.css';
 import './world-fold-2.css';
 import './world-fold-2-fixes.css';
-import './world-fold-reference-lock.css';
 import './domain-native-rooms.css';
 import './reference-fidelity-v4.css';
 import './reference-fidelity-v4-interactions.css';
@@ -35,6 +30,7 @@ import './reference-fidelity-v4-studio.css';
 import './reference-fidelity-v4-support.css';
 import './visual-convergence.css';
 import './device-state-qa.css';
+import './navigation-system.css';
 
 export const metadata: Metadata = {
   title: 'Glow OS',
@@ -56,7 +52,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Suspense fallback={null}>
           <DeepRoomAtmosphere />
           <GlowCurrent />
-          <WorldFoldReferenceChrome />
         </Suspense>
         <SpatialRouteTransition />
         <GlowPresence />

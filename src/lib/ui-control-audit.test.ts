@@ -45,7 +45,14 @@ function normalizeHref(value:string){return value.split('#')[0].split('?')[0].re
 function appPageExists(href:string){
   const route=normalizeHref(href);
   if(route==='/')return fs.existsSync(path.join(APP,'page.tsx'));
-  return fs.existsSync(path.join(APP,...route.slice(1).split('/'),'page.tsx'));
+  const segments=route.slice(1).split('/').filter(Boolean);
+  if(fs.existsSync(path.join(APP,...segments,'page.tsx')))return true;
+  for(let depth=segments.length-1;depth>=1;depth--){
+    const parent=path.join(APP,...segments.slice(0,depth));
+    if(fs.existsSync(path.join(parent,'[...path]','page.tsx'))||fs.existsSync(path.join(parent,'[[...path]]','page.tsx')))return true;
+  }
+  const root=path.join(APP,segments[0]||'');
+  return fs.existsSync(path.join(root,'[[...path]]','page.tsx'));
 }
 function internalLiteral(value:string|null){return typeof value==='string'&&value.startsWith('/')&&!value.startsWith('//');}
 

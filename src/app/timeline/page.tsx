@@ -1,13 +1,18 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
+import { CanonicalDomainRoom } from '@/components/glow/canonical-domain-room';
 import { Card } from '@/components/ui/card';
 import { createTimelineEventAction } from '@/app/actions/completion-v1';
 import { getFitnessSessions, getHairLogs, getTimelineEvents } from '@/lib/data/completion-v1';
 import { Camera, Clock3, Dumbbell, Scissors, Sparkles } from 'lucide-react';
 
 export const dynamic='force-dynamic';
+const destinations=[
+  {label:'Memory',href:'/memory',cue:'Remembered context'},
+  {label:'Decisions',href:'/brain/decisions',cue:'Choices through time'},
+  {label:'Insights',href:'/brain/insights',cue:'Patterns from history'},
+];
 const fieldClass='w-full border px-4 py-3 text-[10px]';
 
 type StoryEvent={
@@ -73,7 +78,7 @@ export default async function TimelinePage(){
   const automaticCount=fitnessSessions.length+hairLogs.length;
   const latest=story[0];
 
-  return <AppShell><SectionPage eyebrow="Life Timeline" title="See your life as a connected story" description="Capture milestones and memories while Glow OS automatically threads meaningful fitness and hair activity into one chronological life story.">
+  return <AppShell><CanonicalDomainRoom eyebrow="Brain · Timeline" title="Timeline" question="How did this unfold, and what changed across time?" climate="brain" destinations={destinations}>
     <div className="space-y-4">
       <Card className="relative overflow-hidden bg-[linear-gradient(145deg,#f3ebdf,#f7f0e8)] p-5"><Camera size={54} strokeWidth={.75} className="absolute right-5 top-3 text-[#8a7764]/16"/><p className="glow-eyebrow">Life gallery</p><p className="glow-display mt-2 text-[24px] text-[#4b4034]">Moments become a story when you can see the thread.</p><div className="mt-3 flex flex-wrap gap-2 text-[8px] text-[#7d7064]"><span className="rounded-full border border-[#d9cdbf] bg-white/55 px-3 py-1.5">{story.length} total moments</span><span className="rounded-full border border-[#d9cdbf] bg-white/55 px-3 py-1.5">{automaticCount} automatic captures</span><span className="rounded-full border border-[#d9cdbf] bg-white/55 px-3 py-1.5">{events.length} saved memories</span></div>{latest?<p className="mt-3 text-[8px] text-[#8a7a6a]">Latest thread: <span className="font-medium text-[#5a4c3f]">{latest.title}</span> · {latest.occurredAt.toLocaleDateString()}</p>:null}</Card>
       <div className="grid gap-5 lg:grid-cols-[.68fr_1.32fr]">
@@ -84,5 +89,5 @@ export default async function TimelinePage(){
         <Card className="p-0 overflow-hidden"><div className="border-b border-[#e8dfd3] px-5 py-4"><p className="glow-eyebrow">Gallery wall</p><h2 className="glow-display mt-1 text-[19px] text-[#4b4034]">Your chronological life story</h2></div>{story.length===0?<div className="p-8 text-center"><p className="text-[9px] text-[#85786c]">Your timeline is empty.</p><p className="mt-2 text-[8px] text-[#9b8f83]">Add a meaningful event, log a workout, or record a hair ritual to begin your story.</p></div>:<div className="p-5">{[...groups.entries()].map(([label,items])=><section key={label} className="mb-6 last:mb-0"><p className="glow-display mb-3 text-[14px] italic text-[#75685b]">{label}</p><div className="relative space-y-3 border-l border-[#d8cdc0] pl-5">{items.map((event,index)=><div key={event.id} className={`relative overflow-hidden rounded-[8px] border border-[#e8dfd5] p-4 ${index%2===0?'bg-[#faf5ed]':'bg-[#f5ece5]'}`}><span className="absolute -left-[25px] top-5 h-2.5 w-2.5 rounded-full border-2 border-[#f7f0e8] bg-[#98826c]"/>{event.imageUrl?<img src={event.imageUrl} alt="" className="mb-3 h-32 w-full rounded-[6px] object-cover"/>:null}<div className="flex justify-between gap-3"><p className="glow-display text-[14px] text-[#4b4034]">{event.title}</p><span className="inline-flex shrink-0 items-center gap-1 text-[7px] text-[#988a7d]"><Clock3 size={8}/>{event.occurredAt.toLocaleDateString()}</span></div><div className="mt-1 flex flex-wrap items-center gap-2"><p className="text-[7px] uppercase tracking-[.13em] text-[#9b897a]">{event.category}</p><span className="rounded-full border border-[#ded3c7] bg-white/45 px-2 py-0.5 text-[6px] uppercase tracking-[.12em] text-[#8f7e6e]">{event.source==='manual'?'Saved memory':'Auto capture'}</span></div>{event.summary?<p className="mt-2 text-[8px] leading-4 text-[#75695e]">{event.summary}</p>:null}</div>)}</div></section>)}</div>}</Card>
       </div>
     </div>
-  </SectionPage></AppShell>;
+  </CanonicalDomainRoom></AppShell>;
 }

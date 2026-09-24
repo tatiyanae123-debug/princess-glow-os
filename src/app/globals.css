@@ -5,11 +5,11 @@
 @tailwind utilities;
 
 :root {
-  --glow-bg: #f5eee8;
-  --glow-sidebar: #efe2d8;
-  --glow-surface: rgba(253,249,245,.84);
-  --glow-surface-muted: rgba(247,238,232,.76);
-  --glow-border: rgba(135,106,94,.16);
+  --glow-bg: #f7f4ef;
+  --glow-sidebar: #f4f0ec;
+  --glow-surface: rgba(255,255,255,.72);
+  --glow-surface-muted: rgba(249,246,242,.58);
+  --glow-border: rgba(126,105,94,.11);
   --glow-text: #302622;
   --glow-text-muted: #7b6962;
   --glow-accent: #c9828d;
@@ -17,7 +17,7 @@
   --glow-gold: #b68a53;
   --glow-sage: #9baa91;
   --glow-champagne: #d8c09f;
-  --glow-shadow: 0 10px 30px rgba(92,65,54,.07);
+  --glow-shadow: 0 14px 40px rgba(72,58,50,.045);
   --glow-radius: 14px;
   --glow-font-display: 'Playfair Display', Georgia, serif;
   --glow-font-body: 'Inter', system-ui, sans-serif;
@@ -33,9 +33,9 @@ body {
   color: var(--glow-text);
   font-family: var(--glow-font-body);
   background:
-    radial-gradient(circle at 14% 2%, rgba(222,190,177,.26), transparent 25%),
-    radial-gradient(circle at 86% 1%, rgba(236,224,207,.42), transparent 28%),
-    linear-gradient(180deg,#f8f2ed 0%,#f4ece6 48%,#f3ebe5 100%);
+    radial-gradient(circle at 14% 2%, rgba(235,220,212,.22), transparent 25%),
+    radial-gradient(circle at 86% 1%, rgba(229,233,232,.34), transparent 28%),
+    linear-gradient(180deg,#fbfaf8 0%,#f7f4f0 48%,#f3efeb 100%);
 }
 
 .glow-display { font-family: var(--glow-font-display); }
@@ -51,13 +51,13 @@ body {
 }
 
 .paper-card {
-  border: 1px solid rgba(135,106,94,.14);
-  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,.82);
+  border-radius: 16px;
   background:
-    linear-gradient(rgba(255,255,255,.18),rgba(255,255,255,.18)),
-    repeating-linear-gradient(0deg,rgba(111,89,79,.025) 0,rgba(111,89,79,.025) 1px,transparent 1px,transparent 4px),
-    #eadbd1;
-  box-shadow: 0 12px 24px rgba(83,61,52,.08);
+    radial-gradient(circle at 15% 0%,rgba(255,255,255,.92),transparent 36%),
+    linear-gradient(145deg,rgba(255,255,255,.62),rgba(248,244,240,.43));
+  box-shadow: 0 14px 38px rgba(68,52,44,.045), inset 0 1px 0 rgba(255,255,255,.96);
+  backdrop-filter: blur(22px) saturate(108%);
 }
 
 .tape { position: relative; }
@@ -139,4 +139,99 @@ body {
 }
 @media (prefers-reduced-motion: reduce) {
   *,*::before,*::after { transition-duration:.01ms !important; animation-duration:.01ms !important; }
+}
+
+
+/* Dashboard-descendant constitution: every AppShell subpage inherits the new
+   pearl-white editorial material system while preserving its domain-specific
+   information architecture and canonical behavior. */
+[data-glow-deep-page='true']{
+  --glow-bg:#f7f4ef;
+  --glow-surface:rgba(255,255,255,.64);
+  --glow-surface-muted:rgba(250,247,243,.52);
+  --glow-border:rgba(124,105,94,.11);
+  --glow-text:#302a27;
+  --glow-text-muted:#81746d;
+  --glow-shadow:0 16px 42px rgba(75,59,50,.045);
+}
+[data-glow-deep-page='true'] .glow-room-content{
+  max-width:1560px;
+}
+[data-glow-deep-page='true'] .editorial-surface,
+[data-glow-deep-page='true'] .paper-card{
+  border:1px solid rgba(255,255,255,.82);
+  border-radius:16px;
+  background:
+    radial-gradient(circle at 12% 0%,rgba(255,255,255,.92),transparent 34%),
+    linear-gradient(145deg,rgba(255,255,255,.62),rgba(248,244,240,.42));
+  box-shadow:0 14px 38px rgba(68,52,44,.045),inset 0 1px 0 rgba(255,255,255,.96);
+  backdrop-filter:blur(22px) saturate(108%);
+}
+[data-glow-deep-page='true'] .tape::before{display:none}
+[data-glow-deep-page='true'] input,
+[data-glow-deep-page='true'] textarea,
+[data-glow-deep-page='true'] select{
+  border-color:rgba(126,105,94,.13)!important;
+  border-radius:11px!important;
+  background:rgba(255,255,255,.58)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.84);
+}
+[data-glow-deep-page='true'] button,
+[data-glow-deep-page='true'] a{
+  -webkit-tap-highlight-color:transparent;
+}
+[data-glow-deep-page='true'] .glow-eyebrow{
+  font-size:7px;
+  letter-spacing:.18em;
+  color:#907970;
+}
+[data-glow-deep-page='true'] .glow-display{
+  letter-spacing:-.018em;
+}
+[data-glow-deep-page='true'] .room-canvas::before{
+  background:
+    radial-gradient(circle at 74% 8%,var(--room-wash,rgba(231,199,181,.14)),transparent 26%),
+    radial-gradient(circle at 18% 74%,rgba(220,232,228,.16),transparent 30%);
+}
+
+@media (min-width:701px) and (max-width:1180px){
+  [data-glow-deep-page='true'] .glow-room-content{max-width:none}
+}
+@media (max-width:700px){
+  [data-glow-deep-page='true'] .editorial-surface,
+  [data-glow-deep-page='true'] .paper-card{border-radius:14px}
+}
+
+
+/* Global descendant bridge. GlowCurrent marks every non-Home route as a
+   descendant of the new Dashboard so legacy route families cannot fall back
+   to the old beige application language while they are being migrated. */
+html[data-glow-architecture='dashboard-descendant'] body{
+  color:#302a27;
+  background:
+    radial-gradient(circle at 10% 0%,rgba(255,255,255,.98),transparent 26%),
+    radial-gradient(circle at 88% 4%,rgba(224,233,231,.30),transparent 28%),
+    radial-gradient(circle at 58% 96%,rgba(239,226,219,.22),transparent 32%),
+    linear-gradient(180deg,#fbfaf8 0%,#f7f4f0 52%,#f2eeea 100%);
+}
+html[data-glow-architecture='dashboard-descendant'] :is(.editorial-surface,.paper-card,[data-glass-surface='true']){
+  border-color:rgba(255,255,255,.82)!important;
+  box-shadow:0 14px 38px rgba(68,52,44,.045),inset 0 1px 0 rgba(255,255,255,.95)!important;
+}
+html[data-glow-architecture='dashboard-descendant'] :is(input,textarea,select):not([type='range']){
+  border-color:rgba(126,105,94,.13);
+  background:rgba(255,255,255,.60);
+}
+html[data-glow-architecture='dashboard-descendant'] :is(button,a):focus-visible{
+  outline:2px solid rgba(139,119,151,.34);
+  outline-offset:2px;
+}
+html[data-glow-architecture='dashboard-descendant'] .glow-display{
+  font-family:var(--glow-font-display,Georgia,serif);
+  color:#332d2a;
+}
+html[data-glow-architecture='dashboard-descendant'] [data-empty-state='true']{
+  border:1px dashed rgba(140,119,108,.22);
+  border-radius:13px;
+  background:rgba(255,255,255,.26);
 }

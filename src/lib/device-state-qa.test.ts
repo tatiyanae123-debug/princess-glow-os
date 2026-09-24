@@ -27,6 +27,18 @@ describe('Wave 9 device and state contract',()=>{
     expect(read('src/app/layout.tsx')).toContain('<NetworkStateBridge />');
   });
 
+  it('canonical domain-native rooms recompose across iPad and iPhone instead of shrinking desktop',()=>{
+    const room=read('src/components/glow/canonical-domain-room.module.css');
+    const deep=read('src/components/glow/canonical-experience-page.module.css');
+    expect(room).toContain('(min-width:901px) and (max-width:1180px)');
+    expect(room).toContain('(orientation:portrait)');
+    expect(room).toContain('(orientation:landscape)');
+    expect(room).toContain('@media(max-width:600px)');
+    expect(deep).toContain('@media(max-width:900px)');
+    expect(deep).toContain('@media(max-width:600px)');
+    expect(deep).toContain('prefers-reduced-motion:reduce');
+  });
+
   it('protects mobile touch, focus, reduced motion and iPad layouts',()=>{
     const css=read('src/app/device-state-qa.css');
     expect(css).toContain('safe-area-inset-top');
