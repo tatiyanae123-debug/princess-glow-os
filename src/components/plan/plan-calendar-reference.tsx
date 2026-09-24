@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { CalendarDays, Clock3, GitCompare, ListTree, Move, ShieldCheck } from 'lucide-react';
 import { PlanInstrumentChrome, type PlanHorizon } from './plan-instrument-chrome';
 import styles from './plan-calendar-reference.module.css';
@@ -24,6 +24,22 @@ export function PlanCalendarReference({events}:{events:PlanCalendarEvent[]}){
   const [anchor,setAnchor]=useState(()=>new Date());
   const [view,setView]=useState<CalendarView>('week');
   const [horizon,setHorizon]=useState<PlanHorizon>('week');
+
+  useEffect(()=>{
+    const saved=window.sessionStorage.getItem('glow:calendar:view-state');
+    if(!saved)return;
+    try{
+      const state=JSON.parse(saved) as Partial<{anchor:string;view:CalendarView;horizon:PlanHorizon}>;
+      if(state.anchor){const parsed=new Date(state.anchor);if(!Number.isNaN(parsed.getTime()))setAnchor(parsed);}
+      if(state.view)setView(state.view);
+      if(state.horizon)setHorizon(state.horizon);
+    }catch{}
+  },[]);
+
+  useEffect(()=>{
+    window.sessionStorage.setItem('glow:calendar:view-state',JSON.stringify({anchor:anchor.toISOString(),view,horizon}));
+  },[anchor,view,horizon]);
+
   const weekStart=useMemo(()=>startOfWeek(anchor),[anchor]);
   const weekDays=useMemo(()=>Array.from({length:7},(_,index)=>addDays(weekStart,index)),[weekStart]);
   const activeEvents=useMemo(()=>events.filter((event)=>{const date=new Date(event.startAt);return view==='day'?sameDay(date,anchor):view==='week'?date>=weekStart&&date<addDays(weekStart,7):date.getFullYear()===anchor.getFullYear()&&date.getMonth()===anchor.getMonth();}),[events,view,anchor,weekStart]);
