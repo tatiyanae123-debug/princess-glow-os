@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import type { CSSProperties } from 'react';
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
@@ -233,7 +234,7 @@ export function PlanTasksRoom({ initialTasks }: { initialTasks: PlanTaskItem[] }
                   <div className={styles.taskRow} key={task.id}>
                     <button type="button" className={styles.taskCheck} onClick={() => toggleTask(task)} disabled={isPending} aria-label={`Complete ${task.title}`}><Circle /></button>
                     <span className={styles.taskInfo}>
-                      <strong>{task.title}</strong>
+                      <Link href={'/tasks/' + encodeURIComponent(task.id)} className={styles.taskTitleLink}>{task.title}</Link>
                       <small>{dueLabel(task.dueDate)} · ~{estimateMinutes(task)}m</small>
                       {subtasks.length ? <em>{subtasks.length} recognized subtask{subtasks.length === 1 ? '' : 's'}</em> : null}
                     </span>
