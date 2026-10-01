@@ -71,8 +71,11 @@ function audit(){
           const formAction=attr(node,'formAction');
           const delegatedRefAction=attr(node,'data-ref-action');
           const delegatedVoiceAction=attr(node,'data-glow-voice-open');
+          const delegatedBeautyMode=attr(node,'data-beauty-mode');
+          const delegatedGlowOpen=attr(node,'data-open-glow');
+          const disabled=attr(node,'disabled');
           const type=attrLiteral(attr(node,'type'));
-          const hasAction=Boolean(onClick||formAction||delegatedRefAction||delegatedVoiceAction||hasSpreadProps(node)||type==='submit'||type==='reset'||(insideForm(node)&&type!=='button'));
+          const hasAction=Boolean(onClick||formAction||delegatedRefAction||delegatedVoiceAction||delegatedBeautyMode||delegatedGlowOpen||disabled||hasSpreadProps(node)||type==='submit'||type==='reset'||(insideForm(node)&&type!=='button'));
           if(!hasAction)inertButtons.push({file:path.relative(ROOT,file),line:lineOf(source,node),text:node.getText(source).slice(0,180)});
         }
         if(tag==='Link'||tag==='a'){
