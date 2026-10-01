@@ -34,6 +34,8 @@ export type PlanProjectItem = {
 type ProjectView = 'List' | 'Board' | 'Timeline' | 'Gallery';
 const stages = ['Discover', 'Define', 'Design', 'Build', 'Launch'];
 
+function openGlow(prefill:string){document.dispatchEvent(new CustomEvent('glow:open',{detail:{prefill}}))}
+
 function shortDate(value: string | null | undefined) {
   if (!value) return 'No deadline';
   const date = new Date(value);
@@ -73,7 +75,7 @@ export function PlanProjectsReferenceV4({ projects }: { projects: PlanProjectIte
               {item === 'List' ? <List size={12} /> : item === 'Gallery' ? <GalleryHorizontal size={12} /> : <FolderOpen size={12} />}{item}
             </button>
           ))}
-          <button type="button" aria-label="More project views"><MoreHorizontal size={13} /></button>
+          <span aria-label="More project views unavailable" title="Additional project views are not available yet"><MoreHorizontal size={13} /></span>
         </div>
 
         <div className="project-hero-v4">
@@ -93,8 +95,8 @@ export function PlanProjectsReferenceV4({ projects }: { projects: PlanProjectIte
           <span className="project-pearl-v4 p1" /><span className="project-pearl-v4 p2" /><span className="project-pearl-v4 p3" /><span className="project-pearl-v4 p4" />
           <div className="project-center-v4"><div className="project-city-v4"><i /><i /><i /><i /><i /></div><strong>{selected?.title ?? 'Project'}</strong><small>{selected?.area ?? 'Project'} · {stages[stageIndex]}</small></div>
 
-          <article className="project-float-v4 actions-v4"><h3>NEXT ACTIONS</h3>{actions.map((action, index) => <div key={`${action}-${index}`}><Circle size={10} /><span>{action}</span><small>{index === 0 ? 'Next' : ''}</small></div>)}<button type="button">+ Add next action</button></article>
-          <article className="project-float-v4 notes-v4"><h3>NOTES</h3>{noteLines.map((note, index) => <p key={`${note}-${index}`}>• {note}</p>)}<button type="button">+ Add a note</button></article>
+          <article className="project-float-v4 actions-v4"><h3>NEXT ACTIONS</h3>{actions.map((action, index) => <div key={`${action}-${index}`}><Circle size={10} /><span>{action}</span><small>{index === 0 ? 'Next' : ''}</small></div>)}<button type="button" onClick={() => openGlow(`Add a real next action to the project "${selected?.title ?? 'this project'}". Show me the proposed task before saving it.`)}>+ Add next action</button></article>
+          <article className="project-float-v4 notes-v4"><h3>NOTES</h3>{noteLines.map((note, index) => <p key={`${note}-${index}`}>• {note}</p>)}<button type="button" onClick={() => openGlow(`Capture a real note for the project "${selected?.title ?? 'this project'}" without inventing any content.`)}>+ Add a note</button></article>
           <article className="project-float-v4 files-v4"><h3>FILES</h3><div className="empty-project-v4"><FileText size={17} /><span>No linked project files yet</span><small>Files appear here only when connected to this project.</small></div></article>
           <article className="project-float-v4 inspiration-v4"><h3>INSPIRATION</h3><div className="inspiration-thumbs-v4"><i /><i /><i /></div><p>Visual references connected to this project will live here.</p></article>
           <article className="project-float-v4 blockers-v4"><h3>BLOCKERS</h3><div><Circle size={10} /><span>{selected?.status === 'paused' ? 'Project is intentionally paused' : 'No explicit blocker recorded'}</span><small className={selected?.status === 'paused' ? 'high-v4' : 'low-v4'}>{selected?.status === 'paused' ? 'High' : 'Low'}</small></div></article>
