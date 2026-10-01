@@ -702,7 +702,7 @@ export function GlowThresholdReference({ intelligence, userName, userImage }: { 
                     <span className="text-[8px] text-[#94867d]">5 AM – 11 PM</span>
                   </div>
                   <div className="flex rounded-full border border-white/75 bg-white/45 p-0.5 text-[8px]">
-                    <button type="button" className="rounded-full bg-white px-2.5 py-1 text-[#4a403a]">Day</button>
+                    <span aria-current="page" className="rounded-full bg-white px-2.5 py-1 text-[#4a403a]">Day</span>
                     <button type="button" onClick={() => travel('/calendar?view=week')} className="rounded-full px-2.5 py-1 text-[#8d7d74]">Week</button>
                     <button type="button" onClick={() => travel('/calendar?view=month')} className="rounded-full px-2.5 py-1 text-[#8d7d74]">Month</button>
                   </div>
