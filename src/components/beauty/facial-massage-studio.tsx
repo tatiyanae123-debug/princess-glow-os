@@ -363,7 +363,7 @@ export function FacialMassageStudio({ savedRoutineSteps, ownedTools, userName }:
 
             <section className={styles.centerStage} aria-label="Guided facial movement reference">
               <div className={styles.stepBadge}><span>Step</span><strong>{guided && hasGuidedRoutine ? `${stepIndex + 1} of ${savedRoutineSteps.length}` : '— of —'}</strong></div>
-              <button type="button" className={styles.expandButton} aria-label="Expand facial guide"><Maximize2 size={17} /></button>
+              <button type="button" className={styles.expandButton} aria-label="Expand facial guide" onClick={() => document.querySelector<HTMLElement>('[aria-label="Guided facial movement reference"]')?.requestFullscreen?.()}><Maximize2 size={17} /></button>
               <div className={styles.portraitWrap}><FaceMap mirror={mirror} /></div>
 
               <div className={styles.stepCard}>
