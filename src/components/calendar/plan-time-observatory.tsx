@@ -270,7 +270,7 @@ function TodayOrbit({ events, anchor, onSelect }: { events: CalendarEvent[]; anc
     <div className="pto-time-label later"><b>LATER</b><span>{labelDay(addDays(anchor,14))} and beyond</span></div>
     <div className="pto-time-label near"><b>NEAR</b><span>{labelDay(addDays(anchor,1))} – {labelDay(addDays(anchor,3))}</span></div>
     <div className="pto-time-label next"><b>NEXT</b><span>{labelDay(addDays(anchor,4))} – {labelDay(addDays(anchor,7))}</span></div>
-    <button className="pto-today-core" type="button"><span>TODAY</span><small>{anchor.toLocaleDateString('en-US',{month:'short',day:'numeric',weekday:'long'})}</small></button>
+    <div className="pto-today-core" aria-current="date"><span>TODAY</span><small>{anchor.toLocaleDateString('en-US',{month:'short',day:'numeric',weekday:'long'})}</small></div>
     {visible.map((event,index) => <button type="button" className={`pto-orbit-event ${eventColor(index)}`} style={{ left:`${positions[index][0]}%`, top:`${positions[index][1]}%` }} key={event.id} onClick={() => onSelect(event)}><span className="pto-event-pearl"/><span><b>{event.title}</b><small>{formatRange(event)}</small></span><em>{duration(event)}</em></button>)}
     {!visible.length ? <div className="pto-empty-orbit">Today is open. The observatory is waiting for you.</div> : null}
   </div>;
