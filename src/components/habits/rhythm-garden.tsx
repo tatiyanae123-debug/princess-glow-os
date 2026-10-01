@@ -261,7 +261,7 @@ export function RhythmGarden({ initialHabits, initialLogs }: { initialHabits: Ha
         <nav className={styles.stageNav} aria-label="Habit building stages">
           <button type="button" onClick={() => navigate('/planning')}>Plan</button>
           <button type="button" onClick={() => navigate('/today?room=focus')}>Focus</button>
-          <button type="button" className={styles.stageActive} aria-current="page">Build</button>
+          <span className={styles.stageActive} aria-current="page">Build</span>
           <a href="#rhythm-insights">Reflect</a>
         </nav>
 
