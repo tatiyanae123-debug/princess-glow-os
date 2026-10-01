@@ -72,8 +72,8 @@ export function PlanGoalsReferenceV4({ goals }: { goals: PlanGoalItem[] }) {
             <div className="goal-field-v4"><span><CalendarDays size={12} /> TARGET DATE</span><strong>{dateLabel(selected?.targetDate ?? null)}</strong></div>
             <div className="goal-field-v4"><span><Target size={12} /> EVIDENCE OF PROGRESS</span><strong>{progress}% stored progress</strong><div className="field-progress-v4"><i style={{ width: `${progress}%` }} /></div></div>
             <div className="goal-field-v4"><span><Leaf size={12} /> LIFE AREA</span><strong>{selected ? pretty(selected.category) : 'Not set'}</strong></div>
-            <button className="goal-field-v4 dropdown-v4" type="button"><span>↔ FLEXIBILITY</span><strong>Flexible <ChevronDown size={12} /></strong></button>
-            <button className="goal-field-v4 dropdown-v4" type="button"><span>↻ REVIEW FREQUENCY</span><strong>Weekly <ChevronDown size={12} /></strong></button>
+            <div className="goal-field-v4 dropdown-v4"><span>↔ FLEXIBILITY</span><strong>Not recorded</strong></div>
+            <div className="goal-field-v4 dropdown-v4"><span>↻ REVIEW FREQUENCY</span><strong>Not recorded</strong></div>
             <div className="goal-field-v4 inspiration-field-v4"><span><Sparkles size={12} /> PRIVATE INSPIRATION</span><strong>A stronger, calmer, kinder future. This remains private to your Life Model.</strong></div>
           </article>
 
@@ -82,7 +82,7 @@ export function PlanGoalsReferenceV4({ goals }: { goals: PlanGoalItem[] }) {
               {(['Projects','Milestones','Routines','Habits'] as ConnectedKind[]).map((kind) => <button key={kind} type="button" onClick={() => setConnectedKind(kind)} className={connectedKind === kind ? 'active' : ''}>{kind}</button>)}
             </div>
             <div className="connected-empty-v4"><Sparkles size={18} /><strong>{connectedKind}</strong><p>Connected {connectedKind.toLowerCase()} from the Glow Graph appear here. No relationships are invented.</p></div>
-            <button type="button" className="add-connected-v4"><Plus size={12} /> Add {connectedKind.slice(0,-1).toLowerCase()}</button>
+            <button type="button" disabled aria-disabled="true" title="Connection editing is not available from this workspace yet." className="add-connected-v4"><Plus size={12} /> Connect {connectedKind.slice(0,-1).toLowerCase()}</button>
           </article>
         </div>
       </section>
