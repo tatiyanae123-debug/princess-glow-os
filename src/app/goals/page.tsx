@@ -1,6 +1,8 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { PlanGoalsReferenceV4, type PlanGoalItem } from '@/components/plan/plan-goals-reference-v4';
+import { AppShell } from '@/components/app-shell';
+import { CanonicalDomainRoom } from '@/components/glow/canonical-domain-room';
+import { GoalManager } from '@/components/goals/goal-manager';
 import { getGoalsByUser } from '@/lib/data/goals';
 
 export const dynamic = 'force-dynamic';
@@ -8,15 +10,23 @@ export const dynamic = 'force-dynamic';
 export default async function GoalsPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
-  const goals = await getGoalsByUser(session.user.id);
-  const items: PlanGoalItem[] = goals.filter((goal) => !goal.archived).map((goal) => ({
-    id: goal.id,
-    title: goal.title,
-    description: goal.description,
-    category: goal.category,
-    status: goal.status,
-    targetDate: goal.targetDate?.toISOString() ?? null,
-    progress: goal.progress,
-  }));
-  return <PlanGoalsReferenceV4 goals={items} />;
+  const goals = (await getGoalsByUser(session.user.id)).filter((goal) => !goal.archived);
+
+  return (
+    <AppShell>
+      <CanonicalDomainRoom
+        eyebrow="Plan · Goals"
+        title="Goals"
+        question="Distant tomorrows, made visible. Every goal here is a real canonical Glow object with editable progress, dates, and status."
+        climate="plan"
+        destinations={[
+          { label: 'Moving Forward', href: '/living/moving-forward', cue: 'See active progress' },
+          { label: 'Projects', href: '/projects', cue: 'Connected work' },
+          { label: 'What Now?', href: '/living/what-now', cue: 'Turn direction into action' },
+        ]}
+      >
+        <GoalManager initialGoals={goals} />
+      </CanonicalDomainRoom>
+    </AppShell>
+  );
 }
