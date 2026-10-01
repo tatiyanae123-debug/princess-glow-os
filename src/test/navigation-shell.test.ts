@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  WORLD_TARGETS,
   depthLabelsForPath,
   enclosureForPath,
   railTargetIsActive,
@@ -9,6 +10,11 @@ import {
 import { pageContractViolations, pageManifestChainFor, pageManifestFor, REQUIRED_SYNC_DIMENSIONS } from '@/lib/glow-world/page-manifest';
 
 describe('Glow OS universal navigation shell', () => {
+  it('locks exactly five canonical Worlds', () => {
+    expect(WORLD_TARGETS.map((item) => item.world)).toEqual(['today', 'plan', 'life', 'brain', 'create']);
+    expect(WORLD_TARGETS.some((item) => item.world === 'beauty')).toBe(false);
+  });
+
   it('keeps Today family depth and contextual return coherent', () => {
     expect(roomLabelForPath('/today?room=focus', 'today')).toBe('Focus Session');
     expect(depthLabelsForPath('/today?room=focus', 'today')).toEqual(['Today', 'Focus Session']);
@@ -16,12 +22,15 @@ describe('Glow OS universal navigation shell', () => {
     expect(enclosureForPath('/today?room=focus')).toBe('protected');
   });
 
-  it('uses manifest ancestry instead of URL guessing for deep experiences', () => {
-    expect(returnTargetForPath('/closet', 'life')).toEqual({ label: 'Life', path: '/life' });
-    expect(returnTargetForPath('/beauty/skincare', 'beauty')).toEqual({ label: 'Beauty', path: '/beauty' });
-    expect(depthLabelsForPath('/beauty/gua-sha/morning', 'beauty')).toEqual(['Beauty', 'Gua Sha Studio', 'Morning Light Gua Sha']);
+  it('nests Beauty inside Life throughout manifest ancestry', () => {
+    const beauty = pageManifestFor('/beauty');
+    expect(beauty?.world).toBe('life');
+    expect(beauty?.level).toBe('room');
+    expect(beauty?.parent).toBe('/life');
+    expect(returnTargetForPath('/beauty/skincare', 'life')).toEqual({ label: 'Beauty', path: '/beauty' });
+    expect(depthLabelsForPath('/beauty/gua-sha/morning', 'life')).toEqual(['Life', 'Beauty', 'Gua Sha Studio', 'Morning Light Gua Sha']);
     expect(pageManifestChainFor('/beauty/gua-sha/morning').map((item) => item.id)).toEqual([
-      'beauty.world', 'beauty.gua-sha', 'beauty.gua-sha.morning',
+      'life.world', 'life.beauty', 'beauty.gua-sha', 'beauty.gua-sha.morning',
     ]);
   });
 
@@ -47,6 +56,13 @@ describe('Glow OS universal navigation shell', () => {
     expect(guaSha?.sync).toEqual(REQUIRED_SYNC_DIMENSIONS);
     expect(pageContractViolations('/beauty/gua-sha/morning')).toEqual([]);
     expect(pageContractViolations('/definitely-unregistered')).toEqual(['UNREGISTERED_PAGE:/definitely-unregistered']);
+  });
+
+  it('marks global utilities as global rather than as Worlds', () => {
+    expect(pageManifestFor('/search')?.scope).toBe('global');
+    expect(pageManifestFor('/ask-glow')?.scope).toBe('global');
+    expect(pageManifestFor('/concierge')?.scope).toBe('global');
+    expect(pageManifestFor('/settings')?.scope).toBe('global');
   });
 
   it('matches rail destinations without treating query-state as a second navigation system', () => {

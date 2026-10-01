@@ -18,17 +18,17 @@ function walk(dir:string):string[]{
   });
 }
 
-function appRoutes(){
-  const routes=new Set<string>();
-  for(const file of walk(APP)){
-    if(path.basename(file)!=='page.tsx'&&path.basename(file)!=='page.ts')continue;
-    const relative=path.relative(APP,path.dirname(file)).split(path.sep).filter(Boolean).filter(segment=>!/^\(.*\)$/.test(segment));
-    const staticSegments=relative.filter(segment=>!segment.startsWith('@'));
-    if(staticSegments.some(segment=>/^\[.*\]$/.test(segment)))continue;
-    routes.add('/'+staticSegments.join('/'));
+function appPageExists(href:string){
+  const route=(href.split('#')[0].split('?')[0].replace(/\/$/,'')||'/');
+  if(route==='/')return fs.existsSync(path.join(APP,'page.tsx'));
+  const segments=route.slice(1).split('/').filter(Boolean);
+  if(fs.existsSync(path.join(APP,...segments,'page.tsx'))||fs.existsSync(path.join(APP,...segments,'page.ts')))return true;
+  for(let depth=segments.length-1;depth>=1;depth--){
+    const parent=path.join(APP,...segments.slice(0,depth));
+    if(fs.existsSync(path.join(parent,'[...path]','page.tsx'))||fs.existsSync(path.join(parent,'[[...path]]','page.tsx')))return true;
   }
-  routes.add('/');
-  return routes;
+  const root=path.join(APP,segments[0]||'');
+  return fs.existsSync(path.join(root,'[[...path]]','page.tsx'));
 }
 
 function sourceFiles(){return walk(SRC);}
@@ -53,14 +53,12 @@ function configuredLinks(){
 
 describe('Glow OS UI integrity',()=>{
   it('every literal internal link points at a real application page',()=>{
-    const routes=appRoutes();
-    const missing=literalInternalLinks().filter(({href})=>!href.startsWith('/api/')&&!routes.has(href));
+    const missing=literalInternalLinks().filter(({href})=>!href.startsWith('/api/')&&!appPageExists(href));
     expect(missing).toEqual([]);
   });
 
   it('every configured navigation, action-dock, and deep-workspace link points at a real page',()=>{
-    const routes=appRoutes();
-    const missing=configuredLinks().filter(({href})=>!href.startsWith('/api/')&&!routes.has(href));
+    const missing=configuredLinks().filter(({href})=>!href.startsWith('/api/')&&!appPageExists(href));
     expect(missing).toEqual([]);
   });
 

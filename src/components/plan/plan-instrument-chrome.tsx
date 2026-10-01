@@ -63,8 +63,8 @@ export function PlanInstrumentChrome({
         <span className={`${styles.shellPearl} ${styles.shellPearlB}`} aria-hidden="true" />
         <header className={styles.header}>
           <div className={styles.titleBlock}>
-            <div className={styles.kicker}>GLOW OS BATCH 1 <span>·</span> WORLD 2</div>
-            <h1>{title}</h1>
+            <div className={styles.kicker}><Link href="/home">DASHBOARD</Link><span>›</span><Link href="/planning">PLAN</Link><span>›</span>{activeInstrument.toUpperCase()}</div>
+            <h1>{title.replace('PLAN · ', '')}</h1>
             <p>{subtitle}</p>
           </div>
 
@@ -76,9 +76,9 @@ export function PlanInstrumentChrome({
           </nav>
 
           <div className={styles.askWrap}>
-            <Link href="/ask-glow" className={styles.askButton} aria-label="Ask Glow">
+            <Link href="/ask-glow" className={styles.askButton} aria-label="Ask Shakti">
               <span className={styles.askPearl} aria-hidden="true" />
-              <span>Ask Glow</span>
+              <span>Shakti</span>
             </Link>
           </div>
         </header>

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Focus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -162,13 +163,13 @@ export function TodayNavigationAuthority() {
         onBlurCapture={() => scheduleHide(1400)}
         className={`fixed left-1/2 top-[max(7px,env(safe-area-inset-top))] z-[60000] grid h-[48px] w-[min(980px,calc(100vw-24px))] -translate-x-1/2 grid-cols-[1fr_auto_1fr] items-center rounded-[20px] border border-white/45 bg-[rgba(249,246,242,0.30)] px-4 shadow-[0_8px_28px_rgba(80,67,72,0.05),inset_0_1px_0_rgba(255,255,255,0.72)] backdrop-blur-xl backdrop-saturate-125 transition-[transform,opacity,background-color,box-shadow] duration-500 ease-[cubic-bezier(.22,.8,.22,1)] hover:bg-[rgba(249,246,242,0.48)] ${navigationState}`}
       >
-        <a href="/home" aria-label="Glow OS Home" className="justify-self-start text-[12px] font-semibold tracking-[-0.02em] text-neutral-900 no-underline">Glow OS</a>
+        <Link href="/home" aria-label="Glow OS Home" className="justify-self-start text-[12px] font-semibold tracking-[-0.02em] text-neutral-900 no-underline">Glow OS</Link>
 
-        <a href="/today?room=what-now" aria-label="Go to Today" className="inline-flex min-h-9 items-center gap-2 rounded-full px-3 text-[11px] font-medium text-neutral-700 no-underline transition hover:bg-white/32 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/25">
+        <Link href="/today?room=what-now" aria-label="Go to Today" className="inline-flex min-h-9 items-center gap-2 rounded-full px-3 text-[11px] font-medium text-neutral-700 no-underline transition hover:bg-white/32 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/25">
           <span className="h-3.5 w-3.5 rounded-full border border-white/85 bg-[radial-gradient(circle_at_30%_24%,#fff_0%,#fff_22%,#eee8ff_45%,#f7e7dd_72%)] shadow-[0_3px_10px_rgba(126,111,148,0.12)]" aria-hidden="true" />
           Today
           {focusActive ? <span className="ml-1 hidden items-center gap-1 rounded-full border border-white/55 bg-white/25 px-2 py-1 text-[9px] text-neutral-600 sm:inline-flex"><Focus size={10} strokeWidth={1.5} /> Focus active</span> : null}
-        </a>
+        </Link>
 
         <button type="button" aria-label={`Ask Glow from ${roomLabel}`} onClick={openGlow} className="inline-flex min-h-9 items-center gap-2 justify-self-end rounded-full border-0 bg-transparent px-2 text-[11px] font-medium text-neutral-800">
           <span className="h-6 w-6 rounded-[48%_52%_57%_43%/45%_42%_58%_55%] border border-white/82 bg-[radial-gradient(circle_at_32%_24%,#fff_0%,#fff_18%,#ececff_46%,#f8e5d4_76%)] shadow-[inset_3px_3px_8px_rgba(255,255,255,0.72),0_4px_12px_rgba(94,83,90,0.10)]" aria-hidden="true" />

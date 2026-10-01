@@ -247,6 +247,15 @@ function isSameDay(a: Date, b: Date) {
     && a.getDate() === b.getDate();
 }
 
+function isInCurrentPlanningHorizon(value: Date, generatedAt: Date) {
+  if (isSameDay(value, generatedAt)) return true;
+  // Server runtimes may use a different timezone than the user's captured
+  // timestamps. Keep near-term capacity relationships stable across that
+  // boundary instead of silently losing them at UTC midnight.
+  const delta = value.getTime() - generatedAt.getTime();
+  return delta >= -12 * 60 * 60 * 1000 && delta <= 24 * 60 * 60 * 1000;
+}
+
 function sourceSystemFromEventSource(source: string | null): GlowObjectProvenance['sourceSystem'] {
   const value = source?.toLowerCase() ?? '';
   if (value.includes('google')) return 'google';
@@ -392,8 +401,8 @@ export function buildLivingLifeModelSnapshot(input: LivingLifeModelInput): Livin
   }
 
   const relationships = new Map<string, GlowRelationship>();
-  const currentDayEvents = input.events.filter((event) => isSameDay(event.startAt, input.generatedAt));
-  const currentDayTasks = input.tasks.filter((task) => task.dueDate && isSameDay(task.dueDate, input.generatedAt) && task.status !== 'done' && task.status !== 'cancelled');
+  const currentDayEvents = input.events.filter((event) => isInCurrentPlanningHorizon(event.startAt, input.generatedAt));
+  const currentDayTasks = input.tasks.filter((task) => task.dueDate && isInCurrentPlanningHorizon(task.dueDate, input.generatedAt) && task.status !== 'done' && task.status !== 'cancelled');
 
   for (const task of currentDayTasks) {
     for (const event of currentDayEvents) {

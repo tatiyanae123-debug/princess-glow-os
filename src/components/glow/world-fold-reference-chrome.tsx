@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-type FoldWorld = 'home' | 'today' | 'plan' | 'life' | 'beauty' | 'brain' | 'create';
+type FoldWorld = 'home' | 'today' | 'plan' | 'life' | 'brain' | 'create';
 
 type WorldItem = {
   key: FoldWorld;
@@ -16,9 +16,8 @@ type WorldItem = {
 const WORLDS: WorldItem[] = [
   { key: 'home', label: 'Home', path: '/home', cue: 'Your life, in one view.', detail: 'Everything connects here.', symbol: '●' },
   { key: 'today', label: 'Today', path: '/today?room=what-now', cue: 'The present moment.', detail: 'What’s next, now.', symbol: '☼' },
-  { key: 'plan', label: 'Plan', path: '/plan', cue: 'Time becoming you.', detail: 'Goals, tasks, and what’s ahead.', symbol: '◎' },
-  { key: 'life', label: 'Life', path: '/life', cue: 'Your inhabited world.', detail: 'People, places, systems.', symbol: '◇' },
-  { key: 'beauty', label: 'Beauty', path: '/beauty', cue: 'Care. Confidence. You.', detail: 'Routines, progress, and more.', symbol: '✦' },
+  { key: 'plan', label: 'Plan', path: '/planning', cue: 'Time becoming you.', detail: 'Goals, tasks, and what’s ahead.', symbol: '◎' },
+  { key: 'life', label: 'Life', path: '/life', cue: 'Your inhabited world.', detail: 'Body, Beauty, home, money, people, and more.', symbol: '◇' },
   { key: 'brain', label: 'Brain', path: '/brain', cue: 'Knowledge in motion.', detail: 'Memories, insights, connections.', symbol: '⌘' },
   { key: 'create', label: 'Create', path: '/create', cue: 'Ideas into reality.', detail: 'Make, design, build, express.', symbol: '✧' },
 ];

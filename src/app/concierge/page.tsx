@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AppShell } from '@/components/app-shell';
-import { SectionPage } from '@/components/section-page';
+import { CanonicalDomainRoom } from '@/components/glow/canonical-domain-room';
 import { Card } from '@/components/ui/card';
 import {
   createConciergeProposalAction,
@@ -12,6 +12,12 @@ import { getAiProposals, getAuditEvents } from '@/lib/data/completion-v1';
 import { Check, RotateCcw, ShieldCheck, Sparkles, X } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
+
+const destinations=[
+  {label:'Request Detail',href:'/concierge/request',cue:'Dependencies, steps, approval'},
+  {label:'Attention Center',href:'/attention',cue:'Human review'},
+  {label:'Ask Glow',href:'/ask-glow',cue:'Universal intelligence'},
+];
 const fieldClass = 'w-full border px-4 py-3 text-[10px]';
 
 type ProposalPayload = Record<string, unknown> & {
@@ -43,10 +49,12 @@ export default async function ConciergePage() {
 
   return (
     <AppShell>
-      <SectionPage
-        eyebrow="AI Concierge"
-        title="Ask, propose, approve"
-        description="Glow can reason immediately. Any real change is previewed first, executed only after approval, recorded in the audit trail, and reversible when the action supports a safe undo."
+      <CanonicalDomainRoom
+        eyebrow="Global Utility · Concierge"
+        title="Concierge"
+        question="What multi-step situation needs coordination, preview, approval, and a receipt?"
+        climate="global"
+        destinations={destinations}
       >
         <div className="space-y-4">
           <Card className="relative overflow-hidden bg-[linear-gradient(145deg,#eee6ef,#f6efeb)] p-5">
@@ -180,7 +188,7 @@ export default async function ConciergePage() {
             </div>
           </Card>
         </div>
-      </SectionPage>
+      </CanonicalDomainRoom>
     </AppShell>
   );
 }

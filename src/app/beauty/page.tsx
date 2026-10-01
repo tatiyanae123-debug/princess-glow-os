@@ -1,22 +1,11 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import {
-  Brain,
-  CalendarDays,
-  ChevronRight,
-  Heart,
-  Home,
-  Palette,
-  PenTool,
-  Search,
-  Sparkles,
-} from 'lucide-react';
+import { CalendarDays, ChevronRight, Palette, Sparkles } from 'lucide-react';
 import { auth } from '@/auth';
 import { getBeautyRoutinesByUser } from '@/lib/data/beauty-routines';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
 import { getBeautyProducts, getHairLogs, getObservations } from '@/lib/data/completion-v1';
 import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
-import { WORLD_TARGETS } from '@/lib/glow-world/navigation-shell';
 import { BeautyAtelierBehavior } from './beauty-atelier-behavior';
 import styles from './beauty-personal-atelier.module.css';
 
@@ -32,14 +21,6 @@ const beautyKeywords = [
   'beauty','facial','skin','skincare','brow','brows','lash','lashes','nail','nails','manicure','pedicure','wax','laser','derm','dermatology','esthetic','spa','makeup','hair','scalp','fragrance','perfume','gua sha','massage','body care','sunscreen','spf','shampoo','conditioner',
 ];
 
-const railIcons = {
-  Today: Home,
-  Plan: CalendarDays,
-  Life: Heart,
-  Beauty: Sparkles,
-  Brain,
-  Create: PenTool,
-} as const;
 
 function textOf(product: BeautyProduct) {
   return `${product.name} ${product.category} ${product.ingredients ?? ''} ${product.routinePosition ?? ''} ${product.usageFrequency ?? ''} ${product.reaction ?? ''}`.toLowerCase();
@@ -109,7 +90,6 @@ export default async function BeautyPage({ searchParams }: { searchParams: Promi
   const sevenDays = now.getTime() + 7 * 86400000;
   const thirtyDays = now.getTime() + 30 * 86400000;
   const fortyFiveDays = now.getTime() + 45 * 86400000;
-  const firstName = session.user.name?.trim().split(/\s+/)[0] || 'You';
   const energy = energyLabel(wellness[0]?.energy);
 
   const upcomingEvents = events
@@ -195,7 +175,6 @@ export default async function BeautyPage({ searchParams }: { searchParams: Promi
   const fragrancePrimary = activeFragrance?.name || (fragranceProducts.length ? 'Not chosen' : 'Build fragrance wardrobe');
   const facialPrimary = facialRoutines[0]?.name || 'No session planned';
 
-  const worldTargets = WORLD_TARGETS;
   const nextEventModel = nextGeneralEvent ? {
     title: nextGeneralEvent.title,
     iso: nextGeneralEvent.startAt.toISOString(),
@@ -206,35 +185,8 @@ export default async function BeautyPage({ searchParams }: { searchParams: Promi
   return (
     <main className={styles.viewport}>
       <section className={styles.atelier} aria-label="Beauty Personal Atelier" data-beauty-atelier data-beauty-mode="normal">
-        <header className={styles.topbar}>
-          <Link href="/home" className={styles.brand}><strong>Glow OS</strong><small>Beauty</small></Link>
-          <nav className={styles.worldNav} aria-label="Glow regions">
-            {worldTargets.map((target) => <Link key={target.world} href={target.path} className={target.world === 'beauty' ? styles.active : undefined}>{target.label}</Link>)}
-          </nav>
-          <div className={styles.askWrap}>
-            <button type="button" className={styles.ask} data-open-glow><Search size={14}/><span>Ask Glow...</span></button>
-            <button type="button" className={styles.glowOrb} data-open-glow aria-label="Open Ask Glow" />
-          </div>
-        </header>
-
-        <div className={styles.title}><h1>Beauty · Personal Atelier</h1><p>Your beauty care, connected and in view.</p></div>
+        <div className={styles.title}><span>Life · Beauty</span><h1>Beauty · Personal Atelier</h1><p>Your beauty care, connected and in view.</p></div>
         <div className={styles.careLine}>Care today. A brighter you tomorrow.</div>
-
-        <aside className={styles.leftRail}>
-          <nav className={styles.railLinks} aria-label="Glow regions">
-            {worldTargets.map((target) => {
-              const Icon = railIcons[target.label as keyof typeof railIcons] ?? Sparkles;
-              return <Link key={target.world} href={target.path} className={target.world === 'beauty' ? styles.railActive : undefined}><span className={styles.railIcon}>{target.world === 'beauty' ? <span className={styles.navOrb}/> : <Icon size={17} strokeWidth={1.45}/>}</span><span>{target.label}</span></Link>;
-            })}
-          </nav>
-          <div className={styles.identity}>
-            {session.user.image ? <div className={styles.portrait} style={{ backgroundImage:`url(${session.user.image})` }} /> : <div className={styles.portraitFallback}>{firstName.slice(0,1).toUpperCase()}</div>}
-            <small data-local-greeting>Welcome,</small><strong>{firstName}</strong>
-            <div className={styles.identityMeta}>Today<b>{beautyToday.length ? `${beautyToday.length} beauty item${beautyToday.length === 1 ? '' : 's'}` : 'Nothing assigned'}</b></div>
-            <div className={styles.identityMeta}>Energy<b>{energy}</b></div>
-          </div>
-          <button type="button" className={styles.assistantState} data-open-glow><span className={styles.miniOrb}/><span><strong>Ask Glow</strong>Listening</span></button>
-        </aside>
 
         <section className={styles.field} aria-label="Beauty systems">
           <Link href="/beauty/skincare" data-beauty-system="skin" className={`${styles.chamber} ${styles.skin}`}>

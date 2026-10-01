@@ -59,7 +59,8 @@ export const DEEP_ROOM_MANIFEST: DeepRoomIdentity[] = [
   { id:'money-decision',match:'/finance/brain',world:'life',domain:'money',material:'private-simulation',enclosure:'protected',purpose:'Simulate buying, waiting and competing financial futures without mutating current reality.' },
   { id:'money',match:'/finance',world:'life',domain:'money',material:'quiet-ledger',enclosure:'structured',purpose:'Understand income, spending, savings, obligations and cash-flow pressure calmly.' },
 
-  { id:'home',match:'/home',world:'life',domain:'home',material:'spatial-house',enclosure:'open',purpose:'Move through the home spatially into storage, objects, maintenance, routines and projects.' },
+  { id:'life-home',match:'/life/home',world:'life',domain:'home',material:'spatial-house',enclosure:'open',purpose:'Move through the home spatially into storage, objects, maintenance, routines and projects.' },
+  { id:'glow-home',match:'/home',world:'today',domain:'origin',material:'world-fold',enclosure:'open',purpose:'Enter the five canonical Worlds from the shared Glow origin.' },
   { id:'saint',match:'/saint',world:'life',domain:'saint',material:'warm-memory',enclosure:'structured',purpose:'Connect care, walks, appointments, supplies, memories, travel and expenses around Saint.' },
   { id:'life',match:'/life',world:'life',domain:'life',material:'living-world',enclosure:'open',purpose:'Enter the connected personal world rather than a directory of apps.' },
 

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import styles from './beauty-personal-atelier.module.css';
 
@@ -199,7 +200,7 @@ export function BeautyAtelierBehavior({ nextEvent, inventory, energy, travelCont
             <span><b>{inventory.useFirst || '—'}</b>Use first</span>
             <span><b>{inventory.needsId || '—'}</b>Needs ID</span>
           </div>
-          <a className={styles.modeAction} href="/beauty/inventory" data-beauty-system="inventory">Open Beauty Inventory</a>
+          <Link className={styles.modeAction} href="/beauty/inventory" data-beauty-system="inventory">Open Beauty Inventory</Link>
         </>
       ) : null}
       {mode === 'travel' ? (
@@ -207,7 +208,7 @@ export function BeautyAtelierBehavior({ nextEvent, inventory, energy, travelCont
           <small>BEAUTY TRAVEL CURRENT</small>
           <h2>{travelContext ? 'Travel context is in view.' : 'No travel event is currently connected.'}</h2>
           <p>Glow only builds a travel kit from products and plans it can actually verify.</p>
-          <a className={styles.modeAction} href="/beauty/skincare?view=travel-kit" data-beauty-system="travel-kit">Open travel kit</a>
+          <Link className={styles.modeAction} href="/beauty/skincare?view=travel-kit" data-beauty-system="travel-kit">Open travel kit</Link>
         </>
       ) : null}
       {mode === 'essentials' ? (
