@@ -47,34 +47,21 @@ export function LivingDashboard(){
  const openTasks=(data?.tasks??[]).filter(t=>t.status!=='done'&&t.status!=='cancelled');
  const currentAction=data?.activeTask??openTasks[0]??null;
  const bigThree=useMemo(()=>['Career','Body','Life'].map((label,i)=>({label,title:openTasks[i]?.title??(i===0?'Choose your career priority':i===1?'Move your body':'Choose your life priority'),task:openTasks[i]})),[openTasks]);
- const currentRoutine=data?.routines.find(r=>r.timeOfDay===activeBlock.key||(activeBlock.key==='between'&&r.timeOfDay==='afternoon'))??null;
+ const routineTime = activeBlock.key === 'between' ? 'afternoon' : activeBlock.key;
+ const currentRoutine=data?.routines.find(r=>r.timeOfDay===routineTime)??null;
  const nextMins=mins(nextEvent?.startAt),readyMins=nextMins===null?null:Math.max(0,nextMins-45);
  const firstName=data?.user.name?.trim().split(/\s+/)[0]||'Tatiyana';
  const greeting=!now?'Welcome':now.getHours()<12?'Good morning':now.getHours()<17?'Good afternoon':now.getHours()<21?'Good evening':'Good night';
  const dateLabel=now?.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})??'';
  const routines=data?.routines.slice(0,4)??[]; const goals=data?.goals.filter(g=>g.status!=='complete').slice(0,3)??[];
+ const fitnessRoutine=data?.routines.find(r=>/workout|fitness|walk|pilates|glute|upper body|cardio|core/i.test(r.name))??null;
+ const beautyRoutines=(data?.routines??[]).filter(r=>/skin|beauty|hair|makeup|face|body care/i.test(r.name)).slice(0,3);
  const gmail=data?.gmail?.messages??[]; const unread=data?.gmail?.unreadCount??0;
 
  function complete(id:string){startTransition(async()=>{await updateTaskAction(id,{status:'done'});window.sessionStorage.removeItem('glow:personal-context:v1');window.location.reload()})}
 
  return <main className={styles.shell} data-block={activeBlock.key}>
-   <aside className={styles.sidebar}>
-    <button className={styles.logo} onClick={()=>travel('/home')}>Glow</button>
-    <nav>
-     <button className={styles.active} onClick={()=>travel('/home')}><Home/>Dashboard</button>
-     <button onClick={()=>travel('/today')}><CalendarDays/>Today</button>
-     <button onClick={()=>openGlow()}><Sparkles/>Ask Glow</button>
-     <button onClick={()=>travel('/inbox')}><Circle/>Capture</button>
-     <button onClick={()=>travel('/search')}><Search/>Search</button><hr/>
-     <button onClick={()=>travel('/life')}><Heart/>Life</button>
-     <button onClick={()=>travel('/projects')}><BriefcaseBusiness/>Projects</button>
-     <button onClick={()=>travel('/relationships')}><UserRound/>People</button>
-     <button onClick={()=>travel('/beauty')}><WandSparkles/>Beauty</button>
-     <button onClick={()=>travel('/fitness')}><Dumbbell/>Fitness</button>
-     <button onClick={()=>travel('/finance')}><DollarSign/>Money</button>
-    </nav>
-    <div className={styles.sideBottom}><button onClick={()=>travel('/notifications')}><Bell/>Notifications</button><button onClick={()=>travel('/settings')}><Menu/>Settings</button></div>
-   </aside>
+
 
    <section className={styles.canvas}>
     <header className={styles.header}>
@@ -100,9 +87,9 @@ export function LivingDashboard(){
     <section className={styles.midGrid}>
      <article className={styles.panel}><header><CalendarDays/> TODAY’S SCHEDULE <button onClick={()=>travel('/calendar')}>View calendar →</button></header>{(data?.todayEvents??[]).slice(0,7).map(e=><button className={styles.lineItem} key={e.id} onClick={()=>e.htmlLink?window.open(e.htmlLink,'_blank'):travel('/calendar')}><time>{fmt(e.startAt)}</time><span>{e.title}</span><ChevronRight/></button>)}{!data?.todayEvents.length&&<p className={styles.empty}>Your calendar is clear today.</p>}</article>
      <article className={styles.panel}><header><Leaf/> ROUTINES TODAY</header>{routines.map(r=><button className={styles.checkLine} key={r.id} onClick={()=>travel('/routines')}><Circle/><span>{r.name}</span><small>{r.timeOfDay}</small></button>)}{!routines.length&&<p className={styles.empty}>Add your first routine in Routines.</p>}</article>
-     <article className={styles.panel}><header><Dumbbell/> BODY</header><strong className={styles.featureTitle}>{['Full Rest','Glutes + Hamstrings','Upper Body + Posture','Recovery + Walking/Pilates','Glutes + Side Glutes','Upper Body + Arms','Cardio + Core + Mobility'][now?.getDay()??2]}</strong><div className={styles.meter}><span/></div><p>Steps goal · 8,000–12,000</p><button className={styles.primaryBtn} onClick={()=>travel('/fitness')}>Open Fitness</button></article>
-     <article className={styles.panel}><header><Sparkles/> BEAUTY TODAY</header><button className={styles.checkLine} onClick={()=>travel('/beauty/today')}><Check/><span>AM skincare</span><small>Today</small></button><button className={styles.checkLine} onClick={()=>travel('/beauty/today')}><Circle/><span>PM skincare</span><small>Tonight</small></button><button className={styles.checkLine} onClick={()=>travel('/beauty/maintenance')}><Circle/><span>Hair / maintenance</span><small>This week</small></button><p className={styles.note}>Only today’s beauty context appears here.</p></article>
-     <article className={styles.panel}><header><WandSparkles/> STYLE</header><strong className={styles.featureTitle}>{nextEvent?.title??'Today'}</strong><p>{weather?weather.temp+'° · '+weatherLabel(weather.code):'Weather-aware once enabled'}</p><p>Direction · polished · simple · comfortable</p><button className={styles.linkBtn} onClick={()=>travel('/closet')}>View saved outfits →</button></article>
+     <article className={styles.panel}><header><Dumbbell/> BODY</header><strong className={styles.featureTitle}>{fitnessRoutine?.name ?? 'No workout scheduled in connected data'}</strong><p>{data?.wellness?.energy ? 'Energy · '+data.wellness.energy : 'Energy not logged today'}</p><p>Daily step target · 8,000–12,000</p><button className={styles.primaryBtn} onClick={()=>travel('/fitness')}>Open Fitness</button></article>
+     <article className={styles.panel}><header><Sparkles/> BEAUTY TODAY</header>{beautyRoutines.map(r=><button className={styles.checkLine} key={r.id} onClick={()=>travel('/beauty/today')}><Circle/><span>{r.name}</span><small>{r.timeOfDay}</small></button>)}{!beautyRoutines.length&&<p className={styles.empty}>No beauty routine is scheduled in connected data.</p>}<button className={styles.linkBtn} onClick={()=>travel('/beauty/today')}>Open Beauty Today →</button></article>
+     <article className={styles.panel}><header><WandSparkles/> STYLE</header><strong className={styles.featureTitle}>{nextEvent ? 'Dress for '+nextEvent.title : 'No event-based outfit needed'}</strong><p>{weather?weather.temp+'° · '+weatherLabel(weather.code):'Enable weather for outfit context'}</p><p>{nextEvent?.location ? 'Location · '+nextEvent.location : 'No location context available'}</p><button className={styles.linkBtn} onClick={()=>travel('/closet')}>Open Closet →</button></article>
     </section>
 
     <section className={styles.lowerGrid}>
