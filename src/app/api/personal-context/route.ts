@@ -8,6 +8,7 @@ import { getNotesByUser } from '@/lib/data/notes';
 import { getGoalsByUser } from '@/lib/data/goals';
 import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
 import { getUpcomingGoogleEvents, type CalendarFetchResult } from '@/lib/google/calendar-client';
+import { getRecentInboxMessages, type GmailFetchResult } from '@/lib/google/gmail-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,8 +68,10 @@ export async function GET() {
       GOOGLE_CONTEXT_BUDGET_MS,
       googleFallback,
     );
+    const gmailFallback: GmailFetchResult = { ok: false, reason: 'error' };
+    const gmailPromise = withTimeout(getRecentInboxMessages(userId), GOOGLE_CONTEXT_BUDGET_MS, gmailFallback);
 
-    const [tasks, glowEvents, routines, habits, notes, goals, wellnessEntries, googleResult] = await Promise.all([
+    const [tasks, glowEvents, routines, habits, notes, goals, wellnessEntries, googleResult, gmailResult] = await Promise.all([
       getTasksByUser(userId),
       getCalendarEventsByUser(userId),
       getRoutinesByUser(userId),
@@ -77,6 +80,7 @@ export async function GET() {
       getGoalsByUser(userId),
       getWellnessEntriesByUser(userId),
       googlePromise,
+      gmailPromise,
     ]);
 
     const activeTasks = tasks
@@ -126,6 +130,7 @@ export async function GET() {
     });
 
     const sourceStatus = googleResult.ok ? 'connected' : googleResult.reason;
+    const gmailStatus = gmailResult.ok ? 'connected' : gmailResult.reason;
 
     return NextResponse.json({
       ok: true,
@@ -192,8 +197,16 @@ export async function GET() {
             notes: wellness.notes,
           }
         : null,
+      gmail: gmailResult.ok ? {
+        unreadCount: gmailResult.unreadCount,
+        messages: gmailResult.messages.map((message) => ({
+          ...message,
+          date: message.date ? message.date.toISOString() : null,
+        })),
+      } : null,
       sourceStatus: {
         googleCalendar: sourceStatus,
+        gmail: gmailStatus,
       },
     });
   } catch (error) {
