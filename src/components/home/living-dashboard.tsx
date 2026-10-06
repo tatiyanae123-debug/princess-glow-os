@@ -1,6 +1,6 @@
 'use client';
 
-import { Activity, Bell, BriefcaseBusiness, CalendarDays, Check, ChevronRight, Circle, CloudSun, DollarSign, Dumbbell, Heart, Home, Leaf, ListTodo, Mail, Menu, Search, Sparkles, SunMedium, UserRound, WandSparkles } from 'lucide-react';
+import { Activity, Bell, BriefcaseBusiness, CalendarDays, ChevronRight, Circle, CloudSun, Dumbbell, Leaf, ListTodo, Mail, Search, Sparkles, SunMedium, UserRound, WandSparkles } from 'lucide-react';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { usePersonalContext } from '@/lib/personal-context/use-personal-context';
 import { updateTaskAction } from '@/app/actions/tasks';
