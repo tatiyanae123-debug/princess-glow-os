@@ -5,8 +5,6 @@ import { and, eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { users, accounts, sessions, verificationTokens } from '@/db/schema/auth';
 
-const PRODUCTION_AUTH_PROXY_URL = 'https://princess-glow-os.vercel.app/api/auth';
-
 function getDeploymentBaseUrl(baseUrl: string) {
   if (process.env.VERCEL_ENV === 'preview') {
     const previewHost = process.env.VERCEL_BRANCH_URL ?? process.env.VERCEL_URL;
@@ -54,15 +52,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
     sessionsTable: sessions,
     verificationTokensTable: verificationTokens,
   }),
+  session: {
+    strategy: 'database',
+    maxAge: 90 * 24 * 60 * 60,
+    updateAge: 24 * 60 * 60,
+  },
   providers: [
     Google({
       clientId: process.env.PRINCESS_GOOGLE_CLIENT_ID ?? '',
       clientSecret: process.env.PRINCESS_GOOGLE_CLIENT_SECRET ?? '',
-      redirectProxyUrl: process.env.VERCEL_ENV === 'preview' ? PRODUCTION_AUTH_PROXY_URL : undefined,
+      redirectProxyUrl:
+        process.env.VERCEL_ENV === 'preview'
+          ? process.env.AUTH_REDIRECT_PROXY_URL
+          : undefined,
       authorization: {
         params: {
           access_type: 'offline',
           include_granted_scopes: 'true',
+          prompt: 'select_account',
           scope: [
             'openid',
             'email',
