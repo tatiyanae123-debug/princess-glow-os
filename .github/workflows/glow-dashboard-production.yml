@@ -1,0 +1,30 @@
+name: Glow Dashboard Production Verification
+
+on:
+  push:
+    branches:
+      - glow-dashboard-live-2026-10-06
+  workflow_dispatch:
+
+jobs:
+  verify-dashboard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      AUTH_SECRET: ci-dashboard-secret-ci-dashboard-secret
+      DATABASE_URL: postgresql://user:pass@placeholder.neon.tech/db
+      PRINCESS_GOOGLE_CLIENT_ID: ci-client-id
+      PRINCESS_GOOGLE_CLIENT_SECRET: ci-client-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Dashboard intelligence tests
+        run: npx vitest run src/lib/dashboard-intelligence.test.ts
+      - name: Production build
+        run: npm run build
