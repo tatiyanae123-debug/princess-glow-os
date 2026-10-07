@@ -124,8 +124,14 @@ export function chooseBigThree(tasks: PersonalTask[], now: Date, nextEvent: Pers
   return result;
 }
 
-export function dayProgress(tasks: PersonalTask[]) {
-  const relevant = tasks.filter((task) => task.status !== 'cancelled');
+export function dayProgress(tasks: PersonalTask[], now: Date) {
+  const day = now.toLocaleDateString('en-CA');
+  const relevant = tasks.filter((task) => {
+    if (task.status === 'cancelled') return false;
+    const dueDay = task.dueDate ? new Date(task.dueDate).toLocaleDateString('en-CA') : null;
+    const completedDay = task.completedAt ? new Date(task.completedAt).toLocaleDateString('en-CA') : null;
+    return dueDay === day || completedDay === day;
+  });
   const completed = relevant.filter((task) => task.status === 'done').length;
   return { completed, total: relevant.length };
 }
