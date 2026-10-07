@@ -117,6 +117,21 @@ export function LivingDashboard({ data, error, userName }: { data: LivingDashboa
 
   const noteNodes=data.notesSummary.recentNotes.slice(0,4);
   const gmailChanges=data.gmailInbox.messages.slice(0,3);
+  const tomorrowKey=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1).toLocaleDateString('en-CA');
+  const tomorrowEvents=allEvents.filter(e=>e.startAt.toLocaleDateString('en-CA')===tomorrowKey).slice(0,3);
+  const coverage=[
+    ['Greeting / current block','Device time + Glow rules','Connected','Fact'],
+    ['Weather','Live weather + browser location',weatherState==='ready'?'Connected':weatherState,'Fact'],
+    ['Next event / My Day','Google Calendar + Glow events',data.googleCalendar.status,'Fact'],
+    ['Tasks / Big 3','Glow task database','Connected','Fact + Glow ranking'],
+    ['Routines','Glow routines','Connected','Fact'],
+    ['Brain Web','Glow Notes','Connected','Fact relationships only'],
+    ['Gmail changes','Gmail',data.gmailInbox.status,'Fact'],
+    ['Notion tasks / Brain Dump','Notion Life OS','Not connected in app runtime','Missing Source'],
+    ['Fitness steps','Health/activity source','Not connected','Missing Source'],
+    ['People','Contacts / People source','Not connected','Missing Source'],
+    ['Money','Finance source','Not connected','Missing Source'],
+  ] as const;
 
   function completeTask(id:string){
     startTransition(async()=>{
@@ -253,8 +268,10 @@ export function LivingDashboard({ data, error, userName }: { data: LivingDashboa
           <article><header><Inbox/>ON YOUR MIND</header>{noteNodes.slice(0,3).map(n=><p key={n.id}>○ {n.title}</p>)}{!noteNodes.length?<p>Nothing connected here yet.</p>:null}</article>
           <article><header><MessageCircle/>WHAT CHANGED?</header>{gmailChanges.length?gmailChanges.map(m=><p key={m.id}>○ {m.subject}</p>):<p>No connected Gmail changes surfaced.</p>}</article>
           <article><header><Moon/>CAN WAIT</header><p>{tasks.length>2?tasks.slice(2).map(t=>t.title).join(' · '):'Nothing is explicitly safe to defer from current data.'}</p></article>
-          <article><header><CalendarDays/>TOMORROW</header><p>Tomorrow preview comes from your connected calendar.</p><Link href="/calendar">View tomorrow →</Link></article>
+          <article><header><CalendarDays/>TOMORROW</header>{tomorrowEvents.length?tomorrowEvents.map(e=><p key={e.id}>○ {fmtTime(e.startAt)} · {e.title}</p>):<p>No connected event is currently surfaced for tomorrow.</p>}<Link href="/calendar">View tomorrow →</Link></article>
         </section>
+
+        <details className="ref-coverage"><summary>Data Coverage · verify every dashboard fact</summary><div>{coverage.map(row=><p key={row[0]}><strong>{row[0]}</strong><span>{row[1]}</span><em>{row[2]}</em><b>{row[3]}</b></p>)}</div><small>Screenshot content is never used as factual fallback data. Missing sources stay visibly missing.</small></details>
 
         <footer className="ref-command">
           <Link href="/inbox">＋ Capture</Link>
