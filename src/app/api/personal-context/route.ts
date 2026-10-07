@@ -168,6 +168,7 @@ export async function GET() {
         name: routine.name,
         description: routine.description,
         timeOfDay: routine.timeOfDay,
+        daysOfWeek: routine.daysOfWeek,
       })),
       habits: habits.map((habit) => ({
         id: habit.id,
