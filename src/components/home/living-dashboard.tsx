@@ -30,10 +30,20 @@ export function LivingDashboard(){
  const [weather,setWeather]=useState<WeatherState>(null);
  const [weatherStatus,setWeatherStatus]=useState<'loading'|'ready'|'denied'|'error'>('loading');
  const [pending,startTransition]=useTransition();
+ const [lastVisit,setLastVisit]=useState<number|null>(null);
  const {rules}=useGlowRules();
  const data=personal.status==='ready'?personal.data:null;
 
  useEffect(()=>{const tick=()=>setNow(new Date());tick();const id=window.setInterval(tick,60000);return()=>window.clearInterval(id)},[]);
+ useEffect(()=>{
+   try{
+     const raw=window.localStorage.getItem('glow:last-dashboard-visit');
+     setLastVisit(raw?Number(raw):Date.now()-12*60*60*1000);
+     const stamp=String(Date.now());
+     const timer=window.setTimeout(()=>window.localStorage.setItem('glow:last-dashboard-visit',stamp),2500);
+     return()=>window.clearTimeout(timer);
+   }catch{setLastVisit(Date.now()-12*60*60*1000)}
+ },[]);
  useEffect(()=>{
    if(!navigator.geolocation){setWeatherStatus('error');return}
    navigator.geolocation.getCurrentPosition(async({coords})=>{
@@ -75,6 +85,17 @@ export function LivingDashboard(){
    return [...events,...dueTasks].sort((a,b)=>a.time.getTime()-b.time.getTime()).slice(0,8);
  },[data,now]);
  const nextPressure=timelineItems.find(item=>item.time.getTime()>=Date.now())??null;
+ const changedSignals=useMemo(()=>{
+   if(!data||lastVisit===null)return [];
+   const emailSignals=gmail.filter(m=>m.date&&new Date(m.date).getTime()>lastVisit).map(m=>({id:'mail:'+m.id,label:m.subject,meta:'Email · '+m.from}));
+   const taskSignals=data.tasks.filter(t=>new Date(t.updatedAt).getTime()>lastVisit).map(t=>({id:'task:'+t.id,label:t.title,meta:'Task · '+(t.status==='done'?'completed':'updated')}));
+   return [...emailSignals,...taskSignals].sort((a,b)=>a.id.localeCompare(b.id)).slice(0,4);
+ },[data,gmail,lastVisit]);
+ const canWait=useMemo(()=>ranked.filter(item=>item.score<30).slice(-3).reverse(),[ranked]);
+ const adminTasks=openTasks.filter(t=>/bank|doctor|dermat|pharmacy|prescription|bill|return|form|appointment|phone|call|insurance|account/i.test((t.title+' '+(t.description??'')))).slice(0,4);
+ const careerTasks=openTasks.filter(t=>/job|career|interview|resume|application|recruit|work|client|portfolio/i.test((t.title+' '+(t.description??'')))).slice(0,3);
+ const brandGoal=goals.find(g=>/brand|skin|beauty|business/i.test(g.category+' '+g.title));
+ const brandNote=data?.notes.find(n=>/brand|skin|scalp|product|manufacturer|formula|packaging/i.test((n.title+' '+(n.content??''))));
  const sourceRows=[
    {name:'Glow data',state:data?'Connected':'Loading',kind:'Fact'},
    {name:'Google Calendar',state:data?.sourceStatus.googleCalendar??'loading',kind:'Fact'},
@@ -140,17 +161,17 @@ export function LivingDashboard(){
     </section>
 
     <section className={styles.lowerGrid}>
-     <article className={styles.miniPanel}><header><BriefcaseBusiness/> CAREER</header><p>{nextEvent?.title??'No career event right now'}</p><p>{goals.find(g=>/career|job/i.test(g.category+' '+g.title))?.title??'Open Career in Projects'}</p><button onClick={()=>travel('/projects')}>Open →</button></article>
-     <article className={styles.miniPanel}><header><Sparkles/> BRAND BRAIN</header><p>{goals.find(g=>/brand|skin|beauty/i.test(g.category+' '+g.title))?.title??goals[0]?.title??'No active brand goal'}</p><p>{data?.notes[0]?.title??'Capture your next idea'}</p><button onClick={()=>travel('/brain')}>Open Brain →</button></article>
-     <article className={styles.miniPanel}><header><ListTodo/> LIFE ADMIN</header>{openTasks.slice(0,4).map(t=><button key={t.id} className={styles.microLine} onClick={()=>travel('/tasks')}><Circle/>{t.title}</button>)}</article>
+     <article className={styles.miniPanel}><header><BriefcaseBusiness/> CAREER</header>{careerTasks.length?careerTasks.map(t=><button className={styles.microLine} key={t.id} onClick={()=>travel('/tasks')}><Circle/>{t.title}</button>):<p>No connected career action needs attention right now.</p>}<button onClick={()=>travel('/projects')}>Open Career →</button></article>
+     <article className={styles.miniPanel}><header><Sparkles/> BRAND BRAIN</header><p>{brandGoal?.title??'No connected brand goal is active'}</p><p>{brandNote?.title??'No recent connected brand note surfaced'}</p><button onClick={()=>travel('/brain')}>Open Brain →</button></article>
+     <article className={styles.miniPanel}><header><ListTodo/> LIFE ADMIN</header>{adminTasks.length?adminTasks.map(t=><button key={t.id} className={styles.microLine} onClick={()=>travel('/tasks')}><Circle/>{t.title}</button>):<p>No connected admin task needs attention right now.</p>}</article>
      <article className={styles.miniPanel}><header><UserRound/> PEOPLE</header><p>Relationship reminders appear when they matter.</p><button onClick={()=>travel('/relationships')}>Open People →</button></article>
-     <article className={styles.miniPanel}><header><Mail/> WHAT CHANGED?</header><p>{unread?unread+' unread important email'+(unread===1?'':'s'):'No unread email surfaced'}</p>{gmail.slice(0,2).map(m=><button className={styles.emailLine} key={m.id} onClick={()=>travel('/gmail')}><b>{m.subject}</b><small>{m.from}</small></button>)}</article>
+     <article className={styles.miniPanel}><header><Mail/> WHAT CHANGED?</header>{changedSignals.length?changedSignals.map(signal=><button className={styles.emailLine} key={signal.id} onClick={()=>travel(signal.id.startsWith('mail:')?'/gmail':'/tasks')}><b>{signal.label}</b><small>{signal.meta}</small></button>):<p>No source-backed change since your last dashboard visit.</p>}</article>
      <article className={styles.miniPanel}><header><CloudSun/> WEATHER & LEAVING</header><p>{nextEvent?'Next event '+fmt(nextEvent.startAt):'No departure needed right now'}</p><p>{weather?weather.temp+'° · '+weatherLabel(weather.code):'Enable weather for leaving guidance'}</p></article>
     </section>
 
     <section className={styles.bottomGrid}>
      <article><header>ON YOUR MIND</header>{data?.notes.slice(0,4).map(n=><button key={n.id} onClick={()=>travel('/notes')}>○ {n.title}</button>)}{!data?.notes.length&&<p>Nothing is demanding mental space right now.</p>}</article>
-     <article><header>CAN WAIT</header>{openTasks.slice(3,6).map(t=><button key={t.id} onClick={()=>travel('/tasks')}>○ {t.title}</button>)}{openTasks.length<4&&<p>Nothing else needs attention right now.</p>}</article>
+     <article><header>CAN WAIT · GLOW RECOMMENDATION</header>{canWait.length?canWait.map(item=><button key={item.task.id} onClick={()=>travel('/tasks')}>○ {item.task.title} · lower urgency right now</button>):<p>Glow is not confident that any open priority should be deferred.</p>}</article>
      <article><header>WAITING ON</header><p>External dependencies appear here as connected records.</p></article>
      <article><header>MONEY</header><p>Current money context stays quiet unless it needs attention.</p><button onClick={()=>travel('/finance')}>Open Money →</button></article>
      <article><header>TOMORROW</header><p>{data?.tomorrowEvents.length??0} events</p>{data?.tomorrowEvents.slice(0,2).map(e=><button key={e.id} onClick={()=>travel('/calendar')}>{fmt(e.startAt)} · {e.title}</button>)}<small>{data?.tomorrowEvents.length?'Glow will help you prepare tonight.':'Nothing unusual to prepare yet.'}</small></article>
