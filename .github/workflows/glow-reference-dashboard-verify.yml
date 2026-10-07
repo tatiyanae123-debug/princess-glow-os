@@ -1,0 +1,26 @@
+name: Glow Reference Dashboard Verify
+
+on:
+  push:
+    branches:
+      - glow-dashboard-reference-2026-10-07
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      AUTH_SECRET: ci-dashboard-secret-ci-dashboard-secret
+      DATABASE_URL: postgresql://user:pass@placeholder.neon.tech/db
+      PRINCESS_GOOGLE_CLIENT_ID: ci-client
+      PRINCESS_GOOGLE_CLIENT_SECRET: ci-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm run build
