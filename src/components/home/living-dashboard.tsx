@@ -3,6 +3,7 @@
 import { Activity, Bell, BriefcaseBusiness, CalendarDays, ChevronRight, Circle, CloudSun, Dumbbell, Leaf, ListTodo, Mail, Search, Sparkles, SunMedium, UserRound, WandSparkles } from 'lucide-react';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { chooseBigThree, dayProgress, rankTasks } from '@/lib/dashboard-intelligence';
+import { gettingReadyMinutesFor, useGlowRules } from '@/lib/glow-rules';
 import { usePersonalContext } from '@/lib/personal-context/use-personal-context';
 import { updateTaskAction } from '@/app/actions/tasks';
 import styles from './living-dashboard.module.css';
@@ -29,6 +30,7 @@ export function LivingDashboard(){
  const [weather,setWeather]=useState<WeatherState>(null);
  const [weatherStatus,setWeatherStatus]=useState<'loading'|'ready'|'denied'|'error'>('loading');
  const [pending,startTransition]=useTransition();
+ const {rules}=useGlowRules();
  const data=personal.status==='ready'?personal.data:null;
 
  useEffect(()=>{const tick=()=>setNow(new Date());tick();const id=window.setInterval(tick,60000);return()=>window.clearInterval(id)},[]);
@@ -53,7 +55,9 @@ export function LivingDashboard(){
  const progress=useMemo(()=>now?dayProgress(data?.tasks??[],now):{completed:0,total:0},[data?.tasks,now]);
  const routineTime = activeBlock.key === 'between' ? 'afternoon' : activeBlock.key;
  const currentRoutine=data?.routines.find(r=>r.timeOfDay===routineTime)??null;
- const nextMins=mins(nextEvent?.startAt),readyMins=nextMins===null?null:Math.max(0,nextMins-45);
+ const nextMins=mins(nextEvent?.startAt);
+ const prepMinutes=gettingReadyMinutesFor(nextEvent?.title,rules);
+ const readyMins=nextMins===null?null:Math.max(0,nextMins-prepMinutes);
  const firstName=data?.user.name?.trim().split(/\s+/)[0]||'Tatiyana';
  const greeting=!now?'Welcome':now.getHours()<12?'Good morning':now.getHours()<17?'Good afternoon':now.getHours()<21?'Good evening':'Good night';
  const dateLabel=now?.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})??'';
@@ -82,7 +86,7 @@ export function LivingDashboard(){
 
  function complete(id:string){startTransition(async()=>{await updateTaskAction(id,{status:'done'});window.sessionStorage.removeItem('glow:personal-context:v1');window.location.reload()})}
 
- return <main className={styles.shell} data-block={activeBlock.key}>
+ return <main className={styles.shell} data-block={activeBlock.key} data-density={rules.dashboardDensity}>
 
 
    <section className={styles.canvas}>
