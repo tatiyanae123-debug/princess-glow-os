@@ -138,13 +138,15 @@ export async function GET() {
         name: session.user?.name ?? null,
         email: session.user?.email ?? null,
       },
-      tasks: activeTasks.map((task) => ({
+      tasks: tasks.map((task) => ({
         id: task.id,
         title: task.title,
         description: task.description,
         status: task.status,
         priority: task.priority,
         dueDate: task.dueDate ? task.dueDate.toISOString() : null,
+        completedAt: task.completedAt ? task.completedAt.toISOString() : null,
+        updatedAt: task.updatedAt.toISOString(),
       })),
       activeTask: activeTasks[0]
         ? {
@@ -154,6 +156,8 @@ export async function GET() {
             status: activeTasks[0].status,
             priority: activeTasks[0].priority,
             dueDate: activeTasks[0].dueDate ? activeTasks[0].dueDate.toISOString() : null,
+            completedAt: activeTasks[0].completedAt ? activeTasks[0].completedAt.toISOString() : null,
+            updatedAt: activeTasks[0].updatedAt.toISOString(),
           }
         : null,
       events: mergedEvents.map(serializeEvent),
