@@ -61,6 +61,24 @@ export function LivingDashboard(){
  const fitnessRoutine=data?.routines.find(r=>/workout|fitness|walk|pilates|glute|upper body|cardio|core/i.test(r.name))??null;
  const beautyRoutines=(data?.routines??[]).filter(r=>/skin|beauty|hair|makeup|face|body care/i.test(r.name)).slice(0,3);
  const gmail=data?.gmail?.messages??[]; const unread=data?.gmail?.unreadCount??0;
+ const timelineItems=useMemo(()=>{
+   if(!now||!data)return [];
+   const day=now.toLocaleDateString('en-CA');
+   const events=data.todayEvents.map(e=>({id:'event:'+e.id,time:new Date(e.startAt),label:e.title,kind:'event' as const}));
+   const dueTasks=data.tasks.filter(t=>t.status!=='done'&&t.dueDate&&new Date(t.dueDate).toLocaleDateString('en-CA')===day).map(t=>({id:'task:'+t.id,time:new Date(t.dueDate!),label:t.title,kind:'task' as const}));
+   return [...events,...dueTasks].sort((a,b)=>a.time.getTime()-b.time.getTime()).slice(0,8);
+ },[data,now]);
+ const nextPressure=timelineItems.find(item=>item.time.getTime()>=Date.now())??null;
+ const sourceRows=[
+   {name:'Glow data',state:data?'Connected':'Loading',kind:'Fact'},
+   {name:'Google Calendar',state:data?.sourceStatus.googleCalendar??'loading',kind:'Fact'},
+   {name:'Gmail',state:data?.sourceStatus.gmail??'loading',kind:'Fact'},
+   {name:'Weather',state:weatherStatus==='ready'?'connected':weatherStatus,kind:'Fact'},
+   {name:'Notion',state:'not connected',kind:'Missing Source'},
+   {name:'Fitness steps',state:'not connected',kind:'Missing Source'},
+   {name:'People/Contacts',state:'not connected',kind:'Missing Source'},
+   {name:'Finance',state:'not connected',kind:'Missing Source'}
+ ] as const;
 
  function complete(id:string){startTransition(async()=>{await updateTaskAction(id,{status:'done'});window.sessionStorage.removeItem('glow:personal-context:v1');window.location.reload()})}
 
@@ -86,10 +104,29 @@ export function LivingDashboard(){
      <article className={styles.bigThree}><span className={styles.eyebrow}>◎ TODAY’S BIG 3 · GLOW PICKS</span>{bigThree.map((item,i)=><div key={i}><b>{i+1}</b><span><strong>{item.label}</strong><small>{item.task?.title??'No connected priority selected'}</small></span>{item.task?<button disabled={pending} onClick={()=>complete(item.task.id)} aria-label={'Complete '+item.task.title}><Circle/></button>:<Circle/>}</div>)}</article>
     </section>
 
-    <section className={styles.dayFlow}><div className={styles.sectionTitle}>DAY FLOW <span>{now?.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}</span></div><div className={styles.blockRow}>{dayBlocks.map(block=><button key={block.key} className={block.key===activeBlock.key?styles.currentBlock:''} onClick={()=>travel('/today')}><span>{block.key==='night'?'☾':'☼'}</span><div><strong>{block.label}</strong><small>{block.range}</small><em>{block.key===activeBlock.key?'In progress':block.end<=(now?now.getHours()+now.getMinutes()/60:0)?'Complete':'Upcoming'}</em></div></button>)}</div></section>
+    <section className={styles.dayFlow}>
+      <div className={styles.flowSplit}>
+        <div className={styles.myDay}>
+          <div className={styles.sectionTitle}>MY DAY <button onClick={()=>travel('/calendar')}>View calendar →</button></div>
+          <div className={styles.timelineRow}>
+            {timelineItems.length?timelineItems.map(item=><button key={item.id} onClick={()=>travel(item.kind==='event'?'/calendar':'/tasks')}><time>{fmt(item.time.toISOString())}</time><span>{item.label}</span><em>{item.kind==='event'?'Calendar':'Task due'}</em></button>):<p className={styles.empty}>No timed events or due tasks are connected for today.</p>}
+          </div>
+        </div>
+        <div className={styles.flowSide}>
+          <div className={styles.sectionTitle}>DAY FLOW <span>{now?.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}</span></div>
+          <div className={styles.blockRow}>{dayBlocks.map(block=><button key={block.key} className={block.key===activeBlock.key?styles.currentBlock:''} onClick={()=>travel('/today')}><span>{block.key==='night'?'☾':'☼'}</span><div><strong>{block.label}</strong><small>{block.range}</small><em>{block.key===activeBlock.key?'In progress':block.end<=(now?now.getHours()+now.getMinutes()/60:0)?'Complete':'Upcoming'}</em></div></button>)}</div>
+        </div>
+      </div>
+    </section>
 
     <section className={styles.midGrid}>
-     <article className={styles.panel}><header><CalendarDays/> TODAY’S SCHEDULE <button onClick={()=>travel('/calendar')}>View calendar →</button></header>{(data?.todayEvents??[]).slice(0,7).map(e=><button className={styles.lineItem} key={e.id} onClick={()=>e.htmlLink?window.open(e.htmlLink,'_blank'):travel('/calendar')}><time>{fmt(e.startAt)}</time><span>{e.title}</span><ChevronRight/></button>)}{!data?.todayEvents.length&&<p className={styles.empty}>Your calendar is clear today.</p>}</article>
+     <article className={styles.panel}><header><Activity/> TODAY’S STATE</header>
+       <div className={styles.stateLine}><span>Schedule</span><strong>{nextEvent?'Active':'Clear'}</strong></div>
+       <div className={styles.stateLine}><span>Energy</span><strong>{data?.wellness?.energy??'Not logged'}</strong></div>
+       <div className={styles.stateLine}><span>Tasks</span><strong>{progress.total?progress.completed+' / '+progress.total:'No tracked total'}</strong></div>
+       <div className={styles.stateLine}><span>Routine</span><strong>{currentRoutine?.name??'No current routine'}</strong></div>
+       <div className={styles.stateLine}><span>Next pressure point</span><strong>{nextPressure?fmt(nextPressure.time.toISOString())+' · '+nextPressure.label:'None detected'}</strong></div>
+     </article>
      <article className={styles.panel}><header><Leaf/> ROUTINES TODAY</header>{routines.map(r=><button className={styles.checkLine} key={r.id} onClick={()=>travel('/routines')}><Circle/><span>{r.name}</span><small>{r.timeOfDay}</small></button>)}{!routines.length&&<p className={styles.empty}>Add your first routine in Routines.</p>}</article>
      <article className={styles.panel}><header><Dumbbell/> BODY</header><strong className={styles.featureTitle}>{fitnessRoutine?.name ?? 'No workout scheduled in connected data'}</strong><p>{data?.wellness?.energy ? 'Energy · '+data.wellness.energy : 'Energy not logged today'}</p><p>Daily step target · 8,000–12,000</p><button className={styles.primaryBtn} onClick={()=>travel('/fitness')}>Open Fitness</button></article>
      <article className={styles.panel}><header><Sparkles/> BEAUTY TODAY</header>{beautyRoutines.map(r=><button className={styles.checkLine} key={r.id} onClick={()=>travel('/beauty/today')}><Circle/><span>{r.name}</span><small>{r.timeOfDay}</small></button>)}{!beautyRoutines.length&&<p className={styles.empty}>No beauty routine is scheduled in connected data.</p>}<button className={styles.linkBtn} onClick={()=>travel('/beauty/today')}>Open Beauty Today →</button></article>
@@ -112,6 +149,11 @@ export function LivingDashboard(){
      <article><header>MONEY</header><p>Current money context stays quiet unless it needs attention.</p><button onClick={()=>travel('/finance')}>Open Money →</button></article>
      <article><header>TOMORROW</header><p>{data?.tomorrowEvents.length??0} events</p>{data?.tomorrowEvents.slice(0,2).map(e=><button key={e.id} onClick={()=>travel('/calendar')}>{fmt(e.startAt)} · {e.title}</button>)}<small>{data?.tomorrowEvents.length?'Glow will help you prepare tonight.':'Nothing unusual to prepare yet.'}</small></article>
     </section>
+    <details className={styles.coverage}>
+      <summary>Data Coverage · what is real, connected, recommended, or missing</summary>
+      <div className={styles.coverageGrid}>{sourceRows.map(row=><div key={row.name}><strong>{row.name}</strong><span>{row.state}</span><em>{row.kind}</em></div>)}</div>
+      <p>Dashboard facts only come from connected sources. Glow recommendations are labeled as recommendations. Missing sources never receive demo values.</p>
+    </details>
    </section>
 
    <div className={styles.commandBar}><button onClick={()=>travel('/inbox')}>＋ Capture</button><button className={styles.ask} onClick={()=>openGlow()}><Sparkles/> Ask Glow anything…</button><button onClick={()=>openGlow('What should I do next?')}>What should I do next?</button><button onClick={()=>openGlow('Plan tonight')}>Plan tonight</button><button onClick={()=>openGlow('Catch me up')}>Catch me up</button></div>
