@@ -5,6 +5,8 @@ export type PersonalTask = {
   status: 'pending' | 'in_progress' | 'done' | 'cancelled';
   priority: 'low' | 'medium' | 'high' | 'urgent';
   dueDate: string | null;
+  completedAt: string | null;
+  updatedAt: string;
 };
 
 export type PersonalEvent = {
