@@ -10,6 +10,8 @@ const base = (overrides: Partial<PersonalTask>): PersonalTask => ({
   status: 'pending',
   priority: 'medium',
   dueDate: null,
+  completedAt: null,
+  updatedAt: '2026-10-07T13:00:00-04:00',
   ...overrides,
 });
 
