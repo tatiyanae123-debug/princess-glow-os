@@ -25,6 +25,7 @@ export type PersonalRoutine = {
   name: string;
   description: string | null;
   timeOfDay: 'morning' | 'afternoon' | 'evening' | 'night' | 'anytime';
+  daysOfWeek: string[] | null;
 };
 
 export type PersonalHabit = {
