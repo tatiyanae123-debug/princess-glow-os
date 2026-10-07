@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - run: npm install --no-audit --no-fund
       - name: TypeScript
         run: npm run typecheck
       - name: Dashboard intelligence tests
