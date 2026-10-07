@@ -38,9 +38,15 @@ export async function createTask(userId: string, data: CreateTaskInput) {
 }
 
 export async function updateTask(id: string, userId: string, data: UpdateTaskInput) {
+  const completionPatch =
+    data.status === 'done'
+      ? { completedAt: new Date() }
+      : data.status === 'pending' || data.status === 'in_progress'
+        ? { completedAt: null }
+        : {};
   const [task] = await db
     .update(tasks)
-    .set({ ...data, updatedAt: new Date() })
+    .set({ ...data, ...completionPatch, updatedAt: new Date() })
     .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
     .returning();
   return task ?? null;

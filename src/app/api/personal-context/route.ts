@@ -8,6 +8,7 @@ import { getNotesByUser } from '@/lib/data/notes';
 import { getGoalsByUser } from '@/lib/data/goals';
 import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
 import { getUpcomingGoogleEvents, type CalendarFetchResult } from '@/lib/google/calendar-client';
+import { getRecentInboxMessages, type GmailFetchResult } from '@/lib/google/gmail-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,8 +68,10 @@ export async function GET() {
       GOOGLE_CONTEXT_BUDGET_MS,
       googleFallback,
     );
+    const gmailFallback: GmailFetchResult = { ok: false, reason: 'error' };
+    const gmailPromise = withTimeout(getRecentInboxMessages(userId), GOOGLE_CONTEXT_BUDGET_MS, gmailFallback);
 
-    const [tasks, glowEvents, routines, habits, notes, goals, wellnessEntries, googleResult] = await Promise.all([
+    const [tasks, glowEvents, routines, habits, notes, goals, wellnessEntries, googleResult, gmailResult] = await Promise.all([
       getTasksByUser(userId),
       getCalendarEventsByUser(userId),
       getRoutinesByUser(userId),
@@ -77,6 +80,7 @@ export async function GET() {
       getGoalsByUser(userId),
       getWellnessEntriesByUser(userId),
       googlePromise,
+      gmailPromise,
     ]);
 
     const activeTasks = tasks
@@ -126,6 +130,7 @@ export async function GET() {
     });
 
     const sourceStatus = googleResult.ok ? 'connected' : googleResult.reason;
+    const gmailStatus = gmailResult.ok ? 'connected' : gmailResult.reason;
 
     return NextResponse.json({
       ok: true,
@@ -133,13 +138,15 @@ export async function GET() {
         name: session.user?.name ?? null,
         email: session.user?.email ?? null,
       },
-      tasks: activeTasks.map((task) => ({
+      tasks: tasks.map((task) => ({
         id: task.id,
         title: task.title,
         description: task.description,
         status: task.status,
         priority: task.priority,
         dueDate: task.dueDate ? task.dueDate.toISOString() : null,
+        completedAt: task.completedAt ? task.completedAt.toISOString() : null,
+        updatedAt: task.updatedAt.toISOString(),
       })),
       activeTask: activeTasks[0]
         ? {
@@ -149,6 +156,8 @@ export async function GET() {
             status: activeTasks[0].status,
             priority: activeTasks[0].priority,
             dueDate: activeTasks[0].dueDate ? activeTasks[0].dueDate.toISOString() : null,
+            completedAt: activeTasks[0].completedAt ? activeTasks[0].completedAt.toISOString() : null,
+            updatedAt: activeTasks[0].updatedAt.toISOString(),
           }
         : null,
       events: mergedEvents.map(serializeEvent),
@@ -159,6 +168,7 @@ export async function GET() {
         name: routine.name,
         description: routine.description,
         timeOfDay: routine.timeOfDay,
+        daysOfWeek: routine.daysOfWeek,
       })),
       habits: habits.map((habit) => ({
         id: habit.id,
@@ -192,8 +202,16 @@ export async function GET() {
             notes: wellness.notes,
           }
         : null,
+      gmail: gmailResult.ok ? {
+        unreadCount: gmailResult.unreadCount,
+        messages: gmailResult.messages.map((message) => ({
+          ...message,
+          date: message.date ? message.date.toISOString() : null,
+        })),
+      } : null,
       sourceStatus: {
         googleCalendar: sourceStatus,
+        gmail: gmailStatus,
       },
     });
   } catch (error) {

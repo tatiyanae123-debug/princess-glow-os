@@ -7,6 +7,7 @@ export const REQUIRED_SYNC_DIMENSIONS:GlowSyncDimension[]=['data','state','time'
 const m=(id:string,match:string,label:string,world:GlowWorld,level:GlowPageLevel,parent:string|null,family:string,designFamily:string,layoutFamily:GlowPageManifest['layoutFamily'],objectTypes:string[]):GlowPageManifest=>({id,match,label,world,level,parent,family,designFamily,layoutFamily,objectTypes,specialists:['glow-kernel'],sync:[...REQUIRED_SYNC_DIMENSIONS],preservesReturnContext:true});
 
 export const GLOW_PAGE_MANIFESTS:GlowPageManifest[]=[
+ m('today.home','/home','Dashboard','today','room','/today','today','living-dashboard','structured',['day','task','event','routine','goal','note']),
  m('today.world','/today','Today','today','world',null,'today','today-living','open',['day','task','event','routine']),
  m('plan.world','/planning','Plan','plan','world',null,'planning','planning-studio','open',['plan','task','event','goal']),
  m('plan.studio','/planning/studio','Horizon Studio','plan','studio','/planning','planning','planning-studio','open',['planning-period','task','event','routine']),

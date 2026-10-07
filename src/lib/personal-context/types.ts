@@ -5,6 +5,8 @@ export type PersonalTask = {
   status: 'pending' | 'in_progress' | 'done' | 'cancelled';
   priority: 'low' | 'medium' | 'high' | 'urgent';
   dueDate: string | null;
+  completedAt: string | null;
+  updatedAt: string;
 };
 
 export type PersonalEvent = {
@@ -23,6 +25,7 @@ export type PersonalRoutine = {
   name: string;
   description: string | null;
   timeOfDay: 'morning' | 'afternoon' | 'evening' | 'night' | 'anytime';
+  daysOfWeek: string[] | null;
 };
 
 export type PersonalHabit = {
@@ -50,6 +53,16 @@ export type PersonalGoal = {
   targetDate: string | null;
 };
 
+export type PersonalGmailMessage = {
+  id: string;
+  threadId: string;
+  from: string;
+  subject: string;
+  date: string | null;
+  snippet: string;
+  unread: boolean;
+};
+
 export type PersonalWellness = {
   entryDate: string;
   mood: string | null;
@@ -75,8 +88,10 @@ export type PersonalContextData = {
   notes: PersonalNote[];
   goals: PersonalGoal[];
   wellness: PersonalWellness;
+  gmail: { messages: PersonalGmailMessage[]; unreadCount: number } | null;
   sourceStatus: {
     googleCalendar: 'connected' | 'not_connected' | 'insufficient_scope' | 'expired' | 'revoked' | 'error';
+    gmail: 'connected' | 'not_connected' | 'insufficient_scope' | 'expired' | 'revoked' | 'error';
   };
 };
 

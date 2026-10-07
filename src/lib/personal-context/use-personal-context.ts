@@ -25,7 +25,8 @@ const EMPTY_CONTEXT: PersonalContextData = {
   notes: [],
   goals: [],
   wellness: null,
-  sourceStatus: { googleCalendar: 'error' },
+  gmail: null,
+  sourceStatus: { googleCalendar: 'error', gmail: 'error' },
 };
 
 let sharedRequest: Promise<PersonalContextState> | null = null;
