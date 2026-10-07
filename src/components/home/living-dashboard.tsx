@@ -61,9 +61,11 @@ export function LivingDashboard(){
  const firstName=data?.user.name?.trim().split(/\s+/)[0]||'Tatiyana';
  const greeting=!now?'Welcome':now.getHours()<12?'Good morning':now.getHours()<17?'Good afternoon':now.getHours()<21?'Good evening':'Good night';
  const dateLabel=now?.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})??'';
- const routines=data?.routines.slice(0,4)??[]; const goals=data?.goals.filter(g=>g.status!=='complete').slice(0,3)??[];
- const fitnessRoutine=data?.routines.find(r=>/workout|fitness|walk|pilates|glute|upper body|cardio|core/i.test(r.name))??null;
- const beautyRoutines=(data?.routines??[]).filter(r=>/skin|beauty|hair|makeup|face|body care/i.test(r.name)).slice(0,3);
+ const weekday=now?.toLocaleDateString('en-US',{weekday:'long'}).toLowerCase()??'';
+ const routines=(data?.routines??[]).filter(r=>!r.daysOfWeek?.length||r.daysOfWeek.some(day=>day.toLowerCase()===weekday)).slice(0,4);
+ const goals=data?.goals.filter(g=>g.status!=='complete').slice(0,3)??[];
+ const fitnessRoutine=routines.find(r=>/workout|fitness|walk|pilates|glute|upper body|cardio|core/i.test(r.name))??null;
+ const beautyRoutines=routines.filter(r=>/skin|beauty|hair|makeup|face|body care/i.test(r.name)).slice(0,3);
  const gmail=data?.gmail?.messages??[]; const unread=data?.gmail?.unreadCount??0;
  const timelineItems=useMemo(()=>{
    if(!now||!data)return [];
