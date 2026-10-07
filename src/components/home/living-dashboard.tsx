@@ -2,6 +2,7 @@
 
 import { Activity, Bell, BriefcaseBusiness, CalendarDays, ChevronRight, Circle, CloudSun, Dumbbell, Leaf, ListTodo, Mail, Search, Sparkles, SunMedium, UserRound, WandSparkles } from 'lucide-react';
 import { useEffect, useMemo, useState, useTransition } from 'react';
+import { chooseBigThree, dayProgress, rankTasks } from '@/lib/dashboard-intelligence';
 import { usePersonalContext } from '@/lib/personal-context/use-personal-context';
 import { updateTaskAction } from '@/app/actions/tasks';
 import styles from './living-dashboard.module.css';
@@ -45,8 +46,11 @@ export function LivingDashboard(){
  const activeBlock=now?blockFor(now):dayBlocks[2];
  const nextEvent=data?.todayEvents.find(e=>new Date(e.startAt).getTime()>=Date.now())??null;
  const openTasks=(data?.tasks??[]).filter(t=>t.status!=='done'&&t.status!=='cancelled');
- const currentAction=data?.activeTask??openTasks[0]??null;
- const bigThree=useMemo(()=>['Career','Body','Life'].map((label,i)=>({label,title:openTasks[i]?.title??(i===0?'Choose your career priority':i===1?'Move your body':'Choose your life priority'),task:openTasks[i]})),[openTasks]);
+ const ranked=useMemo(()=>now?rankTasks({tasks:openTasks,now,nextEvent,energy:data?.wellness?.energy}):[],[openTasks,now,nextEvent,data?.wellness?.energy]);
+ const currentAction=ranked[0]?.task??data?.activeTask??null;
+ const currentWhy=ranked[0]?.reasons.join(' · ')??'No open priority needs attention right now.';
+ const bigThree=useMemo(()=>now?chooseBigThree(openTasks,now,nextEvent,data?.wellness?.energy):[],[openTasks,now,nextEvent,data?.wellness?.energy]);
+ const progress=useMemo(()=>now?dayProgress(data?.tasks??[],now):{completed:0,total:0},[data?.tasks,now]);
  const routineTime = activeBlock.key === 'between' ? 'afternoon' : activeBlock.key;
  const currentRoutine=data?.routines.find(r=>r.timeOfDay===routineTime)??null;
  const nextMins=mins(nextEvent?.startAt),readyMins=nextMins===null?null:Math.max(0,nextMins-45);
@@ -73,13 +77,13 @@ export function LivingDashboard(){
      <article className={styles.topCard}><CloudSun className={styles.weatherIcon}/><div><span className={styles.eyebrow}>Weather</span>{weatherStatus==='ready'&&weather?<><strong>{weather.temp}° <small>{weatherLabel(weather.code)}</small></strong><p>Feels like {weather.apparent}° · High {weather.high}° · Low {weather.low}° · Rain {weather.rain}%</p><em>{weather.rain>45?'Bring an umbrella if you’re going out.':weather.temp<58?'Bring a light layer if you’re going out.':'Weather looks comfortable for your next outing.'}</em></>:<><strong>{weatherStatus==='loading'?'Checking weather…':'Weather not shared'}</strong><p>{weatherStatus==='denied'?'Enable location for live local weather.':'Glow uses location only for your live forecast.'}</p></>}</div></article>
      <article className={styles.topCard}><CalendarDays/><div><span className={styles.eyebrow}>Next Event</span><strong>{nextEvent?.title??'No event coming up'}</strong><p>{nextEvent?fmt(nextEvent.startAt)+(nextMins!==null?' · '+nextMins+' min away':''):'Your calendar is clear'}</p><em>{readyMins!==null?(readyMins===0?'Start getting ready now.':'Get ready in about '+readyMins+' min.'):'No preparation needed right now.'}</em></div></article>
      <article className={styles.topCard}><SunMedium/><div><span className={styles.eyebrow}>Current Block</span><strong>{activeBlock.label}</strong><p>{activeBlock.range}</p><em>{currentRoutine?.name??currentAction?.title??'Open space'}</em></div></article>
-     <article className={styles.topCard}><Activity/><div><span className={styles.eyebrow}>Day Progress</span><strong>{Math.max(0,7-Math.min(7,openTasks.length))} of 7</strong><p>important things complete</p><em>{openTasks.length?openTasks.length+' open priorities':'Your day is clear'}</em></div></article>
+     <article className={styles.topCard}><Activity/><div><span className={styles.eyebrow}>Day Progress</span><strong>{progress.total?progress.completed+' of '+progress.total:'No tracked total'}</strong><p>{progress.total?'today-linked tasks complete':'No due/completed tasks tracked for today'}</p><em>{openTasks.length?openTasks.length+' open priorities':'Your day is clear'}</em></div></article>
     </section>
 
     <section className={styles.heroGrid}>
      <article className={styles.nowCard}><span className={styles.heroEyebrow}>NOW</span><h2>{activeBlock.label} block</h2><p>{activeBlock.range}</p><h3>{currentAction?.title??currentRoutine?.name??'You have breathing room'}</h3><div className={styles.heroLower}><div><CalendarDays/><span>Up next</span><strong>{nextEvent?fmt(nextEvent.startAt):'Open'}</strong><small>{nextEvent?.title??'Nothing scheduled'}</small></div><div><ListTodo/><span>Before then</span>{openTasks.slice(0,3).map(t=><small key={t.id}>○ {t.title}</small>)}</div></div></article>
-     <article className={styles.whatNow}><span className={styles.eyebrow}>✧ WHAT SHOULD I DO NOW?</span><h2>{currentAction?.title??'Choose one useful next move.'}</h2><p>{currentAction?'This is your highest-priority open action in the '+activeBlock.label.toLowerCase()+' block.':'Nothing is demanding your attention. You can choose intentionally.'}</p><div className={styles.actionStack}>{openTasks.slice(0,3).map((t,i)=><button key={t.id} onClick={()=>travel('/today?room=what-now')}><b>{[20,10,5][i]??10} min</b><span>{t.title}</span><ChevronRight/></button>)}{!openTasks.length&&<button onClick={()=>openGlow('What should I do next?')}><b>Now</b><span>Ask Glow to plan this block</span><ChevronRight/></button>}</div></article>
-     <article className={styles.bigThree}><span className={styles.eyebrow}>◎ TODAY’S BIG 3</span>{bigThree.map((item,i)=><div key={i}><b>{i+1}</b><span><strong>{item.label}</strong><small>{item.title}</small></span>{item.task?<button disabled={pending} onClick={()=>complete(item.task.id)}><Circle/></button>:<Circle/>}</div>)}</article>
+     <article className={styles.whatNow}><span className={styles.eyebrow}>✧ WHAT SHOULD I DO NOW?</span><h2>{currentAction?.title??'Choose one useful next move.'}</h2><p>{currentAction?'Glow recommendation: '+currentWhy+'.':'Nothing is demanding your attention. You can choose intentionally.'}</p><div className={styles.actionStack}>{ranked.slice(0,3).map((item)=><button key={item.task.id} onClick={()=>openGlow('Help me do this next: '+item.task.title)}><b>{item.estimateMinutes} min</b><span>{item.task.title}</span><ChevronRight/></button>)}{!openTasks.length&&<button onClick={()=>openGlow('What should I do next?')}><b>Now</b><span>Ask Glow to plan this block</span><ChevronRight/></button>}</div></article>
+     <article className={styles.bigThree}><span className={styles.eyebrow}>◎ TODAY’S BIG 3 · GLOW PICKS</span>{bigThree.map((item,i)=><div key={i}><b>{i+1}</b><span><strong>{item.label}</strong><small>{item.task?.title??'No connected priority selected'}</small></span>{item.task?<button disabled={pending} onClick={()=>complete(item.task.id)} aria-label={'Complete '+item.task.title}><Circle/></button>:<Circle/>}</div>)}</article>
     </section>
 
     <section className={styles.dayFlow}><div className={styles.sectionTitle}>DAY FLOW <span>{now?.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}</span></div><div className={styles.blockRow}>{dayBlocks.map(block=><button key={block.key} className={block.key===activeBlock.key?styles.currentBlock:''} onClick={()=>travel('/today')}><span>{block.key==='night'?'☾':'☼'}</span><div><strong>{block.label}</strong><small>{block.range}</small><em>{block.key===activeBlock.key?'In progress':block.end<=(now?now.getHours()+now.getMinutes()/60:0)?'Complete':'Upcoming'}</em></div></button>)}</div></section>
