@@ -113,7 +113,7 @@ export async function getLivingDashboardData(userId: string): Promise<LivingDash
   ]);
 
   const activeTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'cancelled');
-  const topPriorityTasks = sortTasksByPriority(activeTasks).slice(0, 3);
+  const topPriorityTasks = sortTasksByPriority(activeTasks).slice(0, 6);
   const tasksDueToday = activeTasks.filter((task) => task.dueDate && isSameDay(task.dueDate, now)).length;
 
   const todaysEvents = events
