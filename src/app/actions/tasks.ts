@@ -14,6 +14,7 @@ export async function createTaskAction(formData: unknown) {
   if (!parsed.success) return { error: parsed.error.flatten() };
   const task = await data.createTask(userId, parsed.data);
   revalidatePath('/tasks');
+  revalidatePath('/home');
   return { data: task };
 }
 
@@ -25,6 +26,7 @@ export async function updateTaskAction(id: string, formData: unknown) {
   if (!parsed.success) return { error: parsed.error.flatten() };
   const task = await data.updateTask(id, userId, parsed.data);
   revalidatePath('/tasks');
+  revalidatePath('/home');
   return { data: task };
 }
 
@@ -34,5 +36,6 @@ export async function deleteTaskAction(id: string) {
   const userId = session.user.id;
   const task = await data.deleteTask(id, userId);
   revalidatePath('/tasks');
+  revalidatePath('/home');
   return { data: task };
 }
