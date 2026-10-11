@@ -20,8 +20,8 @@ export default async function HomePage() {
           <p className="text-xs uppercase tracking-[0.2em] text-[#9b797e]">Glow OS · Connection status</p>
           <h1 className="mt-4 text-3xl font-medium">Your dashboard is temporarily unavailable</h1>
           <p className="mt-4 text-sm leading-7 text-[#685c5e]">
-            You're signed in, but Glow couldn't load your connected data. Your information hasn't been deleted.
-            You don't need to sign in again or create another account.
+            You are signed in, but Glow could not load your connected data. Your information has not been deleted.
+            You do not need to sign in again or create another account.
           </p>
           <a className="mt-6 inline-flex rounded-full bg-[#473b40] px-5 py-3 text-sm text-white" href="/home">
             Try loading dashboard again
