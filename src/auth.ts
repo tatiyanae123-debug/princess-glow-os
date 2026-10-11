@@ -46,7 +46,9 @@ async function persistGoogleAccount(account: {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
+  // Fail at the configuration boundary rather than silently querying a placeholder database.
   trustHost: true,
+  debug: process.env.NODE_ENV !== 'production',
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   adapter: DrizzleAdapter(db, {
     usersTable: users,
@@ -131,9 +133,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
       return session;
     },
   },
-  events: {
-    async signIn({ account }) {
-      await persistGoogleAccount(account);
-    },
-  },
+
 }));
