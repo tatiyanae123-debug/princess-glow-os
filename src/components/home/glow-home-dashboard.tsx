@@ -29,8 +29,8 @@ export function GlowHomeDashboard(){
  const open=data?.tasks.filter(t=>t.status!=='done'&&t.status!=='cancelled').length;
  const goals=data?.goals.filter(g=>g.status!=='complete').length;
  const urgent=data?.tasks.filter(t=>t.priority==='urgent'&&t.status!=='done'&&t.status!=='cancelled').length;
- const recommendation=priorities.find(t=>capacity==='Low'?t.priority==='urgent'||t.priority==='high':true)??priorities[0];
- const reason=recommendation?'Suggested from an unfinished '+recommendation.priority+' priority task. Check your calendar before starting.':'No task recommendation is available yet.';
+ const recommendation=capacity==='Low' ? priorities.find(t=>t.priority==='low'||t.priority==='medium')??priorities[0] : priorities[0];
+ const reason=recommendation?'Suggested from an unfinished '+recommendation.priority+' priority task. Energy is a preference, not an estimate of task effort. Check your calendar before starting.':'No task recommendation is available yet.';
  const attention=urgent?urgent+' urgent task(s) need review.':data?'No urgent unfinished tasks.':'Waiting for connected records.';
  const name=data?.user.name?.trim().split(/\s+/)[0];
  return <main style={{minHeight:'100vh',background:'#F7F6F2',color:'#292929',padding:'clamp(20px,4vw,54px)',fontFamily:'Arial,sans-serif'}}><div style={{maxWidth:1180,margin:'auto'}}>
