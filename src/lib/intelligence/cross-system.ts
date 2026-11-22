@@ -1,13 +1,9 @@
 import 'server-only';
 
-import { getTasksByUser } from '@/lib/data/tasks';
-import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
-import { getHabitsByUser, getHabitLogsForUserByDate } from '@/lib/data/habits';
-import { getGoalsByUser } from '@/lib/data/goals';
-import { getRoutinesByUser } from '@/lib/data/routines';
-import { getFinanceEntriesByUser } from '@/lib/data/finance-entries';
-import { getWellnessEntriesByUser } from '@/lib/data/wellness-entries';
-import { getProjectsByUser } from '@/lib/data/user-scope';
+import { desc, eq } from 'drizzle-orm';
+import { db } from '@/db';
+import { glowEntities } from '@/db/schema/interconnected-os';
+import { syncLivingLifeModel } from '@/lib/intelligence/living-kernel-sync';
 
 export type CrossSystemSnapshot = {
   openTasks: number;
@@ -26,67 +22,101 @@ export type CrossSystemSnapshot = {
   message: string;
 };
 
+function dateValue(value: unknown) {
+  if (!value) return null;
+  const parsed = new Date(String(value));
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function meta(row: typeof glowEntities.$inferSelect) {
+  return row.metadata as Record<string, unknown>;
+}
+
+function timing(row: typeof glowEntities.$inferSelect) {
+  return row.timing as Record<string, unknown>;
+}
+
 export async function buildCrossSystemSnapshot(userId: string, roomKey = 'dashboard', now = new Date()): Promise<CrossSystemSnapshot> {
+  await syncLivingLifeModel(userId, { reason: `Cross-system projection for ${roomKey}` });
+  const objects = await db.select().from(glowEntities).where(eq(glowEntities.userId, userId)).orderBy(desc(glowEntities.updatedAt)).limit(1500);
+  const active = objects.filter((row) => row.status !== 'archived' && row.state !== 'archived');
+
+  const start = new Date(now); start.setHours(0, 0, 0, 0);
+  const end = new Date(now); end.setHours(23, 59, 59, 999);
+  const openTaskRows = active.filter((row) => row.entityType === 'task' && !['done', 'cancelled', 'completed'].includes(row.state));
+  const overdueRows = openTaskRows.filter((row) => {
+    const due = dateValue(timing(row).dueAt);
+    return Boolean(due && due < start);
+  });
+  const eventRows = active.filter((row) => row.entityType === 'calendar-event');
+  const todayEvents = eventRows.filter((row) => {
+    const at = dateValue(timing(row).startAt);
+    return Boolean(at && at >= start && at <= end);
+  });
+  const nextEventRow = eventRows
+    .map((row) => ({ row, at: dateValue(timing(row).startAt) }))
+    .filter((item): item is { row: typeof glowEntities.$inferSelect; at: Date } => Boolean(item.at && item.at >= now))
+    .sort((a, b) => a.at.getTime() - b.at.getTime())[0] ?? null;
+
+  const habitRows = active.filter((row) => row.entityType === 'habit');
   const dateKey = now.toISOString().slice(0, 10);
-  const [tasks, events, habits, habitLogs, goals, routines, finance, wellness, projects] = await Promise.all([
-    getTasksByUser(userId),
-    getCalendarEventsByUser(userId),
-    getHabitsByUser(userId),
-    getHabitLogsForUserByDate(userId, dateKey),
-    getGoalsByUser(userId),
-    getRoutinesByUser(userId),
-    getFinanceEntriesByUser(userId),
-    getWellnessEntriesByUser(userId),
-    getProjectsByUser(userId),
-  ]);
+  const completedHabitIds = new Set(active
+    .filter((row) => row.entityType === 'habit-log' && String(timing(row).occurredAt ?? '').slice(0, 10) === dateKey)
+    .map((row) => String(meta(row).habitId ?? ''))
+    .filter(Boolean));
+  const completed = habitRows.filter((row) => completedHabitIds.has(String(row.sourceId ?? ''))).length;
+  const habitPercent = habitRows.length ? Math.round((completed / habitRows.length) * 100) : 0;
 
-  const start = new Date(now); start.setHours(0,0,0,0);
-  const end = new Date(now); end.setHours(23,59,59,999);
-  const open = tasks.filter((task) => task.status !== 'done' && task.status !== 'cancelled');
-  const overdue = open.filter((task) => task.dueDate && task.dueDate < start);
-  const todaysEvents = events.filter((event) => event.startAt >= start && event.startAt <= end);
-  const nextEvent = events.filter((event) => event.startAt >= now).sort((a,b)=>a.startAt.getTime()-b.startAt.getTime())[0] ?? null;
-  const completedHabitIds = new Set(habitLogs.map((log)=>log.habitId));
-  const completed = habits.filter((habit)=>completedHabitIds.has(habit.id)).length;
-  const habitPercent = habits.length ? Math.round((completed / habits.length) * 100) : 0;
-  const weekday = now.toLocaleDateString('en-US',{weekday:'long'}).toLowerCase();
-  const routinesToday = routines.filter((routine)=>!routine.daysOfWeek?.length || routine.daysOfWeek.some((day)=>day.toLowerCase()===weekday)).length;
-  const monthKey = dateKey.slice(0,7);
-  const monthExpenses = finance.filter((entry)=>entry.type==='expense' && String(entry.entryDate).startsWith(monthKey));
-  const monthlyExpenses = monthExpenses.reduce((sum,entry)=>sum + Number(entry.amount),0);
-  const beautySpend = monthExpenses.filter((entry)=>entry.category==='beauty').reduce((sum,entry)=>sum+Number(entry.amount),0);
-  const activeGoals = goals.filter((goal)=>goal.status==='in_progress'||goal.status==='not_started').length;
-  const activeProjects = projects.filter((project)=>project.status==='active').length;
-  const latestEnergy = wellness[0]?.energy ?? null;
+  const weekday = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+  const routineRows = active.filter((row) => row.entityType === 'routine');
+  const routinesToday = routineRows.filter((row) => {
+    const days = timing(row).daysOfWeek;
+    return !Array.isArray(days) || !days.length || days.some((day) => String(day).toLowerCase() === weekday);
+  }).length;
 
-  const messages: Record<string,string> = {
-    tasks: `${open.length} open task${open.length===1?'':'s'} · ${overdue.length} overdue · ${todaysEvents.length} calendar commitment${todaysEvents.length===1?'':'s'} today.`,
-    calendar: `${todaysEvents.length} event${todaysEvents.length===1?'':'s'} today · ${open.length} open task${open.length===1?'':'s'} competing for time.`,
-    planning: `${activeGoals} active goal${activeGoals===1?'':'s'} · ${activeProjects} active project${activeProjects===1?'':'s'} · ${open.length} open task${open.length===1?'':'s'}.`,
-    habits: `${completed}/${habits.length} habits complete today · ${routinesToday} routine${routinesToday===1?'':'s'} relevant today.`,
-    fitness: `Energy ${latestEnergy ?? 'not logged'} · ${todaysEvents.length} event${todaysEvents.length===1?'':'s'} today · ${habitPercent}% habit completion.`,
-    beauty: `$${beautySpend.toFixed(0)} beauty spend this month · ${routinesToday} routine${routinesToday===1?'':'s'} relevant today.`,
-    'beauty-lab': `$${beautySpend.toFixed(0)} beauty spend this month. Product decisions can flow into Finance, Beauty and Memory.`,
+  const monthKey = dateKey.slice(0, 7);
+  const monthExpenses = active.filter((row) => {
+    if (row.entityType !== 'finance') return false;
+    const data = meta(row);
+    return data.type === 'expense' && String(timing(row).occurredAt ?? '').startsWith(monthKey);
+  });
+  const monthlyExpenses = monthExpenses.reduce((sum, row) => sum + Number(meta(row).amount ?? 0), 0);
+  const beautySpend = monthExpenses.filter((row) => meta(row).category === 'beauty').reduce((sum, row) => sum + Number(meta(row).amount ?? 0), 0);
+  const activeGoals = active.filter((row) => row.entityType === 'goal' && ['in_progress', 'not_started', 'active'].includes(row.state)).length;
+  const activeProjects = active.filter((row) => row.entityType === 'project' && row.state === 'active').length;
+  const latestWellness = active
+    .filter((row) => row.entityType === 'wellness-signal')
+    .sort((a, b) => String(timing(b).occurredAt ?? '').localeCompare(String(timing(a).occurredAt ?? '')))[0];
+  const latestEnergy = latestWellness ? (meta(latestWellness).energy as string | number | null ?? null) : null;
+
+  const messages: Record<string, string> = {
+    tasks: `${openTaskRows.length} open task${openTaskRows.length === 1 ? '' : 's'} · ${overdueRows.length} overdue · ${todayEvents.length} calendar commitment${todayEvents.length === 1 ? '' : 's'} today.`,
+    calendar: `${todayEvents.length} event${todayEvents.length === 1 ? '' : 's'} today · ${openTaskRows.length} open task${openTaskRows.length === 1 ? '' : 's'} competing for time.`,
+    planning: `${activeGoals} active goal${activeGoals === 1 ? '' : 's'} · ${activeProjects} active project${activeProjects === 1 ? '' : 's'} · ${openTaskRows.length} open task${openTaskRows.length === 1 ? '' : 's'}.`,
+    habits: `${completed}/${habitRows.length} habits complete today · ${routinesToday} routine${routinesToday === 1 ? '' : 's'} relevant today.`,
+    fitness: `Energy ${latestEnergy ?? 'not logged'} · ${todayEvents.length} event${todayEvents.length === 1 ? '' : 's'} today · ${habitPercent}% habit completion.`,
+    beauty: `$${beautySpend.toFixed(0)} beauty spend this month · ${routinesToday} routine${routinesToday === 1 ? '' : 's'} relevant today.`,
+    'beauty-lab': `$${beautySpend.toFixed(0)} beauty spend this month. Product decisions connect to Finance, Beauty and Memory through the same Life Model.`,
     finance: `$${monthlyExpenses.toFixed(0)} expenses logged this month · $${beautySpend.toFixed(0)} in Beauty.`,
-    'financial-brain': `$${monthlyExpenses.toFixed(0)} expenses this month · ${activeGoals} life goal${activeGoals===1?'':'s'} can be considered in money decisions.`,
-    goals: `${activeGoals} active goal${activeGoals===1?'':'s'} supported by ${activeProjects} active project${activeProjects===1?'':'s'}.`,
-    projects: `${activeProjects} active project${activeProjects===1?'':'s'} · ${open.length} open task${open.length===1?'':'s'} across your execution layer.`,
-    brain: `${open.length} open tasks · ${todaysEvents.length} events today · ${habitPercent}% habits · ${activeProjects} active projects.`,
-    wellness: `Energy ${latestEnergy ?? 'not logged'} · ${habitPercent}% habits complete · ${todaysEvents.length} commitments today.`,
-    hair: `${todaysEvents.length} calendar commitment${todaysEvents.length===1?'':'s'} today. Hair maintenance can use schedule and Beauty context.`,
+    'financial-brain': `$${monthlyExpenses.toFixed(0)} expenses this month · ${activeGoals} life goal${activeGoals === 1 ? '' : 's'} can be considered in money decisions.`,
+    goals: `${activeGoals} active goal${activeGoals === 1 ? '' : 's'} supported by ${activeProjects} active project${activeProjects === 1 ? '' : 's'}.`,
+    projects: `${activeProjects} active project${activeProjects === 1 ? '' : 's'} · ${openTaskRows.length} open task${openTaskRows.length === 1 ? '' : 's'} across your execution layer.`,
+    brain: `${openTaskRows.length} open tasks · ${todayEvents.length} events today · ${habitPercent}% habits · ${activeProjects} active projects.`,
+    wellness: `Energy ${latestEnergy ?? 'not logged'} · ${habitPercent}% habits complete · ${todayEvents.length} commitments today.`,
+    hair: `${todayEvents.length} calendar commitment${todayEvents.length === 1 ? '' : 's'} today. Hair maintenance can use schedule and Beauty context from the shared graph.`,
     closet: `$${monthlyExpenses.toFixed(0)} expenses logged this month. Closet can connect cost, calendar and future weather context.`,
-    gmail: `${open.length} open task${open.length===1?'':'s'}. Actionable emails can feed Tasks, Projects and Calendar.`,
-    notes: `${activeProjects} active project${activeProjects===1?'':'s'} can receive linked notes and references.`,
-    memory: `${activeProjects} active project${activeProjects===1?'':'s'} and ${activeGoals} active goal${activeGoals===1?'':'s'} can contribute meaningful memory events.`,
-    observations: `${overdue.length} overdue task${overdue.length===1?'':'s'} · ${habitPercent}% habits today · cross-system patterns are available for observation.`,
+    gmail: `${openTaskRows.length} open task${openTaskRows.length === 1 ? '' : 's'}. Actionable emails can feed Tasks, Projects and Calendar without creating separate truth.`,
+    notes: `${activeProjects} active project${activeProjects === 1 ? '' : 's'} can receive linked notes and references.`,
+    memory: `${activeProjects} active project${activeProjects === 1 ? '' : 's'} and ${activeGoals} active goal${activeGoals === 1 ? '' : 's'} contribute to one connected history.`,
+    observations: `${overdueRows.length} overdue task${overdueRows.length === 1 ? '' : 's'} · ${habitPercent}% habits today · cross-system patterns are available for observation.`,
   };
 
   return {
-    openTasks: open.length,
-    overdueTasks: overdue.length,
-    eventsToday: todaysEvents.length,
+    openTasks: openTaskRows.length,
+    overdueTasks: overdueRows.length,
+    eventsToday: todayEvents.length,
     habitsCompleted: completed,
-    habitsTotal: habits.length,
+    habitsTotal: habitRows.length,
     habitPercent,
     activeGoals,
     activeProjects,
@@ -94,7 +124,7 @@ export async function buildCrossSystemSnapshot(userId: string, roomKey = 'dashbo
     monthlyExpenses,
     beautySpend,
     latestEnergy,
-    nextEvent: nextEvent ? { title: nextEvent.title, at: nextEvent.startAt.toISOString() } : null,
-    message: messages[roomKey] ?? `${open.length} open tasks · ${todaysEvents.length} events today · ${habitPercent}% habits complete.`,
+    nextEvent: nextEventRow ? { title: nextEventRow.row.title, at: nextEventRow.at.toISOString() } : null,
+    message: messages[roomKey] ?? `${openTaskRows.length} open tasks · ${todayEvents.length} events today · ${habitPercent}% habits complete.`,
   };
 }

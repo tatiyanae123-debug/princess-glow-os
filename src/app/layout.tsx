@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Suspense } from 'react';
 import { GlowCurrent } from '@/components/glow/glow-current';
+import { GlowKernelBridge } from '@/components/glow/glow-kernel-bridge';
 import { GlowPresence } from '@/components/glow/glow-presence';
 import { DeepRoomAtmosphere } from '@/components/glow/deep-room-atmosphere';
 import { SpatialRouteTransition } from '@/components/glow/spatial-route-transition';
@@ -35,6 +36,7 @@ import './reference-fidelity-v4-studio.css';
 import './reference-fidelity-v4-support.css';
 import './visual-convergence.css';
 import './device-state-qa.css';
+import "./daybook.css";
 
 export const metadata: Metadata = {
   title: 'Glow OS',
@@ -54,6 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <NetworkStateBridge />
         {children}
         <Suspense fallback={null}>
+          <GlowKernelBridge />
           <DeepRoomAtmosphere />
           <GlowCurrent />
           <WorldFoldReferenceChrome />

@@ -17,3 +17,4 @@ export * from './completion-v1';
 export * from './health-intelligence';
 export * from './adaptive-os';
 export * from './interconnected-os';
+export * from './living-kernel';

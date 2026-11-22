@@ -357,7 +357,7 @@ export function GlowCurrent() {
             <span className="glow-current__today-sun" aria-hidden="true">☼</span><span><strong>Today</strong><small>{currentFoldWorld === 'today' ? currentRoom : 'The immediate present'}</small></span>
           </button>
           <button type="button" className="glow-current__shakti" onClick={openGlow} aria-label={`Ask Glow from ${currentRoom}`}>
-            <span className="glow-current__shakti-light" aria-hidden="true" /><span className="glow-current__shakti-copy"><strong>Ask Glow</strong><small>Always here</small></span>
+            <span className="glow-current__shakti-light" aria-hidden="true" /><span className="glow-current__shakti-copy"><strong>Shakti</strong><small>Ask Glow</small></span>
           </button>
         </div>
       </header>
