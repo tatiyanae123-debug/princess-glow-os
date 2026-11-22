@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
-import { PlanProjectsRoom, type PlanProjectItem } from '@/components/plan/plan-reference-rooms';
+import { PlanProjectsReferenceV4, type PlanProjectItem } from '@/components/plan/plan-projects-reference-v4';
 import { getProjectsByUser } from '@/lib/data/user-scope';
 
 export const dynamic = 'force-dynamic';
@@ -20,5 +20,5 @@ export default async function ProjectsPage() {
     nextAction: project.nextAction,
     notes: project.notes,
   }));
-  return <PlanProjectsRoom projects={items} />;
+  return <PlanProjectsReferenceV4 projects={items} />;
 }

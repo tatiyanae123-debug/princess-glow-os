@@ -1,6 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { PlanGoalsRoom, type PlanGoalItem } from '@/components/plan/plan-reference-rooms';
+import { PlanGoalsReferenceV4, type PlanGoalItem } from '@/components/plan/plan-goals-reference-v4';
 import { getGoalsByUser } from '@/lib/data/goals';
 
 export const dynamic = 'force-dynamic';
@@ -18,5 +18,5 @@ export default async function GoalsPage() {
     targetDate: goal.targetDate?.toISOString() ?? null,
     progress: goal.progress,
   }));
-  return <PlanGoalsRoom goals={items} />;
+  return <PlanGoalsReferenceV4 goals={items} />;
 }

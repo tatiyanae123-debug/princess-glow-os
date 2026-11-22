@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
-import { PlanPlanningStudio, type PlanPlanningItem, type PlanStudioEvent } from '@/components/plan/plan-reference-rooms';
+import { PlanPlanningStudioReferenceV4, type PlanPlanningItem, type PlanStudioEvent } from '@/components/plan/plan-planning-studio-reference-v4';
 import { getPlanningPeriods } from '@/lib/data/completion-v1';
 import { getCalendarEventsByUser } from '@/lib/data/calendar-events';
 
@@ -27,5 +27,5 @@ export default async function PlanningStudioPage(){
     endAt:event.endAt?.toISOString() ?? null,
     allDay:event.allDay,
   }));
-  return <PlanPlanningStudio events={calendar} planning={planning}/>;
+  return <PlanPlanningStudioReferenceV4 events={calendar} planning={planning}/>;
 }

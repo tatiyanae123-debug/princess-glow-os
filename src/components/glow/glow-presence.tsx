@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Check, Mic, Send, Square, Volume2, VolumeX, X } from 'lucide-react';
+import { Mic, Send, Square, Volume2, VolumeX, X } from 'lucide-react';
+import { ShaktiConfirmation, ShaktiReview, type ShaktiAction, type ShaktiProposal, type ShaktiReceipt } from '@/components/glow/shakti-review';
 import { GlowAuraMark } from '@/components/glow/glow-aura-mark';
 import {
   glowPromptsForRoute,
@@ -14,23 +15,6 @@ import {
 } from '@/lib/intelligence/glow-operating-model';
 
 type Turn = { role: 'user' | 'glow'; text: string; meta?: string };
-type ProposalAction = {
-  title: string;
-  type: string;
-  destinations: string[];
-  confidence: number;
-  executor?: 'verified' | 'review-queue';
-};
-type PendingProposal = { text: string; actions: ProposalAction[]; responseForm?: GlowResponseForm };
-type Receipt = {
-  summary: string;
-  status?: 'completed' | 'partially-completed' | 'queued';
-  completed?: string[];
-  queued?: string[];
-  destinations: string[];
-  queuedDestinations?: string[];
-  needsAttention?: boolean;
-};
 type SelectedContext = { label: string; type?: string; id?: string; route: string; capturedAt: number };
 type GlowResponse = {
   ok?: boolean;
@@ -38,16 +22,9 @@ type GlowResponse = {
   responseForm?: GlowResponseForm;
   message?: string;
   requiresConfirmation?: boolean;
-  actions?: ProposalAction[];
-  receipt?: {
-    summary?: string;
-    status?: 'completed' | 'partially-completed' | 'queued';
-    completed?: string[];
-    queued?: string[];
-    destinations?: string[];
-    queuedDestinations?: string[];
-    needsAttention?: boolean;
-  };
+  scenarioId?: string;
+  actions?: ShaktiAction[];
+  receipt?: ShaktiReceipt;
 };
 
 type TranscriptionResponse = { ok?: boolean; text?: string; message?: string };
@@ -61,7 +38,7 @@ const STATE_LABEL: Record<GlowState, string> = {
   understanding: 'understanding',
   speaking: 'speaking',
   creating: 'creating',
-  'awaiting-approval': 'waiting for approval',
+  'awaiting-approval': 'ready for review',
   acting: 'taking action',
   completing: 'complete',
   error: 'needs attention',
@@ -115,10 +92,10 @@ export function GlowPresence() {
   const [input, setInput] = useState('');
   const [turns, setTurns] = useState<Turn[]>([]);
   const [pending, setPending] = useState(false);
-  const [proposal, setProposal] = useState<PendingProposal | null>(null);
+  const [proposal, setProposal] = useState<ShaktiProposal | null>(null);
   const [selectedContext, setSelectedContext] = useState<SelectedContext | null>(null);
-  const [receipt, setReceipt] = useState<Receipt | null>(null);
-  const [voiceReplies, setVoiceReplies] = useState(true);
+  const [receipt, setReceipt] = useState<ShaktiReceipt | null>(null);
+  const [voiceReplies, setVoiceReplies] = useState(false);
   const [voiceStatus, setVoiceStatus] = useState('');
 
   const currentWorld = glowWorldForRoute(pathname);
@@ -138,8 +115,7 @@ export function GlowPresence() {
 
   const wake = useCallback((prefill?: string) => {
     setOpen(true);
-    setState('waking');
-    setReceipt(null);
+    setState(current => current === 'resting' ? 'waking' : current);
     if (prefill) setInput(prefill);
     settle('waking', 320);
   }, [settle]);
@@ -393,9 +369,10 @@ export function GlowPresence() {
     }
   }
 
-  async function run(text: string, approved = false) {
+  async function run(text: string, approving?: ShaktiProposal) {
     const command = text.trim();
-    if (!command || pending) return;
+    if (!command || pending || (proposal && !approving)) return;
+    const approved = Boolean(approving);
     setReceipt(null);
 
     if (!approved) {
@@ -427,6 +404,8 @@ export function GlowPresence() {
           sourceRoute: pathname,
           selectedContext: selectedContext ? JSON.stringify(selectedContext) : '',
           approved,
+          scenarioId: approving?.scenarioId,
+          selectedChanges: approving?.selected,
           risk: glowRiskForText(command),
           history: turns.slice(-12),
         }),
@@ -436,7 +415,9 @@ export function GlowPresence() {
 
       if (payload.requiresConfirmation && !approved) {
         const message = payload.message || 'I have a proposed change ready for your approval.';
-        setProposal({ text: command, actions: payload.actions ?? [], responseForm: payload.responseForm });
+        if (!payload.scenarioId) throw new Error('This proposal did not save. Ask Shakti again.');
+        const actions = payload.actions ?? [];
+        setProposal({ text: command, scenarioId: payload.scenarioId, actions, selected: actions.map((_, index) => index) });
         setState('awaiting-approval');
         addTurn({ role: 'glow', text: message, meta: 'Approval required' });
         void speak(message);
@@ -449,17 +430,7 @@ export function GlowPresence() {
         const responseMeta = payload.responseForm ? payload.responseForm.replace('-', ' ') : undefined;
         addTurn({ role: 'glow', text: message, meta: payload.receipt?.summary ? `Receipt · ${payload.receipt.summary}` : responseMeta });
         void speak(message);
-        if (payload.receipt?.summary) {
-          setReceipt({
-            summary: payload.receipt.summary,
-            status: payload.receipt.status,
-            completed: payload.receipt.completed ?? [],
-            queued: payload.receipt.queued ?? [],
-            destinations: payload.receipt.destinations ?? [],
-            queuedDestinations: payload.receipt.queuedDestinations ?? [],
-            needsAttention: payload.receipt.needsAttention,
-          });
-        }
+        if (payload.receipt) setReceipt(payload.receipt);
         if (approved) router.refresh();
         settle(completed ? 'completing' : 'speaking', completed ? 1600 : 1350);
       }
@@ -476,7 +447,7 @@ export function GlowPresence() {
   function approve() {
     if (proposal && !pending) {
       void ensureAudioContext();
-      void run(proposal.text, true);
+      void run(proposal.text, proposal);
     }
   }
 
@@ -517,13 +488,13 @@ export function GlowPresence() {
       </button>
 
       {open ? (
-        <section className="glow-unfolded-surface" aria-label="Glow conversation" data-glow-state={state} data-glow-world={currentWorld.toLowerCase()}>
+        <section className="glow-unfolded-surface" aria-label="Ask Glow · Shakti" data-glow-state={state} data-glow-world={currentWorld.toLowerCase()}>
           <header className="glow-unfolded-header">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 items-center gap-2">
-                <GlowAuraMark state={state} world={currentWorld} size="expanded" />
+                <span className="shakti-pearl" aria-hidden="true" />
                 <div className="min-w-0">
-                  <div className="text-[11px] font-semibold uppercase tracking-[.2em]">Glow · {STATE_LABEL[state]}</div>
+                  <div className="shakti-status-label" role="status">Shakti · {STATE_LABEL[state]}</div>
                   <div className="mt-1 text-[11px] text-neutral-500">{currentWorld} · {currentRole}</div>
                   <div className="mt-1 max-w-[290px] truncate text-[10px] text-neutral-400">Context · {contextText}</div>
                 </div>
@@ -560,38 +531,11 @@ export function GlowPresence() {
               </div>
             ))}
 
-            {receipt ? (
-              <div className={`mr-8 rounded-[20px] px-3 py-3 ${receipt.needsAttention ? 'border border-amber-200/70 bg-amber-50/55' : 'border border-emerald-200/60 bg-emerald-50/45'}`}>
-                <div className={`text-[9px] font-semibold uppercase tracking-[.16em] ${receipt.needsAttention ? 'text-amber-800' : 'text-emerald-800'}`}>Action receipt · {receipt.status ?? 'completed'}</div>
-                <div className="mt-1 text-[12px] text-neutral-800">{receipt.summary}</div>
-                {receipt.completed?.length ? <div className="mt-2 text-[9px] text-emerald-800"><span className="font-semibold">Completed:</span> {receipt.completed.join(' · ')}</div> : null}
-                {receipt.destinations.length ? <div className="mt-1 text-[9px] text-neutral-500">Completed in: {receipt.destinations.join(' · ')}</div> : null}
-                {receipt.queued?.length ? <div className="mt-2 text-[9px] text-amber-800"><span className="font-semibold">Queued for review:</span> {receipt.queued.join(' · ')}</div> : null}
-                {receipt.queuedDestinations?.length ? <div className="mt-1 text-[9px] text-neutral-500">Waiting in: {receipt.queuedDestinations.join(' · ')}</div> : null}
-              </div>
-            ) : null}
+            {receipt && <ShaktiConfirmation receipt={receipt} />}
+            {proposal && <ShaktiReview proposal={proposal} pending={pending} onApprove={approve} onCancel={cancelProposal}
+              onSelect={index => setProposal(current => current && ({ ...current, selected: current.selected.includes(index)
+                ? current.selected.filter(value => value !== index) : [...current.selected, index] }))} />}
           </div>
-
-          {proposal ? (
-            <div className="border-t border-neutral-200/50 bg-white/22 px-4 py-3">
-              <div className="text-[11px] font-semibold">Review before Glow acts</div>
-              <div className="mt-1 text-[9px] text-neutral-500">Nothing changes until you approve.</div>
-              {proposal.actions.length ? (
-                <ul className="mt-2 space-y-2 text-[11px] text-neutral-700">
-                  {proposal.actions.map((action, index) => (
-                    <li key={`${action.type}-${index}`} className="rounded-[16px] border border-white/65 bg-white/32 px-3 py-2">
-                      <div>• {action.title}</div>
-                      <div className="mt-1 text-[9px] text-neutral-500">{action.type}{action.destinations.length ? ` · ${action.destinations.join(', ')}` : ''}{action.executor ? ` · ${action.executor === 'verified' ? 'verified executor' : 'review queue'}` : ''}</div>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <button type="button" onClick={cancelProposal} className="min-h-11 rounded-full border border-neutral-300/70 bg-white/45 text-[12px]">Cancel</button>
-                <button type="button" onClick={approve} disabled={pending} className="min-h-11 rounded-full bg-neutral-900 text-[12px] font-semibold text-white disabled:opacity-50"><Check size={14} className="mr-1 inline"/>Approve</button>
-              </div>
-            </div>
-          ) : null}
 
           <div className="border-t border-neutral-200/50 p-3">
             {selectedContext ? (
@@ -611,7 +555,7 @@ export function GlowPresence() {
                   void run(input);
                 }
               }}
-              placeholder="Talk to Glow…"
+              placeholder="Ask Shakti…"
               className="w-full resize-none rounded-[20px] border border-white/70 bg-white/42 px-3 py-2 text-[12px] outline-none shadow-[inset_0_1px_0_rgba(255,255,255,.75)]"
             />
             {voiceStatus ? <div role="status" className="mt-2 rounded-[14px] border border-white/55 bg-white/26 px-3 py-2 text-[10px] leading-4 text-neutral-600">{voiceStatus}</div> : null}

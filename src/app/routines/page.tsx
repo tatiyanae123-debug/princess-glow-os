@@ -1,28 +1,19 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { PlanRoutinesRoom, type PlanRoutineItem } from '@/components/plan/plan-reference-rooms';
-import { getRoutinesByUser, getStepsByRoutine } from '@/lib/data/routines';
+import { RoutineWorldV3 } from '@/components/routines/routine-world-v3';
 
 export const dynamic = 'force-dynamic';
 
-export default async function RoutinesPage() {
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+export default async function RoutinesPage({ searchParams }: { searchParams: SearchParams }) {
   const session = await auth();
   if (!session?.user?.id) redirect('/sign-in');
-  const userId = session.user.id;
-  const routines = await getRoutinesByUser(userId);
-  const stepsByRoutine = await Promise.all(routines.map((routine) => getStepsByRoutine(routine.id, userId)));
-  const items: PlanRoutineItem[] = routines.map((routine, index) => ({
-    id: routine.id,
-    name: routine.name,
-    description: routine.description,
-    timeOfDay: routine.timeOfDay,
-    steps: stepsByRoutine[index].map((step) => ({
-      id: step.id,
-      title: step.title,
-      notes: step.notes,
-      durationMinutes: step.durationMinutes,
-      order: step.order,
-    })),
-  }));
-  return <PlanRoutinesRoom routines={items} />;
+
+  const params = await searchParams;
+  if (params.category === 'daily-life' && params.routine === 'morning-routine') {
+    redirect('/routines/daily-life/morning');
+  }
+
+  return <RoutineWorldV3 />;
 }

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowDownToLine,
   Camera,
-  Check,
   File,
   FileAudio,
   FileImage,
@@ -20,6 +19,7 @@ import {
   Video,
   X,
 } from 'lucide-react';
+import { ShaktiConfirmation, ShaktiReview, type ShaktiAction, type ShaktiProposal, type ShaktiReceipt } from '@/components/glow/shakti-review';
 import { GlowAuraMark } from '@/components/glow/glow-aura-mark';
 import { glowRiskForText, isVisualCreationRequest } from '@/lib/intelligence/glow-operating-model';
 
@@ -46,34 +46,14 @@ type Turn = {
   attachments?: AttachmentSummary[];
 };
 
-type ProposalAction = {
-  title: string;
-  type: string;
-  destinations: string[];
-  confidence: number;
-  executor?: 'verified' | 'review-queue';
-};
-
-type Proposal = {
-  text: string;
-  actions: ProposalAction[];
-};
-
 type CommandResponse = {
   ok?: boolean;
   mode?: 'answer' | 'proposal' | 'completed';
   message?: string;
   requiresConfirmation?: boolean;
-  actions?: ProposalAction[];
-  receipt?: {
-    summary?: string;
-    status?: string;
-    completed?: string[];
-    queued?: string[];
-    destinations?: string[];
-    queuedDestinations?: string[];
-    needsAttention?: boolean;
-  };
+  scenarioId?: string;
+  actions?: ShaktiAction[];
+  receipt?: ShaktiReceipt;
 };
 
 type MultimodalResponse = {
@@ -149,7 +129,8 @@ export default function AskGlowPage() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [attachments, setAttachments] = useState<LocalAttachment[]>([]);
   const [selectedContext, setSelectedContext] = useState<SelectedContext | null>(null);
-  const [proposal, setProposal] = useState<Proposal | null>(null);
+  const [proposal, setProposal] = useState<ShaktiProposal | null>(null);
+  const [receipt, setReceipt] = useState<ShaktiReceipt | null>(null);
   const [pending, setPending] = useState(false);
   const [recording, setRecording] = useState(false);
   const [status, setStatus] = useState('');
@@ -244,16 +225,18 @@ export default function AskGlowPage() {
     });
   }
 
-  async function callCommand(text: string, approved = false) {
+  async function callCommand(text: string, approving?: ShaktiProposal) {
     const response = await fetch('/api/glow/command', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
       body: JSON.stringify({
         text,
-        sourceRoute: '/ask-glow',
+        sourceRoute: selectedContext?.route || '/ask-glow',
         selectedContext: selectedContext ? JSON.stringify(selectedContext) : '',
-        approved,
+        approved: Boolean(approving),
+        scenarioId: approving?.scenarioId,
+        selectedChanges: approving?.selected,
         risk: glowRiskForText(text),
         history: cleanStoredTurns.slice(-16),
       }),
@@ -286,6 +269,7 @@ export default function AskGlowPage() {
     const files = attachments;
     if ((!text && files.length === 0) || pending || proposal) return;
 
+    setReceipt(null);
     const attachmentNames = files.map(({ file }) => ({ name: file.name, type: file.type || 'file', size: file.size, status: 'understood' as const }));
     addTurn({ role: 'user', text: text || 'Attached media', attachments: attachmentNames });
     setInput('');
@@ -307,7 +291,9 @@ export default function AskGlowPage() {
       } else {
         const payload = await callCommand(text);
         if (payload.requiresConfirmation) {
-          setProposal({ text, actions: payload.actions ?? [] });
+          if (!payload.scenarioId) throw new Error('This proposal did not save. Ask Shakti again.');
+          const actions = payload.actions ?? [];
+          setProposal({ text, actions, scenarioId: payload.scenarioId, selected: actions.map((_, index) => index) });
           addTurn({ role: 'glow', text: payload.message || 'I have a proposed change ready for your approval.', meta: 'Approval required' });
         } else {
           addTurn({ role: 'glow', text: payload.message || 'Done.', meta: payload.receipt?.summary ? `Receipt · ${payload.receipt.summary}` : undefined });
@@ -328,7 +314,8 @@ export default function AskGlowPage() {
     setPending(true);
     setStatus('Shakti is carrying out the approved change…');
     try {
-      const payload = await callCommand(proposal.text, true);
+      const payload = await callCommand(proposal.text, proposal);
+      setReceipt(payload.receipt ?? null);
       setProposal(null);
       addTurn({ role: 'glow', text: payload.message || 'Done.', meta: payload.receipt?.summary ? `Receipt · ${payload.receipt.summary}` : 'Completed' });
       router.refresh();
@@ -447,7 +434,7 @@ export default function AskGlowPage() {
       <div className="mx-auto flex min-h-[100dvh] w-full max-w-5xl flex-col px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-[max(16px,env(safe-area-inset-top))] sm:px-6 lg:px-8">
         <header className="flex items-center justify-between gap-4 border-b border-[#ECECEC] pb-4">
           <div className="flex min-w-0 items-center gap-3">
-            <GlowAuraMark state={recording ? 'listening' : pending ? 'understanding' : 'resting'} world="Create" size="expanded" />
+            <span className="shakti-pearl" data-glow-state={recording ? 'listening' : pending ? 'understanding' : 'resting'} aria-hidden="true" />
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[.18em] text-[#6E6E73]">Shakti · {recording ? 'listening' : pending ? 'understanding' : 'available'}</p>
               <h1 className="mt-0.5 font-serif text-[30px] leading-none tracking-[-.02em] sm:text-[36px]">Ask Glow</h1>
@@ -525,26 +512,10 @@ export default function AskGlowPage() {
               </div>
             ) : null}
 
-            {proposal ? (
-              <div className="mr-auto max-w-[94%] rounded-[26px] border border-[#ECECEC] bg-[#FAFAFA] p-4">
-                <div className="flex items-center gap-2 text-sm font-semibold"><Check size={15} /> Review before Glow acts</div>
-                <p className="mt-1 text-xs leading-5 text-[#6E6E73]">Nothing changes until you approve.</p>
-                {proposal.actions.length ? (
-                  <div className="mt-3 space-y-2">
-                    {proposal.actions.map((action, index) => (
-                      <div key={`${action.type}-${index}`} className="rounded-[18px] border border-[#ECECEC] bg-white px-3 py-2.5 text-xs">
-                        <p className="font-semibold">{action.title}</p>
-                        <p className="mt-1 text-[#6E6E73]">{action.type}{action.destinations.length ? ` · ${action.destinations.join(', ')}` : ''}</p>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                  <button type="button" onClick={cancelProposal} disabled={pending} className="min-h-11 rounded-full border border-[#ECECEC] bg-white text-sm font-semibold disabled:opacity-50">Cancel</button>
-                  <button type="button" onClick={() => void approveProposal()} disabled={pending} className="min-h-11 rounded-full bg-[#1C1C1E] text-sm font-semibold text-white disabled:opacity-50">Approve</button>
-                </div>
-              </div>
-            ) : null}
+            {receipt && <ShaktiConfirmation receipt={receipt} />}
+            {proposal && <ShaktiReview proposal={proposal} pending={pending} onApprove={() => void approveProposal()} onCancel={cancelProposal}
+              onSelect={index => setProposal(current => current && ({ ...current, selected: current.selected.includes(index)
+                ? current.selected.filter(value => value !== index) : [...current.selected, index] }))} />}
             <div ref={conversationEndRef} />
           </div>
         </section>

@@ -1,0 +1,65 @@
+/* Wave 9 · Device + State QA hardening. Loaded last so shared device rules win without redesigning rooms. */
+:root {
+  --glow-safe-top: max(0px, env(safe-area-inset-top));
+  --glow-safe-right: max(0px, env(safe-area-inset-right));
+  --glow-safe-bottom: max(0px, env(safe-area-inset-bottom));
+  --glow-safe-left: max(0px, env(safe-area-inset-left));
+}
+
+html { min-width: 320px; min-height: 100%; overflow-x: clip; }
+body { min-height: 100dvh; overflow-x: clip; }
+img, video, canvas, svg { max-width: 100%; }
+input, textarea, select, button { font: inherit; }
+button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
+
+/* Prevent iOS from zooming editable controls and keep touch targets usable. */
+@media (max-width: 767px) {
+  input, textarea, select { font-size: max(16px, 1em); }
+  button, [role='button'], a { min-height: 44px; }
+}
+
+/* Keyboard users must retain a visible focus state across every room. */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--glow-accent, #c9828d) 68%, white);
+  outline-offset: 3px;
+}
+
+/* Shared state contract used by route-level loading/error/empty surfaces. */
+.glow-system-state {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: calc(28px + var(--glow-safe-top)) calc(20px + var(--glow-safe-right)) calc(28px + var(--glow-safe-bottom)) calc(20px + var(--glow-safe-left));
+  background: var(--glow-bg, #f5eee8);
+  color: var(--glow-text, #302622);
+}
+.glow-system-state__card {
+  width: min(520px, 100%);
+  padding: clamp(24px, 5vw, 44px);
+  border: 1px solid var(--glow-border, rgba(135,106,94,.16));
+  border-radius: clamp(20px, 4vw, 34px);
+  background: var(--glow-surface, rgba(253,249,245,.84));
+  box-shadow: var(--glow-shadow, 0 10px 30px rgba(92,65,54,.07));
+  text-align: center;
+}
+.glow-system-state__card h1 { margin: 8px 0 10px; font-family: var(--glow-font-display, Georgia, serif); font-size: clamp(28px, 6vw, 44px); font-weight: 500; }
+.glow-system-state__card p { margin: 0 auto; max-width: 38ch; color: var(--glow-text-muted, #7b6962); line-height: 1.6; }
+.glow-system-state__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 22px; }
+.glow-system-state__actions button, .glow-system-state__actions a { min-height: 44px; padding: 10px 18px; border: 1px solid var(--glow-border, rgba(135,106,94,.16)); border-radius: 999px; background: rgba(255,255,255,.72); color: inherit; text-decoration: none; cursor: pointer; }
+.glow-system-state__pulse { width: 38px; height: 38px; margin: 0 auto 18px; border-radius: 50%; background: var(--glow-accent-soft, rgba(201,130,141,.13)); box-shadow: 0 0 0 0 var(--glow-accent-soft, rgba(201,130,141,.13)); animation: glow-state-pulse 1.7s ease-in-out infinite; }
+@keyframes glow-state-pulse { 50% { transform: scale(.82); opacity: .55; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+/* iPad portrait/landscape and compact desktop guardrails. */
+@media (min-width: 768px) and (max-width: 1180px) {
+  body { min-height: 100dvh; }
+  :where(main, section, article, aside, nav) { min-width: 0; }
+}
+
+/* Offline is a state, not a broken layout. Components can opt into these hooks. */
+html[data-glow-network='offline'] [data-online-only] { opacity: .5; pointer-events: none; }
+html[data-glow-network='offline'] [data-offline-only] { display: revert !important; }
+html:not([data-glow-network='offline']) [data-offline-only] { display: none !important; }

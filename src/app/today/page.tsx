@@ -1,8 +1,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { MorningBriefReference } from '@/components/today/morning-brief-reference';
 import { TodayContextWorlds } from '@/components/today/today-context-worlds';
-import { TodayReferenceV2 } from '@/components/today/today-reference-v2';
+import { TodayExperienceFamily } from '@/components/today/today-experience-family';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,10 +18,10 @@ export default async function TodayPage({ searchParams }: TodayPageProps) {
   const params = await searchParams;
   const room = Array.isArray(params.room) ? params.room[0] : params.room;
 
-  // The app-root Glow Current is the only navigation authority. Today now has
-  // one reference-matched renderer for its nine core rooms, so Focus/What Now
-  // cannot be mounted twice and room changes no longer require hard reloads.
-  if (room === 'morning') return <MorningBriefReference />;
+  // Today is one living day. Morning, What Now, Focus, Event, Next Up, Later,
+  // Tonight, Tomorrow, Replan and Day View are projections of the same shared
+  // personal context and canonical Glow object identities. Context worlds remain
+  // distinct lenses while the global Glow Current stays mounted at the app root.
   if (room && CONTEXT_ROOMS.has(room)) return <TodayContextWorlds />;
-  return <TodayReferenceV2 />;
+  return <TodayExperienceFamily />;
 }

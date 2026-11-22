@@ -24,7 +24,7 @@ export function roomExperienceFor(pathname: string): RoomExperience {
   if (pathname === '/home') return experience('threshold', 'today', 'crystal-sunrise-pavilion', 'threshold-and-portals', 'whole-system-orchestration', 'Where am I now, and where do I want to go?', 'horizon-opens');
   if (pathname.startsWith('/search')) return experience('universal-search', 'brain', 'clear-prismatic-lens', 'focus-and-resolve', 'cross-world-retrieval', 'Where is the thing I am looking for?', 'result-focuses');
 
-  if (pathname.startsWith('/beauty/facial-massage')) return experience('facial-movement', 'beauty', 'mint-water-pearl', 'guided-glide', 'saved-routine-and-tool-context', 'What facial movement am I doing now?', 'soft-release');
+  if (pathname.startsWith('/beauty/gua-sha') || pathname.startsWith('/beauty/facial-massage')) return experience('gua-sha-studio', 'beauty', 'mint-water-pearl', 'guided-glide', 'shared-session-routine-and-tool-context', 'What does my face need, and what movement am I doing now?', 'soft-release');
   if (pathname.startsWith('/beauty/skincare')) return experience('skin', 'beauty', 'peach-pearl-lens', 'focus-through-material', 'treatment-and-routine-context', 'What does my skin need now?', 'skin-state-settles');
   if (pathname.startsWith('/beauty/makeup')) return experience('makeup', 'beauty', 'crystal-pigment-pearl', 'palette-refraction', 'look-and-preparation-context', 'What look fits this moment?', 'look-settles');
   if (pathname.startsWith('/beauty/fragrance')) return experience('fragrance', 'beauty', 'clear-vapor-pearl', 'diffusion-and-layering', 'occasion-weather-and-wear-context', 'What scent fits this moment?', 'scent-settles');

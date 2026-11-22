@@ -16,11 +16,11 @@ export type PlanHorizon = 'today' | 'week' | 'two-weeks' | 'month' | 'three-mont
 export type PlanInstrument = 'Calendar' | 'Tasks' | 'Reminders' | 'Goals' | 'Projects' | 'Routines' | 'Habits';
 
 const HORIZONS: { id: PlanHorizon; label: string }[] = [
-  { id: 'today', label: 'TODAY' },
+  { id: 'today', label: 'DAY' },
   { id: 'week', label: 'WEEK' },
-  { id: 'two-weeks', label: '2 WEEKS' },
-  { id: 'month', label: 'MONTH' },
-  { id: 'three-months', label: '3 MONTHS' },
+  { id: 'two-weeks', label: 'MONTH' },
+  { id: 'month', label: 'QUARTER' },
+  { id: 'three-months', label: 'YEAR' },
 ];
 
 const RAIL: { label: PlanInstrument; href: string; icon: typeof CalendarDays }[] = [
@@ -29,7 +29,7 @@ const RAIL: { label: PlanInstrument; href: string; icon: typeof CalendarDays }[]
   { label: 'Reminders', href: '/reminders', icon: Bell },
   { label: 'Goals', href: '/goals', icon: Target },
   { label: 'Projects', href: '/projects', icon: FolderKanban },
-  { label: 'Routines', href: '/routines', icon: RotateCcw },
+  { label: 'Routines', href: '/planning/routines', icon: RotateCcw },
   { label: 'Habits', href: '/habits', icon: Orbit },
 ];
 
@@ -59,23 +59,27 @@ export function PlanInstrumentChrome({
   return (
     <main className={`${styles.planInstrumentRoot} planInstrumentRoot`} data-plan-instrument={activeInstrument.toLowerCase()}>
       <section className={styles.shell}>
+        <span className={`${styles.shellPearl} ${styles.shellPearlA}`} aria-hidden="true" />
+        <span className={`${styles.shellPearl} ${styles.shellPearlB}`} aria-hidden="true" />
         <header className={styles.header}>
           <div className={styles.titleBlock}>
-            <div className={styles.kicker}>GLOW OS <span>·</span> PLAN</div>
+            <div className={styles.kicker}>GLOW OS BATCH 1 <span>·</span> WORLD 2</div>
             <h1>{title}</h1>
             <p>{subtitle}</p>
           </div>
 
           <nav className={styles.modeSwitch} aria-label="Plan modes">
-            <Link href="/planning" className={styles.active}>PLAN</Link>
+            <Link href="/planning" className={styles.active} aria-current="page">PLAN</Link>
             <Link href="/today?room=focus">FOCUS</Link>
             <Link href="/projects">BUILD</Link>
             <Link href="/planning/studio?mode=reflect">REFLECT</Link>
           </nav>
 
           <div className={styles.askWrap}>
-            <Link href="/ask-glow" className={styles.askButton}>Ask Glow</Link>
-            <Link href="/ask-glow" className={styles.askPearl} aria-label="Ask Glow" />
+            <Link href="/ask-glow" className={styles.askButton} aria-label="Ask Glow">
+              <span className={styles.askPearl} aria-hidden="true" />
+              <span>Ask Glow</span>
+            </Link>
           </div>
         </header>
 

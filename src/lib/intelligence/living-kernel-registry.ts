@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { createHash, randomUUID } from 'crypto';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, ne } from 'drizzle-orm';
 import { db } from '@/db';
 import { entityRelations } from '@/db/schema/adaptive-os';
 import { glowEntities } from '@/db/schema/interconnected-os';
@@ -265,17 +265,6 @@ export async function createKernelScenario(input: {
   const state = await getOrCreateKernelState(input.userId);
   const now = new Date();
 
-  if (input.sourceText) {
-    const [recentDraft] = await db.select().from(glowScenarios).where(and(
-      eq(glowScenarios.userId, input.userId),
-      eq(glowScenarios.status, 'draft'),
-      eq(glowScenarios.sourceText, input.sourceText),
-    )).orderBy(desc(glowScenarios.createdAt)).limit(1);
-    if (recentDraft && now.getTime() - recentDraft.createdAt.getTime() <= 30 * 60 * 1000) {
-      return recentDraft.id;
-    }
-  }
-
   const id = randomUUID();
   await db.insert(glowScenarios).values({
     id, userId: input.userId, kind: input.kind ?? 'proposed-reality', title: input.title,
@@ -296,14 +285,37 @@ export async function createKernelScenario(input: {
   return id;
 }
 
-export async function decideKernelScenario(userId: string, scenarioId: string, decision: 'accepted' | 'rejected') {
+export async function readKernelScenario(userId: string, scenarioId: string) {
   await ensureLivingKernelSchema();
-  const [scenario] = await db.select().from(glowScenarios).where(and(eq(glowScenarios.userId, userId), eq(glowScenarios.id, scenarioId))).limit(1);
-  if (!scenario || scenario.status !== 'draft') return scenario ?? null;
-  const now = new Date();
-  const [updated] = await db.update(glowScenarios).set({ status: decision, decidedAt: now }).where(and(eq(glowScenarios.userId, userId), eq(glowScenarios.id, scenarioId))).returning();
-  await recordKernelEvent({ userId, eventType: `scenario.${decision}`, payload: { scenarioId }, source: 'decision-engine' });
-  return updated;
+  const [scenario] = await db.select().from(glowScenarios)
+    .where(and(eq(glowScenarios.userId, userId), eq(glowScenarios.id, scenarioId))).limit(1);
+  if (!scenario) return null;
+  const changes = await db.select().from(glowScenarioChanges)
+    .where(and(eq(glowScenarioChanges.userId, userId), eq(glowScenarioChanges.scenarioId, scenarioId)));
+  return { scenario, changes };
+}
+
+export async function claimKernelScenario(userId: string, scenarioId: string, decision: 'accepted' | 'rejected') {
+  await ensureLivingKernelSchema();
+  const [claimed] = await db.update(glowScenarios).set({ status: decision, decidedAt: new Date() }).where(and(
+    eq(glowScenarios.userId, userId), eq(glowScenarios.id, scenarioId), eq(glowScenarios.status, 'draft'),
+  )).returning();
+  if (claimed) {
+    await recordKernelEvent({ userId, eventType: `scenario.${decision}`, payload: { scenarioId }, source: 'decision-engine' });
+  }
+  return claimed ?? null;
+}
+
+export async function readScenarioOutcome(userId: string, scenarioId: string) {
+  const [receipt] = await db.select().from(glowActionReceipts).where(and(
+    eq(glowActionReceipts.userId, userId), eq(glowActionReceipts.scenarioId, scenarioId), ne(glowActionReceipts.result, 'proposed'),
+  )).orderBy(desc(glowActionReceipts.changedAt)).limit(1);
+  return receipt ?? null;
+}
+
+export async function decideKernelScenario(userId: string, scenarioId: string, decision: 'accepted' | 'rejected') {
+  return await claimKernelScenario(userId, scenarioId, decision)
+    ?? (await readKernelScenario(userId, scenarioId))?.scenario ?? null;
 }
 
 export async function recordKernelReceipt(input: {

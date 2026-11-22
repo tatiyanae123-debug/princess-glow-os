@@ -19,7 +19,9 @@ import { getLivingKernelContext, kernelContextPrompt, type KernelSelectedContext
 import {
   canonicalGlowObjectId,
   createKernelScenario,
-  decideKernelScenario,
+  claimKernelScenario,
+  readKernelScenario,
+  readScenarioOutcome,
   recordKernelReceipt,
 } from '@/lib/intelligence/living-kernel-registry';
 import { markLivingKernelDirty, syncLivingLifeModel } from '@/lib/intelligence/living-kernel-sync';
@@ -36,6 +38,7 @@ type Body = {
   selectedContext?: string;
   approved?: boolean;
   scenarioId?: string;
+  selectedChanges?: number[];
   risk?: GlowRisk;
   history?: HistoryTurn[];
 };
@@ -191,46 +194,46 @@ export async function POST(request: Request) {
 
     const body = await request.json() as Body;
     const text = String(body.text ?? '').trim();
-    const sourceRoute = String(body.sourceRoute ?? '').trim() || '/today';
+    let sourceRoute = String(body.sourceRoute ?? '').trim() || '/today';
     const selectedContext = parseSelectedContext(String(body.selectedContext ?? '').trim());
     const approved = body.approved === true;
     const suppliedScenarioId = String(body.scenarioId ?? '').trim() || null;
     const history = Array.isArray(body.history) ? body.history.slice(-12) : [];
     if (!text) return NextResponse.json({ ok: false, message: 'Say or type something first.' }, { status: 400 });
 
-    const kernelContext = await getLivingKernelContext({
-      userId,
-      route: sourceRoute,
-      selectedContext: selectedContext as KernelSelectedContext,
-      text,
-      maxObjects: 96,
-    });
-
-    const heuristicRisk = glowRiskForText(text);
-    const semantic = await interpretGlowUtterance({
-      text,
-      sourceRoute,
-      world: kernelContext.manifest.world,
-      selectedContext: selectedContextLabel(selectedContext),
-      history,
-    });
-    const risk = semantic ? strongestRisk(semantic.risk, heuristicRisk) : heuristicRisk;
-    const responseForm = semantic?.responseForm ?? glowResponseFormFor(text);
-
-    if (semantic?.mode === 'clarify') {
-      return NextResponse.json({ ok: true, mode: 'answer', responseForm: 'conversation', requiresConfirmation: false, world: kernelContext.manifest.world, currentRealityId: kernelContext.currentRealityId, message: semantic.clarification || 'Which thing do you mean?' });
-    }
-
-    const semanticWantsAction = semantic && (semantic.mode === 'action' || semantic.mode === 'mixed') && semantic.actions.length > 0;
-    if (!semanticWantsAction && risk === 'read') {
-      const message = await conversationalReply({ text, sourceRoute, selectedContext, history, userId });
-      return NextResponse.json({ ok: true, mode: 'answer', responseForm, requiresConfirmation: false, world: kernelContext.manifest.world, currentRealityId: kernelContext.currentRealityId, message });
-    }
-
-    const actions = plannedActions(semantic?.actions ?? [], text);
-    const selectedObjectId = kernelContext.selectedObject?.id;
-
     if (!approved) {
+      const kernelContext = await getLivingKernelContext({
+        userId,
+        route: sourceRoute,
+        selectedContext: selectedContext as KernelSelectedContext,
+        text,
+        maxObjects: 96,
+      });
+
+      const heuristicRisk = glowRiskForText(text);
+      const semantic = await interpretGlowUtterance({
+        text,
+        sourceRoute,
+        world: kernelContext.manifest.world,
+        selectedContext: selectedContextLabel(selectedContext),
+        history,
+      });
+      const risk = semantic ? strongestRisk(semantic.risk, heuristicRisk) : heuristicRisk;
+      const responseForm = semantic?.responseForm ?? glowResponseFormFor(text);
+
+      if (semantic?.mode === 'clarify') {
+        return NextResponse.json({ ok: true, mode: 'answer', responseForm: 'conversation', requiresConfirmation: false, world: kernelContext.manifest.world, currentRealityId: kernelContext.currentRealityId, message: semantic.clarification || 'Which thing do you mean?' });
+      }
+
+      const semanticWantsAction = semantic && (semantic.mode === 'action' || semantic.mode === 'mixed') && semantic.actions.length > 0;
+      if (!semanticWantsAction && risk === 'read') {
+        const message = await conversationalReply({ text, sourceRoute, selectedContext, history, userId });
+        return NextResponse.json({ ok: true, mode: 'answer', responseForm, requiresConfirmation: false, world: kernelContext.manifest.world, currentRealityId: kernelContext.currentRealityId, message });
+      }
+
+      const actions = plannedActions(semantic?.actions ?? [], text);
+      const selectedObjectId = kernelContext.selectedObject?.id;
+
       const scenarioId = await createKernelScenario({
         userId,
         title: actions.length === 1 ? actions[0].title : `Glow proposal · ${actions.length} changes`,
@@ -239,10 +242,10 @@ export async function POST(request: Request) {
         sourceText: text,
         confidence: actions.length ? actions.reduce((sum, action) => sum + action.confidence, 0) / actions.length : .5,
         kind: 'proposed-reality',
-        changes: actions.map((action) => ({
+        changes: actions.map((action, position) => ({
           objectId: selectedObjectId,
           actionType: action.type,
-          patch: { title: action.title, destinations: action.destinations, sourceText: action.sourceText },
+          patch: { title: action.title, destinations: action.destinations, sourceText: action.sourceText, confidence: action.confidence, position },
           rationale: `The user requested this through Glow from ${sourceRoute}.`,
           expectedEffects: action.destinations.length ? action.destinations : [action.type],
         })),
@@ -279,16 +282,48 @@ export async function POST(request: Request) {
       });
     }
 
-    activeScenarioId = suppliedScenarioId ?? await createKernelScenario({
-      userId,
-      title: `Approved Glow action · ${actions[0]?.title ?? text.slice(0, 80)}`,
-      summary: 'Approval was received in the same Glow conversation.',
-      sourceRoute,
-      sourceText: text,
-      confidence: actions.length ? Math.min(...actions.map((action) => action.confidence)) : .5,
-      changes: actions.map((action) => ({ objectId: selectedObjectId, actionType: action.type, patch: { title: action.title, destinations: action.destinations }, rationale: 'User-approved action.', expectedEffects: action.destinations })),
-    });
-    await decideKernelScenario(userId, activeScenarioId, 'accepted');
+    if (!suppliedScenarioId) {
+      return NextResponse.json({ ok: false, message: 'Review a saved proposal before approving.' }, { status: 400 });
+    }
+
+    const saved = await readKernelScenario(userId, suppliedScenarioId);
+    if (!saved || saved.scenario.sourceText !== text) {
+      return NextResponse.json({ ok: false, message: 'That proposal is no longer available. Ask again to review a new one.' }, { status: 404 });
+    }
+    const previousOutcome = async () => {
+      const receipt = await readScenarioOutcome(userId, saved.scenario.id);
+      if (receipt && (receipt.result !== 'failed' || receipt.details.status === 'failed')) {
+        return NextResponse.json({
+          ok: true, mode: 'completed', scenarioId: suppliedScenarioId, requiresConfirmation: false, message: receipt.action,
+          receipt: { ...receipt.details, id: receipt.id, summary: receipt.action },
+        });
+      }
+      const message = receipt ? 'This approval needs attention. Review the affected records before asking Shakti to try again.'
+        : 'This proposal is already being processed or is closed. Check the affected records before requesting another change.';
+      return NextResponse.json({ ok: false, message }, { status: 409 });
+    };
+    if (saved.scenario.status !== 'draft') return await previousOutcome();
+    const selected = body.selectedChanges;
+    if (selected !== undefined && (!Array.isArray(selected) || selected.length === 0 || selected.some(index => !Number.isSafeInteger(index) || index < 0 || index >= saved.changes.length))) {
+      return NextResponse.json({ ok: false, message: 'Select at least one change from the saved proposal.' }, { status: 400 });
+    }
+    const ordered = saved.changes.sort((a, b) => Number(a.patch.position ?? 0) - Number(b.patch.position ?? 0));
+    const changes = selected ? ordered.filter((_, index) => selected.includes(index)) : ordered;
+    if (!changes.length) return NextResponse.json({ ok: false, message: 'This proposal has no saved changes.' }, { status: 409 });
+    const actions = changes.map(({ actionType, patch }) => ({
+      type: actionType,
+      title: String(patch.title ?? ''),
+      destinations: Array.isArray(patch.destinations) ? patch.destinations.filter((value): value is string => typeof value === 'string') : [],
+      sourceText: String(patch.sourceText ?? text),
+      confidence: typeof patch.confidence === 'number' ? patch.confidence : saved.scenario.confidence,
+      executor: ['task', 'reminder', 'note'].includes(actionType) ? 'verified' : 'review-queue',
+    }));
+    sourceRoute = saved.scenario.sourceRoute ?? '/today';
+    const selectedObjectId = changes[0].objectId;
+    const responseForm = glowResponseFormFor(text);
+    const claim = await claimKernelScenario(userId, suppliedScenarioId, 'accepted');
+    if (!claim) return await previousOutcome();
+    activeScenarioId = claim.id;
 
     const completed: string[] = [];
     const queued: string[] = [];
@@ -297,39 +332,53 @@ export async function POST(request: Request) {
     const affectedObjectIds: string[] = selectedObjectId ? [selectedObjectId] : [];
     const affectedDomains = new Set<string>();
 
+    const failed: string[] = [];
     for (const action of actions) {
-      if (action.type === 'task' || action.type === 'reminder') {
-        const taskTitle = action.title || cleanTaskTitle(action.sourceText);
-        const task = await createTask(userId, { title: taskTitle.slice(0, 255), status: 'pending', priority: 'medium' });
-        completed.push(`Created ${action.type} “${task.title}”`);
-        completedDestinations.add('Tasks');
-        affectedDomains.add('task');
-        affectedObjectIds.push(canonicalGlowObjectId('task', task.id));
-        continue;
-      }
-      if (action.type === 'note') {
-        const note = await createNote(userId, { title: (action.title || cleanNoteTitle(action.sourceText)).slice(0, 120), content: action.sourceText, tags: [], pinned: false });
-        completed.push(`Created note “${note.title}”`);
-        completedDestinations.add('Notes');
-        affectedDomains.add('note');
-        affectedObjectIds.push(canonicalGlowObjectId('note', note.id));
-        continue;
-      }
+      try {
+        if (action.type === 'task' || action.type === 'reminder') {
+          const taskTitle = action.title || cleanTaskTitle(action.sourceText);
+          const task = await createTask(userId, { title: taskTitle.slice(0, 255), status: 'pending', priority: 'medium' });
+          completed.push(`Created ${action.type} “${task.title}”`);
+          completedDestinations.add('Tasks');
+          affectedDomains.add('task');
+          affectedObjectIds.push(canonicalGlowObjectId('task', task.id));
+          continue;
+        }
+        if (action.type === 'note') {
+          const note = await createNote(userId, { title: (action.title || cleanNoteTitle(action.sourceText)).slice(0, 120), content: action.sourceText, tags: [], pinned: false });
+          completed.push(`Created note “${note.title}”`);
+          completedDestinations.add('Notes');
+          affectedDomains.add('note');
+          affectedObjectIds.push(canonicalGlowObjectId('note', note.id));
+          continue;
+        }
 
-      const intake = await ingestText(userId, action.sourceText, { sourceRoute });
-      const destinations = action.destinations.length ? action.destinations : intake.classification.destinations.length ? intake.classification.destinations : ['Inbox'];
-      destinations.forEach((destination) => { queuedDestinations.add(destination); affectedDomains.add(destination.toLowerCase()); });
-      queued.push(`${action.title || intake.classification.title} → ${destinations.join(', ')}`);
+        const intake = await ingestText(userId, action.sourceText, { sourceRoute });
+        const destinations = action.destinations.length ? action.destinations : intake.classification.destinations.length ? intake.classification.destinations : ['Inbox'];
+        destinations.forEach((destination) => { queuedDestinations.add(destination); affectedDomains.add(destination.toLowerCase()); });
+        queued.push(`${action.title || intake.classification.title} → ${destinations.join(', ')}`);
+      } catch (error) {
+        console.error('[api/glow/command] approved change failed', error);
+        failed.push(action.title || action.type);
+      }
     }
 
-    await markLivingKernelDirty(userId, 'Glow approved action');
-    await syncLivingLifeModel(userId, { force: true, reason: `Approved scenario ${activeScenarioId}` });
+    let refreshPending = false;
+    try {
+      await markLivingKernelDirty(userId, 'Glow approved action');
+      await syncLivingLifeModel(userId, { force: true, reason: `Approved scenario ${activeScenarioId}` });
+    } catch (error) {
+      console.error('[api/glow/command] scenario refresh failed', error);
+      refreshPending = true;
+    }
 
-    const status = queued.length && completed.length ? 'partially-completed' : queued.length ? 'queued' : 'completed';
+    const needsAttention = Boolean(queued.length || failed.length || refreshPending);
+    const status = needsAttention ? (completed.length ? 'partially-completed' : queued.length ? 'queued' : 'failed') : 'completed';
     const summaryParts: string[] = [];
     if (completed.length) summaryParts.push(`Completed: ${completed.join('; ')}`);
     if (queued.length) summaryParts.push(`Queued for review: ${queued.join('; ')}`);
-    if (queued.length) summaryParts.push('No unverified executor was treated as completed');
+    if (failed.length) summaryParts.push(`Needs attention: ${failed.join('; ')}`);
+    if (refreshPending) summaryParts.push('Some room views may need to refresh');
     const summary = summaryParts.join('. ') || 'Approved Glow action completed.';
 
     const receiptId = await recordKernelReceipt({
@@ -342,9 +391,9 @@ export async function POST(request: Request) {
       affectedDomains: [...affectedDomains],
       confidence: actions.length ? Math.min(...actions.map((action) => action.confidence)) : 1,
       executor: queued.length ? (completed.length ? 'execution-engine+review-queue' : 'review-queue') : 'execution-engine',
-      result: completed.length || !queued.length ? 'completed' : 'unavailable',
-      reversible: completed.length > 0 && queued.length === 0,
-      details: { status, completed, queued, destinations: [...completedDestinations], queuedDestinations: [...queuedDestinations] },
+      result: completed.length ? 'completed' : queued.length ? 'unavailable' : 'failed',
+      reversible: false,
+      details: { status, completed, queued, failed, needsAttention, refreshPending, destinations: [...completedDestinations], queuedDestinations: [...queuedDestinations] },
     });
 
     revalidatePath('/today');
@@ -369,7 +418,9 @@ export async function POST(request: Request) {
         queued,
         destinations: [...completedDestinations],
         queuedDestinations: [...queuedDestinations],
-        needsAttention: queued.length > 0,
+        failed,
+        needsAttention,
+        refreshPending,
       },
     });
   } catch (error) {
